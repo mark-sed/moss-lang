@@ -1,0 +1,108 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Moss",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#constant"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#type-primitive"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#control"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [{
+				"captures": {
+					"0": {
+						"name": "punctuation.definition.comment.moss"
+					}
+				},
+				"begin": "#",
+				"name": "comment.block.empty.moss",
+				"end": "\\n"
+			},
+			{
+				"captures": {
+					"0": {
+						"name": "punctuation.definition.comment.moss"
+					}
+				},
+				"begin": "/\\*",
+				"name": "comment.block.empty.moss",
+				"end": "\\*/"
+			}
+			]
+		},
+		"constant": {
+			"match": "\\b(true|false|nil)\\b",
+			"name": "constant.language.moss "
+		},
+		"operators": {
+			"patterns": [{
+				"match": "!=|<=|>=|==|<|>|=>",
+				"name": "keyword.operator.comparison.moss"
+			},
+			{
+				"match": "\\+=|-=|\\*=|/=|//=|%=|\\^=|\\+\\+=|=",
+				"name": "keyword.operator.assignment.moss"
+			},
+			{
+				"match": "\\*|\\+|-|/|//|%|\\^",
+				"name": "keyword.operator.moss"
+			}
+		]
+		},
+		"type-primitive": {
+			"name": "support.type.primitive.moss",
+			"match": "String|Int|Float|NilType|Bool|List|Dict"
+		},
+		"numbers": {
+			"patterns": [{
+				"name": "constant.numeric.moss",
+				"match": "(-?[0-9]+)"
+			}]
+		},
+		"keywords": {
+			"patterns": [{
+				"match": "\\b(import|internal|as|in|or|and|not|\\|\\||&&|~)\\b",
+				"name": "keyword.other"
+			}]
+		},
+		"control": {
+			"patterns": [{
+				"name": "keyword.control",
+				"match": "if|elif|else|do|while|for|finally|try|catch|class|space|fun|return|raise|break|continue|new\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.moss",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.moss",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.moss"
+}

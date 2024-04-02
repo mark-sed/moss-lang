@@ -1,0 +1,25 @@
+{
+  "name": "moss",
+  "displayName": "Moss",
+  "description": "Moss programming language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.73.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "moss",
+      "aliases": ["Moss", "moss", "moss-lang"],
+      "extensions": [".ms", ".moss", "mss", ".mos"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "moss",
+      "scopeName": "source.moss",
+      "path": "./syntaxes/moss.tmLanguage.json"
+    }]
+  }
+}
