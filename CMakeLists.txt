@@ -16,10 +16,12 @@ include_directories(.)
 include_directories(frontend)
 include_directories(bytecode)
 include_directories(vm)
+include_directories(interface)
 
 # Source files excluding main
 set(SOURCES 
-    frontend/lexer.cpp
+    frontend/scanner.cpp
+    interface/errors.cpp
 )
 
 # Targets

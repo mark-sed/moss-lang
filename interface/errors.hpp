@@ -1,17 +1,17 @@
 /**
- * @file lexer.hpp
+ * @file errors.hpp
  * @author Marek Sedlacek
  * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
  *            See accompanied LICENSE file.
  * 
- * @brief Tokenization and lexical analysis of moss code
+ * @brief Error handling
  */
 
-#ifndef _LEXER_HPP_
-#define _LEXER_HPP_
+#ifndef _ERRORS_HPP_
+#define _ERRORS_HPP_
 
 namespace moss {
-
+    
 }
 
-#endif//_LEXER_HPP_
+#endif//_ERRORS_HPP_

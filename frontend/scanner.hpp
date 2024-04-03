@@ -1,0 +1,120 @@
+/**
+ * @file scanner.hpp
+ * @author Marek Sedlacek
+ * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+ *            See accompanied LICENSE file.
+ * 
+ * @brief Tokenization and lexical analysis of moss code
+ */
+
+#ifndef _SCANNER_HPP_
+#define _SCANNER_HPP_
+
+namespace moss {
+
+/** Scanner token types */
+enum TokenType {
+    LEFT_PAREN,     // (
+    RIGHT_PAREN,    // )
+    LEFT_CURLY,     // {
+    RIGHT_CURLY,    // }
+    LEFT_SQUARE,    // [
+    RIGHT_SQUARE,   // ]
+
+    END,        // ; or \n
+    COMMA,      // ,
+    DOT,        // .
+    RANGE,      // ..
+    COLON,      // :
+    SCOPE,      // ::
+    ANNOTATION, // @
+    NON_LOCAL,  // $
+    QUESTION_M, // ?
+    BACK_SLASH, // esc
+    HASH,       // #
+    QUOTE,      // "
+    MULT_QUOTE, // """
+
+    CONCAT, // ++
+    EXP,    // ^
+    PLUS,   // +
+    MINUS,  // -
+    FDIV,   // /
+    IDIV,   // //
+    MUL,    // *
+    MOD,    // %
+
+    SET,        // =
+    SET_CONCAT, // ++=
+    SET_EXP,    // ^=
+    SET_PLUS,   // +=
+    SET_MINUS,  // -=
+    SET_FDIV,   // /=
+    SET_IDIV,   // //=
+    SET_MUL,    // *=
+    SET_MOD,    // %=
+
+    UNWRAP, // <<
+    SILENT, // ~
+
+    EQ,  // ==
+    NEQ, // !=
+    BT,  // >
+    LT,  // <
+    BEQ, // >=
+    LEQ, // <=
+
+    SHORT_C_AND,    // &&
+    SHORT_C_OR,     // ||
+    AND,            // and
+    OR,             // or
+    NOT,            // not
+    IN,             // in
+
+    IMPORT,     // import
+    AS,         // as
+    IF,         // if
+    ELSE,       // else
+    WHILE,      // while
+    DO,         // do
+    FOR,        // for
+    SWITCH,     // switch
+    CASE,       // case
+    TRY,        // try
+    CATCH,      // catch
+    FINALLY,    // finally
+    NEW,        // new
+
+    BREAK,      // break
+    CONTINUE,   // continue
+    RAISE,      // raise
+    RETURN,     // return
+
+    ENUM,   // enum
+    CLASS,  // class
+    SPACE,  // space
+    FUN,    // fun
+
+    NIL,    // nil
+    TRUE,   // true
+    FALSE,  // false
+
+    INT,        // integer value
+    FLOAT,      // floating point value
+    STRING,     // string value
+    XSTRING,    // xstring value (rstring, fstring, nstring...)
+
+    ID,         // identificator
+
+    EOF         // end of file or input
+    // Not used:
+    // !, &, |, `, ', (>>, <<,) 
+};
+
+class Scanner {
+
+};
+
+}
+
+#endif//_SCANNER_HPP_

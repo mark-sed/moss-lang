@@ -1,10 +1,14 @@
 #include "moss.hpp"
-#include "lexer.hpp"
+#include "scanner.hpp"
+#include "clopts.hpp"
 #include <iostream>
 
 using namespace moss;
 
+
+
 int main(int argc, char *argv[]) {
-    std::cout << "moss " << MOSS_VERSION << "\n";
+    clopts::parse_clopts(argc, argv);
+
     return 0;
 }

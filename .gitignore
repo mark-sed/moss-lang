@@ -34,3 +34,5 @@
 # Build
 build/
 docs/html
+examples/
+.vscode/

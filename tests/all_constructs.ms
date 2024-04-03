@@ -25,6 +25,20 @@ if (a > 4 and b < a) {
 
 b = a == 100 ? "ups" : 9
 
+# Switch
+
+switch(a) {
+    case 0: print("not ok")
+    case 1: {
+        b += 1
+        print("added 1")
+    }
+    case 2, 3, 4: print("wow")
+    case 42: print("right answer")
+    case nil: print("nil")
+    default: print("oops")
+}
+
 # Whiles
 
 while(true) {
