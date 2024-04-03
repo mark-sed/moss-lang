@@ -10,6 +10,9 @@
 #ifndef _SCANNER_HPP_
 #define _SCANNER_HPP_
 
+#include <string>
+#include <utility>
+
 namespace moss {
 
 /** Scanner token types */
@@ -98,6 +101,8 @@ enum TokenType {
     NIL,    // nil
     TRUE,   // true
     FALSE,  // false
+    SUPER,  // super
+    THIS,   // this
 
     INT,        // integer value
     FLOAT,      // floating point value
@@ -106,10 +111,26 @@ enum TokenType {
 
     ID,         // identificator
 
-    EOF         // end of file or input
+    END_OF_FILE // end of file or input
     // Not used:
     // !, &, |, `, ', (>>, <<,) 
 };
+
+
+class SourceInfo {
+private:
+    std::string &filename;
+    // start, end
+    std::pair<unsigned, unsigned> line;
+    // TODO: make this a range
+    unsigned col;
+
+public:
+    SourceInfo(std::string &filename) : filename(filename) {}
+
+    std::string &get_filename() { return filename; }
+};
+
 
 class Scanner {
 
