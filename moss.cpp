@@ -7,7 +7,7 @@ using namespace moss;
 
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
     clopts::parse_clopts(argc, argv);
 
     return 0;

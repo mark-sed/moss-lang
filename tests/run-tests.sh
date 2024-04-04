@@ -116,7 +116,7 @@ function run_test {
 
 function test_empty {
     expect_pass "empty.ms" "empty"
-    expect_out_eq "moss 0.1.0\n" "empty"
+    expect_out_eq "" "empty"
 }
 
 ###--- Running tests ---###
