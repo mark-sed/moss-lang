@@ -42,8 +42,7 @@ enum TokenType {
     EXP,    // ^
     PLUS,   // +
     MINUS,  // -
-    FDIV,   // /
-    IDIV,   // //
+    DIV,    // /
     MUL,    // *
     MOD,    // %
 
