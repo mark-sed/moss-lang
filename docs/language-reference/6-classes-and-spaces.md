@@ -1,0 +1,60 @@
+# Classes and spaces
+
+Classes and spaces are 2 constructs for setting the scope of resources.
+
+## Spaces
+
+Space is just a scope and accessibility construct. They encapsulate symbols 
+within it into its own scope. It can be named or anonymous.
+
+```py
+space Math {
+    fun abs(x:Int) {
+        return x 
+    }
+}
+
+space {
+    a = someCall()
+    a # A is printed and unaccessible
+}
+```
+
+## Classes 
+
+Classes allow for multiple inheritance and all function in their body have
+hidden `this` variable, which accesses the object it belongs to.
+
+Class can contain multiple constructors (prefixed `new` and followed by the
+class name)
+
+```java
+class Range : Iterable, BaseClass {
+    new Range(start, end, step=1) {
+        this.start = start
+        this.end = end
+        this.step = step
+        this.i = start
+    }
+
+    fun __next() {
+        if(this.step >= 0 and this.i >= this.end) return StopIteration
+        if(this.step < 0 and this.i <= this.end) return StopIteration
+        r = this.i
+        this.i += this.step
+        return r
+    }
+}
+```
+
+When calling methods on static classes, not objects, `this` argument has to be
+passed in as the first one:
+
+```cpp
+Range::next(range)
+```
+
+### Class default methods
+
+These methods are internally used for conversion or control flow, such as
+`__next`.

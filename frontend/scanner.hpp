@@ -71,6 +71,7 @@ enum TokenType {
     AND,            // and
     OR,             // or
     NOT,            // not
+    XOR,            // xor
     IN,             // in
 
     IMPORT,     // import

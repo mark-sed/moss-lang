@@ -13,7 +13,8 @@ E.g.:
 ```
 
 > __Note__: Every class and type by default overrides these methods:
-> `fun id()`, conversion to string, `fun (++)(x)`.
+> `fun id()`, conversion to string, `fun (++)(x)`, `fun (==)(x)` and
+> `fun (!=)(x)`.
 
 ## Int
 
@@ -33,14 +34,16 @@ __Class constructors__:
 * `new Int(v=0)`
 
 __Class operators__:
-* `fun (==)(x)`
-* `fun (!=)(x)`
 * `fun (+)(x:[Int, Float])`
 * `fun (-)(x:[Int, Float])`
 * `fun (*)(x:[Int, Float])`
 * `fun (/)(x:[Int, Float])`
 * `fun (%)(x:[Int, Float])`
 * `fun (^)(x:[Int, Float])`
+* `fun (and)(x:Int)`
+* `fun (or)(x:Int)`
+* `fun (xor)(x:Int)`
+* `fun (not)()`
 
 __Class methods__:
 
@@ -64,8 +67,6 @@ __Class constructors__:
 * `new Float(v=0.0)`
 
 __Class operators__:
-* `fun (==)(x)`
-* `fun (!=)(x)`
 * `fun (+)(x:[Int, Float])`
 * `fun (-)(x:[Int, Float])`
 * `fun (*)(x:[Int, Float])`
@@ -94,10 +95,9 @@ __Class constructors__:
 * `new Bool(v=false)`
 
 __Class operators__:
-* `fun (==)(x)`
-* `fun (!=)(x)`
 * `fun (and)(x:Bool)`
 * `fun (or)(x:Bool)`
+* `fun (xor)(x:Bool)`
 * `fun (not)()`
 * `fun (&&)(x)`
 * `fun (||)(x)`
@@ -146,8 +146,6 @@ __Class constructors__:
 * `new String(v="")`
 
 __Class operators__:
-* `fun (==)(x)`
-* `fun (!=)(x)`
 * `fun (+)(x:String)`
 * `fun (in)(x:String)`
 * `fun ([])(x:[Int, Range])`
@@ -158,6 +156,8 @@ __Class methods__:
 * `fun upper()`
 * `fun lower()`
 * `fun reverse()`
+* `fun find(substr:String)`
+* `fun empty()`
 
 ## Nil and NilType
 
@@ -173,10 +173,6 @@ a == b  # true
 
 __Class constructors__:
 * `new NilType()`
-
-__Class operators__:
-* `fun (==)(x)`
-* `fun (!=)(x)`
 
 ## Enum
 
@@ -202,6 +198,36 @@ names = ["luke", "leia", "han"]
 mix = ["pirate", 42, true, nil, nil, "ok"]
 ```
 
+__Class constructors__:
+* `new List(.. v)`
+
+__Class operators__:
+* `fun (+)(x:List)`
+* `fun (in)(x)`
+* `fun ([])(x:[Int, Range])`
+
+__Class methods__:
+* `fun append(x)`
+* `fun len()`
+* `fun reverse()`
+* `fun find(x)`
+* `fun sort(bool ascend=true)`
+* `fun remove(index:Int)`
+* `fun remove_all(x)`
+* `fun remove_first(x)`
+* `fun remove_last(x)`
+* `fun remove_if(f)`
+* `fun push(x)`
+* `fun pop()`
+* `fun filter(f)`
+* `fun empty()`
+* `fun insert(index:Int, x)`
+* `fun count(x)`
+
+### List comprehension
+
+TODO
+
 ## Dict
 
 Dictionary - an associative array - collection of keys and values.
@@ -210,6 +236,41 @@ Dictionary - an associative array - collection of keys and values.
 empty = {,}
 mappings = {"name": "Marek", "id": 42}
 ```
+
+__Class constructors__:
+* `new Dict()`
+* `new Dict(keys:List, values:List)`
+
+__Class operators__:
+* `fun (in)(x)`
+* `fun ([])(x)`
+
+__Class methods__:
+* `fun keys()`
+* `fun values()`
+* `fun find(key)`
+* `fun remove(key)`
+* `fun remove_if(f)`
+* `fun filter(f)`
+* `fun empty()`
+* `fun len()`
+* `fun insert(key, value)`
+* `fun emplace(key, value)`
+
+## Range
+
+Range is the result for range construct (`1,3..10`), which can be used
+for easy iterator or sequence creation
+
+__Class constructors__:
+* `new Range(start, end, step=1)`
+
+__Class operators__:
+* `fun (in)(x)`
+* `fun ([])(x)`
+
+__Class methods__:
+* `fun __next()`
 
 # Operators
 
@@ -229,8 +290,9 @@ mappings = {"name": "Marek", "id": 42}
 | `<=`, `>=`, `>`, `<`             | Comparisons                                      | Left          |
 | `==`, `!=`                       | Equals, Not equals                               | Left          |
 | `not`                            | Logical not                                      | Right         |
-| `&&`, `and`                      | Short-circuit type checked/not checked logical and | Left        |
-| `\|\|`, `or`                     | Short-circuit type checked/not checked logical or | Left         |
+| `&&`, `and`                      | Short-circuit and logical/bitwise and            | Left          |
+| `\|\|`, `or`                     | Short-circuit and logical/bitwise or             | Left          |
+| `xor`                            | Logical/bitwise xor                              | Left          |
 | `?:`                             | Ternary if                                       | Right         |
 | `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `^=`, `++=` | Assignment, Operation and assignment | Right       |
 | `~`                              | Silence operator                                 | Right         |
