@@ -62,3 +62,24 @@ fun baz(a, b:Int, ... other, name="") {
     # Code
 }
 ```
+
+## Operator functions
+
+Classes can override operators by overriding operator functions.
+
+These functions are called by the operator symbol enclosed in parentheses.
+
+The arguments can be specialized.
+
+```cpp
+class MyClass {
+
+    fun (+)(x:[Int,Float]) = this.x + x
+    fun (+)(x) {
+        error("Cannot add to MyClass type " ++ type(x))
+    }
+
+    fun (and)(x) = this.x > 0
+
+}
+```

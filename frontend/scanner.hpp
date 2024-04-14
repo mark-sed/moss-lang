@@ -30,7 +30,8 @@ enum TokenType {
     RANGE,      // ..
     COLON,      // :
     SCOPE,      // ::
-    ANNOTATION, // @
+    IN_ANNOTATION, // @!
+    OUT_ANNOTATION, // @
     NON_LOCAL,  // $
     QUESTION_M, // ?
     BACK_SLASH, // esc
@@ -51,8 +52,7 @@ enum TokenType {
     SET_EXP,    // ^=
     SET_PLUS,   // +=
     SET_MINUS,  // -=
-    SET_FDIV,   // /=
-    SET_IDIV,   // //=
+    SET_DIV,   // /=
     SET_MUL,    // *=
     SET_MOD,    // %=
 

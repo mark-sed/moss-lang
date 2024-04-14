@@ -36,6 +36,34 @@ f # 2
 g # [3, 4, 5]
 ```
 
+If you want to access some global value that is overshadowed by a local
+name, you can do that using the global scope - `::`.
+```py
+x = 8
+
+fun foo(x) {
+    return ::x + x
+}
+```
+
+If you want to access non-local variable overshadowed by a local one you
+can use `$`.
+
+```py
+x = 8
+fun foo() {
+    x = 4
+    fun bar() {
+        # Without $, this would create a new
+        # variable x and x in foo would not
+        # be overwritten
+        $x = 5
+    }
+    bar()
+    return x # 5
+}
+```
+
 ## Comments
 
 Moss has line comments with Python/Bash syntax and block comments with C
