@@ -18,6 +18,7 @@
 
 namespace moss {
 
+/** Command line (terminal) options */
 namespace clopts {
 
     args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");

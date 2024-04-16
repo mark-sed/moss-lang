@@ -51,8 +51,9 @@ If one wants to call a function and disregard the return value, the
 xString stands for a string that is prefixed by some identificator. There are
 built-in formats, such as markdown (`md`) or `pdf`. But there can be also
 custom prefixes, that are needed for outputting custom format. If this prefix
-matches any global function name and this function takes one argument, then
-this string is also sent to it for additional parsing (if this is desired).
+matches any global function name that has been annotated as `@formatter` and
+this function takes one argument, then this string is also sent to it for
+additional parsing (if this is desired).
 
 
 ```go
@@ -66,6 +67,7 @@ class EquationNote : Note {
     }
 }
 
+@formatter
 fun eq(s) {
     return EquationNote(s) 
 }
@@ -85,6 +87,83 @@ a = md"# Header"
 The actual output extends `String` type, but is of type `Note` and more
 specifically of type `MarkdownNote`. So in the given example with function `eq`
 the type of `s` is `Note`, which might be used for some additional analysis.
+
+## Formatters
+
+As mentioned in previous section there can be specialized formatter functions
+which match the xString prefix and are called with this string for additional
+formatting. Their return value is then used for the output. This syntax is
+intended for notes and even though it can be used for any function that takes
+string arguments, it is not recommended as it might make the code way less
+readable and what people expect from xStrings are Note objects.
+
+Keep in mind that formatters are not obligatory and you can have your own
+xString without formatter and even a converter (in that case it is worked with
+as with a normal note that stores the string value and prefix).
+
+```py
+@formatter
+fun chess(s) {
+    return s.replace("K", "♔").replace("Q", "♕").replace("R", "♖").replace("B", "♗").replace("N", "♘").replace("p", "♙")
+}
+
+chess"""
+1.e4 Nf6 2.e5 Nd5 3.d4 d6 4.Nf3 g6 5.Bc4 Nb6 6.Bb3 Bg7 7.Qe2
+Nc6 8.O-O O-O 9.h3 a5 10.a4 dxe5 11.dxe5 Nd4 12.Nxd4 Qxd4
+13.Re1 e6 14.Nd2 Nd5 15.Nf3 Qc5 16.Qe4 Qb4 17.Bc4 Nb6 18.b3
+Nxc4 19.bxc4 Re8 20.Rd1 Qc5 21.Qh4 b6 22.Be3 Qc6 23.Bh6 Bh8
+24.Rd8 Bb7 25.Rad1 Bg7 26.R8d7 Rf8 27.Bxg7 Kxg7 28.R1d4 Rae8
+29.Qf6+ Kg8 30.h4 h5 31.Kh2 Rc8 32.Kg3 Rce8 33.Kf4 Bc8 34.Kg5
+1-0
+"""
+```
+_[Output]:_
+```
+1.e4 ♘f6 2.e5 ♘d5 3.d4 d6 4.♘f3 g6 5.♗c4 ♘b6 6.♗b3 ♗g7 7.♕e2
+♘c6 8.O-O O-O 9.h3 a5 10.a4 dxe5 11.dxe5 ♘d4 12.♘xd4 ♕xd4
+13.♖e1 e6 14.♘d2 ♘d5 15.♘f3 ♕c5 16.♕e4 ♕b4 17.♗c4 ♘b6 18.b3
+♘xc4 19.bxc4 ♖e8 20.♖d1 ♕c5 21.♕h4 b6 22.♗e3 ♕c6 23.♗h6 ♗h8
+24.♖d8 ♗b7 25.♖ad1 ♗g7 26.♖8d7 ♖f8 27.♗xg7 ♔xg7 28.♖1d4 ♖ae8
+29.♕f6+ ♔g8 30.h4 h5 31.♔h2 ♖c8 32.♔g3 ♖ce8 33.♔f4 ♗c8 34.♔g5
+1-0
+```
+
+In this example the English localized chess piece names in the notation were
+replaces with their UNICODE equivalent. As most people will probably find it
+lot more difficult to write emojis rather than letters this makes it lot
+simpler to write the notation. 
+
+You can also imagine lot more complex formatter which could generate the output
+based on some interpreter output flag (using `out` module) and then maybe
+localize it to some other language or anything of that kind.
+
+> __Note__: Formatters are not meant to work like converters. If you write
+> a note in your custom markup and want it to be convertible to others, don't
+> just output Markdown note in the formatter, rather output your custom Note and
+> then write a converter which generates the Markdown.
+
+### fString and rStrings
+
+fStrings (formatted strings with interpolation) and rStrings (raw strings -
+strings that don't accept escape sequences) on the outside look like xStrings
+and Moss works with them in that way, but they are a special kind. It is not
+possible to have a formatter which would work for fString. So fString and
+rString are handled internally. So you cannot just call their formatters
+as you could with custom ones. 
+
+Calling multiple formatters on each others output does not make sense as this
+can be handled by converters. Only case where this makes sense are calling them
+on fStrings and rStrings. In such cases one must use the explicit function call.
+
+```py
+md(f"""
+# {title}
+
+__Date__: {get_localized_date()}
+
+__Name__: {get_name()}
+""")
+```
 
 ## Non-literal notes
 
@@ -360,4 +439,19 @@ md"""
 
 Prague is the capital of Czech Republic.
 """
+```
+
+## Unified converter approach
+
+In many cases you might not need any converters at all if the ones provided by
+Moss are good enough, but if there is some format you might use in all of your
+scripts, then instead of just copy-pasting the same convertor into all scripts
+or importing it into all of them, even some older ones, you might want to
+specify the convertors when running the scripts. This allows also for change
+of convertors without changing any code. You can simply specify the module that
+should be used with highest priority for conversion to the interpreter using
+`-c` or `--convertors` options.
+
+```
+moss -c my_convertors.ms main.ms
 ```

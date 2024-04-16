@@ -51,10 +51,20 @@ When calling methods on static classes, not objects, `this` argument has to be
 passed in as the first one:
 
 ```cpp
-Range::next(range)
+Range::__next(range)
 ```
 
 ### Class default methods
 
 These methods are internally used for conversion or control flow, such as
-`__next`.
+`__next` for iterations.
+
+All these methods begin with `__`.
+
+List of default class methods excluding operators, which are mentioned in
+other document section:
+
+* `fun __iterator()` - Used to get the object that will be `__next` called on.
+It is called at the beginning of an iteration.
+* `fun __next()` - Called to get the next value in an iteration. Once the end
+is reached, an exception is raised.

@@ -226,3 +226,18 @@ try {
 }
 
 ```
+
+## Assert
+
+Assertion takes in a bool and if this bool is false it raises an assertion
+exception. Second argument can be string which will be part of the exception.
+
+Assertions are ignored when debug is turned off.
+
+```py
+assert(x > 0)
+assert(y < 0, "Input value should be negative.")
+```
+
+Assert does have a function syntax, but is in fact a keyword and cannot be
+overwritten.
