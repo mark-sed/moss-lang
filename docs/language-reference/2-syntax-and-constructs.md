@@ -14,8 +14,8 @@ Any symbol name is a variable declaration, if not yet declared, then it
 is a note.
 
 ```py
-foo # foo = nil
-foo # Will be outputted as "nil"
+foo // foo = nil
+foo // Will be outputted as "nil"
 ```
 
 Variable can of course be also assigned a value and even multiple at once:
@@ -31,9 +31,9 @@ fun foo() {
 
 e, f, g = foo()
 
-e # 1 
-f # 2
-g # [3, 4, 5]
+e // 1 
+f // 2
+g // [3, 4, 5]
 ```
 
 If you want to access some global value that is overshadowed by a local
@@ -54,13 +54,13 @@ x = 8
 fun foo() {
     x = 4
     fun bar() {
-        # Without $, this would create a new
-        # variable x and x in foo would not
-        # be overwritten
+        // Without $, this would create a new
+        // variable x and x in foo would not
+        // be overwritten
         $x = 5
     }
     bar()
-    return x # 5
+    return x // 5
 }
 ```
 
@@ -69,13 +69,13 @@ fun foo() {
 Moss has line comments with Python/Bash syntax and block comments with C
 syntax.
 
-Line comments start from `#` until the end of the line (it has to be
+Line comments start from `//` until the end of the line (it has to be
 a new line not `;`).
 
 Block comments starts with `/*` and ends with first occurrence of `*/`.
 
 ```c
-# Line comment; Ends with a new line
+// Line comment; Ends with a new line
 
 /*
 Block comment
@@ -90,7 +90,7 @@ avoid unwanted conversions and resulting bugs).
 
 ```py
 if (condition) {
-    # Code
+    // Code
 }
 ```
 
@@ -105,11 +105,11 @@ else expression
 
 ```py
 if (condition) {
-    # Code
+    // Code
 } else if (condition) {
-    # Code
+    // Code
 } else {
-    # Code
+    // Code
 }
 ```
 
@@ -127,7 +127,7 @@ While and do-while also don't perform any implicit conversions to bool.
 
 ```c
 while (condition) {
-    # Code
+    // Code
 }
 ```
 
@@ -137,7 +137,7 @@ while (condition) expr
 
 ```c
 do {
-    # Code
+    // Code
 } while (condition)
 ```
 
@@ -151,12 +151,12 @@ For works as a foreach and iterates over elements. But the C-style for loop
 can be easily achieved using ranges.
 
 ```py
-for(i : 1,3..11) i # Prints:  13579
+for(i : 1,3..11) i // Prints:  13579
 ```
 
 ```py
 for(s: "Hello there") {
-    # Code
+    // Code
 }
 ```
 

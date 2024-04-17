@@ -37,7 +37,7 @@ enum TokenType {
     NON_LOCAL,      ///< $
     QUESTION_M,     ///< ?
     BACK_SLASH,     ///< esc
-    HASH,           ///< #
+    SL_COMMENT,     ///< //
     QUOTE,          ///< "
     MULT_QUOTE,     ///< """
 

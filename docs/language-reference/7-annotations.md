@@ -10,18 +10,18 @@ Inner annotations (`@!`) are tied to the what ever they are declared inside of
 and are mostly important for declaring module attributes. The outer annotation
 is tied to what ever follows it.
 
-```py
-@!min_version("1.1") # Module annotation
+```cpp
+@!min_version("1.1") // Module annotation
 
-@equation # Tied to `f`
-@hidden   # Tied fo `f`
+@equation // Tied to `f`
+@hidden   // Tied fo `f`
 fun f(x) {
     return x ^ 2 * x
 }
 
 fun g(x) {
-    @!equation # Tied to `g`
-    @!hidden   # Tied fo `g`
+    @!equation // Tied to `g`
+    @!hidden   // Tied fo `g`
     return x * x
 }
 ```

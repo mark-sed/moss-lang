@@ -7,7 +7,7 @@ Classes and spaces are 2 constructs for setting the scope of resources.
 Space is just a scope and accessibility construct. They encapsulate symbols 
 within it into its own scope. It can be named or anonymous.
 
-```py
+```cpp
 space Math {
     fun abs(x:Int) {
         return x 
@@ -16,7 +16,7 @@ space Math {
 
 space {
     a = someCall()
-    a # A is printed and unaccessible
+    a // A is printed and unaccessible
 }
 ```
 
@@ -28,7 +28,7 @@ hidden `this` variable, which accesses the object it belongs to.
 Class can contain multiple constructors (prefixed `new` and followed by the
 class name)
 
-```java
+```cpp
 class Range : Iterable, BaseClass {
     new Range(start, end, step=1) {
         this.start = start

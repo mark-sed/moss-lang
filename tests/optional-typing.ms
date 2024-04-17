@@ -33,8 +33,8 @@ foo(Rnd, [2,3,4,5])
 foo(true, false)
 
 /** Output: */
-# first
-# redef
-# [5, 4, 2, 3]
-# all else
+// first
+// redef
+// [5, 4, 2, 3]
+// all else
 

@@ -37,7 +37,7 @@ class MyClass {
 
 a = MyClass(42)
 
-# Cast has to be explicitly specified, methods won't be called otherwise
+// Cast has to be explicitly specified, methods won't be called otherwise
 String(a)++"\n"
 Int(a)++"\n"
 Float(a)++"\n"

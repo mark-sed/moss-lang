@@ -25,6 +25,9 @@
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#annotations"
 		}
 	],
 	"repository": {
@@ -35,7 +38,7 @@
 						"name": "punctuation.definition.comment.moss"
 					}
 				},
-				"begin": "#",
+				"begin": "//",
 				"name": "comment.block.empty.moss",
 				"end": "\\n"
 			},
@@ -61,11 +64,11 @@
 				"name": "keyword.operator.comparison.moss"
 			},
 			{
-				"match": "\\+=|-=|\\*=|/=|//=|%=|\\^=|\\+\\+=|=",
+				"match": "\\+=|-=|\\*=|/=|%=|\\^=|\\+\\+=|=",
 				"name": "keyword.operator.assignment.moss"
 			},
 			{
-				"match": "\\*|\\+|-|/|//|%|\\^",
+				"match": "\\*|\\+|-|/|%|\\^|>>",
 				"name": "keyword.operator.moss"
 			}
 		]
@@ -82,14 +85,14 @@
 		},
 		"keywords": {
 			"patterns": [{
-				"match": "\\b(import|internal|as|in|or|and|not|\\|\\||&&|~)\\b",
+				"match": "\\b(import|as|in|or|and|xor|not|\\|\\||&&|~)\\b",
 				"name": "keyword.other"
 			}]
 		},
 		"control": {
 			"patterns": [{
 				"name": "keyword.control",
-				"match": "if|elif|else|do|while|for|finally|try|catch|class|space|fun|return|raise|break|continue|new\\b"
+				"match": "if|else|do|while|for|finally|try|catch|class|space|fun|return|raise|break|continue|new|assert|switch|case|default\\b"
 			}]
 		},
 		"strings": {
@@ -102,6 +105,12 @@
 					"match": "\\\\."
 				}
 			]
+		},
+		"annotations": {
+			"patterns": [{
+				"name": "meta.preprocessor.string",
+				"match": "(@[a-zA-Z_][a-zA-Z_0-9]*)"
+			}]
 		}
 	},
 	"scopeName": "source.moss"

@@ -13,7 +13,7 @@ In modular arithmetic notation, this function _f_ can be defined as:
 
 #| equation
 fun f(n) {
-    if(n % 2 == 0) return n//2
+    if(n % 2 == 0) return n/2
     else return 3*n + 1
 }
 
@@ -32,7 +32,7 @@ fun collatz(n) {
     """
     while(n != 1) {
         if(n % 2 == 0) {
-            n //= 2
+            n /= 2
         }
         else {
             n = 3*n + 1
@@ -59,7 +59,7 @@ fun collatz_steps(n) {
     steps = 0
     while(n != 1) {
         if(n % 2 == 0) {
-            n //= 2
+            n /= 2
         }
         else {
             n = 3*n + 1

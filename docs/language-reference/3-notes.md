@@ -20,27 +20,27 @@ string as well.
 But it can be also things like function calls. In Moss any value has a to string
 converting function, and that will be always called on a non-string note value.
 
-```py
+```cpp
 fun foo() {
     return 42
 }
 
-foo() # 42 will be in the output file
+foo() // 42 will be in the output file
 ```
 
-```py
+```cpp
 class MyClass {
-    # Code
+    // Code
 }
 
-MyClass() # Will be converted to string and outputted
+MyClass() // Will be converted to string and outputted
 ```
 
 If one wants to call a function and disregard the return value, the
 "silent" operator `~` can be used.
 
-```py
-~foo() # 42 will not be in the output file
+```cpp
+~foo() // 42 will not be in the output file
 ```
 
 > Note: For one-liners, using notes as prints is quite suitable and saves
@@ -56,7 +56,7 @@ this function takes one argument, then this string is also sent to it for
 additional parsing (if this is desired).
 
 
-```go
+```cpp
 class EquationNote : Note {
     COUNT = 0
 
@@ -80,7 +80,7 @@ x_1 = ln_{22}(y) + 4
 Such values act the same as normal strings and can be assigned and used in
 expressions
 
-```py
+```cpp
 a = md"# Header"
 ```
 
@@ -101,7 +101,7 @@ Keep in mind that formatters are not obligatory and you can have your own
 xString without formatter and even a converter (in that case it is worked with
 as with a normal note that stores the string value and prefix).
 
-```py
+```cpp
 @formatter
 fun chess(s) {
     return s.replace("K", "♔").replace("Q", "♕").replace("R", "♖").replace("B", "♗").replace("N", "♘").replace("p", "♙")
@@ -155,7 +155,7 @@ Calling multiple formatters on each others output does not make sense as this
 can be handled by converters. Only case where this makes sense are calling them
 on fStrings and rStrings. In such cases one must use the explicit function call.
 
-```py
+```cpp
 md(f"""
 # {title}
 
@@ -171,7 +171,7 @@ Sometimes you might want to output a value returned by a function and it
 might be in some format (not just plain string). You can just pass this
 value to the converter function.
 
-```py
+```cpp
 fun header(s) = "# " ++ s
 
 md(header("Introduction"))
@@ -185,7 +185,7 @@ There are predefined output formats, which you can always use, such as
 You can also add a custom output format and use one of the existing
 for your transformation.
 
-```py
+```cpp
 import out
 
 @converter(out::Formats::Markdown, ["tx1", "text1", "txt1"])
@@ -223,7 +223,7 @@ So if we want to keep the format of our type `eq` we need to provide some
 converter that could be then used to convert to a type, which converts to
 desired output format.
 
-```py
+```cpp
 import out
 
 @converter("eq", out::Formats::LaTeX)
@@ -247,7 +247,7 @@ this information it might be needed to add converter for these types as well.
 The formatting pipeline is chosen based on the existing converters,
 their order of definitions and the pipeline length.
 
-```py
+```cpp
 import out
 
 @converter("eq", out::Formats::LaTeX)
@@ -256,7 +256,7 @@ fun eq2tex(s) {
 }
 
 @converter("eq", out::Formats::Markdown)
-fun eq2tex(s) {
+fun eq2md(s) {
     return f"Eq. {s.count}: `" ++ s ++ "`"
 }
 ```
@@ -281,12 +281,12 @@ environment and don't have to return any value.
 
 Generators are called after all notes have been collected (script terminated).
 
-```py
+```cpp
 import out
 import sys
 
 @generator(out::Formats::LaTeX, out::Formats::PDF)
-@platform(sys::Platform::Linux) # Invoked only on Linux
+@platform(sys::Platform::Linux) // Invoked only on Linux
 fun tex2pdf(s) {
     tmp = out::create_tmp(s)
     sys.system(f"pdflatex {tmp} -o {out::out_path()}")
@@ -297,17 +297,17 @@ Let's say that we can still convert generator output, then we should modify the
 output from the generator to return some custom value that can be used to
 generate more formats.
 
-```py
+```cpp
 import out
 import sys
 
 @generator(out::Formats::LaTeX, out::Formats::PDF)
-@platform(sys::Platform::Linux) # Invoked only on Linux
+@platform(sys::Platform::Linux) // Invoked only on Linux
 fun tex2pdf(s) {
     tmp = out::create_out_tmp(s)
-    # Here we use out_path() which returns path to the output file
-    # that the user has chosen, but if this is not the final generator
-    # in the pipeline, then this will be some dummy value
+    // Here we use out_path() which returns path to the output file
+    // that the user has chosen, but if this is not the final generator
+    // in the pipeline, then this will be some dummy value
     sys.system(f"pdflatex {tmp} -o {out::out_path()}")
     return out::out_path()
 }
@@ -335,9 +335,9 @@ this output to `pdf2pdfa`.
 Moss also allows for notebook output (interpreter option), which will
 generate the output also with the accompanying code and its output.
 
-```py
+```cpp
 @!notebook
-# Comments are not part of the output file
+// Comments are not part of the output file
 
 md"""
 This text will be in the output file.
@@ -382,7 +382,7 @@ Functions, classes, space variables, enums and spaces can contain documentation
 notes `doc` (`Documentation`), which can be accessed at runtime but also used
 to generate documentation.
 
-```py
+```cpp
 fun divxy(x:Int, y:Int) {
     doc"""
     Divides x by y.
@@ -402,10 +402,10 @@ attribute.
 There is a Documentation output mode, which does not execute any code nor notes
 and sends declarations into special `doc_writer` convertors/generators.
 
-```py
+```cpp
 @doc_writer(out::Formats::HTML)
 fun doc2html(code) {
-    # Conversion code
+    // Conversion code
 }
 ```
 
@@ -424,7 +424,7 @@ overshadowing one.
 
 The latest defined scope accessible converter will be used.
 
-```py
+```cpp
 import BestConverters::*
 import ShinyMarkdown::md2tex
 

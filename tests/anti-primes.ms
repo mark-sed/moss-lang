@@ -5,7 +5,7 @@
 fun cntDivs(n) {
     if (n < 2) return 1
     cnt = 2
-    for(i : 2..n//2) {
+    for(i : 2..n/2) {
         if(n % i == 0) cnt += 1
     }
     return cnt

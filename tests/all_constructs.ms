@@ -5,7 +5,7 @@
 a = 42
 b = 9
 
-# Ifs
+// Ifs
 
 if (a == b) a
 else b
@@ -25,7 +25,7 @@ if (a > 4 and b < a) {
 
 b = a == 100 ? "ups" : 9
 
-# Switch
+// Switch
 
 switch(a) {
     case 0: print("not ok")
@@ -39,7 +39,7 @@ switch(a) {
     default: print("oops")
 }
 
-# Whiles
+// Whiles
 
 while(true) {
     break
@@ -58,7 +58,7 @@ do {
 
 "\n"
 
-# For
+// For
 
 for(i : 1,3..11) i
 
@@ -69,7 +69,7 @@ for (i : [1, 3, 11])
 
 for   (s : "text\n") i 
 
-# Functions
+// Functions
 
 fun foo(arg1, arg2) {
     return arg1 * arg2
@@ -97,7 +97,7 @@ foo2(-7)
 fun baz(a, b:Int, ... other, name="") {
 }
 
-# Spaces
+// Spaces
 
 space Math {
     fun abs(x:Int) {
@@ -111,12 +111,12 @@ space {
     fun someCall() = 1
 
     aspc = someCall()
-    aspc # A is printed and unaccessible
+    aspc // A is printed and unaccessible
 }
 
-aspc # nil assignment
+aspc // nil assignment
 
-# Classes
+// Classes
 
 class Range : Iterable, BaseClass {
     new Range(start, end, step=1) {
@@ -135,7 +135,7 @@ class Range : Iterable, BaseClass {
     }
 }
 
-# Exceptions
+// Exceptions
 
 class KnownExcp {
     fun nicemsg() = "Nice msg :)\n"
@@ -152,3 +152,11 @@ try {
 } finally {
     "This is always done"
 }
+
+// Annotations
+
+@formatter
+fun foo(s) = s
+
+@converter("foo", "md")
+fun foo2md(s) = s

@@ -6,10 +6,10 @@ The main approach is using object oriented programming.
 Every value can be worked with as an object and therefore call its methods.
 E.g.:
 
-```py
-"moss".upper() # "MOSS"
-[1,2,3].len()  # 3
-1.(+)(2)       # "3"
+```cpp
+"moss".upper() // "MOSS"
+[1,2,3].len()  // 3
+1.(+)(2)       // "3"
 ```
 
 > __Note__: Every class and type by default overrides these methods:
@@ -22,11 +22,11 @@ Signed integer value.
 
 Integer constant can be written in decimal, hexadecimal, octal or binary value:
 
-```py
-dec_i = 42       # Decimal
-hex_i = 0x2a     # Hexadecimal
-oct_i = 0q52     # Octal
-bin_i = 0b101010 # Binary
+```cpp
+dec_i = 42       // Decimal
+hex_i = 0x2a     // Hexadecimal
+oct_i = 0q52     // Octal
+bin_i = 0b101010 // Binary
 ```
 
 __Class constructors__:
@@ -56,10 +56,10 @@ Float constant can be written in a standard form with `.`, but has to start
 with a number and has to be followed by a number (to avoid issues with
 operators). Floats can also be written in a scientific format.
 
-```py
+```cpp
 x = -3.1415925
-y = 0.5e-2      # 0.005
-z = 5e3         # 500.0
+y = 0.5e-2      // 0.005
+z = 5e3         // 500.0
 ```
 
 __Class constructors__:
@@ -120,11 +120,11 @@ In the example above the `\n` will be in the string as is not parsed as an
 escape sequence. Another example is the `fString` (Formatted String), which
 uses string interpolation for the construction of the string:
 
-```py
+```cpp
 name = "Jon"
 lang = "Moss"
 msg = f"{name} loves coding in {lang}"
-msg # "Jon loves coding in Moss"
+msg // "Jon loves coding in Moss"
 ```
 
 Custom prefixes can be used and this can be very useful mainly for output file
@@ -134,11 +134,11 @@ String can also be written on multiple lines using `"""`, this is the same
 as when using `"`, but there can be new lines, which will be then present
 in the string itself.
 
-```py
+```cpp
 help = """Program usage:
 \tmoss [interpret options] <input file> [program args]
 """
-help # "Program usage:\n\tmoss [interpret options] <input file> [program args]\n"
+help // "Program usage:\n\tmoss [interpret options] <input file> [program args]\n"
 ```
 
 __Class constructors__:
@@ -165,10 +165,10 @@ A special value is the `nil` value, which has type `NilType` and it's the only
 value that this type can have. Any variable that has not been assigned a
 value will be of this type, bit it can also be assigned to it.
 
-```py
-a       # nil
-b = nil # nil
-a == b  # true
+```cpp
+a       // nil
+b = nil // nil
+a == b  // true
 ```
 
 __Class constructors__:

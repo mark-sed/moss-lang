@@ -5,7 +5,7 @@ For this it is important to have Python installed as it is just embedded.
 
 Module `python` provides all needed resources.
 
-```py
+```cpp
 import python
 
 datetime = python.import("datetime")

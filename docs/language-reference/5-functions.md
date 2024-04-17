@@ -8,7 +8,7 @@ returns a value, if not specified then it returns a `nil`.
 * Functions can contain classes.
 * Functions can contain imports.
 
-```py
+```cpp
 fun foo(arg1, arg2) {
     return arg1 * arg2
 }
@@ -29,7 +29,7 @@ fun(arg1) = arg1 * 2
 Arguments can have their type specified. The type specification can be also
 a list of possible types.
 
-```py
+```cpp
 fun getID(x:MyClass) {
     return -1
 }
@@ -46,9 +46,9 @@ fun getID(x) {
 Arguments can also have default value. The default value does not set the
 argument type, that has to be set explicitly.
 
-```py
+```cpp
 fun bar(a:Int=4) {
-    # Code
+    // Code
 }
 ```
 
@@ -57,9 +57,9 @@ arguments, that have to have default value. Variable arguments will then be
 stored in a list. The type cannot be condition for variable arguments as it is
 always converted to a list:
 
-```py
+```cpp
 fun baz(a, b:Int, ... other, name="") {
-    # Code
+    // Code
 }
 ```
 
