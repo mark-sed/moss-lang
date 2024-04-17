@@ -22,6 +22,9 @@ include_directories(interface)
 set(SOURCES 
     frontend/scanner.cpp
     interface/errors.cpp
+    interface/logging.cpp
+    interface/clopts.cpp
+    interface/utils.cpp
 )
 
 # Targets

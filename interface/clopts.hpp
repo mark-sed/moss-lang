@@ -10,58 +10,41 @@
 #ifndef _CLOPTS_HPP_
 #define _CLOPTS_HPP_
 
-#include "errors.hpp"
-#include "moss.hpp"
 #include "args.hpp"
 #include <string>
-#include <iostream>
 
 namespace moss {
 
 /** Command line (terminal) options */
 namespace clopts {
 
-    args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");
-    args::Positional<std::string> file_name(arg_parser, "<file name>", "Input moss program to run");
-    args::ValueFlag<std::string> code(arg_parser, "<code>", "String of moss code to be run", {'e', "execute"});
-    
-    void parse_clopts(int argc, const char *argv[]) {
-        args::HelpFlag help(arg_parser, "help", "Display available options", {'h', "help"});
-        args::Flag version(arg_parser, "version", "Display the version of this program", {"version"});
+inline args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");
+inline args::Positional<std::string> file_name(arg_parser, "<file name>", "Input moss program to run");
+inline args::ValueFlag<std::string> code(arg_parser, "<code>", "String of moss code to be run", {'e', "execute"});
 
-        file_name.KickOut(true);
-        code.KickOut(true);
-        arg_parser.Prog(argv[0]);
-        const std::vector<std::string> args(argv + 1, argv + argc);
-        const auto prog_args_begin = std::begin(args);
-        const auto prog_args_end = std::end(args);
+#ifndef NDEBUG
+// Debugging
+inline args::ValueFlag<std::string> verbose1(arg_parser, "<csv file::method list>", "Enables prints for logs level 1", {"v", "v1", "verbose", "verbose1"});
+inline args::ValueFlag<std::string> verbose2(arg_parser, "<csv file::method list>", "Enables prints for logs level 2", {"vv", "v2", "verbose2"});
+inline args::ValueFlag<std::string> verbose3(arg_parser, "<csv file::method list>", "Enables prints for logs level 3", {"vvv", "v3", "verbose3"});
+inline args::ValueFlag<std::string> verbose4(arg_parser, "<csv file::method list>", "Enables prints for logs level 4", {"vvvv", "v4", "verbose4"});
+inline args::ValueFlag<std::string> verbose5(arg_parser, "<csv file::method list>", "Enables prints for logs level 5", {"vvvvv", "v5", "verbose5"});
+#endif
 
-        try {
-            arg_parser.ParseCLI(argc, argv);
-        }
-        catch (const args::Help&) {
-            // print help
-            std::cout << arg_parser;
-            // TODO: Handle this more elegantly
-            exit(0);
-        }
-        catch (const args::ParseError& e) {
-            // TODO: call errors
-            std::cerr << e.what() << std::endl;
-            exit(1);
-        }
+/**
+ * Interpreter argument parsing. It also accepts the program arguments
+ * @param argc Number of arguments including the program name
+ * @param argv Arguments including the program name
+ * @warning This function might terminate the program (after help, version or on error)
+ */
+void parse_clopts(int argc, const char *argv[]);
 
-        if(version) {
-            std::cout << "moss " << MOSS_VERSION << "\n";
-            exit(0);
-        }
+/** @return logging (verbose) level set by the user */
+int get_logging_level();
 
-        // TODO: In case of code being set, remove first arg (-e) and
-        // replace second one with empty string
-        /*for(auto ra = prog_args_begin; ra != prog_args_end; ++ra) {
-            std::cout << "Arg: " << *ra << "\n";
-        }*/
-    }
+/** @return value passed to set verbose level (should be a csv of file::method values) */
+std::string get_logging_list();
+
 }
 
 }
