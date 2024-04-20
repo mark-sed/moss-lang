@@ -11,6 +11,7 @@
 #define _ERRORS_HPP_
 
 #include "os_interface.hpp"
+#include "scanner.hpp"
 #include <iostream>
 #include <cstddef>
 #include <cstdlib>
@@ -100,7 +101,7 @@ namespace error {
      * @param msg Info message to be printed for the user
      * @param exit If true (default), then after the message is printed program exits with code
      */
-    void error(error::ErrorCode code, const char *msg, bool exit=true);
+    void error(error::ErrorCode code, const char *msg, SourceFile *src_f=nullptr, bool exit=true);
 
     /**
      * Prints warning to std::cerr

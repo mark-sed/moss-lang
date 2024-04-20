@@ -12,7 +12,7 @@ std::istream *SourceFile::get_new_stream() {
         case SourceFile::SourceType::FILE: {
             std::ifstream *f = new std::ifstream(this->path_or_code);
             if(f->fail()){
-                error::error(error::ErrorCode::FILE_ACCESS, std::strerror(errno), true);
+                error::error(error::ErrorCode::FILE_ACCESS, std::strerror(errno), this, true);
             }
             return f;
         }
@@ -22,7 +22,7 @@ std::istream *SourceFile::get_new_stream() {
         case SourceFile::SourceType::STDIN: return &std::cin;
         case SourceFile::SourceType::INTERACTIVE: return &std::cin; // FIXME: this should be reading input
     }
-    error::error(error::ErrorCode::INTERNAL, "Unknown input format", true);
+    error::error(error::ErrorCode::INTERNAL, "Unknown input format", this);
     return nullptr;
 }
 

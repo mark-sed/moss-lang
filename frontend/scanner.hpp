@@ -252,6 +252,10 @@ public:
     std::string get_path_or_code() { return this->path_or_code; }
     SourceType get_type() { return this->type; }
     std::istream *get_new_stream();
+    std::string get_name() {
+        if (type == SourceType::STRING) return "<one-liner>";
+        return path_or_code;
+    }
 };
 
 

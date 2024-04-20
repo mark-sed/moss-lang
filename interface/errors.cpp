@@ -1,4 +1,5 @@
 #include "errors.hpp"
+#include "scanner.hpp"
 #include "logging.hpp"
 #include <iostream>
 #include <cstddef>
@@ -26,7 +27,7 @@ namespace colors {
     const char * LIGHT_CYAN="\033[1;36m";
     const char * LIGHT_GRAY="\033[0;37m";
     const char * WHITE="\033[1;37m";
-    const char * RESET = "\033[39m";
+    const char * RESET = "\033[0m";
 }
 }
 }
@@ -46,10 +47,14 @@ const char *error::get_code_name(error::ErrorCode code){
     return "Unknown";
 }
 
-void error::error(error::ErrorCode code, const char *msg, bool exit){
-    std::cerr << error::colors::colorize(error::colors::RED) << "error" << error::colors::reset() 
-            << " (" << error::get_code_name(code); 
-    std::cerr << "): " << msg << "." << std::endl;
+void error::error(error::ErrorCode code, const char *msg, SourceFile *src_f, bool exit){
+    std::cerr << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
+            << error::colors::colorize(error::colors::LIGHT_RED) << (exit ? "fatal error" : "error") << error::colors::reset() 
+            << " (" << error::get_code_name(code) << "): ";
+    if (src_f) {
+        std::cerr << src_f->get_name() << ": ";
+    }
+    std::cerr << msg << "." << std::endl;
     if(exit){
         error::exit(code);
     }
