@@ -36,5 +36,11 @@ int main(int argc, const char *argv[]) {
     auto main_file = get_input();
     Scanner scanner(main_file);
 
+    Token *t = scanner.next_nonws_token();
+    while(t->get_type() != TokenType::END_OF_FILE) {
+        std::cout << t->get_type() << " ";
+        t = scanner.next_nonws_token();
+    }
+
     return 0;
 }

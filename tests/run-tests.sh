@@ -5,8 +5,7 @@
 MOSS="moss"
 OUTP_ERR=/tmp/.moss_test_err.txt
 OUTP_STD=/tmp/.moss_test_std.txt
-TEST_DIR=""
-WRKDIR="./"
+TEST_DIR="" # Directory where the test are located
 POSITIONAL_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -17,11 +16,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         -moss)
             MOSS="$2"
-            shift
-            shift
-            ;;
-        -dir)
-            WRKDIR="$2"
             shift
             shift
             ;;

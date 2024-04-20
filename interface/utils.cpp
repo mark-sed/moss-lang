@@ -12,6 +12,7 @@ std::set<std::string> utils::split_csv_set(std::string csv, char delim) {
     std::string value;
     std::stringstream csv_stream(csv);
     while(std::getline(csv_stream, value, delim)){
+        utils::trim(value);
         splitted.insert(value);
     }
     return splitted;
@@ -22,6 +23,7 @@ std::vector<std::string> utils::split_csv(std::string csv, char delim) {
     std::string value;
     std::stringstream csv_stream(csv);
     while(std::getline(csv_stream, value, delim)){
+        utils::trim(value);
         splitted.push_back(value);
     }
     return splitted;

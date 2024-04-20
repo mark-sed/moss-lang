@@ -11,6 +11,7 @@
 #define _OS_INTERFACE_HPP_
 
 #include <cassert>
+#include <iostream>
 
 namespace moss {
 
@@ -18,13 +19,36 @@ namespace moss {
     #include <unistd.h>
 
     /** Returns true is stdin is read from terminal (not redirect) */
-    bool is_stdin_atty() {
+    inline bool is_stdin_atty() {
         return isatty(STDIN_FILENO);
+    }
+
+    /**
+     * Checks if stderr is redirected to a file
+     * @return true if stderr is redirected
+     */ 
+    inline bool is_stderr_atty() {
+        static bool initialized(false);
+        static bool is_redir;
+        if (!initialized) {
+            initialized = true;
+            is_redir = ttyname(fileno(stderr)) == nullptr;
+        }
+        return is_redir;
     }
 #else
     /** Returns true is stdin is read from terminal (not redirect) */
-    bool is_stdin_atty() {
+    inline bool is_stdin_atty() {
         assert(false && "Check for stdin redirection on non-linux machine is not yet implemented");
+        return false; // This way interactive mode will be off
+    }
+
+    /**
+     * Checks if stderr is redirected to a file
+     * @return true if stderr is redirected
+     */ 
+    inline bool is_stderr_atty() {
+        assert(false && "Check for stderr redirection on non-linux machine is not yet implemented");
         return false; // This way interactive mode will be off
     }
 #endif

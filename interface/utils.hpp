@@ -13,6 +13,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <algorithm>
 
 namespace utils {
 
@@ -30,6 +31,29 @@ std::set<std::string> split_csv_set(std::string csv, char delim=',');
  * @param text Text to sanitize
  */ 
 std::string sanitize(const std::string &text);
+
+/** Trim whitespace from the left of the string */
+inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+}
+
+/** Trim whitespace from the right of the string */
+inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
+
+inline void trim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
 
 }
 

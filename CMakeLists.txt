@@ -42,6 +42,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Test source files
     set(TEST_SRCS
         tests/unittests/test_clopts.cpp
+        tests/unittests/test_scanner.cpp
     )
 
     # Enable gtest
