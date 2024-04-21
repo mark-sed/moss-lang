@@ -39,7 +39,12 @@ int main(int argc, const char *argv[]) {
 
     Token *t = scanner.next_nonws_token();
     while(t->get_type() != TokenType::END_OF_FILE) {
-        outs << t->get_type() << " ";
+        /*if(t->get_type() == TokenType::ERROR_TOKEN) {
+            outs << "[" << dynamic_cast<ErrorToken*>(t)->get_report() << "] ";
+        }
+        else {*/
+            outs << *t << " ";
+        //}
         t = scanner.next_nonws_token();
     }
 

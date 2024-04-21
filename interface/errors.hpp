@@ -19,11 +19,22 @@
 
 namespace moss {
     
+class SourceFile;
+
 /**
  * Namespace holding resources for error and warning handling
  */
 namespace error {
     
+    
+    using msgtype = const char *;
+    namespace msgs {
+        inline msgtype UNKNOWN_SYMBOL = "unknown symbol '%s'";
+        inline msgtype FLOAT_NON_DEC_BASE = "float can be only of base 10";
+        inline msgtype INCORRECT_INT_LITERAL = "invalid %s number literal";
+        inline msgtype INCORRECT_FLOAT_LITERAL = "invalid float literal";
+    }
+
     /**
      * Namespace for terminal colorization
      */ 

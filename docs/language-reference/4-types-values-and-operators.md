@@ -60,6 +60,7 @@ operators). Floats can also be written in a scientific format.
 x = -3.1415925
 y = 0.5e-2      // 0.005
 z = 5e3         // 500.0
+j = 0.e+3       // 0.0
 ```
 
 __Class constructors__:

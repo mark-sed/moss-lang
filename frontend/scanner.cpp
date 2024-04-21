@@ -91,6 +91,11 @@ int Scanner::peek_nonutf() {
     return p.c;
 }
 
+void Scanner::unput() {
+    this->curr_byte--;
+    this->len--;
+}
+
 Token *Scanner::tokenize(ustring value, TokenType type) {
     Token *t = new Token(value, type, SourceInfo(file, this->line, this->line, this->col, this->col+this->len));
     this->col += this->len;
@@ -99,6 +104,18 @@ Token *Scanner::tokenize(ustring value, TokenType type) {
 
 Token *Scanner::tokenize(int value, TokenType type) {
     return tokenize(ustring(1, value), type);
+}
+
+template<typename ... Args>
+ErrorToken *Scanner::err_tokenize(ustring value, ustring note, error::msgtype msg, Args ... args) {
+    ErrorToken *t = new ErrorToken(value, SourceInfo(file, this->line, this->line, this->col, this->col+this->len), note, msg, args ...);
+    this->col += this->len;
+    return t;
+}
+
+template<typename ... Args>
+ErrorToken *Scanner::err_tokenize(int value, ustring note, error::msgtype msg, Args ... args) {
+    return err_tokenize(ustring(1, value), note, msg, args ...);
 }
 
 bool Scanner::check_and_advance(char c) {
@@ -131,8 +148,136 @@ Token *Scanner::parse_id_or_keyword(ustring start) {
     return tokenize(id_str, TokenType::ID);
 }
 
+ustring Scanner::read_incorrect(ustring start) {
+    ustring val = start;
+    auto next_c = peek();
+    while (is_part_of_id(next_c)) {
+        val += next_c.to_str();
+        advance();
+        next_c = peek();
+    }
+    return val;
+}
+
 Token *Scanner::parse_id_or_keyword(int start) {
     return parse_id_or_keyword(ustring(1, start));
+}
+
+static bool is_digit(int c, int base) {
+    if (base == 10) return std::isdigit(c);
+    if (base == 2) return c == '0' || c == '1';
+    if (base == 8) return c >= '0' && c < '8';
+    if (base == 16) return std::isxdigit(c);
+    assert(false && "Unknown base");
+    return false;
+}
+
+// Returns float or int 
+// int is always converted to base 10
+// float might be in scientific notation
+Token *Scanner::parse_number(int start) {
+    ustring number_str(1, start);
+    int next_c = peek_nonutf();
+    int base = 10;
+    // Check if the number is specific base 
+    if (start == '0') {
+        if (next_c == 'x') {
+            base = 16;
+            advance();
+            next_c = peek_nonutf();
+        }
+        else if (next_c == 'q') {
+            base = 8;
+            advance();
+            next_c = peek_nonutf();
+        }
+        else if (next_c == 'b') {
+            base = 2;
+            advance();
+            next_c = peek_nonutf();
+        }
+    }
+    while (is_digit(next_c, base)) {
+        number_str += ustring(1, next_c);
+        advance();
+        next_c = peek_nonutf();
+    }
+    if (is_part_of_id(next_c) && next_c != 'e' && next_c != 'E') {
+        // number followed by character or number that is outside of its base
+        number_str = read_incorrect(number_str);
+        if (base == 2)
+            return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "binary");
+        if (base == 8)
+            return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "octal");
+        if (base == 16)
+            return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "hexadecimal");
+        return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "decimal");
+    }
+
+    if (next_c == '.') {
+        // Float parsing
+        number_str += advance().to_str();
+        // This might be range
+        next_c = peek_nonutf();
+        if (next_c == '.') {
+            // Range "number.."
+            number_str.pop_back();
+            unput();
+        }
+        else {
+            // Float
+            if (base != 10) {
+                number_str = read_incorrect(number_str);
+                return err_tokenize(number_str, "If you want to access object member use parenthesis", error::msgs::FLOAT_NON_DEC_BASE, "");
+            }
+            while (std::isdigit(next_c)) {
+                number_str += ustring(1, next_c);
+                advance();
+                next_c = peek_nonutf();
+            }
+            if (next_c != 'e' && next_c != 'E')
+                return tokenize(number_str, TokenType::FLOAT);
+        }
+    }
+    
+    if (next_c == 'e' || next_c == 'E') {
+        // Float in scientific notation
+        number_str += advance().to_str();
+        next_c = peek_nonutf();
+        bool sign_without_digit = false;
+        if (next_c == '-' || next_c == '+') {
+            number_str += advance().to_str();
+            next_c = peek_nonutf();
+            sign_without_digit = true;
+        }
+        while (std::isdigit(next_c)) {
+            sign_without_digit = false;
+            number_str += ustring(1, next_c);
+            advance();
+            next_c = peek_nonutf();
+        }
+        if (sign_without_digit) {
+            number_str = read_incorrect(number_str);
+            return err_tokenize(number_str, "Dangling sign for float exponent", error::msgs::INCORRECT_FLOAT_LITERAL, "");
+        }
+        if (is_part_of_id(next_c)) {
+            number_str = read_incorrect(number_str);
+            return err_tokenize(number_str, "Float exponent has to be a whole decimal number", error::msgs::INCORRECT_FLOAT_LITERAL, "");
+        }
+        // Check if exponent has a value after it
+        if (number_str[number_str.size()-1] == 'e' || number_str[number_str.size()-1] == 'E') {
+            return err_tokenize(number_str, "Missing exponent value", error::msgs::INCORRECT_FLOAT_LITERAL, "");
+        }
+        // No need to check base since e is hexdigit
+        assert(base == 10 && "somehow scientific double is not base 10");
+        return tokenize(number_str, TokenType::FLOAT);
+    }
+
+    if (base != 10) {
+        long num_long = std::stoul(number_str, nullptr, base);
+        return tokenize(std::to_string(num_long), TokenType::INT);
+    }
+    return tokenize(number_str, TokenType::INT);
 }
 
 Token *Scanner::next_nonws_token() {
@@ -158,18 +303,22 @@ Token *Scanner::next_token() {
         int c = utf8c.c;
 
         // Consume all whitespace as one
-        if(std::isspace(c) && c != '\n') {
+        if (std::isspace(c) && c != '\n') {
             ustring space_str(1, c);
             c = peek_nonutf();
-            while(std::isspace(c) && c != '\n') {
+            while (std::isspace(c) && c != '\n') {
                 space_str.append(1, advance().c);
                 c = peek_nonutf();
             }
             return tokenize(space_str, TokenType::WS);
         }
         // ID or keyword
-        if(std::isalnum(c) || c == '_') {
+        if (std::isalpha(c) || c == '_') {
             return parse_id_or_keyword(c);
+        }
+        // int or float
+        if (std::isdigit(c)) {
+            return parse_number(c);
         }
 
         switch (c) {
@@ -263,8 +412,7 @@ Token *Scanner::next_token() {
                 if (check_and_advance('='))
                     return tokenize("!=", TokenType::NEQ);
                 // ! is not in the language
-                // TODO: Recommend "did you mean !=?" or "expected"
-                return tokenize(c, TokenType::UNKNOWN);
+                return err_tokenize(c, "Negation is done with 'not' or did you mean '!='?", error::msgs::UNKNOWN_SYMBOL, "!");
             }
             case '>': {
                 if (check_and_advance('='))
@@ -274,14 +422,12 @@ Token *Scanner::next_token() {
             case '&': {
                 if (check_and_advance('&'))
                     return tokenize("&&", TokenType::SHORT_C_AND);
-                // TODO: Recommend "did you mean &&" or "expected"
-                return tokenize(c, TokenType::UNKNOWN);
+                return err_tokenize(c, "Bitwise and is done with 'and' or did you mean '&&'?", error::msgs::UNKNOWN_SYMBOL, "&");
             }
             case '|': {
                 if (check_and_advance('|'))
                     return tokenize("||", TokenType::SHORT_C_OR);
-                // TODO: Recommend "did you mean ||" or "expected"
-                return tokenize(c, TokenType::UNKNOWN);
+                return err_tokenize(c, "Bitwise or is done with 'or' or did you mean '||'?", error::msgs::UNKNOWN_SYMBOL, "!");
             }
 
             //case '': return tokenize(c, TokenType::);
@@ -289,7 +435,7 @@ Token *Scanner::next_token() {
         }
 
         // Unknown token
-        return tokenize(c, TokenType::UNKNOWN);
+        return err_tokenize(c, "", error::msgs::UNKNOWN_SYMBOL, ustring(1, c).c_str());
     }
 }
 

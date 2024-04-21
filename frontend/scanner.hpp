@@ -12,14 +12,25 @@
 
 #include "os_interface.hpp"
 #include "utils.hpp"
+#include "errors.hpp"
 #include <string>
 #include <utility>
 #include <fstream>
 #include <cassert>
 #include <istream>
+#include <cstdio>
 #include <unordered_map>
 
+#include <memory>
+#include <initializer_list>
+
 namespace moss {
+
+namespace error {
+    using msgtype = const char *;
+    namespace msgs {
+    }
+}
 
 /** Scanner token types */
 enum class TokenType {
@@ -112,7 +123,7 @@ enum class TokenType {
     SUPER,  ///< super
     THIS,   ///< this
 
-    INT,        ///< integer value
+    INT,        ///< decimal integer value
     FLOAT,      ///< floating point value
     STRING,     ///< string value
     XSTRING,    ///< xstring value (rstring, fstring, nstring...)
@@ -121,7 +132,7 @@ enum class TokenType {
 
     END_OF_FILE, ///< end of file or input
     WS,          ///< whitespace
-    UNKNOWN      ///< incorrect token
+    ERROR_TOKEN  ///< incorrect token (error)
     // Not used:
     // !, &, |, `, ', #, >> 
 };
@@ -214,7 +225,7 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::ID: os << "ID"; break;
         case TokenType::END_OF_FILE: os << "END_OF_FILE"; break;
         case TokenType::WS: os << "WS"; break;
-        case TokenType::UNKNOWN: os << "UNKNOWN"; break;
+        case TokenType::ERROR_TOKEN: os << "ERROR_TOKEN"; break;
         default: {
             assert(false && "Missing token type to string");
             os << "MISSING";
@@ -284,19 +295,55 @@ public:
 
 /** Object represents a scanner token */
 class Token {
-private:
+protected:
     ustring value;
     TokenType type;
     SourceInfo src_info;
 public:
     Token(ustring value, TokenType type, SourceInfo src_info) : value(value), type(type), src_info(src_info) {}
+    ~Token() {}
 
     ustring get_value() { return this->value; }
     TokenType get_type() { return this->type; }
     SourceInfo get_src_info() { return this->src_info; }
 
-    friend std::ostream& operator<< (std::ostream& os, Token &t) {
-        os << "(" << t.type << ")\"" << utils::sanitize(t.value) << "\"";
+    virtual std::ostream& debug(std::ostream& os) const {
+        os << "(" << type << ")\"" << utils::sanitize(value) << "\"";
+        return os;
+    }
+};
+
+inline std::ostream& operator<< (std::ostream& os, Token &t) {
+    return t.debug(os);
+}
+
+/**
+ * @brief Token that represents syntactic error
+ * 
+ * Syntactic error has to be accepted and exception has to be raised from it.
+ * Because of this there is this special kind of token, which holds the token
+ * and message to display with the exception. There is also a note, which
+ * might recommend how to fix this error. 
+ */
+class ErrorToken : public Token {
+private:
+    ustring note;
+    ustring report;
+public:
+    template<typename ... Args>
+    ErrorToken(ustring value, SourceInfo src_info, ustring note, error::msgtype msg, Args ... args)
+        : Token(value, TokenType::ERROR_TOKEN, src_info), note(note) {
+        report = utils::formatv(msg, args ...);
+    }
+
+    ustring get_report() const {
+        if (note.empty())
+            return report;
+        return report + ". " + note;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "(" << type << ")[\"" << get_report() << "\"]";
         return os;
     }
 };
@@ -344,17 +391,24 @@ private:
 
     Token *tokenize(ustring value, TokenType type);
     Token *tokenize(int value, TokenType type);
+    template<typename ... Args>
+    ErrorToken *err_tokenize(ustring value, ustring note, error::msgtype msg, Args ... args);
+    template<typename ... Args>
+    ErrorToken *err_tokenize(int value, ustring note, error::msgtype msg, Args ... args);
 
     bool check_and_advance(char c);
+    ustring read_incorrect(ustring start);
 
     Token *parse_id_or_keyword(ustring start);
     Token *parse_id_or_keyword(int start);
+    Token *parse_number(int start);
 
     ustring curr_line;
     unsigned curr_byte;
     UTF8Char advance();
     UTF8Char peek();
     int peek_nonutf();
+    void unput();
 public:
     Scanner(SourceFile &file) : file(file), line(0), col(0), len(0), curr_line(), curr_byte(0) {
         this->stream = file.get_new_stream();

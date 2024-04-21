@@ -14,6 +14,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <memory>
 #include <algorithm>
 
 namespace utils {
@@ -46,7 +47,7 @@ inline void rtrim(ustring &s) {
         return !std::isspace(ch);
     }).base(), s.end());
 }
-
+ /** Trim whitespace from string on both sides */
 inline void trim(ustring &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
         return !std::isspace(ch);
@@ -54,6 +55,24 @@ inline void trim(ustring &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
         return !std::isspace(ch);
     }).base(), s.end());
+}
+
+/**
+ * Formats message using (s)printf style.
+ * @warning this function cannot be called with string as it will mess up the output. Use c_str(). 
+ */
+template<typename ... Args>
+inline ustring formatv(const ustring& format, Args ... args) {
+    int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1;
+    if( size_s <= 0 ){
+        // TODO: Call error
+        assert(false);
+        return "[ERROR]";
+    }
+    auto size = static_cast<size_t>(size_s);
+    std::unique_ptr<char[]> buf(new char[ size ]);
+    std::snprintf(buf.get(), size, format.c_str(), args ...);
+    return std::string(buf.get(), buf.get() + size - 1);
 }
 
 }
