@@ -11,11 +11,13 @@
 #define _SCANNER_HPP_
 
 #include "os_interface.hpp"
+#include "utils.hpp"
 #include <string>
 #include <utility>
 #include <fstream>
 #include <cassert>
 #include <istream>
+#include <unordered_map>
 
 namespace moss {
 
@@ -222,8 +224,12 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
 }
 
 /** 
+ * @brief Representation of source file
+ * 
  * Holds information about source "file".
  * It does not have to be physical file, it can be a string of code or stdin.
+ * This provides simple interface to get the file type, name and stream to
+ * read it.
  */
 class SourceFile {
 public:
@@ -290,11 +296,43 @@ public:
     SourceInfo get_src_info() { return this->src_info; }
 
     friend std::ostream& operator<< (std::ostream& os, Token &t) {
-        os << "(" << t.type << ")\"" << t.value << "\"";
+        os << "(" << t.type << ")\"" << utils::sanitize(t.value) << "\"";
         return os;
     }
 };
 
+/** 
+ * @brief Special object that represents a token value
+ * 
+ * Tokens and values can be a character (int), but also
+ * utf-8 character which is better to be saved as string.
+ * It would be possible to use only string, but because of speedup
+ * it is handled this way. This allows to not create string for
+ * one character and also allows to check if value is in fact utf-8
+ */
+struct UTF8Char {
+    int c;
+    ustring str;
+    bool is_utf;
+
+    UTF8Char(int c) : c(c), str(), is_utf(false) {}
+    UTF8Char(ustring str) : c(-1), str(str), is_utf(true) {}
+
+    /** @return this value as string (might or might not be utf-8) */
+    inline ustring to_str() {
+        if (is_utf) return str;
+        return std::string(1, c);
+    }
+};
+
+/**
+ * @brief Syntactic analyzer and tokenizer for moss language
+ * 
+ * Scanner works always with one file/module, this might be input file passed
+ * by the user or just string of moss code or stdin. Scanner does not care for
+ * this as this is handled by SourceFile class that provides the stream to
+ * read from.
+ */
 class Scanner {
 private:
     SourceFile &file;
@@ -302,25 +340,29 @@ private:
     unsigned line;
     unsigned col;
     unsigned len;
+    static const std::unordered_map<ustring, TokenType> KEYWORDS;
 
     Token *tokenize(ustring value, TokenType type);
     Token *tokenize(int value, TokenType type);
 
     bool check_and_advance(char c);
 
-    Token *parse_id_or_keyword(int first_letter);
+    Token *parse_id_or_keyword(ustring start);
+    Token *parse_id_or_keyword(int start);
 
-    inline int advance() { 
-        ++this->len;
-        return stream->get();
-    }
-    inline int peek() { return stream->peek(); }
+    ustring curr_line;
+    unsigned curr_byte;
+    UTF8Char advance();
+    UTF8Char peek();
+    int peek_nonutf();
 public:
-    Scanner(SourceFile &file) : file(file), line(1), col(1), len(0) {
+    Scanner(SourceFile &file) : file(file), line(0), col(0), len(0), curr_line(), curr_byte(0) {
         this->stream = file.get_new_stream();
     }
 
+    /** @return Next token from the current file, including whitespace token */
     Token *next_token();
+    /** @return Next token from the current file, that is not a whitespace token*/
     Token *next_nonws_token();
 };
 

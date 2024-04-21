@@ -1,5 +1,6 @@
-#include "scanner.hpp"
 #include <gtest/gtest.h>
+#include "scanner.hpp"
+#include "os_interface.hpp"
 #include <sstream>
 #include <string>
 
@@ -53,7 +54,23 @@ TEST(Scanner, OperatorTokens){
 
 /** Tokens that are keyword */
 TEST(Scanner, KeywordTokens){
-    // TODO
+    ustring code = "and  for  switch  case  try  in  import  as  if  else  while  catch  or  not  xor  do  finally  new  return  enum  class  assert  fun  nil  true  false  super  this  break  continue  raise  space";
+    ustring expected = "AND FOR SWITCH CASE TRY IN IMPORT AS IF ELSE WHILE CATCH OR NOT XOR DO FINALLY NEW RETURN ENUM CLASS ASSERT FUN NIL TRUE FALSE SUPER THIS BREAK CONTINUE RAISE SPACE ";
+
+    std::stringstream ss;
+    run_tokenizer(ss, code);
+
+    EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+}
+
+TEST(Scanner, UnicodeTokens) {
+    ustring code = "🍣sůšo = řeka";
+    ustring expected = "ID SET ID ";
+
+    std::stringstream ss;
+    run_tokenizer(ss, code);
+
+    EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
 }
 
 }

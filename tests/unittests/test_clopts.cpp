@@ -1,6 +1,5 @@
-#include "clopts.hpp"
-#include "os_interface.hpp"
 #include <gtest/gtest.h>
+#include "clopts.hpp"
 #include <sstream>
 #include <regex>
 #include <initializer_list>
