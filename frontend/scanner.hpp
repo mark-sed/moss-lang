@@ -10,6 +10,7 @@
 #ifndef _SCANNER_HPP_
 #define _SCANNER_HPP_
 
+#include "os_interface.hpp"
 #include <string>
 #include <utility>
 #include <fstream>
@@ -234,10 +235,10 @@ public:
         INTERACTIVE
     };
 private:
-    std::string path_or_code;
+    ustring path_or_code;
     SourceType type;
 public:
-    SourceFile(std::string path_or_code, SourceType src_type) : path_or_code(path_or_code), type(src_type) {
+    SourceFile(ustring path_or_code, SourceType src_type) : path_or_code(path_or_code), type(src_type) {
         assert(src_type != SourceType::STDIN && "Path set, but type is STDIN");
         assert(src_type != SourceType::INTERACTIVE && "Path set, but type is INTERACTIVE");
     }
@@ -249,10 +250,10 @@ public:
             this->path_or_code = "<stdin>";
     }
 
-    std::string get_path_or_code() { return this->path_or_code; }
+    ustring get_path_or_code() { return this->path_or_code; }
     SourceType get_type() { return this->type; }
     std::istream *get_new_stream();
-    std::string get_name() {
+    ustring get_name() {
         if (type == SourceType::STRING) return "<one-liner>";
         return path_or_code;
     }
@@ -278,13 +279,13 @@ public:
 /** Object represents a scanner token */
 class Token {
 private:
-    std::string value;
+    ustring value;
     TokenType type;
     SourceInfo src_info;
 public:
-    Token(std::string value, TokenType type, SourceInfo src_info) : value(value), type(type), src_info(src_info) {}
+    Token(ustring value, TokenType type, SourceInfo src_info) : value(value), type(type), src_info(src_info) {}
 
-    std::string get_value() { return this->value; }
+    ustring get_value() { return this->value; }
     TokenType get_type() { return this->type; }
     SourceInfo get_src_info() { return this->src_info; }
 
@@ -302,12 +303,17 @@ private:
     unsigned col;
     unsigned len;
 
-    Token *tokenize(std::string value, TokenType type);
+    Token *tokenize(ustring value, TokenType type);
     Token *tokenize(int value, TokenType type);
 
     bool check_and_advance(char c);
 
-    inline int advance() { ++this->len; return stream->get(); }
+    Token *parse_id_or_keyword(int first_letter);
+
+    inline int advance() { 
+        ++this->len;
+        return stream->get();
+    }
     inline int peek() { return stream->peek(); }
 public:
     Scanner(SourceFile &file) : file(file), line(1), col(1), len(0) {

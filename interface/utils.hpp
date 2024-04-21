@@ -10,6 +10,7 @@
 #ifndef _UTILS_HPP_
 #define _UTILS_HPP_
 
+#include "os_interface.hpp"
 #include <string>
 #include <set>
 #include <vector>
@@ -23,30 +24,30 @@ namespace utils {
  * @param delim CSV delimiter. Comma by default.
  * @return Vector of these value
  */
-std::vector<std::string> split_csv(std::string csv, char delim=','); 
-std::set<std::string> split_csv_set(std::string csv, char delim=',');
+std::vector<ustring> split_csv(ustring csv, char delim=','); 
+std::set<ustring> split_csv_set(ustring csv, char delim=',');
 
 /**
  * Sanitizes text by removing escape characters with their written out form
  * @param text Text to sanitize
  */ 
-std::string sanitize(const std::string &text);
+ustring sanitize(const ustring &text);
 
 /** Trim whitespace from the left of the string */
-inline void ltrim(std::string &s) {
+inline void ltrim(ustring &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
         return !std::isspace(ch);
     }));
 }
 
 /** Trim whitespace from the right of the string */
-inline void rtrim(std::string &s) {
+inline void rtrim(ustring &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
         return !std::isspace(ch);
     }).base(), s.end());
 }
 
-inline void trim(std::string &s) {
+inline void trim(ustring &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
         return !std::isspace(ch);
     }));

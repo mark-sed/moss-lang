@@ -26,14 +26,14 @@ std::istream *SourceFile::get_new_stream() {
     return nullptr;
 }
 
-Token *Scanner::tokenize(std::string value, TokenType type) {
+Token *Scanner::tokenize(ustring value, TokenType type) {
     Token *t = new Token(value, type, SourceInfo(file, this->line, this->line, this->col, this->col+this->len));
     this->col += this->len;
     return t;
 }
 
 Token *Scanner::tokenize(int value, TokenType type) {
-    return tokenize(std::string(1, value), type);
+    return tokenize(ustring(1, value), type);
 }
 
 bool Scanner::check_and_advance(char c) {
@@ -42,6 +42,10 @@ bool Scanner::check_and_advance(char c) {
         return true;
     }
     return false;
+}
+
+Token *Scanner::parse_id_or_keyword(int first_letter) {
+    ustring space_str(1, first_letter);
 }
 
 Token *Scanner::next_nonws_token() {
@@ -60,7 +64,7 @@ Token *Scanner::next_token() {
     int c = this->advance();
     // Consume all whitespace as one
     if(std::isspace(c) && c != '\n') {
-        std::string space_str(1, c);
+        ustring space_str(1, c);
         c = peek();
         while(std::isspace(c) && c != '\n') {
             space_str.append(1, advance());

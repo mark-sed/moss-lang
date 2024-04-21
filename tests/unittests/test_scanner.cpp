@@ -9,8 +9,8 @@ using namespace moss;
 
 /** Test correct tokenization */
 TEST(Scanner, CharacterTokens){
-    std::string code = "( )  {}[];\n,$ ?\\~.. . : :: @ @!";
-    std::string expected = "LEFT_PAREN WS RIGHT_PAREN WS LEFT_CURLY RIGHT_CURLY LEFT_SQUARE RIGHT_SQUARE END END_NL COMMA NON_LOCAL WS QUESTION_M BACK_SLASH SILENT RANGE WS DOT WS COLON WS SCOPE WS OUT_ANNOTATION WS IN_ANNOTATION ";
+    ustring code = "( )  {}[];\n,$ ?\\~.. . : :: @ @!";
+    ustring expected = "LEFT_PAREN WS RIGHT_PAREN WS LEFT_CURLY RIGHT_CURLY LEFT_SQUARE RIGHT_SQUARE END END_NL COMMA NON_LOCAL WS QUESTION_M BACK_SLASH SILENT RANGE WS DOT WS COLON WS SCOPE WS OUT_ANNOTATION WS IN_ANNOTATION ";
 
     SourceFile sf(code, SourceFile::SourceType::STRING);
     Scanner scanner(sf);
@@ -28,7 +28,7 @@ TEST(Scanner, CharacterTokens){
 }
 
 // Runs tokenization without WS outputting the type to stringstream with space as a separator
-static void run_tokenizer(std::stringstream &ss, std::string code) {
+static void run_tokenizer(std::stringstream &ss, ustring code) {
     SourceFile sf(code, SourceFile::SourceType::STRING);
     Scanner scanner(sf);
     Token *t = scanner.next_nonws_token();
@@ -42,8 +42,8 @@ static void run_tokenizer(std::stringstream &ss, std::string code) {
 
 /** Test for operators tokenization */
 TEST(Scanner, OperatorTokens){
-    std::string code = "++ ++= + += ^ ^= - -= / /= * *= % %=  = == != > >= < <= << && ||";
-    std::string expected = "CONCAT SET_CONCAT PLUS SET_PLUS EXP SET_EXP MINUS SET_MINUS DIV SET_DIV MUL SET_MUL MOD SET_MOD SET EQ NEQ BT BEQ LT LEQ UNWRAP SHORT_C_AND SHORT_C_OR ";
+    ustring code = "++ ++= + += ^ ^= - -= / /= * *= % %=  = == != > >= < <= << && ||";
+    ustring expected = "CONCAT SET_CONCAT PLUS SET_PLUS EXP SET_EXP MINUS SET_MINUS DIV SET_DIV MUL SET_MUL MOD SET_MOD SET EQ NEQ BT BEQ LT LEQ UNWRAP SHORT_C_AND SHORT_C_OR ";
 
     std::stringstream ss;
     run_tokenizer(ss, code);

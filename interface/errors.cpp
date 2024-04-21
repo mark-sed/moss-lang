@@ -48,13 +48,13 @@ const char *error::get_code_name(error::ErrorCode code){
 }
 
 void error::error(error::ErrorCode code, const char *msg, SourceFile *src_f, bool exit){
-    std::cerr << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
+    errs << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
             << error::colors::colorize(error::colors::LIGHT_RED) << (exit ? "fatal error" : "error") << error::colors::reset() 
             << " (" << error::get_code_name(code) << "): ";
     if (src_f) {
-        std::cerr << src_f->get_name() << ": ";
+        errs << src_f->get_name() << ": ";
     }
-    std::cerr << msg << "." << std::endl;
+    errs << msg << "." << std::endl;
     if(exit){
         error::exit(code);
     }
@@ -62,7 +62,7 @@ void error::error(error::ErrorCode code, const char *msg, SourceFile *src_f, boo
 
 void error::warning(const char *msg) {
     /* TODO: Check if no-warn is set */
-    std::cerr << colors::colorize(colors::PURPLE) << "warning: " << colors::reset() << msg << "." << std::endl;
+    errs << colors::colorize(colors::PURPLE) << "warning: " << colors::reset() << msg << "." << std::endl;
 }
 
 [[noreturn]] void error::exit(error::ErrorCode code) {

@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "os_interface.hpp"
 #include <algorithm>
 #include <sstream>
 #include <string>
@@ -7,9 +8,9 @@
 
 using namespace utils;
 
-std::set<std::string> utils::split_csv_set(std::string csv, char delim) {
-    std::set<std::string> splitted;
-    std::string value;
+std::set<ustring> utils::split_csv_set(ustring csv, char delim) {
+    std::set<ustring> splitted;
+    ustring value;
     std::stringstream csv_stream(csv);
     while(std::getline(csv_stream, value, delim)){
         utils::trim(value);
@@ -18,9 +19,9 @@ std::set<std::string> utils::split_csv_set(std::string csv, char delim) {
     return splitted;
 }
 
-std::vector<std::string> utils::split_csv(std::string csv, char delim) {
-    std::vector<std::string> splitted;
-    std::string value;
+std::vector<ustring> utils::split_csv(ustring csv, char delim) {
+    std::vector<ustring> splitted;
+    ustring value;
     std::stringstream csv_stream(csv);
     while(std::getline(csv_stream, value, delim)){
         utils::trim(value);
@@ -29,11 +30,11 @@ std::vector<std::string> utils::split_csv(std::string csv, char delim) {
     return splitted;
 }
 
-std::string utils::sanitize(const std::string &text) {
-    const std::string ESC_CHARS("\t\n\v\a\b\f\r\\");
-    std::string sanitized;
-    for (std::string::size_type i = 0; i < text.size(); i++) {
-        if (ESC_CHARS.find(text[i]) == std::string::npos){
+ustring utils::sanitize(const ustring &text) {
+    const ustring ESC_CHARS("\t\n\v\a\b\f\r\\");
+    ustring sanitized;
+    for (ustring::size_type i = 0; i < text.size(); i++) {
+        if (ESC_CHARS.find(text[i]) == ustring::npos){
             sanitized.push_back(text[i]);
         }
         else{

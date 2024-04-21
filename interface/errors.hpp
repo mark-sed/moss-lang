@@ -104,7 +104,7 @@ namespace error {
     void error(error::ErrorCode code, const char *msg, SourceFile *src_f=nullptr, bool exit=true);
 
     /**
-     * Prints warning to std::cerr
+     * Prints warning to std::wcerr
      * @param msg Message to print
      */ 
     void warning(const char *msg);

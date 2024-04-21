@@ -12,11 +12,18 @@
 
 #include <cassert>
 #include <iostream>
+#include <string>
 
 namespace moss {
 
 #ifdef __linux__
     #include <unistd.h>
+
+    // Linux handles char strings as unicode and nothing extra needs to be
+    // done to work with unicode
+    #define ustring std::string
+    #define outs std::cout
+    #define errs std::cerr
 
     /** Returns true is stdin is read from terminal (not redirect) */
     inline bool is_stdin_atty() {
@@ -37,6 +44,10 @@ namespace moss {
         return is_redir;
     }
 #else
+    #define ustring std::wstring
+    #define outs std::wcout
+    #define errs std::wcerr
+
     /** Returns true is stdin is read from terminal (not redirect) */
     inline bool is_stdin_atty() {
         assert(false && "Check for stdin redirection on non-linux machine is not yet implemented");

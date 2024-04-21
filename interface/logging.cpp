@@ -1,4 +1,5 @@
 #include "logging.hpp"
+#include "os_interface.hpp"
 #include "utils.hpp"
 #include <iostream>
 #include <fstream>
@@ -18,7 +19,7 @@ BaseLogger::~BaseLogger() {
 }
 
 Logger::Logger() : BaseLogger() {
-    streams.push_back(&std::cerr);
+    streams.push_back(&errs);
 }
 
 Logger::~Logger() {
@@ -30,7 +31,7 @@ Logger &Logger::get() {
     return instance;
 }
 
-void Logger::debug(unsigned level, const std::string &file_func, const std::string &message) {
+void Logger::debug(unsigned level, const ustring &file_func, const ustring &message) {
     if (disable || level > logging_level) {
         return;
     }

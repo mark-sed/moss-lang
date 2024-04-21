@@ -10,6 +10,7 @@
 #ifndef _LOGGING_HPP_
 #define _LOGGING_HPP_
 
+#include "os_interface.hpp"
 #include "utils.hpp"
 #include <sstream>
 #include <string>
@@ -85,7 +86,7 @@ public:
  */ 
 class Logger : public BaseLogger {
 private:
-    std::set<std::string> enabled;
+    std::set<ustring> enabled;
 public:
     /// Default constructor for get instance
     Logger();
@@ -102,14 +103,14 @@ public:
      * @param file_func __FILE__ should be passed here or the file name
      * @param message Message to print
      */
-    void debug(unsigned level, const std::string &file_func, const std::string &message);
+    void debug(unsigned level, const ustring &file_func, const ustring &message);
 
     
     /**
      * Set file::functions to output to log
      * @param enabled Set of file::function names
      */
-    void set_enabled(std::set<std::string> enabled) { this->enabled = enabled; }
+    void set_enabled(std::set<ustring> enabled) { this->enabled = enabled; }
 };
 
 /// Tabs for logging
@@ -135,21 +136,21 @@ public:
         std::stringstream out; \
         out.setf(Logger::get().get_flags()); \
         out << message; \
-        Logger::get().debug(level, std::string(__FILENAME__)+std::string("::")+std::string(__func__), out.str()); }
+        Logger::get().debug(level, ustring(__FILENAME__)+ustring("::")+ustring(__func__), out.str()); }
     /// Logs whole container
     #define LOG_CONT(level, message, container) if ((level) <= MAX_LOGGING_LEVEL) { \
         std::stringstream out; \
         out.setf(Logger::get().get_flags()); \
         out << message << std::endl; \
         for(auto v: (container)) { out << TAB1 << v << std::endl; } \
-        Logger::get().debug(level, std::string(__FILENAME__)+std::string("::")+std::string(__func__), out.str()); }
+        Logger::get().debug(level, ustring(__FILENAME__)+ustring("::")+ustring(__func__), out.str()); }
     /// Logs container of strings which will be sanitized (removes escape sequences)
     #define LOG_CONT_SANITIZE(level, message, container) if ((level) <= MAX_LOGGING_LEVEL) { \
         std::stringstream out; \
         out.setf(Logger::get().get_flags()); \
         out << message << std::endl; \
         for(auto v: (container)) { out << utils::sanitize(v) << std::endl; } \
-        Logger::get().debug(level, std::string(__FILENAME__)+std::string("::")+std::string(__func__), out.str()); }
+        Logger::get().debug(level, ustring(__FILENAME__)+ustring("::")+ustring(__func__), out.str()); }
 #else
     #define LOG(level, message)
     #define LOG_CONT(level, message, container)

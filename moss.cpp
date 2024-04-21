@@ -32,13 +32,14 @@ int main(int argc, const char *argv[]) {
 
     LOG1("Moss " << MOSS_VERSION);
     LOG1("Logging enabled with level: " << clopts::get_logging_level());
+    LOG5("Unicode output test (sushi emoji, umlaut u and japanese): " << "🍣 ü ラーメン");
 
     auto main_file = get_input();
     Scanner scanner(main_file);
 
     Token *t = scanner.next_nonws_token();
     while(t->get_type() != TokenType::END_OF_FILE) {
-        std::cout << t->get_type() << " ";
+        outs << t->get_type() << " ";
         t = scanner.next_nonws_token();
     }
 

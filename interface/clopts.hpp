@@ -11,6 +11,7 @@
 #define _CLOPTS_HPP_
 
 #include "args.hpp"
+#include "os_interface.hpp"
 #include <string>
 
 namespace moss {

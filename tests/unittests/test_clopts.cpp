@@ -1,4 +1,5 @@
 #include "clopts.hpp"
+#include "os_interface.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <regex>
@@ -50,7 +51,7 @@ TEST(CmdOptions, NonTerminating) {
             "");
 
     clopts::parse_clopts(argc, argv);
-    EXPECT_TRUE(args::get(clopts::file_name) == std::string("program.ms"));
+    EXPECT_TRUE(args::get(clopts::file_name) == ustring("program.ms"));
     EXPECT_FALSE(clopts::code);
 
     // code string followed by program argument
