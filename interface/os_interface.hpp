@@ -44,9 +44,9 @@ namespace moss {
         return is_redir;
     }
 #else
-    #define ustring std::wstring
-    #define outs std::wcout
-    #define errs std::wcerr
+    #define ustring std::string
+    #define outs std::cout
+    #define errs std::cerr
 
     /** Returns true is stdin is read from terminal (not redirect) */
     inline bool is_stdin_atty() {

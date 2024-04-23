@@ -34,7 +34,12 @@ add_executable(
     moss.cpp
     ${SOURCES}
 )
-target_link_libraries(${PROJECT_NAME} m)
+
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} msvcrt)
+else()
+    target_link_libraries(${PROJECT_NAME} m)
+endif()
 
 # testsmoss target
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

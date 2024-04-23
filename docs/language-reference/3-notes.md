@@ -450,8 +450,8 @@ or importing it into all of them, even some older ones, you might want to
 specify the convertors when running the scripts. This allows also for change
 of convertors without changing any code. You can simply specify the module that
 should be used with highest priority for conversion to the interpreter using
-`-c` or `--convertors` options.
+`-c` or `--converters` options.
 
 ```
-moss -c my_convertors.ms main.ms
+moss -c my_converters.ms main.ms
 ```

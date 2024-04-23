@@ -41,6 +41,19 @@ static void run_tokenizer(std::stringstream &ss, ustring code) {
     delete t;
 }
 
+// Runs tokenization without WS check the type to stringstream with space as a separator
+static void run_tokenizer_check_type(ustring code, TokenType tp) {
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Scanner scanner(sf);
+    Token *t = scanner.next_nonws_token();
+    while(t->get_type() != TokenType::END_OF_FILE) {
+        EXPECT_TRUE(t->get_type() == tp) << t->get_value() << " is of type " << tp << " but was tokenized as " << t->get_type();
+        delete t;
+        t = scanner.next_nonws_token();
+    }
+    delete t;
+}
+
 /** Test for operators tokenization */
 TEST(Scanner, OperatorTokens){
     ustring code = "++ ++= + += ^ ^= - -= / /= * *= % %=  = == != > >= < <= << && ||";
@@ -63,14 +76,27 @@ TEST(Scanner, KeywordTokens){
     EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
 }
 
-TEST(Scanner, UnicodeTokens) {
-    ustring code = "🍣sůšo = řeka";
-    ustring expected = "ID SET ID ";
+/** Unicode identifiers */
+TEST(Scanner, IDsAndUnicodeTokens) {
+    ustring code = "🍣sůšo = řeka ça + va j日本語 _ _1 Aa3 hello name__me_2_";
+    ustring expected = "ID SET ID ID PLUS ID ID ID ID ID ID ID ";
 
     std::stringstream ss;
     run_tokenizer(ss, code);
 
     EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+}
+
+/** Tokenization of numbers */
+TEST(Scanner, NumbersTokens) {
+    ustring floats_code = "0.0 0000.1 223.2 1e5 2e-32 45e+4 2.15e10 33.00011e-8 0.e+3 12.e-1";
+    run_tokenizer_check_type(floats_code, TokenType::FLOAT);
+
+    ustring ints_code = "00 123 0xAe12 0b011001 0q170 5 98984645421215444 0x10";
+    run_tokenizer_check_type(ints_code, TokenType::INT);
+
+    ustring incorrect_nums = "1a 0x 0x12gA 0t1 0q 0b 0b112 1a 0xa.2";
+    run_tokenizer_check_type(incorrect_nums, TokenType::ERROR_TOKEN);
 }
 
 }

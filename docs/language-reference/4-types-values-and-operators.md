@@ -27,6 +27,9 @@ dec_i = 42       // Decimal
 hex_i = 0x2a     // Hexadecimal
 oct_i = 0q52     // Octal
 bin_i = 0b101010 // Binary
+
+// x q or b can be also capitalized
+bin_j = 0B0101
 ```
 
 __Class constructors__:

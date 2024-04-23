@@ -181,19 +181,19 @@ Token *Scanner::parse_number(int start) {
     int base = 10;
     // Check if the number is specific base 
     if (start == '0') {
-        if (next_c == 'x') {
+        if (next_c == 'x' || next_c == 'X') {
             base = 16;
-            advance();
+            number_str += advance().to_str();
             next_c = peek_nonutf();
         }
-        else if (next_c == 'q') {
+        else if (next_c == 'q' || next_c == 'Q') {
             base = 8;
-            advance();
+            number_str += advance().to_str();
             next_c = peek_nonutf();
         }
-        else if (next_c == 'b') {
+        else if (next_c == 'b' || next_c == 'B') {
             base = 2;
-            advance();
+            number_str += advance().to_str();
             next_c = peek_nonutf();
         }
     }
@@ -202,8 +202,10 @@ Token *Scanner::parse_number(int start) {
         advance();
         next_c = peek_nonutf();
     }
-    if (is_part_of_id(next_c) && next_c != 'e' && next_c != 'E') {
-        // number followed by character or number that is outside of its base
+    char last_dig = number_str[number_str.size()-1];
+    bool is_last_dig_base = last_dig == 'x' || last_dig == 'X' || last_dig == 'q' || last_dig == 'Q' || last_dig == 'b' || last_dig == 'B'; 
+    if ((is_part_of_id(next_c) || is_last_dig_base) && next_c != 'e' && next_c != 'E') {
+        // number followed by character or number that is outside of its base or base was set, but no digits were set
         number_str = read_incorrect(number_str);
         if (base == 2)
             return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "binary");
