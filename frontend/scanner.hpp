@@ -286,7 +286,7 @@ private:
 
 public:
     SourceInfo(const SourceFile &file, unsigned line_start, unsigned line_end, unsigned col_start, unsigned col_end) 
-        : file(file), lines(std::make_pair(line_end, line_end)), cols(std::make_pair(col_start, col_end)) {}
+        : file(file), lines(std::make_pair(line_start, line_end)), cols(std::make_pair(col_start, col_end)) {}
     SourceInfo(const SourceFile &file, std::pair<unsigned, unsigned> lines, std::pair<unsigned, unsigned> cols) 
         : file(file), lines(lines), cols(cols) {}
 
@@ -301,7 +301,7 @@ protected:
     SourceInfo src_info;
 public:
     Token(ustring value, TokenType type, SourceInfo src_info) : value(value), type(type), src_info(src_info) {}
-    ~Token() {}
+    virtual ~Token() {}
 
     ustring get_value() { return this->value; }
     TokenType get_type() { return this->type; }
@@ -335,6 +335,7 @@ public:
         : Token(value, TokenType::ERROR_TOKEN, src_info), note(note) {
         report = utils::formatv(msg, args ...);
     }
+    ~ErrorToken() {}
 
     ustring get_report() const {
         if (note.empty())

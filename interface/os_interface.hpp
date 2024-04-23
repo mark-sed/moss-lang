@@ -16,7 +16,30 @@
 
 namespace moss {
 
-#ifdef __linux__
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+    #define ustring std::string
+    #define outs std::cout
+    #define errs std::cerr
+
+    /** Returns true is stdin is read from terminal (not redirect) */
+    inline bool is_stdin_atty() {
+        assert(false && "Check for stdin redirection on non-linux machine is not yet implemented");
+        return false; // This way interactive mode will be off
+    }
+
+    /**
+     * Checks if stderr is redirected to a file
+     * @return true if stderr is redirected
+     */ 
+    inline bool is_stderr_atty() {
+        assert(false && "Check for stderr redirection on non-linux machine is not yet implemented");
+        return false; // This way interactive mode will be off
+    }
+#else
+    #ifndef __linux__
+        #warning "Platform is not Linux nor Windows, treating this as Linux"
+    #endif
+    
     #include <unistd.h>
 
     // Linux handles char strings as unicode and nothing extra needs to be
@@ -43,27 +66,6 @@ namespace moss {
         }
         return is_redir;
     }
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-    #define ustring std::string
-    #define outs std::cout
-    #define errs std::cerr
-
-    /** Returns true is stdin is read from terminal (not redirect) */
-    inline bool is_stdin_atty() {
-        assert(false && "Check for stdin redirection on non-linux machine is not yet implemented");
-        return false; // This way interactive mode will be off
-    }
-
-    /**
-     * Checks if stderr is redirected to a file
-     * @return true if stderr is redirected
-     */ 
-    inline bool is_stderr_atty() {
-        assert(false && "Check for stderr redirection on non-linux machine is not yet implemented");
-        return false; // This way interactive mode will be off
-    }
-#else
-    static_assert(false && "Unknown platform");
 #endif
 }
 
