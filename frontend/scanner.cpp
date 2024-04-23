@@ -42,6 +42,7 @@ UTF8Char Scanner::advance() {
 
     int c = curr_line[curr_byte];
     // Read bytes that are continuation of utf-8
+    // FIXME: On Windows this does seem to work correctly
     int substr_len = 1;
     while (curr_byte < curr_line.size()) {
         int cn = curr_line[curr_byte+1];

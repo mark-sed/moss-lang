@@ -36,3 +36,4 @@ build/
 docs/html
 examples/
 .vscode/
+.vs/

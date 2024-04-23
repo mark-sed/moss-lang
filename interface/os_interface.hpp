@@ -43,7 +43,7 @@ namespace moss {
         }
         return is_redir;
     }
-#else
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
     #define ustring std::string
     #define outs std::cout
     #define errs std::cerr
@@ -62,6 +62,8 @@ namespace moss {
         assert(false && "Check for stderr redirection on non-linux machine is not yet implemented");
         return false; // This way interactive mode will be off
     }
+#else
+    static_assert(false && "Unknown platform");
 #endif
 }
 
