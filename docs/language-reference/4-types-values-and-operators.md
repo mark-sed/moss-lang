@@ -37,12 +37,12 @@ __Class constructors__:
 * `new Int(v=0)`
 
 __Class operators__:
-* `fun (+)(x:[Int, Float])`
-* `fun (-)(x:[Int, Float])`
-* `fun (*)(x:[Int, Float])`
-* `fun (/)(x:[Int, Float])`
-* `fun (%)(x:[Int, Float])`
-* `fun (^)(x:[Int, Float])`
+* `fun (+)(x:[Int, Float, Complex])`
+* `fun (-)(x:[Int, Float, Complex])`
+* `fun (*)(x:[Int, Float, Complex])`
+* `fun (/)(x:[Int, Float, Complex])`
+* `fun (%)(x:[Int, Float, Complex])`
+* `fun (^)(x:[Int, Float, Complex])`
 * `fun (and)(x:Int)`
 * `fun (or)(x:Int)`
 * `fun (xor)(x:Int)`
@@ -64,6 +64,9 @@ x = -3.1415925
 y = 0.5e-2      // 0.005
 z = 5e3         // 500.0
 j = 0.e+3       // 0.0
+
+not_a_number = Float("nan")
+infinity_value = Float("inf")
 ```
 
 __Class constructors__:
@@ -71,12 +74,44 @@ __Class constructors__:
 * `new Float(v=0.0)`
 
 __Class operators__:
-* `fun (+)(x:[Int, Float])`
-* `fun (-)(x:[Int, Float])`
-* `fun (*)(x:[Int, Float])`
-* `fun (/)(x:[Int, Float])`
-* `fun (%)(x:[Int, Float])`
-* `fun (^)(x:[Int, Float])`
+* `fun (+)(x:[Int, Float, Complex])`
+* `fun (-)(x:[Int, Float, Complex])`
+* `fun (*)(x:[Int, Float, Complex])`
+* `fun (/)(x:[Int, Float, Complex])`
+* `fun (%)(x:[Int, Float, Complex])`
+* `fun (^)(x:[Int, Float, Complex])`
+
+__Class methods__:
+* `fun is_nan()`
+* `fun is_inf()`
+
+## Complex
+
+Complex number value.
+
+When converting from String the value cannot have whitespace characters and must
+use `i` for the imaginary part.
+
+```cpp
+a = Complex(1.2, 3) // 1.2+3i
+b = Complex(1)      // 1+0i
+c = Complex("2-1i") // 2-1i
+
+// d = Complex("3 + 2i") is INCORRECT format
+```
+
+__Class constructors__:
+* `new Complex(r:[Int, Float]=0, i:[Int, Float]=0)`
+* `new Complex(c:String)`
+* `new Complex(c:Complex)`
+
+__Class operators__:
+* `fun (+)(x:[Int, Float, Complex])`
+* `fun (-)(x:[Int, Float, Complex])`
+* `fun (*)(x:[Int, Float, Complex])`
+* `fun (/)(x:[Int, Float, Complex])`
+* `fun (%)(x:[Int, Float, Complex])`
+* `fun (^)(x:[Int, Float, Complex])`
 
 __Class methods__:
 
@@ -159,9 +194,12 @@ __Class methods__:
 * `fun repeat(x:Int)`
 * `fun upper()`
 * `fun lower()`
+* `fun capitalize()`
 * `fun reverse()`
 * `fun find(substr:String)`
 * `fun empty()`
+* `fun escape()`
+* `fun unescape()`
 
 ## Nil and NilType
 
@@ -230,7 +268,33 @@ __Class methods__:
 
 ### List comprehension
 
-TODO
+List comprehension can be used to create custom lists using something that
+resembles mathematical notation and would otherwise require a loop and
+appending to a list.
+
+The syntax for unconditioned is as follows:
+
+_[expression : variable = expression < comma separated more assignments >]_
+
+The conditioned comprehension is as follows:
+
+_[expression if(condition) < else expression > : variable = expression < comma separated more assignments >]_
+
+```cpp
+l1 = [1, 2, 3]
+l2 = [4, 5, 6]
+ziped = [[x, y] : x = l1, y = l2] 
+// [[1, 4],[2, 5],[3, 6]]
+
+[a : a = 1,3..100] // odd numbers from 1 to 99
+
+[p if(all([p % x != 0 : x = 2..p/2])) : p = 2..1000] // primes
+
+greet = "Hello there programmer!"
+[c if(c != " ") else "_" : c = greet].join() // "Hello_there_programmer!"
+// Alternatively one can use ternary operator for this case as well
+[(c != " ") ? c : "_" : c = greet].join() // "Hello_there_programmer!"
+```
 
 ## Dict
 

@@ -379,12 +379,12 @@ The code output is encapsulated in `CodeOutputNote` class which contains
 ## Documentation
 
 Functions, classes, space variables, enums and spaces can contain documentation
-notes `doc` (`Documentation`), which can be accessed at runtime but also used
+notes `d` (`Documentation`), which can be accessed at runtime but also used
 to generate documentation.
 
 ```cpp
 fun divxy(x:Int, y:Int) {
-    doc"""
+    d"""
     Divides x by y.
     @param x Numerator
     @param y Denominator

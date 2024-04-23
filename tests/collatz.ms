@@ -1,4 +1,4 @@
-n"""
+md"""
 # Collatz Conjecture
 
 The Collatz conjecture, also known as the _3n + 1 problem_ is unsolved problem, which states, that:
@@ -11,13 +11,13 @@ If the given value is even, then it is to be devided by 2. Otherwise it is to be
 In modular arithmetic notation, this function _f_ can be defined as:
 """
 
-#| equation
+@equation
 fun f(n) {
     if(n % 2 == 0) return n/2
     else return 3*n + 1
 }
 
-n"""
+md"""
 In Moss, a method to calculate resulting value for a given integer, can be written as bellow.
 
 Intermediete values and total amount of steps is being counted to better showcase how this function works.
@@ -41,13 +41,13 @@ fun collatz(n) {
     }
 }
 
-n"""
+md"""
 Invoking this function for a random value, gives the following output
 """
 ~collatz(42)
 "\n\n"
 
-n"""
+md"""
 We can now look at how the number of steps differs for different values using the following function:
 """
 fun collatz_steps(n) {
@@ -69,7 +69,7 @@ fun collatz_steps(n) {
     return steps
 }
 
-n"""
+md"""
 Lets first calculate the number of steps for _n < 16_: 
 """
 tbl = [0]
@@ -78,11 +78,11 @@ for(i : 1..16) {
 }
 
 "Number of steps for n <= 15:\n"
-#| table
+@table
 tbl
 "\n\n"
 
-n"""
+md"""
 Lets now plot the number of steps for even more values to a graph:
 """
 tbl = [0]

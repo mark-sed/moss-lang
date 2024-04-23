@@ -18,7 +18,7 @@ foo // foo = nil
 foo // Will be outputted as "nil"
 ```
 
-Variable can of course be also assigned a value and even multiple at once:
+Variable can also be assigned a value and even multiple at once:
 ```py
 a = b = c = 42
 ```
@@ -182,18 +182,41 @@ switch(val) {
 Import can appear anywhere and is valid for the scope it appears in. Import can
 have alias.
 
-```
+```py
 import Math
 import Statistics as st, Models as mod
-import Math::Rnd as rng
+import Math::Models as mods
 ```
 
 Imported can be also all of the symbols
-```
+```py
 import Rng::*
 ```
 
 Once import is encountered this module is run, but not as a "main".
+
+You can also import/spill global spaces, but the space name (or full scope) has
+to be prefixed with global scope specifier `::`, otherwise Moss would look for
+a module with this name.
+
+```cpp
+
+space SomeSpace {
+    fun foo() { print("hi"); }
+    space Space2 {
+        fun bar() { print("ok"); }
+        fun baz() { print("bye"); }
+    }
+}
+
+import ::SomeSpace::*
+import ::SomeSpace::Space2::baz
+
+foo() // Foo is now accessible without scope
+baz() // Also does not require scope
+Space2::bar() // Requires scope for space2, since only baz was imported
+```
+
 
 ## Exception handling
 
