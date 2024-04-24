@@ -283,6 +283,37 @@ Token *Scanner::parse_number(int start) {
     return tokenize(number_str, TokenType::INT);
 }
 
+Token *Scanner::parse_string(bool triple_quote) {
+    ustring value = "";
+    auto next_c = advance();
+    while (next_c.is_utf || next_c.c != EOF) {
+        if (!next_c.is_utf && next_c.c == '"') {
+            // Check for escaped quote
+            if(value.empty() || value.back() != '\\') {
+                if (!triple_quote) {
+                    return tokenize(value, TokenType::STRING);
+                }
+                // Check if triple quote
+                else if(peek_nonutf() == '"') {
+                    // found ""
+                    advance();
+                    if(peek_nonutf() == '"') {
+                        // Last quote in triple quote
+                        advance();
+                        return tokenize(value, TokenType::STRING);
+                    }
+                    value += "\"\"";
+                    next_c = advance();
+                    continue;
+                }
+            }
+        }
+        value += next_c.to_str();
+        next_c = advance();
+    }
+    return err_tokenize(value, "", error::msgs::UNTERMINATED_STRING_LITERAL, "");
+}
+
 Token *Scanner::next_nonws_token() {
     auto t = next_token();
     // WS is grouped it is not possible to have 2 ws after each other
@@ -432,9 +463,21 @@ Token *Scanner::next_token() {
                     return tokenize("||", TokenType::SHORT_C_OR);
                 return err_tokenize(c, "Bitwise or is done with 'or' or did you mean '||'?", error::msgs::UNKNOWN_SYMBOL, "!");
             }
-
-            //case '': return tokenize(c, TokenType::);
+            case '"': {
+                if (check_and_advance('"')) {
+                    if(check_and_advance('"')) {
+                        // triple quote string
+                        return parse_string(true);
+                    }
+                    // Empty string
+                    return tokenize("", TokenType::STRING);
+                }
+                // Single quote string
+                return parse_string(false);
+            }
             case EOF: return tokenize(c, TokenType::END_OF_FILE);
+            // Error cases with notes
+            case '\'': return err_tokenize(c, "Strings can be in single quotes (\"text\") or triple quotes (\"\"\"test\"\"\")", error::msgs::UNKNOWN_SYMBOL, ustring(1, c).c_str());
         }
 
         // Unknown token

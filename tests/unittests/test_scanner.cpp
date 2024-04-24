@@ -99,4 +99,24 @@ TEST(Scanner, NumbersTokens) {
     run_tokenizer_check_type(incorrect_nums, TokenType::ERROR_TOKEN);
 }
 
+/** Tokenization of strings */
+TEST(Scanner, StringTokens) {
+    ustring strs_code = R"(
+"" "hello" """hi"""
+"Chi +!= ! [] # chi"
+"""
+Multi
+Line
+String
+"""
+""" "" """ """a"b""" """"""
+"""\"\"""" "\"" "a\"b..\"c"
+"\n\t")";
+    ustring expected = "END_NL STRING STRING STRING END_NL STRING END_NL STRING END_NL STRING STRING STRING END_NL STRING STRING STRING END_NL STRING ";
+
+    std::stringstream ss;
+    run_tokenizer(ss, strs_code);
+    EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+}
+
 }

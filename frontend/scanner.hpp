@@ -403,6 +403,7 @@ private:
     Token *parse_id_or_keyword(ustring start);
     Token *parse_id_or_keyword(int start);
     Token *parse_number(int start);
+    Token *parse_string(bool triple_quote);
 
     ustring curr_line;
     unsigned curr_byte;
