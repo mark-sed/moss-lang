@@ -126,7 +126,6 @@ enum class TokenType {
     INT,        ///< decimal integer value
     FLOAT,      ///< floating point value
     STRING,     ///< string value
-    XSTRING,    ///< xstring value (rstring, fstring, nstring...)
 
     ID,         ///< identificator
 
@@ -221,7 +220,6 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::INT: os << "INT"; break;
         case TokenType::FLOAT: os << "FLOAT"; break;
         case TokenType::STRING: os << "STRING"; break;
-        case TokenType::XSTRING: os << "XSTRING"; break;
         case TokenType::ID: os << "ID"; break;
         case TokenType::END_OF_FILE: os << "END_OF_FILE"; break;
         case TokenType::WS: os << "WS"; break;
@@ -414,6 +412,12 @@ private:
 public:
     Scanner(SourceFile &file) : file(file), line(0), col(0), len(0), curr_line(), curr_byte(0) {
         this->stream = file.get_new_stream();
+    }
+    ~Scanner() {
+        // Only file stream and string stream are allocated
+        if (file.get_type() == SourceFile::SourceType::FILE || file.get_type() == SourceFile::SourceType::STRING) {
+            delete this->stream;
+        }
     }
 
     /** @return Next token from the current file, including whitespace token */

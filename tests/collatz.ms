@@ -92,4 +92,4 @@ for(i : 1..501) {
 
 "Number of steps for n <= 500:\n"
 tbl
-#~Grph::plot(tbl)
+//~Grph::plot(tbl)

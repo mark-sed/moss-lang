@@ -57,8 +57,10 @@ int main(int argc, const char *argv[]) {
         else {*/
             outs << *t << " ";
         //}
+        delete t;
         t = scanner.next_nonws_token();
     }
+    delete t;
 
     return 0;
 }
