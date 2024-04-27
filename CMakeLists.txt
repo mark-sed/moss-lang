@@ -20,6 +20,7 @@ endif()
 # Includes for headers
 include_directories(.)
 include_directories(frontend)
+include_directories(midend)
 include_directories(bytecode)
 include_directories(vm)
 include_directories(interface)
@@ -27,6 +28,8 @@ include_directories(interface)
 # Source files excluding main
 set(SOURCES 
     frontend/scanner.cpp
+    frontend/parser.cpp
+    midend/ast.cpp
     interface/errors.cpp
     interface/logging.cpp
     interface/clopts.cpp
