@@ -10,9 +10,12 @@
 #ifndef _AST_HPP_
 #define _AST_HPP_
 
+#include "ir.hpp" 
+
 namespace moss {
 
 class AST {
+private:
 
 //  void verify(); // For asserting correctness of ast
 };

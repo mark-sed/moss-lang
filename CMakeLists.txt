@@ -30,6 +30,7 @@ set(SOURCES
     frontend/scanner.cpp
     frontend/parser.cpp
     midend/ast.cpp
+    midend/ir.cpp
     interface/errors.cpp
     interface/logging.cpp
     interface/clopts.cpp
@@ -57,6 +58,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(TEST_SRCS
         tests/unittests/test_clopts.cpp
         tests/unittests/test_scanner.cpp
+        tests/unittests/test_ir.cpp
     )
 
     # Enable gtest
