@@ -283,6 +283,27 @@ Token *Scanner::parse_number(int start) {
     return tokenize(number_str, TokenType::INT);
 }
 
+Token *Scanner::parse_multi_comment() {
+    auto next_c = advance();
+    std::string newlines = "";
+    while (next_c.is_utf || next_c.c != EOF) {
+        if (!next_c.is_utf && next_c.c == '*') {
+            if (peek_nonutf() == '/') {
+                advance();
+                if (newlines.empty())
+                    return tokenize(" ", TokenType::WS);
+                else
+                    return tokenize(newlines, TokenType::END_NL);
+            }
+        }
+        else if (!next_c.is_utf && next_c.c == '\n') {
+            newlines += "\n";
+        }
+        next_c = advance();
+    }
+    return err_tokenize("/*", "", error::msgs::UNTERMINATED_COMMENT, "");
+}
+
 Token *Scanner::parse_string(bool triple_quote) {
     ustring value = "";
     auto next_c = advance();
@@ -306,6 +327,12 @@ Token *Scanner::parse_string(bool triple_quote) {
                     next_c = advance();
                     continue;
                 }
+            }
+        }
+        else if (!next_c.is_utf && next_c.c == '\n') {
+            this->line++;
+            if (!triple_quote) {
+                return err_tokenize(value, "", error::msgs::UNTERMINATED_STRING_LITERAL, "");
             }
         }
         value += next_c.to_str();
@@ -417,6 +444,19 @@ Token *Scanner::next_token() {
             case '/': {
                 if (check_and_advance('='))
                     return tokenize("/=", TokenType::SET_DIV);
+                if (check_and_advance('/')) {
+                    auto next_c = advance();
+                    while(next_c.is_utf || (next_c.c != '\n' && next_c.c != EOF)) {
+                        next_c = advance();
+                    }
+                    if (next_c.c == EOF)
+                        return tokenize("\n", TokenType::END_OF_FILE);
+                    return tokenize("\n", TokenType::END_NL);
+                }
+                if (check_and_advance('*')) {
+                    return parse_multi_comment();
+                }
+                    
                 return tokenize(c, TokenType::DIV);
             }
             case '*': {

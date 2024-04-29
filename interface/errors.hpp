@@ -34,6 +34,7 @@ namespace error {
         inline msgtype INCORRECT_INT_LITERAL = "invalid %s number literal";
         inline msgtype INCORRECT_FLOAT_LITERAL = "invalid float literal";
         inline msgtype UNTERMINATED_STRING_LITERAL = "unterminated string literal";
+        inline msgtype UNTERMINATED_COMMENT = "unterminated comment";
     }
 
     /**
