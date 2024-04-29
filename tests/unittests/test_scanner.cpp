@@ -119,4 +119,23 @@ String
     EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
 }
 
+/** Tokenization of strings */
+TEST(Scanner, Comments) {
+    ustring cmts_code = R"(
+aaa/* comment */bbb
+/*
+ multi
+ comment
+ 42
+        */
+ccc
+/**Hello
+There)";
+    ustring expected = "END_NL ID ID END_NL END_NL END_NL ID END_NL ERROR_TOKEN ";
+
+    std::stringstream ss;
+    run_tokenizer(ss, cmts_code);
+    EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+}
+
 }
