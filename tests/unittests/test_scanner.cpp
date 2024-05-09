@@ -128,10 +128,11 @@ aaa/* comment */bbb
  comment
  42
         */
-ccc
+ccc // One line comment
+// Hello
 /**Hello
 There)";
-    ustring expected = "END_NL ID ID END_NL END_NL END_NL ID END_NL ERROR_TOKEN ";
+    ustring expected = "END_NL ID ID END_NL END_NL END_NL ID END_NL END_NL ERROR_TOKEN ";
 
     std::stringstream ss;
     run_tokenizer(ss, cmts_code);

@@ -47,7 +47,6 @@ int main(int argc, const char *argv[]) {
     LOG5("Unicode output test (sushi emoji, umlaut u and japanese): " << "🍣 ü ラーメン");
 
     auto main_file = get_input();
-    Scanner scanner(main_file);
 
     Token *t = scanner.next_nonws_token();
     while(t->get_type() != TokenType::END_OF_FILE) {

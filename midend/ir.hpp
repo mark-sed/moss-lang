@@ -11,6 +11,7 @@
 #ifndef _IR_HPP_
 #define _IR_HPP_
 
+#include "scanner.hpp"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -84,10 +85,14 @@ public:
 };
 
 class Module : public Construct {
+private:
+    SourceFile &src_file;
+    bool is_main;
 public:
     static const IRType ClassType = IRType::MODULE;
 
-    Module(std::string name) : Construct(ClassType, name) {}
+    Module(std::string name, SourceFile &src_file, bool is_main) 
+        : Construct(ClassType, name), src_file(src_file), is_main(is_main) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "<Module>" << name;

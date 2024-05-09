@@ -26,7 +26,7 @@ private:
 public:
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)) {}
 
-    AST *parse();
+    ir::Module *parse(bool is_main=false);
 };
 
 }

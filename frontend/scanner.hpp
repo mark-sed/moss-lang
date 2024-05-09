@@ -20,6 +20,7 @@
 #include <istream>
 #include <cstdio>
 #include <unordered_map>
+#include <filesystem>
 
 #include <memory>
 #include <initializer_list>
@@ -271,6 +272,9 @@ public:
     ustring get_name() {
         if (type == SourceType::STRING) return "<one-liner>";
         return path_or_code;
+    }
+    ustring get_module_name() {
+        return std::filesystem::path(get_name()).stem();
     }
 };
 
