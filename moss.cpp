@@ -1,5 +1,6 @@
 #include "moss.hpp"
 #include "scanner.hpp"
+#include "source.hpp"
 #include "os_interface.hpp"
 #include "clopts.hpp"
 #include "args.hpp"
@@ -48,6 +49,7 @@ int main(int argc, const char *argv[]) {
 
     auto main_file = get_input();
 
+    Scanner scanner(main_file);
     Token *t = scanner.next_nonws_token();
     while(t->get_type() != TokenType::END_OF_FILE) {
         /*if(t->get_type() == TokenType::ERROR_TOKEN) {

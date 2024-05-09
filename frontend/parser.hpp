@@ -11,6 +11,7 @@
 #define _PARSER_HPP_
 
 #include "scanner.hpp"
+#include "source.hpp"
 #include "ast.hpp"
 #include <memory>
 

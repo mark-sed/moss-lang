@@ -69,7 +69,6 @@ xxh - JMP               addr
 xxh - JMP_IF_TRUE       %src, addr
 xxh - JMP_IF_FALSE      %src, addr
 xxh - CALL              %dst, addr
-xxh - CALL_DISC         addr
 xxh - RETURN            %val
 xxh - RETURN_CONST      #val
 xxh - RETURN_ADDR       addr
@@ -169,6 +168,7 @@ xxh - LIST_PUSH         %val
 xxh - LIST_PUSH_CONST   #val
 xxh - LIST_PUSH_ADDR    addr
 xxh - BUILD_LIST        %dst
+
 xxh - BUILD_DICT        %keys, %vals
 
 xxh - CREATE_RANGE      %dst, %start, %step, %end
@@ -217,7 +217,7 @@ fun foo(a: SpecialString, b) {
     return b
 }
 
-foo(11)
+~foo(11)
 a = foo("hi")
 ```
 

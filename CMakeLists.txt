@@ -29,12 +29,16 @@ include_directories(interface)
 set(SOURCES 
     frontend/scanner.cpp
     frontend/parser.cpp
+    frontend/source.cpp
     midend/ast.cpp
     midend/ir.cpp
     interface/errors.cpp
     interface/logging.cpp
     interface/clopts.cpp
     interface/utils.cpp
+    bytecode/bytecode.cpp
+    bytecode/bytecode_writer.cpp
+    bytecode/bytecode_reader.cpp
 )
 
 # Targets

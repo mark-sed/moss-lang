@@ -12,6 +12,7 @@
 
 #include "os_interface.hpp"
 #include "scanner.hpp"
+#include "source.hpp"
 #include <iostream>
 #include <cstddef>
 #include <cstdlib>

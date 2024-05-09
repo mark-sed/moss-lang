@@ -1,6 +1,7 @@
 #include "errors.hpp"
 #include "scanner.hpp"
 #include "logging.hpp"
+#include "source.hpp"
 #include <iostream>
 #include <cstddef>
 #include <string>

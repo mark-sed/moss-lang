@@ -11,7 +11,7 @@
 #ifndef _IR_HPP_
 #define _IR_HPP_
 
-#include "scanner.hpp"
+#include "source.hpp"
 #include <iostream>
 #include <string>
 #include <cassert>
