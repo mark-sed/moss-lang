@@ -13,8 +13,21 @@
 #include "os_interface.hpp"
 #include <utility>
 #include <filesystem>
+#include <fstream>
 
 namespace moss {
+
+class File {
+protected:
+    ustring path;
+
+    File(ustring path) : path(path) {}
+    virtual ~File() {}
+    virtual std::istream *get_new_stream() = 0;
+public:
+    ustring get_path() { return this->path; }
+    virtual ustring get_name() { return this->path; }
+};
 
 /** 
  * @brief Representation of source file
@@ -24,7 +37,7 @@ namespace moss {
  * This provides simple interface to get the file type, name and stream to
  * read it.
  */
-class SourceFile {
+class SourceFile : public File {
 public:
     /** Source File type (file, string of code or standard input) */
     enum class SourceType {
@@ -37,11 +50,11 @@ private:
     ustring path_or_code;
     SourceType type;
 public:
-    SourceFile(ustring path_or_code, SourceType src_type) : path_or_code(path_or_code), type(src_type) {
+    SourceFile(ustring path_or_code, SourceType src_type) : File(path_or_code), path_or_code(path_or_code), type(src_type) {
         assert(src_type != SourceType::STDIN && "Path set, but type is STDIN");
         assert(src_type != SourceType::INTERACTIVE && "Path set, but type is INTERACTIVE");
     }
-    SourceFile(SourceType src_type) : type(src_type) {
+    SourceFile(SourceType src_type) : File("<stdin>"), type(src_type) {
         assert((src_type == SourceType::STDIN || src_type == SourceType::INTERACTIVE) && "File without path");
         if(src_type == SourceType::INTERACTIVE)
             this->path_or_code = "<im>";
@@ -51,8 +64,8 @@ public:
 
     ustring get_path_or_code() { return this->path_or_code; }
     SourceType get_type() { return this->type; }
-    std::istream *get_new_stream();
-    ustring get_name() {
+    virtual std::istream *get_new_stream() override;
+    virtual ustring get_name() override {
         if (type == SourceType::STRING) return "<one-liner>";
         return path_or_code;
     }
@@ -78,6 +91,13 @@ public:
     const SourceFile &get_file() { return file; }
 };
 
+
+class BytecodeFile : public File {
+public:
+    BytecodeFile(ustring path) : File(path) {}
+
+    virtual std::istream *get_new_stream() override;
+};
 
 }
 

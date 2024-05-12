@@ -48,7 +48,7 @@ const char *error::get_code_name(error::ErrorCode code){
     return "Unknown";
 }
 
-void error::error(error::ErrorCode code, const char *msg, SourceFile *src_f, bool exit){
+void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit){
     errs << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
             << error::colors::colorize(error::colors::LIGHT_RED) << (exit ? "fatal error" : "error") << error::colors::reset() 
             << " (" << error::get_code_name(code) << "): ";

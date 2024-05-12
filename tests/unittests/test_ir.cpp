@@ -10,7 +10,8 @@ using namespace moss;
 
 /** Test correct casting */
 TEST(IR, Casting){
-    ir::Module *m = new ir::Module("m");
+    SourceFile f(SourceFile::SourceType::STDIN);
+    ir::Module *m = new ir::Module("m", f, true);
     ir::IR *i = m;
 
     EXPECT_TRUE(isa<ir::Module>(*i));

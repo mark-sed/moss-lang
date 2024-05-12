@@ -113,9 +113,10 @@ namespace error {
      * Prints error information passed in and exits with passed in code
      * @param code Code of an error that occurred
      * @param msg Info message to be printed for the user
+     * @param src_f Source file
      * @param exit If true (default), then after the message is printed program exits with code
      */
-    void error(error::ErrorCode code, const char *msg, SourceFile *src_f=nullptr, bool exit=true);
+    void error(error::ErrorCode code, const char *msg, File *src_f=nullptr, bool exit=true);
 
     /**
      * Prints warning to std::wcerr

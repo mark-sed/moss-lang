@@ -21,9 +21,6 @@
 #include <cstdio>
 #include <unordered_map>
 
-#include <memory>
-#include <initializer_list>
-
 namespace moss {
 
 namespace error {
