@@ -98,6 +98,7 @@ namespace error {
         INTERNAL,      ///< Internal compiler error (such as unable to allocate memory)
         FILE_ACCESS,   ///< Problem opening/writing/working with users files (not internal config files)
         UNIMPLEMENTED, ///< Problems with instruction
+        BYTECODE,      ///< Problems with bytecode
         UNKNOWN,       ///< Unknown error (shouldn't be really used)
     };
 

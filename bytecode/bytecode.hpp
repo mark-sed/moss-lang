@@ -14,9 +14,17 @@
 
 namespace moss {
 
+#define BC_OPCODE_SIZE 1  /// Size of opcode in bytes
+#define opcode_t uint8_t
+
+#define BC_STR_LEN_SIZE 4 /// How many bytes does the string size take
+#define BC_INT_SIZE 8     /// How many bytes does integer value take
+#define BC_FLOAT_SIZE 8   /// How many bytes does float value take
+#define BC_ADDR_SIZE 4    /// How many bytes does bytecode address take
+
 class Bytecode {
 public:
-    enum OpCodes : uint8_t {
+    enum OpCodes : opcode_t {
         END = 0, // End of code
 
         LOAD,        //   %dst, "name"

@@ -37,8 +37,8 @@ This pool holds temporary values and local variables these values can be
 accessed with `%` prefix.
 
 ```
-ADD     r0, 42, %0
-SUB     %2, r0, %1
+ADD     %3, 42, %0
+SUB     %2, %3, %1
 ```
 
 ## Opcodes

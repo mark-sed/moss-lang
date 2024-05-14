@@ -7,6 +7,9 @@
 #include "logging.hpp"
 #include <iostream>
 
+#include "bytecode_reader.hpp"
+#include "bytecode.hpp"
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <Windows.h>
 #endif
@@ -47,21 +50,23 @@ int main(int argc, const char *argv[]) {
     LOG1("Logging enabled with level: " << clopts::get_logging_level());
     LOG5("Unicode output test (sushi emoji, umlaut u and japanese): " << "🍣 ü ラーメン");
 
-    auto main_file = get_input();
+    /*auto main_file = get_input();
 
     Scanner scanner(main_file);
     Token *t = scanner.next_nonws_token();
     while(t->get_type() != TokenType::END_OF_FILE) {
-        /*if(t->get_type() == TokenType::ERROR_TOKEN) {
-            outs << "[" << dynamic_cast<ErrorToken*>(t)->get_report() << "] ";
-        }
-        else {*/
-            outs << *t << " ";
-        //}
+        outs << *t << " ";
         delete t;
         t = scanner.next_nonws_token();
     }
-    delete t;
+    delete t;*/
+
+    BytecodeFile bf("examples/test.msb");
+    BytecodeReader *bcreader = new BytecodeReader(bf);
+    Bytecode *bc = bcreader->read();
+
+    delete bc;
+    delete bcreader;
 
     return 0;
 }
