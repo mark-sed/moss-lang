@@ -39,6 +39,7 @@ set(SOURCES
     bytecode/bytecode.cpp
     bytecode/bytecode_writer.cpp
     bytecode/bytecode_reader.cpp
+    bytecode/opcode.cpp
 )
 
 # Targets

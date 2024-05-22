@@ -41,6 +41,15 @@ ADD     %3, 42, %0
 SUB     %2, %3, %1
 ```
 
+## Bytecode memory model
+
+__Sizes__:
+* Opcode - 1 B
+* Int value - 8 B
+* Float value - 8 B
+* Address - 4 B
+* Strings - 4 B for its byte length (UNICODE, so not character length) followed by that many bytes
+
 ## Opcodes
 
 Strings are stored with their size followed by their value.

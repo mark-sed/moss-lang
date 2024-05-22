@@ -12,6 +12,7 @@
 #define _IR_HPP_
 
 #include "source.hpp"
+#include "os_interface.hpp"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -33,9 +34,9 @@ enum class IRType {
 class IR {
 protected:
     IRType ir_type;
-    std::string name;
+    ustring name;
 
-    IR(IRType ir_type, std::string name) : ir_type(ir_type), name(name) {}
+    IR(IRType ir_type, ustring name) : ir_type(ir_type), name(name) {}
 public:
     virtual ~IR() {}
 
@@ -57,7 +58,7 @@ inline std::ostream& operator<< (std::ostream& os, IR &ir) {
  */
 class Construct : public IR {
 protected:
-    Construct(IRType ir_type, std::string name) : IR(ir_type, name) {}
+    Construct(IRType ir_type, ustring name) : IR(ir_type, name) {}
 public:
     static const IRType ClassType = IRType::CONSTRUCT;
 };
@@ -69,7 +70,7 @@ public:
  */
 class Statement : public IR {
 protected:
-    Statement(IRType ir_type, std::string name) : IR(ir_type, name) {}
+    Statement(IRType ir_type, ustring name) : IR(ir_type, name) {}
 public:
     static const IRType ClassType = IRType::STATEMENT;
 };
@@ -79,7 +80,7 @@ public:
  */
 class Expression : public IR {
 protected:
-    Expression(IRType ir_type, std::string name) : IR(ir_type, name) {}
+    Expression(IRType ir_type, ustring name) : IR(ir_type, name) {}
 public:
     static const IRType ClassType = IRType::EXPRESSION;
 };

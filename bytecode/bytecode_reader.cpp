@@ -1,6 +1,7 @@
 #include "bytecode_reader.hpp"
 #include "errors.hpp"
 #include "bytecode.hpp"
+#include "opcode.hpp"
 
 using namespace moss;
 
