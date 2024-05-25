@@ -17,21 +17,25 @@ namespace moss {
 
 namespace opcode {
 
+using Register = unsigned int;
+using StringVal = ustring;
+
 /** Base Opcode class */
 class OpCode {
 protected:
     Bytecode::OpCodes op_type;
-    ustring name;
+    ustring mnem;
 
-    OpCode(Bytecode::OpCodes op_type, ustring name) : op_type(op_type), name(name) {}
+    OpCode(Bytecode::OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {}
 public:
     virtual ~OpCode() {}
 
     Bytecode::OpCodes get_type() { return this->op_type; }
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "<opcode>" << name;
+        os << mnem;
         return os;
     }
+    virtual void exec() = 0;
 };
 
 inline std::ostream& operator<< (std::ostream& os, OpCode &op) {
@@ -41,7 +45,43 @@ inline std::ostream& operator<< (std::ostream& os, OpCode &op) {
 class End : public OpCode {
 public:
     static const Bytecode::OpCodes ClassType = Bytecode::OpCodes::END;
+
+    End() : OpCode(ClassType, "END") {}
+    void exec() override { /*TODO*/ }
 };
+
+class Load : public OpCode {
+private:
+    Register dst;
+    StringVal name;
+public:
+    static const Bytecode::OpCodes ClassType = Bytecode::OpCodes::LOAD;
+
+    Load(Register dst, StringVal name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
+    void exec() override {
+        // TODO
+    }
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << " %" << dst << ", \"" << name << "\"";
+        return os;
+    }
+};
+
+/*
+class Name : public OpCode {
+public:
+    static const Bytecode::OpCodes ClassType = Bytecode::OpCodes::NAME;
+
+    Name() : OpCode(ClassType, "NAME") {}
+    void exec() override {
+        // TODO
+    }
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+};
+*/
 
 }
 

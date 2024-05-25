@@ -92,7 +92,7 @@ private:
 public:
     static const IRType ClassType = IRType::MODULE;
 
-    Module(std::string name, SourceFile &src_file, bool is_main) 
+    Module(ustring name, SourceFile &src_file, bool is_main) 
         : Construct(ClassType, name), src_file(src_file), is_main(is_main) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
@@ -105,7 +105,7 @@ class Space : public Construct {
 public:
     static const IRType ClassType = IRType::SPACE;
 
-    Space(std::string name) : Construct(ClassType, name) {}
+    Space(ustring name) : Construct(ClassType, name) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "space " << name;
