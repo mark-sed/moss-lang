@@ -10,14 +10,35 @@
 #ifndef _MEMORY_HPP_
 #define _MEMORY_HPP_
 
+#include "values.hpp"
+#include <vector>
+
 namespace moss {
+
+struct MemoryCell {
+    Value *v;
+
+    MemoryCell(Value *v) : v(v) {}
+    MemoryCell() : v(nullptr) {}
+
+    ~MemoryCell() {
+        if (v) {
+            delete v;
+            v = nullptr;
+        }
+    }
+};
 
 class MemoryPool {
 private:
-    //
+    std::vector<MemoryCell *> pool; 
 public:
-    MemoryPool(){}
-    virtual ~MemoryPool() {}
+    MemoryPool() : pool(256) {}
+    virtual ~MemoryPool() {
+        for (auto *c: pool) {
+            delete c;
+        }
+    }
 };
 
 }

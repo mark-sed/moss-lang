@@ -41,7 +41,7 @@ set(SOURCES
     bytecode/bytecode_reader.cpp
     bytecode/opcode.cpp
     vm/memory.cpp
-    vm/types.cpp
+    vm/values.cpp
 )
 
 # Targets
