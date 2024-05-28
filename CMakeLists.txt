@@ -40,6 +40,7 @@ set(SOURCES
     bytecode/bytecode_writer.cpp
     bytecode/bytecode_reader.cpp
     bytecode/opcode.cpp
+    vm/interpreter.cpp
     vm/memory.cpp
     vm/values.cpp
 )

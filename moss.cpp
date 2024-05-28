@@ -9,6 +9,7 @@
 
 #include "bytecode_reader.hpp"
 #include "bytecode.hpp"
+#include "interpreter.hpp"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <Windows.h>
@@ -65,6 +66,10 @@ int main(int argc, const char *argv[]) {
     BytecodeReader *bcreader = new BytecodeReader(bf);
     Bytecode *bc = bcreader->read();
 
+    Interpreter *interpreter = new Interpreter(bc);
+    interpreter->run();
+
+    delete interpreter;
     delete bc;
     delete bcreader;
 
