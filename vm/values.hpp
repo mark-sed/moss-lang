@@ -39,8 +39,16 @@ public:
 
     TypeKind get_kind() { return this->kind; }
     ustring get_name() { return this->name; }
+
+    virtual std::ostream& debug(std::ostream& os) const {
+        os << "[Value]" << name;
+        return os;
+    }
 };
 
+inline std::ostream& operator<< (std::ostream& os, Value &v) {
+    return v.debug(os);
+}
 
 class IntValue : public Value {
 private:
@@ -51,6 +59,11 @@ public:
     IntValue(int64_t value) : Value(ClassType, "Int"), value(value) {}
 
     int64_t get_value() { return this->value; }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Int(" << value << ")";
+        return os;
+    }
 };
 
 // Helper functions

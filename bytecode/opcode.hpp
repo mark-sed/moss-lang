@@ -11,9 +11,12 @@
 #define _OPCODE_HPP_
 
 #include "os_interface.hpp"
+#include "interpreter.hpp"
 #include <cstdint>
 
 namespace moss {
+
+class Interpreter;
 
 namespace opcode {
 
@@ -191,7 +194,7 @@ public:
         os << mnem;
         return os;
     }
-    virtual void exec() = 0;
+    virtual void exec(Interpreter *vm) = 0;
 };
 
 inline std::ostream& operator<< (std::ostream& os, OpCode &op) {
@@ -203,7 +206,8 @@ public:
     static const OpCodes ClassType = OpCodes::END;
 
     End() : OpCode(ClassType, "END") {}
-    void exec() override { /*TODO*/ }
+    
+    void exec(Interpreter *vm) override;
 };
 
 class Load : public OpCode {
@@ -214,9 +218,7 @@ public:
     static const OpCodes ClassType = OpCodes::LOAD;
 
     Load(Register dst, StringVal name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
-    void exec() override {
-        // TODO
-    }
+    void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", \"" << name << "\"";
         return os;
@@ -231,9 +233,9 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_NAME;
 
     StoreName(Register dst, StringVal name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {}
-    void exec() override {
-        // TODO
-    }
+    
+    void exec(Interpreter *vm) override;
+    
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", \"" << name << "\"";
         return os;
@@ -248,9 +250,9 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_CONST;
 
     StoreConst(Register dst, Register csrc) : OpCode(ClassType, "STORE_CONST"), dst(dst), csrc(csrc) {}
-    void exec() override {
-        // TODO
-    }
+    
+    void exec(Interpreter *vm) override;
+    
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", " << " %" << csrc;
         return os;
@@ -265,9 +267,9 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_INT_CONST;
 
     StoreIntConst(Register dst, IntConst val) : OpCode(ClassType, "STORE_INT_CONST"), dst(dst), val(val) {}
-    void exec() override {
-        // TODO
-    }
+    
+    void exec(Interpreter *vm) override;
+    
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", " << val;
         return os;
@@ -280,9 +282,9 @@ public:
     static const OpCodes ClassType = OpCodes::NAME;
 
     Name() : OpCode(ClassType, "NAME") {}
-    void exec() override {
-        // TODO
-    }
+    
+    void exec(Interpreter *vm) override;
+    
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem;
         return os;

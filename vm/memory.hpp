@@ -16,10 +16,11 @@
 #include <vector>
 #include <map>
 #include <cstdint>
+#include <iostream>
 
 namespace moss {
 
-struct MemoryCell {
+/*struct MemoryCell {
     Value *v;
 
     MemoryCell(Value *v) : v(v) {}
@@ -31,16 +32,24 @@ struct MemoryCell {
             v = nullptr;
         }
     }
-};
+};*/
 
 class MemoryPool {
 private:
-    std::vector<MemoryCell> pool;
+    std::vector<Value *> pool;
     std::map<ustring, register_t> sym_table;
 public:
-    MemoryPool() : pool(256) {}
+    MemoryPool() : pool(256, nullptr) {}
     virtual ~MemoryPool() {}
+
+    void store(register_t reg, Value *v);
+
+    std::ostream& debug(std::ostream& os) const;
 };
+
+inline std::ostream& operator<< (std::ostream& os, MemoryPool &pool) {
+    return pool.debug(os);
+}
 
 }
 

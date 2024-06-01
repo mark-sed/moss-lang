@@ -69,6 +69,8 @@ int main(int argc, const char *argv[]) {
     Interpreter *interpreter = new Interpreter(bc);
     interpreter->run();
 
+    LOGMAX(*interpreter);
+
     delete interpreter;
     delete bc;
     delete bcreader;

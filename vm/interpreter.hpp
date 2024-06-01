@@ -17,6 +17,9 @@
 
 namespace moss {
 
+class MemoryPool;
+class Bytecode;
+
 class Interpreter {
 private:
     Bytecode *code;
@@ -25,18 +28,20 @@ private:
     MemoryPool *reg_pool;
 
 public:
-    Interpreter(Bytecode *code) : code(code) {
-        this->const_pool = new MemoryPool();
-        this->reg_pool = new MemoryPool();
-    }
-
-    ~Interpreter() {
-        delete const_pool;
-        delete reg_pool;
-    }
+    Interpreter(Bytecode *code);
+    ~Interpreter();
 
     void run();
+
+    MemoryPool *get_const_pool() { return this->const_pool; }
+    MemoryPool *get_reg_pool() { return this->reg_pool; }
+
+    std::ostream& debug(std::ostream& os) const;
 };
+
+inline std::ostream& operator<< (std::ostream& os, Interpreter &i) {
+    return i.debug(os);
+}
 
 }
 

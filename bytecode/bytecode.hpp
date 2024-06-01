@@ -16,23 +16,18 @@
 
 namespace moss {
 
+namespace opcode {
+    class OpCode;    
+}
+
 class Bytecode {
 private:
     std::vector<opcode::OpCode *> code;
 public:
     Bytecode() {}
-    ~Bytecode() {
-        for (auto *op: code) {
-             delete op;
-        }
-    }
+    ~Bytecode();
 
-    std::ostream& debug(std::ostream& os) const {
-        for (auto op: code) {
-            os << *op << "\n";
-        }
-        return os;
-    }
+    std::ostream& debug(std::ostream& os) const;
 
     void push_back(opcode::OpCode *op) {
         code.push_back(op);
