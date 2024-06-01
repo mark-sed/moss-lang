@@ -11,18 +11,28 @@
 #define _OPCODE_HPP_
 
 #include "os_interface.hpp"
+#include <cstdint>
 
 namespace moss {
 
 namespace opcode {
 
 #define BC_OPCODE_SIZE 1  /// Size of opcode in bytes
-#define opcode_t uint8_t
+using opcode_t = uint8_t;
+
+#define BC_REGISTER_SIZE 4 /// How many bytes does register index take
+using Register = uint32_t;
 
 #define BC_STR_LEN_SIZE 4 /// How many bytes does the string size take
-#define BC_INT_SIZE 8     /// How many bytes does integer value take
-#define BC_FLOAT_SIZE 8   /// How many bytes does float value take
+using strlen_t = uint32_t;
+using StringVal = ustring;
+
 #define BC_ADDR_SIZE 4    /// How many bytes does bytecode address take
+using Address = uint32_t;
+
+#define BC_INT_SIZE 8 /// How many bytes does int take
+using IntConst = int64_t;
+
 
 enum OpCodes : opcode_t {
     END = 0, // End of code
@@ -166,9 +176,6 @@ enum OpCodes : opcode_t {
     BYTE_CODES_AMOUNT
 };  //static_assert(Bytecode::BYTE_CODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
 
-using Register = unsigned int;
-using StringVal = ustring;
-
 /** Base Opcode class */
 class OpCode {
 protected:
@@ -211,7 +218,58 @@ public:
         // TODO
     }
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << " %" << dst << ", \"" << name << "\"";
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        return os;
+    }
+};
+
+class StoreName : public OpCode {
+private:
+    Register dst;
+    StringVal name;
+public:
+    static const OpCodes ClassType = OpCodes::STORE_NAME;
+
+    StoreName(Register dst, StringVal name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {}
+    void exec() override {
+        // TODO
+    }
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        return os;
+    }
+};
+
+class StoreConst : public OpCode {
+private:
+    Register dst;
+    Register csrc;
+public:
+    static const OpCodes ClassType = OpCodes::STORE_CONST;
+
+    StoreConst(Register dst, Register csrc) : OpCode(ClassType, "STORE_CONST"), dst(dst), csrc(csrc) {}
+    void exec() override {
+        // TODO
+    }
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", " << " %" << csrc;
+        return os;
+    }
+};
+
+class StoreIntConst : public OpCode {
+private:
+    Register dst;
+    IntConst val;
+public:
+    static const OpCodes ClassType = OpCodes::STORE_INT_CONST;
+
+    StoreIntConst(Register dst, IntConst val) : OpCode(ClassType, "STORE_INT_CONST"), dst(dst), val(val) {}
+    void exec() override {
+        // TODO
+    }
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", " << val;
         return os;
     }
 };

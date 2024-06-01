@@ -12,7 +12,9 @@
 
 #include "source.hpp"
 #include "bytecode.hpp"
+#include "opcode.hpp"
 #include <fstream>
+#include <cstdlib>
 
 namespace moss {
 
@@ -20,12 +22,22 @@ class BytecodeReader {
 private:
     BytecodeFile &file;
     std::istream *stream;
+
+    char *str_buffer;
+    size_t buffer_size;
+
+    opcode::Register read_register();
+    opcode::StringVal read_string();
+    opcode::IntConst read_const_int();
 public:
-    BytecodeReader(BytecodeFile &file) : file(file) {
+    BytecodeReader(BytecodeFile &file) : file(file), buffer_size(256) {
         this->stream = file.get_new_stream();
+        // Buffer might be reallocated, so malloc has to be used
+        this->str_buffer = (char *)std::malloc(buffer_size);
     }
     ~BytecodeReader() {
         delete stream;
+        std::free(str_buffer);
     }
 
     Bytecode *read();

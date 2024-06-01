@@ -45,6 +45,7 @@ SUB     %2, %3, %1
 
 __Sizes__:
 * Opcode - 1 B
+* Register - 4 B 
 * Int value - 8 B
 * Float value - 8 B
 * Address - 4 B

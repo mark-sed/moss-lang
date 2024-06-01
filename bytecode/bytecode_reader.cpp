@@ -3,17 +3,46 @@
 #include "bytecode.hpp"
 #include "opcode.hpp"
 #include "logging.hpp"
+#include <cstdlib>
 
 using namespace moss;
+using namespace moss::opcode;
+
+Register BytecodeReader::read_register() {
+    char buffer[BC_REGISTER_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BC_REGISTER_SIZE);
+    return *(Register *)&buffer[0];
+}
+
+StringVal BytecodeReader::read_string() {
+    char buffer[BC_STR_LEN_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BC_STR_LEN_SIZE);
+    strlen_t str_len = *(strlen_t *)&buffer[0];
+
+    if (str_len > buffer_size) {
+        // Change buffer to size of nearest higher multiple of 64
+        buffer_size = ((str_len - 1) | 63) + 1;
+        this->str_buffer = (char *)std::realloc(str_buffer, buffer_size);
+    }
+
+    this->stream->read(str_buffer, str_len);
+    return StringVal(str_buffer, str_len);
+}
+
+IntConst BytecodeReader::read_const_int() {
+    char buffer[BC_INT_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BC_INT_SIZE);
+    return *(IntConst *)&buffer[0];
+}
 
 Bytecode *BytecodeReader::read() {
     LOG1("Reading bytecode from file " << this->file.get_name());
 
     Bytecode *bc = new Bytecode();
 
-    size_t buffer_size = 256;
-    // Buffer is used to read string data
-    unsigned char *buffer = new unsigned char[buffer_size];
     char opcode_char;
     opcode_t opcode;
 
@@ -22,22 +51,32 @@ Bytecode *BytecodeReader::read() {
     do {
         this->stream->read(&opcode_char, BC_OPCODE_SIZE);
         opcode = static_cast<opcode_t>(opcode_char);
+        if (this->stream->eof()) 
+            break;
 
         switch (opcode) {
         case opcode::OpCodes::END: {} break;
-        case opcode::OpCodes::LOAD: {} break;
+        case opcode::OpCodes::LOAD: { 
+            bc->push_back(new Load(read_register(), read_string()));
+        } break;
         case opcode::OpCodes::LOAD_ATTR: {} break;
         case opcode::OpCodes::LOAD_GLOBAL: {} break;
         case opcode::OpCodes::LOAD_NONLOC: {} break;
-        case opcode::OpCodes::STORE_NAME: {} break;
+        case opcode::OpCodes::STORE_NAME: {
+            bc->push_back(new StoreName(read_register(), read_string()));
+        } break;
         case opcode::OpCodes::ALIAS: {} break;
         case opcode::OpCodes::STORE: {} break;
-        case opcode::OpCodes::STORE_CONST: {} break;
+        case opcode::OpCodes::STORE_CONST: {
+            bc->push_back(new StoreConst(read_register(), read_register()));
+        } break;
         case opcode::OpCodes::STORE_ADDR: {} break;
         case opcode::OpCodes::STORE_ATTR: {} break;
         case opcode::OpCodes::STORE_ADDR_ATTR: {} break;
         case opcode::OpCodes::STORE_CONST_ATTR: {} break;
-        case opcode::OpCodes::STORE_INT_CONST: {} break;
+        case opcode::OpCodes::STORE_INT_CONST: {
+            bc->push_back(new StoreIntConst(read_register(), read_const_int()));
+        } break;
         case opcode::OpCodes::STORE_FLOAT_CONST: {} break;
         case opcode::OpCodes::STORE_STR_CONST: {} break;
         case opcode::OpCodes::JMP: {} break;
@@ -147,7 +186,6 @@ Bytecode *BytecodeReader::read() {
         }
     } while(!this->stream->eof());
 
-    delete[] buffer;
     LOG1("Bytecode read and converted:\n" << *bc);
     return bc;
 }

@@ -33,6 +33,10 @@ public:
         }
         return os;
     }
+
+    void push_back(opcode::OpCode *op) {
+        code.push_back(op);
+    } 
 };
 
 inline std::ostream& operator<< (std::ostream& os, Bytecode &bc) {

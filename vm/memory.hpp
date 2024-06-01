@@ -11,7 +11,11 @@
 #define _MEMORY_HPP_
 
 #include "values.hpp"
+#include "os_interface.hpp"
+#include "opcode.hpp"
 #include <vector>
+#include <map>
+#include <cstdint>
 
 namespace moss {
 
@@ -31,14 +35,11 @@ struct MemoryCell {
 
 class MemoryPool {
 private:
-    std::vector<MemoryCell *> pool; 
+    std::vector<MemoryCell> pool;
+    std::map<ustring, register_t> sym_table;
 public:
     MemoryPool() : pool(256) {}
-    virtual ~MemoryPool() {
-        for (auto *c: pool) {
-            delete c;
-        }
-    }
+    virtual ~MemoryPool() {}
 };
 
 }
