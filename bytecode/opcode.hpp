@@ -206,7 +206,7 @@ public:
     static const OpCodes ClassType = OpCodes::END;
 
     End() : OpCode(ClassType, "END") {}
-    
+
     void exec(Interpreter *vm) override;
 };
 
@@ -254,7 +254,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", " << " %" << csrc;
+        os << mnem << "\t%" << dst << ", " << " #" << csrc;
         return os;
     }
 };
@@ -271,7 +271,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", " << val;
+        os << mnem << "\t#" << dst << ", " << val;
         return os;
     }
 };

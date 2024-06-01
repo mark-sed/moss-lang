@@ -70,10 +70,11 @@ int main(int argc, const char *argv[]) {
     interpreter->run();
 
     LOGMAX(*interpreter);
+    int exit_code = interpreter->get_exit_code();
 
     delete interpreter;
     delete bc;
     delete bcreader;
 
-    return 0;
+    return exit_code;
 }

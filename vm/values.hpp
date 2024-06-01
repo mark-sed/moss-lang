@@ -35,6 +35,7 @@ protected:
     
     Value(TypeKind kind, ustring name) : kind(kind), name(name) {}
 public:
+    virtual Value *clone() = 0;
     virtual ~Value() {}
 
     TypeKind get_kind() { return this->kind; }
@@ -57,6 +58,9 @@ public:
     static const TypeKind ClassType = TypeKind::INT;
 
     IntValue(int64_t value) : Value(ClassType, "Int"), value(value) {}
+    virtual Value *clone() {
+        return new IntValue(this->value);
+    }
 
     int64_t get_value() { return this->value; }
 

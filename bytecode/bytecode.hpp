@@ -31,7 +31,14 @@ public:
 
     void push_back(opcode::OpCode *op) {
         code.push_back(op);
-    } 
+    }
+
+    size_t size() { return code.size(); }
+
+    opcode::OpCode *operator[](uint32_t addr) {
+        assert(addr < code.size() && "Out of bounds bci access");
+        return code[addr];
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Bytecode &bc) {

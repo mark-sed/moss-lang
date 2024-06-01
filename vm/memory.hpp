@@ -40,9 +40,17 @@ private:
     std::map<ustring, register_t> sym_table;
 public:
     MemoryPool() : pool(256, nullptr) {}
-    virtual ~MemoryPool() {}
+    virtual ~MemoryPool() {
+        for (auto v: pool) {
+            delete v;
+        }
+    }
 
     void store(register_t reg, Value *v);
+    Value *load(register_t reg);
+
+    void store_name(register_t reg, ustring name);
+    Value *load_name(ustring name);
 
     std::ostream& debug(std::ostream& os) const;
 };
