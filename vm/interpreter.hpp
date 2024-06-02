@@ -22,6 +22,10 @@ namespace moss {
 class MemoryPool;
 class Bytecode;
 
+/**
+ * @brief Interpreter for moss bytecode
+ * Interpreter holds memory pools (stack frames) and runs bytecode provided
+ */
 class Interpreter {
 private:
     Bytecode *code;

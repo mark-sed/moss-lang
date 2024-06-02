@@ -36,7 +36,7 @@ using Address = uint32_t;
 #define BC_INT_SIZE 8 /// How many bytes does int take
 using IntConst = int64_t;
 
-
+/// Opcode names and their corresponding number
 enum OpCodes : opcode_t {
     END = 0, // End of code
 

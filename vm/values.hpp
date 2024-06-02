@@ -48,8 +48,11 @@ public:
         return os;
     }
 
+    /** Returns how many references are there for this value */
     int get_references() { return this->references; }
+    /** Increments reference counter */
     void inc_refs() { this->references += 1; }
+    /** Decrements reference counter */
     void dec_refs() { this->references -= 1; }
 };
 

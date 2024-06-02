@@ -40,6 +40,7 @@ public:
         std::free(str_buffer);
     }
 
+    /** Reads bytecode into Bytecode object */
     Bytecode *read();
 };
 

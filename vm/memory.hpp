@@ -20,20 +20,12 @@
 
 namespace moss {
 
-/*struct MemoryCell {
-    Value *v;
-
-    MemoryCell(Value *v) : v(v) {}
-    MemoryCell() : v(nullptr) {}
-
-    ~MemoryCell() {
-        if (v) {
-            delete v;
-            v = nullptr;
-        }
-    }
-};*/
-
+/**
+ * @brief Virtual memory representation
+ * It holds pool of values with reference counting for their garbage collection
+ * and it also holds symbol table which has the variable names and corresponding
+ * index into the pool.
+ */
 class MemoryPool {
 private:
     std::vector<Value *> pool;
@@ -50,10 +42,20 @@ public:
         }
     }
 
+    /** Stores a value into a register */
     void store(register_t reg, Value *v);
+    /** 
+     * Loads value at specified register index 
+     * If there was no value stored, then Nil is stored there and returned
+     */
     Value *load(register_t reg);
 
+    /** Sets a name for specific register */
     void store_name(register_t reg, ustring name);
+    /** 
+     * Looks up a name and returns value corresponding to it in symbol table
+     * If there is no such name, then exception is raised with name error 
+     */
     Value *load_name(ustring name);
 
     std::ostream& debug(std::ostream& os) const;
