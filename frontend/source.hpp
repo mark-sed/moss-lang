@@ -97,6 +97,7 @@ public:
     BytecodeFile(ustring path) : File(path) {}
 
     virtual std::istream *get_new_stream() override;
+    std::ostream *create_out_stream();
 };
 
 }

@@ -1,5 +1,6 @@
 #include "source.hpp"
 #include "errors.hpp"
+#include "logging.hpp"
 #include <cstring>
 #include <fstream>
 
@@ -29,5 +30,14 @@ std::istream *BytecodeFile::get_new_stream() {
     if(f->fail()){
         error::error(error::ErrorCode::FILE_ACCESS, std::strerror(errno), this, true);
     }
+    return f;
+}
+
+std::ostream *BytecodeFile::create_out_stream() {
+    std::ofstream *f = new std::ofstream(this->path, std::ios_base::binary);
+    if (f->fail()) {
+        error::error(error::ErrorCode::FILE_ACCESS, std::strerror(errno), this, true);
+    }
+    LOGMAX("Created new output bytecode file: " << this->path);
     return f;
 }

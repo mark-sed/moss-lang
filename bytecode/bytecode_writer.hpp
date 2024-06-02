@@ -10,7 +10,36 @@
 #ifndef _BYTECODE_WRITER_HPP_
 #define _BYTECODE_WRITER_HPP_
 
+#include "source.hpp"
+#include "bytecode.hpp"
+#include "opcode.hpp"
+#include <fstream>
+#include <cstdlib>
+
 namespace moss {
+
+/** 
+ * Writes bytecode object into a file, which can be again read
+ * by BytecodeReader and run. 
+ */
+class BytecodeWriter {
+private:
+    BytecodeFile &file;
+    std::ostream *stream;
+
+    void write_register(opcode::Register reg);
+    void write_string(opcode::StringVal val);
+public:
+    BytecodeWriter(BytecodeFile &file) : file(file) {
+        this->stream = file.create_out_stream();
+    }
+    ~BytecodeWriter() {
+        delete this->stream;
+    }
+
+    /** Writes bytecode into a file */
+    void write(Bytecode *code);
+};
 
 }
 

@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "bytecode_reader.hpp"
+#include "bytecode_writer.hpp"
 #include "bytecode.hpp"
 #include "interpreter.hpp"
 
@@ -66,6 +67,10 @@ int main(int argc, const char *argv[]) {
     BytecodeReader *bcreader = new BytecodeReader(bf);
     Bytecode *bc = bcreader->read();
 
+    BytecodeFile bfo("examples/generated.msb");
+    BytecodeWriter *bcwriter = new BytecodeWriter(bfo);
+    bcwriter->write(bc);
+
     Interpreter *interpreter = new Interpreter(bc);
     interpreter->run();
 
@@ -74,6 +79,7 @@ int main(int argc, const char *argv[]) {
 
     delete interpreter;
     delete bc;
+    delete bcwriter;
     delete bcreader;
 
     return exit_code;

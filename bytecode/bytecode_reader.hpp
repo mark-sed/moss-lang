@@ -18,6 +18,7 @@
 
 namespace moss {
 
+/** Reader of bytecode files, it converts them into bytecode object */
 class BytecodeReader {
 private:
     BytecodeFile &file;

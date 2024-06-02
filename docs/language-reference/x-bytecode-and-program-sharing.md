@@ -6,7 +6,7 @@ source code. This is similar to Java's approach and sharing a .jar file.
 Constants and values are stored in memory pool and the bytecode (unlike Java
 or CPython) is register based.
 
-Bytecode is stored in little endian byte order.
+Bytecode is stored in little endian byte order (with byte being 8 bits).
 
 ## Memory pools
 

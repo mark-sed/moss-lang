@@ -17,6 +17,19 @@
 namespace moss {
 
 class Interpreter;
+namespace opcode {
+    class OpCode;
+}
+
+// Helper functions
+template<class T>
+bool isa(opcode::OpCode& o);
+
+template<class T>
+bool isa(opcode::OpCode* o);
+
+template<class T>
+T *dyn_cast(opcode::OpCode* o);
 
 namespace opcode {
 
@@ -194,11 +207,16 @@ public:
         os << mnem;
         return os;
     }
+    virtual bool equals(OpCode *other) = 0;
     virtual void exec(Interpreter *vm) = 0;
 };
 
 inline std::ostream& operator<< (std::ostream& os, OpCode &op) {
     return op.debug(os);
+}
+
+inline bool operator==(OpCode &a, OpCode &b) {
+    return a.equals(&b);
 }
 
 class End : public OpCode {
@@ -208,13 +226,16 @@ public:
     End() : OpCode(ClassType, "END") {}
 
     void exec(Interpreter *vm) override;
+    bool equals(OpCode *other) override {
+        return isa<End>(other);
+    }
 };
 
 class Load : public OpCode {
-private:
+public:
     Register dst;
     StringVal name;
-public:
+
     static const OpCodes ClassType = OpCodes::LOAD;
 
     Load(Register dst, StringVal name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
@@ -223,13 +244,18 @@ public:
         os << mnem << "\t\t%" << dst << ", \"" << name << "\"";
         return os;
     }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Load>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
+    }
 };
 
 class StoreName : public OpCode {
-private:
+public:
     Register dst;
     StringVal name;
-public:
+
     static const OpCodes ClassType = OpCodes::STORE_NAME;
 
     StoreName(Register dst, StringVal name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {}
@@ -240,13 +266,18 @@ public:
         os << mnem << "\t%" << dst << ", \"" << name << "\"";
         return os;
     }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreName>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
+    }
 };
 
 class StoreConst : public OpCode {
-private:
+public:
     Register dst;
     Register csrc;
-public:
+
     static const OpCodes ClassType = OpCodes::STORE_CONST;
 
     StoreConst(Register dst, Register csrc) : OpCode(ClassType, "STORE_CONST"), dst(dst), csrc(csrc) {}
@@ -257,13 +288,18 @@ public:
         os << mnem << "\t%" << dst << ", " << " #" << csrc;
         return os;
     }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreConst>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->csrc == csrc;
+    }
 };
 
 class StoreIntConst : public OpCode {
-private:
+public:
     Register dst;
     IntConst val;
-public:
+
     static const OpCodes ClassType = OpCodes::STORE_INT_CONST;
 
     StoreIntConst(Register dst, IntConst val) : OpCode(ClassType, "STORE_INT_CONST"), dst(dst), val(val) {}
@@ -273,6 +309,11 @@ public:
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t#" << dst << ", " << val;
         return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreIntConst>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->val == val;
     }
 };
 
@@ -288,6 +329,9 @@ public:
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem;
         return os;
+    }
+    bool equals(OpCode *other) override {
+        assert(false && "TODO: equals")
     }
 };
 */
