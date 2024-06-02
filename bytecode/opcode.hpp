@@ -59,7 +59,6 @@ enum OpCodes : opcode_t {
     LOAD_NONLOC, //   %dst, "name"
 
     STORE_NAME, //        %dst, "name"
-    ALIAS, //             %dst, "name"
     STORE, //             %dst, %src
     STORE_CONST, //       %dst, #val
     STORE_ADDR, //        %dst, addr

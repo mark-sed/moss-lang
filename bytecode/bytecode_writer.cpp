@@ -48,10 +48,7 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_string(o->name);
         }
-        /*else if (auto o = dyn_cast<opcode::ALIAS>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
-        }
-        else if (auto o = dyn_cast<opcode::STORE>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::STORE>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }*/
         else if (auto o = dyn_cast<opcode::StoreConst>(op_gen)){

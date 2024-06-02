@@ -53,6 +53,8 @@ __Sizes__:
 * Address - 4 B
 * Strings - 4 B for its byte length (UNICODE, so not character length) followed by that many bytes
 
+## Bytecode header
+
 ## Opcodes
 
 Strings are stored with their size followed by their value.
@@ -65,7 +67,6 @@ Strings are stored with their size followed by their value.
 xxh - LOAD_NONLOC   %dst, "name"
 
 xxh - STORE_NAME        %dst, "name"
-xxh - ALIAS             %dst, "name"
 xxh - STORE             %dst, %src
 xxh - STORE_CONST       %dst, #val
 xxh - STORE_ADDR        %dst, addr
