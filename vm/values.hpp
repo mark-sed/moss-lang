@@ -30,10 +30,12 @@ enum class TypeKind {
 /** Base class of all values */
 class Value {
 protected:
+    int references;
+    
     TypeKind kind;
     ustring name;
     
-    Value(TypeKind kind, ustring name) : kind(kind), name(name) {}
+    Value(TypeKind kind, ustring name) : references(1), kind(kind), name(name) {}
 public:
     virtual Value *clone() = 0;
     virtual ~Value() {}
@@ -45,6 +47,10 @@ public:
         os << "[Value]" << name;
         return os;
     }
+
+    int get_references() { return this->references; }
+    void inc_refs() { this->references += 1; }
+    void dec_refs() { this->references -= 1; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
@@ -65,7 +71,7 @@ public:
     int64_t get_value() { return this->value; }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Int(" << value << ")";
+        os << "Int(" << value << ")[refs: " << references << "]";
         return os;
     }
 };

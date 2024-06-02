@@ -220,7 +220,7 @@ public:
     Load(Register dst, StringVal name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "\t\t%" << dst << ", \"" << name << "\"";
         return os;
     }
 };

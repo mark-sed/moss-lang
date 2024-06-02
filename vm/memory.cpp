@@ -7,7 +7,8 @@ void MemoryPool::store(register_t reg, Value *v) {
     // FIXME
     assert(reg < static_cast<register_t>(pool.size()) && "TODO: Resize pool when out of bounds");
     if (pool[reg]) {
-        delete pool[reg];
+        pool[reg]->dec_refs();
+        assert(pool[reg]->get_references() > 0 && "TODO: Collect value that would be overriden and lost");
     }
     pool[reg] = v;
 }

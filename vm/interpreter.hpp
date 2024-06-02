@@ -15,7 +15,7 @@
 #include "memory.hpp"
 #include "bytecode.hpp"
 #include <cstdint>
-#include <vector>
+#include <list>
 
 namespace moss {
 
@@ -27,7 +27,7 @@ private:
     Bytecode *code;
 
     MemoryPool *const_pool;
-    std::vector<MemoryPool *> reg_pools;
+    std::list<MemoryPool *> reg_pools;
 
     uint32_t bci;
 
@@ -40,6 +40,9 @@ public:
 
     MemoryPool *get_const_pool() { return this->const_pool; }
     MemoryPool *get_reg_pool() { return this->reg_pools.back(); }
+    MemoryPool *get_global_reg_pool() { return this->reg_pools.front(); }
+
+    // TODO: pop and push frame (with free)
 
     int get_exit_code() { return exit_code; }
 

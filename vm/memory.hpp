@@ -42,7 +42,11 @@ public:
     MemoryPool() : pool(256, nullptr) {}
     virtual ~MemoryPool() {
         for (auto v: pool) {
-            delete v;
+            if (v) {
+                if (v->get_references() == 0)
+                    delete v;
+                v->dec_refs();
+            }
         }
     }
 
