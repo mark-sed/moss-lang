@@ -7,26 +7,47 @@ using namespace moss::opcode;
 
 void End::exec(Interpreter *vm) {
     // TODO
+    assert(false && "TODO: Unimplemented opcode");
 }
 
 void Load::exec(Interpreter *vm) {
-    auto *v = vm->get_reg_pool()->load_name(this->name);
+    auto *v = vm->load_name(this->name);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();
-    vm->get_reg_pool()->store(this->dst, v);
+    vm->store(this->dst, v);
+}
+
+void LoadAttr::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void LoadGlobal::exec(Interpreter *vm) {
+    auto *v = vm->load_name(this->name);
+    // FIXME:
+    assert(v && "TODO: Nonexistent name raise exception");
+    v->inc_refs();
+    vm->store(this->dst, v);
 }
 
 void StoreName::exec(Interpreter *vm) {
-    vm->get_reg_pool()->store_name(dst, name);
+    vm->store_name(dst, name);
 }
 
 void StoreConst::exec(Interpreter *vm) {
-    auto c = vm->get_const_pool()->load(csrc);
+    auto c = vm->load_const(csrc);
     c->inc_refs();
-    vm->get_reg_pool()->store(dst, c);
+    vm->store(dst, c);
 }
 
 void StoreIntConst::exec(Interpreter *vm) {
-    vm->get_const_pool()->store(dst, new IntValue(val));
+    vm->store_const(dst, new IntValue(val));
 }
+
+/*
+
+void ::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+*/

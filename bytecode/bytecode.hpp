@@ -35,7 +35,7 @@ public:
 
     size_t size() { return code.size(); }
 
-    inline opcode::OpCode *operator[](uint32_t addr) {
+    inline opcode::OpCode *operator[](opcode::Address addr) {
         assert(addr < code.size() && "Out of bounds bci access");
         return code[addr];
     }

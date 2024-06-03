@@ -14,6 +14,7 @@
 
 #include "memory.hpp"
 #include "bytecode.hpp"
+#include "os_interface.hpp"
 #include <cstdint>
 #include <list>
 
@@ -33,18 +34,38 @@ private:
     MemoryPool *const_pool;
     std::list<MemoryPool *> reg_pools;
 
-    uint32_t bci;
+    opcode::Address bci;
 
     int exit_code;
+
+    MemoryPool *get_const_pool() { return this->const_pool; }
+    MemoryPool *get_reg_pool() { return this->reg_pools.back(); }
+    MemoryPool *get_global_reg_pool() { return this->reg_pools.front(); }
 public:
     Interpreter(Bytecode *code);
     ~Interpreter();
 
     void run();
 
-    MemoryPool *get_const_pool() { return this->const_pool; }
-    MemoryPool *get_reg_pool() { return this->reg_pools.back(); }
-    MemoryPool *get_global_reg_pool() { return this->reg_pools.front(); }
+    /** Stores a value into a register */
+    void store(opcode::Register reg, Value *v);
+
+    void store_const(opcode::Register reg, Value *v);
+    /** 
+     * Loads value at specified register index 
+     * If there was no value stored, then Nil is stored there and returned
+     */
+    Value *load(opcode::Register reg);
+
+    Value *load_const(opcode::Register reg);
+
+    /** Sets a name for specific register */
+    void store_name(opcode::Register reg, ustring name);
+    /** 
+     * Looks up a name and returns value corresponding to it in symbol table
+     * If there is no such name, then exception is raised with name error 
+     */
+    Value *load_name(ustring name);
 
     // TODO: pop and push frame (with free)
 

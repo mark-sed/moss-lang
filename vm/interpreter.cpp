@@ -29,6 +29,42 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
     return os;
 }
 
+void Interpreter::store(opcode::Register reg, Value *v) {
+    // TODO: Go through frames
+    // FIXME: Incorrect
+    get_reg_pool()->store(reg, v);
+}
+
+void Interpreter::store_const(opcode::Register reg, Value *v) {
+    // TODO: Go through frames
+    // FIXME: Incorrect
+    get_const_pool()->store(reg, v);
+}
+
+Value *Interpreter::load(opcode::Register reg) {
+    // TODO: Go through frames
+    // FIXME: Incorrect
+    return get_reg_pool()->load(reg);
+}
+
+Value *Interpreter::load_const(opcode::Register reg) {
+    // TODO: Go through frames
+    // FIXME: Incorrect
+    return get_const_pool()->load(reg);
+}
+
+void Interpreter::store_name(opcode::Register reg, ustring name) {
+    // TODO: Go through frames
+    // FIXME: Incorrect
+    get_reg_pool()->store_name(reg, name);
+}
+
+Value *Interpreter::load_name(ustring name) {
+    // TODO: Go through frames
+    // FIXME: Incorrect
+    return get_reg_pool()->load_name(name);
+}
+
 void Interpreter::run() {
     LOG1("Running interpreter");
 

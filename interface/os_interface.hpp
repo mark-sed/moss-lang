@@ -67,6 +67,27 @@ namespace moss {
         return is_redir;
     }
 #endif
+
+namespace opcode {
+
+#define BC_OPCODE_SIZE 1  /// Size of opcode in bytes
+using opcode_t = uint8_t;
+
+#define BC_REGISTER_SIZE 4 /// How many bytes does register index take
+using Register = uint32_t;
+
+#define BC_STR_LEN_SIZE 4 /// How many bytes does the string size take
+using strlen_t = uint32_t;
+using StringVal = ustring;
+
+#define BC_ADDR_SIZE 4    /// How many bytes does bytecode address take
+using Address = uint32_t;
+
+#define BC_INT_SIZE 8 /// How many bytes does int take
+using IntConst = int64_t;
+
+}
+
 }
 
 #endif//_OS_INTERFACE_HPP_

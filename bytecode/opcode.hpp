@@ -33,22 +33,6 @@ T *dyn_cast(opcode::OpCode* o);
 
 namespace opcode {
 
-#define BC_OPCODE_SIZE 1  /// Size of opcode in bytes
-using opcode_t = uint8_t;
-
-#define BC_REGISTER_SIZE 4 /// How many bytes does register index take
-using Register = uint32_t;
-
-#define BC_STR_LEN_SIZE 4 /// How many bytes does the string size take
-using strlen_t = uint32_t;
-using StringVal = ustring;
-
-#define BC_ADDR_SIZE 4    /// How many bytes does bytecode address take
-using Address = uint32_t;
-
-#define BC_INT_SIZE 8 /// How many bytes does int take
-using IntConst = int64_t;
-
 /// Opcode names and their corresponding number
 enum OpCodes : opcode_t {
     END = 0, // End of code
@@ -245,6 +229,47 @@ public:
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Load>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
+    }
+};
+
+class LoadAttr : public OpCode {
+public:
+    Register dst;
+    Register src;
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::LOAD_ATTR;
+
+    LoadAttr(Register dst, Register src, StringVal name) : OpCode(ClassType, "LOAD_ATTR"), dst(dst), src(src), name(name) {}
+    void exec(Interpreter *vm) override;
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<LoadAttr>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->src == src && casted->name == name;
+    }
+};
+
+class LoadGlobal : public OpCode {
+public:
+    Register dst;
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::LOAD_GLOBAL;
+
+    LoadGlobal(Register dst, StringVal name) : OpCode(ClassType, "LOAD_GLOBAL"), dst(dst), name(name) {}
+    void exec(Interpreter *vm) override;
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<LoadGlobal>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->name == name;
     }

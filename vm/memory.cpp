@@ -3,9 +3,9 @@
 
 using namespace moss;
 
-void MemoryPool::store(register_t reg, Value *v) {
+void MemoryPool::store(opcode::Register reg, Value *v) {
     // FIXME
-    assert(reg < static_cast<register_t>(pool.size()) && "TODO: Resize pool when out of bounds");
+    assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Resize pool when out of bounds");
     if (pool[reg]) {
         pool[reg]->dec_refs();
         assert(pool[reg]->get_references() > 0 && "TODO: Collect value that would be overriden and lost");
@@ -13,9 +13,9 @@ void MemoryPool::store(register_t reg, Value *v) {
     pool[reg] = v;
 }
 
-Value *MemoryPool::load(register_t reg) {
+Value *MemoryPool::load(opcode::Register reg) {
     // FIXME
-    assert(reg < static_cast<register_t>(pool.size()) && "TODO: Resize pool when out of bounds");
+    assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Resize pool when out of bounds");
     Value *v = pool[reg];
     if (v)
         return v;
@@ -24,7 +24,7 @@ Value *MemoryPool::load(register_t reg) {
     return nullptr;
 }
 
-void MemoryPool::store_name(register_t reg, ustring name) {
+void MemoryPool::store_name(opcode::Register reg, ustring name) {
     this->sym_table[name] = reg;
 }
 

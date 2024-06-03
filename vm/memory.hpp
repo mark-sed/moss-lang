@@ -43,15 +43,15 @@ public:
     }
 
     /** Stores a value into a register */
-    void store(register_t reg, Value *v);
+    void store(opcode::Register reg, Value *v);
     /** 
      * Loads value at specified register index 
      * If there was no value stored, then Nil is stored there and returned
      */
-    Value *load(register_t reg);
+    Value *load(opcode::Register reg);
 
     /** Sets a name for specific register */
-    void store_name(register_t reg, ustring name);
+    void store_name(opcode::Register reg, ustring name);
     /** 
      * Looks up a name and returns value corresponding to it in symbol table
      * If there is no such name, then exception is raised with name error 
