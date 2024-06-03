@@ -65,6 +65,10 @@ Value *Interpreter::load_name(ustring name) {
     return get_reg_pool()->load_name(name);
 }
 
+Value *Interpreter::load_global_name(ustring name) {
+    return get_global_reg_pool()->load_name(name);
+}
+
 void Interpreter::run() {
     LOG1("Running interpreter");
 

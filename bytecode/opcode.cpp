@@ -23,7 +23,7 @@ void LoadAttr::exec(Interpreter *vm) {
 }
 
 void LoadGlobal::exec(Interpreter *vm) {
-    auto *v = vm->load_name(this->name);
+    auto *v = vm->load_glob_name(this->name);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();

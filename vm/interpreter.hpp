@@ -50,22 +50,32 @@ public:
     /** Stores a value into a register */
     void store(opcode::Register reg, Value *v);
 
+    /** Stores a value into constant pool */
     void store_const(opcode::Register reg, Value *v);
+
+    /** Sets a name for specific register */
+    void store_name(opcode::Register reg, ustring name);
+
     /** 
      * Loads value at specified register index 
      * If there was no value stored, then Nil is stored there and returned
      */
     Value *load(opcode::Register reg);
 
+    /** Loads a value from constant pool */
     Value *load_const(opcode::Register reg);
 
-    /** Sets a name for specific register */
-    void store_name(opcode::Register reg, ustring name);
     /** 
      * Looks up a name and returns value corresponding to it in symbol table
      * If there is no such name, then exception is raised with name error 
      */
     Value *load_name(ustring name);
+
+    /** 
+     * Looks up a name in global frame and returns its value
+     * If there is no such name, then exception is raised with name error 
+     */
+    Value *load_global_name(ustring name);
 
     // TODO: pop and push frame (with free)
 

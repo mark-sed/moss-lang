@@ -20,6 +20,10 @@ namespace opcode {
     class OpCode;    
 }
 
+/**
+ * @brief Class holding bytecode program
+ * It consists of a vector of opcodes and API to work with it.
+ */
 class Bytecode {
 private:
     std::vector<opcode::OpCode *> code;
@@ -33,6 +37,7 @@ public:
         code.push_back(op);
     }
 
+    /** How many opcodes are in this bytecode program */
     size_t size() { return code.size(); }
 
     inline opcode::OpCode *operator[](opcode::Address addr) {
