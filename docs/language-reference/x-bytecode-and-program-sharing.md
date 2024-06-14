@@ -66,8 +66,8 @@ Strings are stored with their size followed by their value.
 03h - LOAD_GLOBAL   %dst, "name"
 xxh - LOAD_NONLOC   %dst, "name"
 
-xxh - STORE_NAME        %dst, "name"
 xxh - STORE             %dst, %src
+xxh - STORE_NAME        %dst, "name"
 xxh - STORE_CONST       %dst, #val
 xxh - STORE_ADDR        %dst, addr
 xxh - STORE_ATTR        %src, %obj, "name"

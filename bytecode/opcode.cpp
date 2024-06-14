@@ -23,7 +23,19 @@ void LoadAttr::exec(Interpreter *vm) {
 }
 
 void LoadGlobal::exec(Interpreter *vm) {
-    auto *v = vm->load_glob_name(this->name);
+    auto *v = vm->load_global_name(this->name);
+    // FIXME:
+    assert(v && "TODO: Nonexistent name raise exception");
+    v->inc_refs();
+    vm->store(this->dst, v);
+}
+
+void LoadNonLoc::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void Store::exec(Interpreter *vm) {
+    auto *v = vm->load(src);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();
@@ -38,6 +50,14 @@ void StoreConst::exec(Interpreter *vm) {
     auto c = vm->load_const(csrc);
     c->inc_refs();
     vm->store(dst, c);
+}
+
+void StoreAddr::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void StoreAttr::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
 }
 
 void StoreIntConst::exec(Interpreter *vm) {

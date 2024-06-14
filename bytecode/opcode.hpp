@@ -42,8 +42,8 @@ enum OpCodes : opcode_t {
     LOAD_GLOBAL, //   %dst, "name"
     LOAD_NONLOC, //   %dst, "name"
 
-    STORE_NAME, //        %dst, "name"
     STORE, //             %dst, %src
+    STORE_NAME, //        %dst, "name"
     STORE_CONST, //       %dst, #val
     STORE_ADDR, //        %dst, addr
     STORE_ATTR, //        %src, %obj, "name"
@@ -275,6 +275,46 @@ public:
     }
 };
 
+class LoadNonLoc : public OpCode {
+public:
+    Register dst;
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::LOAD_NONLOC;
+
+    LoadNonLoc(Register dst, StringVal name) : OpCode(ClassType, "LOAD_NONLOC"), dst(dst), name(name) {}
+    void exec(Interpreter *vm) override;
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<LoadNonLoc>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
+    }
+};
+
+class Store : public OpCode {
+public:
+    Register dst;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::STORE;
+
+    Store(Register dst, Register src) : OpCode(ClassType, "STORE"), dst(dst), src(src) {}
+    void exec(Interpreter *vm) override;
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Store>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->src == src;
+    }
+};
+
 class StoreName : public OpCode {
 public:
     Register dst;
@@ -316,6 +356,51 @@ public:
         auto casted = dyn_cast<StoreConst>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->csrc == csrc;
+    }
+};
+
+class StoreAddr : public OpCode {
+public:
+    Register dst;
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::STORE_ADDR;
+
+    StoreAddr(Register dst, Address addr) : OpCode(ClassType, "STORE_ADDR"), dst(dst), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", " << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreAddr>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->addr == addr;
+    }
+};
+
+class StoreAttr : public OpCode {
+public:
+    Register src;
+    Register obj;
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::STORE_ATTR;
+
+    StoreAttr(Register src, Register obj, StringVal name) : OpCode(ClassType, "STORE_ATTR"), src(src), obj(obj), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", %" << obj << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreAttr>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->obj == obj && casted->name == name;
     }
 };
 
