@@ -35,33 +35,42 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_string(o->name);
         }
-        /*else if (auto o = dyn_cast<opcode::LOAD_ATTR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::LoadAttr>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::LOAD_GLOBAL>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::LoadGlobal>(op_gen)){
+            write_register(o->dst);
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::LOAD_NONLOC>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
-        }*/
+        else if (auto o = dyn_cast<opcode::LoadNonLoc>(op_gen)){
+            write_register(o->dst);
+            write_string(o->name);
+        }
+        else if (auto o = dyn_cast<opcode::Store>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
+        }
         else if (auto o = dyn_cast<opcode::StoreName>(op_gen)){
             write_register(o->dst);
             write_string(o->name);
         }
-        /*else if (auto o = dyn_cast<opcode::STORE>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
-        }*/
         else if (auto o = dyn_cast<opcode::StoreConst>(op_gen)){
             write_register(o->dst);
             write_register(o->csrc);
         }
-        /*else if (auto o = dyn_cast<opcode::STORE_ADDR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::StoreAddr>(op_gen)){
+            write_register(o->dst);
+            auto addr = o->addr;
+            this->stream->write(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
         }
-        else if (auto o = dyn_cast<opcode::STORE_ATTR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::StoreAttr>(op_gen)){
+            write_register(o->src);
+            write_register(o->obj);
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::STORE_ADDR_ATTR>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::STORE_ADDR_ATTR>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::STORE_CONST_ATTR>(op_gen)){

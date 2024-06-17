@@ -29,7 +29,7 @@ namespace moss {
 class MemoryPool {
 private:
     std::vector<Value *> pool;
-    std::map<ustring, register_t> sym_table;
+    std::map<ustring, opcode::Register> sym_table;
 public:
     MemoryPool() : pool(256, nullptr) {}
     virtual ~MemoryPool() {

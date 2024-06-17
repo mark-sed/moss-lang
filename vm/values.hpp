@@ -12,6 +12,7 @@
 
 #include "os_interface.hpp"
 #include <cstdint>
+#include <map>
 
 namespace moss {
 
@@ -35,7 +36,9 @@ protected:
     TypeKind kind;
     ustring name;
     
-    Value(TypeKind kind, ustring name) : references(1), kind(kind), name(name) {}
+    std::map<ustring, Value *> attrs;
+
+    Value(TypeKind kind, ustring name) : references(1), kind(kind), name(name), attrs() {}
 public:
     virtual Value *clone() = 0;
     virtual ~Value() {}
@@ -54,6 +57,17 @@ public:
     void inc_refs() { this->references += 1; }
     /** Decrements reference counter */
     void dec_refs() { this->references -= 1; }
+
+    /** 
+     * Returns register in which is attribute stored 
+     * If this attribute is not set, then nullptr is returned
+     * @param name Attribute name
+     * @return Value of attribute or nullptr is not set
+     */
+    Value *get_attr(ustring name);
+
+    /** Sets (new or overrides) attribute name to value v*/
+    void set_attr(ustring name, Value *v);
 };
 
 inline std::ostream& operator<< (std::ostream& os, Value &v) {

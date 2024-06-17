@@ -19,7 +19,13 @@ void Load::exec(Interpreter *vm) {
 }
 
 void LoadAttr::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto *v = vm->load(this->src);
+    // FIXME:
+    assert(v && "TODO: Nonexistent name raise exception");
+    auto attr = v->get_attr(this->name);
+    assert(attr && "TODO: Nonexistent attr raise exception");
+    attr->inc_refs();
+    vm->store(this->dst, attr);
 }
 
 void LoadGlobal::exec(Interpreter *vm) {
@@ -57,7 +63,14 @@ void StoreAddr::exec(Interpreter *vm) {
 }
 
 void StoreAttr::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto *dstobj = vm->load(this->obj);
+    // FIXME:
+    assert(dstobj && "TODO: Nonexistent name raise exception");
+    auto *v = vm->load(this->src);
+    // FIXME:
+    assert(v && "TODO: Nonexistent name raise exception");
+    v->inc_refs();
+    dstobj->set_attr(this->name, v);
 }
 
 void StoreIntConst::exec(Interpreter *vm) {
