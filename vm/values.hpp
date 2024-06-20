@@ -93,6 +93,44 @@ public:
     }
 };
 
+class FloatValue : public Value {
+private:
+    double value;
+public:
+    static const TypeKind ClassType = TypeKind::FLOAT;
+
+    FloatValue(double value) : Value(ClassType, "Float"), value(value) {}
+    virtual Value *clone() {
+        return new FloatValue(this->value);
+    }
+
+    double get_value() { return this->value; }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Float(" << value << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class BoolValue : public Value {
+private:
+    bool value;
+public:
+    static const TypeKind ClassType = TypeKind::BOOL;
+
+    BoolValue(bool value) : Value(ClassType, "Bool"), value(value) {}
+    virtual Value *clone() {
+        return new BoolValue(this->value);
+    }
+
+    bool get_value() { return this->value; }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Bool(" << (value ? "true" : "false") << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
 // Helper functions
 template<class T>
 bool isa(Value& t) {

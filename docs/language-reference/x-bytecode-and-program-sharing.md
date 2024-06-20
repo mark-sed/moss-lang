@@ -23,7 +23,8 @@ OUTPUT      #0
 ```
 
 Commonly used constants are pushed into this pool by default:
-- 0 - 99 - int values from 0 to 100
+- 0 - Invalid value
+- 1 - 99 - int values 
 - 100 - float 0.0
 - 101 - float 1.0
 - 102 - float +inf
@@ -76,6 +77,7 @@ xxh - STORE_CONST_ATTR  #val, %obj, "name"
 
 xxh - STORE_INT_CONST   #dst, int
 xxh - STORE_FLOAT_CONST #dst, float
+xxh - STORE_BOOL_CONST  #dst, bool
 xxh - STORE_STR_CONST   #dst, "string"
 
 xxh - JMP               addr

@@ -77,6 +77,10 @@ void StoreIntConst::exec(Interpreter *vm) {
     vm->store_const(dst, new IntValue(val));
 }
 
+void StoreFloatConst::exec(Interpreter *vm) {
+    vm->store_const(dst, new FloatValue(val));
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

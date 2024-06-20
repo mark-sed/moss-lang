@@ -52,6 +52,7 @@ enum OpCodes : opcode_t {
 
     STORE_INT_CONST, //   #dst, int
     STORE_FLOAT_CONST, // #dst, float
+    STORE_BOOL_CONST, // #dst, bool
     STORE_STR_CONST, //   #dst, "string"
 
     JMP, //               addr
@@ -422,6 +423,29 @@ public:
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<StoreIntConst>(other);
         if (!casted) return false;
+        return casted->dst == dst && casted->val == val;
+    }
+};
+
+class StoreFloatConst : public OpCode {
+public:
+    Register dst;
+    FloatConst val;
+
+    static const OpCodes ClassType = OpCodes::STORE_FLOAT_CONST;
+
+    StoreFloatConst(Register dst, FloatConst val) : OpCode(ClassType, "STORE_FLOAT_CONST"), dst(dst), val(val) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t#" << dst << ", " << val;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreFloatConst>(other);
+        if (!casted) return false;
+        // Note: Float comparison, but this should be used in tests only
         return casted->dst == dst && casted->val == val;
     }
 };

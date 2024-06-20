@@ -68,7 +68,7 @@ int main(int argc, const char *argv[]) {
     BytecodeReader *bcreader = new BytecodeReader(bf);*/
     Bytecode *bc = new Bytecode();
     bc->push_back(new opcode::StoreIntConst(200, 42));
-    bc->push_back(new opcode::StoreIntConst(201, 24));
+    bc->push_back(new opcode::StoreFloatConst(201, 24.5));
     bc->push_back(new opcode::StoreConst(0, 200));
     bc->push_back(new opcode::StoreConst(1, 201));
     bc->push_back(new opcode::StoreAttr(1, 0, "some_val"));

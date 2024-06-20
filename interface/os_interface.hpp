@@ -86,6 +86,12 @@ using Address = uint32_t;
 #define BC_INT_SIZE 8 /// How many bytes does int take
 using IntConst = int64_t;
 
+#define BC_FLOAT_SIZE 8 /// How many bytes does float take
+using FloatConst = double;
+
+#define BC_BOOL_SIZE 1 /// How many bytes does bool take
+using BoolConst = bool;
+
 }
 
 }
