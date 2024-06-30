@@ -9,8 +9,9 @@ Bytecode::~Bytecode() {
 }
 
 std::ostream& Bytecode::debug(std::ostream& os) const {
+    opcode::Address bci = 0;
     for (auto op: code) {
-        os << *op << "\n";
+        os << bci++ << "\t" << *op << "\n";
     }
     return os;
 }

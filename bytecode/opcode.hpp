@@ -54,6 +54,7 @@ enum OpCodes : opcode_t {
     STORE_FLOAT_CONST, // #dst, float
     STORE_BOOL_CONST, // #dst, bool
     STORE_STR_CONST, //   #dst, "string"
+    STORE_NIL_CONST, //   #dst
 
     JMP, //               addr
     JMP_IF_TRUE, //       %src, addr
@@ -447,6 +448,71 @@ public:
         if (!casted) return false;
         // Note: Float comparison, but this should be used in tests only
         return casted->dst == dst && casted->val == val;
+    }
+};
+
+// This could be just StoreTrue
+class StoreBoolConst : public OpCode {
+public:
+    Register dst;
+    BoolConst val;
+
+    static const OpCodes ClassType = OpCodes::STORE_BOOL_CONST;
+
+    StoreBoolConst(Register dst, BoolConst val) : OpCode(ClassType, "STORE_BOOL_CONST"), dst(dst), val(val) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t#" << dst << ", " << (val ? "true" : "false");
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreBoolConst>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->val == val;
+    }
+};
+
+class StoreNilConst : public OpCode {
+public:
+    Register dst;
+
+    static const OpCodes ClassType = OpCodes::STORE_NIL_CONST;
+
+    StoreNilConst(Register dst) : OpCode(ClassType, "STORE_NIL_CONST"), dst(dst) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t#" << dst;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreNilConst>(other);
+        if (!casted) return false;
+        return casted->dst == dst;
+    }
+};
+
+class Jmp : public OpCode {
+public:
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::JMP;
+
+    Jmp(Address addr) : OpCode(ClassType, "JMP"), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t" << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Jmp>(other);
+        if (!casted) return false;
+        return casted->addr == addr;
     }
 };
 

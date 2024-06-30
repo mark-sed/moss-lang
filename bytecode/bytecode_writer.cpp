@@ -86,13 +86,21 @@ void BytecodeWriter::write(Bytecode *code) {
             auto val = o->val;
             this->stream->write(reinterpret_cast<char *>(&val), BC_FLOAT_SIZE);
         }
+        else if (auto o = dyn_cast<opcode::StoreBoolConst>(op_gen)){
+            write_register(o->dst);
+            auto val = o->val;
+            this->stream->write(reinterpret_cast<char *>(&val), BC_BOOL_SIZE);
+        }
         /*else if (auto o = dyn_cast<opcode::STORE_STR_CONST>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
-        else if (auto o = dyn_cast<opcode::JMP>(op_gen)){
+        else if (auto o = dyn_cast<opcode::STORE_NIL_CONST>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
-        else if (auto o = dyn_cast<opcode::JMP_IF_TRUE>(op_gen)){
+        */else if (auto o = dyn_cast<opcode::Jmp>(op_gen)){
+            write_register(o->addr);
+        }
+        /*else if (auto o = dyn_cast<opcode::JMP_IF_TRUE>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::JMP_IF_FALSE>(op_gen)){

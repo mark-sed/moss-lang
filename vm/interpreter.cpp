@@ -72,10 +72,16 @@ Value *Interpreter::load_global_name(ustring name) {
 void Interpreter::run() {
     LOG1("Running interpreter");
 
+    // TODO: Change for repl
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
         opc->exec(this);
-        ++bci;
+
+        // If bci was modified (jmp), then don't change it
+        if (bci_modified)
+            bci_modified = false;
+        else
+            ++bci;
     }
 
     LOG1("Finished interpreter");

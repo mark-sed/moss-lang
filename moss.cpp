@@ -67,12 +67,14 @@ int main(int argc, const char *argv[]) {
     /*BytecodeFile bf("examples/test.msb");
     BytecodeReader *bcreader = new BytecodeReader(bf);*/
     Bytecode *bc = new Bytecode();
-    bc->push_back(new opcode::StoreIntConst(200, 42));
-    bc->push_back(new opcode::StoreFloatConst(201, 24.5));
-    bc->push_back(new opcode::StoreConst(0, 200));
-    bc->push_back(new opcode::StoreConst(1, 201));
-    bc->push_back(new opcode::StoreAttr(1, 0, "some_val"));
-    bc->push_back(new opcode::LoadAttr(2, 0, "some_val"));
+    int reg = 0;
+    bc->push_back(new opcode::StoreIntConst(200, 7));
+    bc->push_back(new opcode::StoreIntConst(201, 42));
+    bc->push_back(new opcode::Jmp(3));
+    bc->push_back(new opcode::StoreIntConst(201, 14));
+    bc->push_back(new opcode::End());
+
+    LOGMAX(*bc);
 
     BytecodeFile bfo("examples/generated.msb");
     BytecodeWriter *bcwriter = new BytecodeWriter(bfo);

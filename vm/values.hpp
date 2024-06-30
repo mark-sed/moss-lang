@@ -20,6 +20,7 @@ enum class TypeKind {
     INT,
     FLOAT,
     BOOL,
+    NIL,
     STRING,
     LIST,
     DICT,
@@ -127,6 +128,21 @@ public:
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Bool(" << (value ? "true" : "false") << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class NilValue : public Value {
+public:
+    static const TypeKind ClassType = TypeKind::NIL;
+
+    NilValue() : Value(ClassType, "Nil") {}
+    virtual Value *clone() {
+        return new NilValue();
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "nil" << "[refs: " << references << "]";
         return os;
     }
 };

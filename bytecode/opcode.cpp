@@ -6,8 +6,7 @@ using namespace moss;
 using namespace moss::opcode;
 
 void End::exec(Interpreter *vm) {
-    // TODO
-    assert(false && "TODO: Unimplemented opcode");
+    // No op
 }
 
 void Load::exec(Interpreter *vm) {
@@ -79,6 +78,20 @@ void StoreIntConst::exec(Interpreter *vm) {
 
 void StoreFloatConst::exec(Interpreter *vm) {
     vm->store_const(dst, new FloatValue(val));
+}
+
+void StoreBoolConst::exec(Interpreter *vm) {
+    // TODO: Load precreated value
+    vm->store_const(dst, new BoolValue(val));
+}
+
+void StoreNilConst::exec(Interpreter *vm) {
+    // TODO: Load precreated value
+    vm->store_const(dst, new NilValue());
+}
+
+void Jmp::exec(Interpreter *vm) {
+    vm->set_bci(this->addr);
 }
 
 /*

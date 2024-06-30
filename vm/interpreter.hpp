@@ -38,6 +38,8 @@ private:
 
     int exit_code;
 
+    bool bci_modified;
+
     MemoryPool *get_const_pool() { return this->const_pool; }
     MemoryPool *get_reg_pool() { return this->reg_pools.back(); }
     MemoryPool *get_global_reg_pool() { return this->reg_pools.front(); }
@@ -82,6 +84,11 @@ public:
     int get_exit_code() { return exit_code; }
 
     std::ostream& debug(std::ostream& os) const;
+
+    void set_bci(opcode::Address v) { 
+        this->bci = v;
+        this->bci_modified = true; 
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Interpreter &i) {
