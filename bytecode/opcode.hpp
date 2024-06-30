@@ -539,6 +539,28 @@ public:
     }
 };
 
+class JmpIfFalse : public OpCode {
+public:
+    Register src;
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::JMP_IF_FALSE;
+
+    JmpIfFalse(Register src, Address addr) : OpCode(ClassType, "JMP_IF_FALSE"), src(src), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", " << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<JmpIfFalse>(other);
+        if (!casted) return false;
+        return casted->addr == addr && casted->src == src;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:
