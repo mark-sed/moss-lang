@@ -14,6 +14,10 @@ void BytecodeWriter::write_register(Register reg) {
     this->stream->write(reinterpret_cast<char *>(&reg), BC_REGISTER_SIZE);
 }
 
+void BytecodeWriter::write_address(Address addr) {
+    this->stream->write(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
+}
+
 void BytecodeWriter::write_string(StringVal val) {
     const char *txt = val.c_str();
     strlen_t len = val.size();
@@ -62,8 +66,7 @@ void BytecodeWriter::write(Bytecode *code) {
         }
         else if (auto o = dyn_cast<opcode::StoreAddr>(op_gen)){
             write_register(o->dst);
-            auto addr = o->addr;
-            this->stream->write(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
+            write_address(o->addr);
         }
         else if (auto o = dyn_cast<opcode::StoreAttr>(op_gen)){
             write_register(o->src);
@@ -98,12 +101,13 @@ void BytecodeWriter::write(Bytecode *code) {
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         */else if (auto o = dyn_cast<opcode::Jmp>(op_gen)){
-            write_register(o->addr);
+            write_address(o->addr);
         }
-        /*else if (auto o = dyn_cast<opcode::JMP_IF_TRUE>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::JmpIfTrue>(op_gen)){
+            write_register(o->src);
+            write_address(o->addr);
         }
-        else if (auto o = dyn_cast<opcode::JMP_IF_FALSE>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::JMP_IF_FALSE>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::CALL>(op_gen)){

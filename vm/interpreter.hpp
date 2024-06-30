@@ -14,6 +14,7 @@
 
 #include "memory.hpp"
 #include "bytecode.hpp"
+#include "source.hpp"
 #include "os_interface.hpp"
 #include <cstdint>
 #include <list>
@@ -30,7 +31,7 @@ class Bytecode;
 class Interpreter {
 private:
     Bytecode *code;
-
+    File *src_file;
     MemoryPool *const_pool;
     std::list<MemoryPool *> reg_pools;
 
@@ -44,7 +45,7 @@ private:
     MemoryPool *get_reg_pool() { return this->reg_pools.back(); }
     MemoryPool *get_global_reg_pool() { return this->reg_pools.front(); }
 public:
-    Interpreter(Bytecode *code);
+    Interpreter(Bytecode *code, File *src_file=nullptr);
     ~Interpreter();
 
     void run();
@@ -85,10 +86,13 @@ public:
 
     std::ostream& debug(std::ostream& os) const;
 
+    opcode::Address get_bci() { return this->bci; }
     void set_bci(opcode::Address v) { 
         this->bci = v;
         this->bci_modified = true; 
     }
+
+    File *get_src_file() { return this->src_file; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Interpreter &i) {

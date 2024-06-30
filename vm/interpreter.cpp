@@ -3,7 +3,7 @@
 
 using namespace moss;
 
-Interpreter::Interpreter(Bytecode *code) : code(code), bci(0), exit_code(0) {
+Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0) {
     this->const_pool = new MemoryPool();
     this->reg_pools.push_back(new MemoryPool());
 }

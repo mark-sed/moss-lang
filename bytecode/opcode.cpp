@@ -1,9 +1,17 @@
 #include "opcode.hpp"
+#include "errors.hpp"
+#include <sstream>
 
 #include <iostream>
 
 using namespace moss;
 using namespace moss::opcode;
+
+std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
+    std::stringstream ss;
+    ss << vm->get_bci() << "\t" << *this << " :: " << msg;
+    return ss.str();
+}
 
 void End::exec(Interpreter *vm) {
     // No op
@@ -92,6 +100,20 @@ void StoreNilConst::exec(Interpreter *vm) {
 
 void Jmp::exec(Interpreter *vm) {
     vm->set_bci(this->addr);
+}
+
+void JmpIfTrue::exec(Interpreter *vm) {
+    auto *v = vm->load(src);
+    // FIXME:
+    assert(v && "TODO: Nonexistent name raise exception");
+    auto bc = dyn_cast<BoolValue>(v);
+    if (!bc) {
+        auto msg = err_mgs("Expected Bool value, but got "+v->get_name(), vm);
+        error::error(error::ErrorCode::BYTECODE, msg.c_str(), vm->get_src_file(), true);
+    }
+
+    if (bc->get_value())
+        vm->set_bci(this->addr);
 }
 
 /*

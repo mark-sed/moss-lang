@@ -67,11 +67,15 @@ int main(int argc, const char *argv[]) {
     /*BytecodeFile bf("examples/test.msb");
     BytecodeReader *bcreader = new BytecodeReader(bf);*/
     Bytecode *bc = new Bytecode();
-    int reg = 0;
-    bc->push_back(new opcode::StoreIntConst(200, 7));
+    bc->push_back(new opcode::StoreBoolConst(200, false));
     bc->push_back(new opcode::StoreIntConst(201, 42));
-    bc->push_back(new opcode::Jmp(3));
+    bc->push_back(new opcode::StoreBoolConst(202, true));
+    bc->push_back(new opcode::StoreConst(0, 200));
+    bc->push_back(new opcode::StoreConst(1, 202));
+    bc->push_back(new opcode::JmpIfTrue(0, 9));
     bc->push_back(new opcode::StoreIntConst(201, 14));
+    bc->push_back(new opcode::JmpIfTrue(1, 9));
+    bc->push_back(new opcode::StoreIntConst(201, 16));
     bc->push_back(new opcode::End());
 
     LOGMAX(*bc);
@@ -80,7 +84,7 @@ int main(int argc, const char *argv[]) {
     BytecodeWriter *bcwriter = new BytecodeWriter(bfo);
     bcwriter->write(bc);
 
-    Interpreter *interpreter = new Interpreter(bc);
+    Interpreter *interpreter = new Interpreter(bc, &bfo);
     interpreter->run();
 
     LOGMAX(*interpreter);

@@ -1,4 +1,5 @@
 #include "memory.hpp"
+#include "logging.hpp"
 #include <cassert>
 
 using namespace moss;
@@ -7,7 +8,6 @@ void MemoryPool::store(opcode::Register reg, Value *v) {
     // FIXME
     assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Resize pool when out of bounds");
     if (pool[reg]) {
-        pool[reg]->dec_refs();
         assert(pool[reg]->get_references() > 0 && "TODO: Collect value that would be overriden and lost");
     }
     pool[reg] = v;

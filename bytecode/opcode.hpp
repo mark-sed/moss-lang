@@ -192,6 +192,7 @@ public:
         os << mnem;
         return os;
     }
+    std::string err_mgs(std::string msg, Interpreter *vm);
     virtual bool equals(OpCode *other) = 0;
     virtual void exec(Interpreter *vm) = 0;
 };
@@ -513,6 +514,28 @@ public:
         auto casted = dyn_cast<Jmp>(other);
         if (!casted) return false;
         return casted->addr == addr;
+    }
+};
+
+class JmpIfTrue : public OpCode {
+public:
+    Register src;
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::JMP_IF_TRUE;
+
+    JmpIfTrue(Register src, Address addr) : OpCode(ClassType, "JMP_IF_TRUE"), src(src), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", " << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<JmpIfTrue>(other);
+        if (!casted) return false;
+        return casted->addr == addr && casted->src == src;
     }
 };
 

@@ -28,6 +28,7 @@ private:
     std::ostream *stream;
 
     void write_register(opcode::Register reg);
+    void write_address(opcode::Address addr);
     void write_string(opcode::StringVal val);
 public:
     BytecodeWriter(BytecodeFile &file) : file(file) {
