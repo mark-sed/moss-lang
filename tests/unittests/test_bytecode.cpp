@@ -42,13 +42,13 @@ TEST(Bytecode, JmpIf) {
     bc->push_back(new opcode::StoreConst(2, 201));
     bc->push_back(new opcode::JmpIfTrue(0, 13));
     bc->push_back(new opcode::JmpIfFalse(1, 13));
-    bc->push_back(new opcode::StoreConst(2, 203)); // <-
+    bc->push_back(new opcode::StoreConst(2, 203));
 
     bc->push_back(new opcode::JmpIfTrue(1, 13));
     bc->push_back(new opcode::StoreConst(2, 204));
     bc->push_back(new opcode::StoreConst(3, 201)); //13
     bc->push_back(new opcode::JmpIfFalse(0, 16));
-    bc->push_back(new opcode::StoreIntConst(3, 203)); //10
+    bc->push_back(new opcode::StoreIntConst(3, 203));
     bc->push_back(new opcode::End());
 
     Interpreter *i = new Interpreter(bc);

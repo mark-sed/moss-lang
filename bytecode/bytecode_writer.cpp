@@ -107,13 +107,15 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->src);
             write_address(o->addr);
         }
-        /*else if (auto o = dyn_cast<opcode::JMP_IF_FALSE>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::JmpIfFalse>(op_gen)){
+            write_register(o->src);
+            write_address(o->addr);
         }
-        else if (auto o = dyn_cast<opcode::CALL>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Call>(op_gen)){
+            write_register(o->dst);
+            write_address(o->addr);
         }
-        else if (auto o = dyn_cast<opcode::RETURN>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::RETURN>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::RETURN_CONST>(op_gen)){

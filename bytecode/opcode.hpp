@@ -561,6 +561,28 @@ public:
     }
 };
 
+class Call : public OpCode {
+public:
+    Register dst;
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::CALL;
+
+    Call(Register dst, Address addr) : OpCode(ClassType, "CALL"), dst(dst), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", " << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Call>(other);
+        if (!casted) return false;
+        return casted->addr == addr && casted->dst == dst;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:

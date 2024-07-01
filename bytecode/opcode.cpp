@@ -130,6 +130,10 @@ void JmpIfFalse::exec(Interpreter *vm) {
         vm->set_bci(this->addr);
 }
 
+void Call::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {
