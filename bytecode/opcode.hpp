@@ -60,7 +60,7 @@ enum OpCodes : opcode_t {
     JMP_IF_TRUE, //       %src, addr
     JMP_IF_FALSE, //      %src, addr
     CALL, //              %dst, addr
-    RETURN, //            %val
+    RETURN, //            %src
     RETURN_CONST, //      #val
     RETURN_ADDR, //       addr
     PUSH_ARG, //          %val
@@ -580,6 +580,132 @@ public:
         auto casted = dyn_cast<Call>(other);
         if (!casted) return false;
         return casted->addr == addr && casted->dst == dst;
+    }
+};
+
+class Return : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::RETURN;
+
+    Return(Register src) : OpCode(ClassType, "RETURN"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Return>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
+class ReturnConst : public OpCode {
+public:
+    Register csrc;
+
+    static const OpCodes ClassType = OpCodes::RETURN_CONST;
+
+    ReturnConst(Register csrc) : OpCode(ClassType, "RETURN_CONST"), csrc(csrc) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << csrc;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ReturnConst>(other);
+        if (!casted) return false;
+        return casted->csrc == csrc;
+    }
+};
+
+class ReturnAddr : public OpCode {
+public:
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::RETURN_ADDR;
+
+    ReturnAddr(Address addr) : OpCode(ClassType, "RETURN_ADDR"), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t" << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ReturnAddr>(other);
+        if (!casted) return false;
+        return casted->addr == addr;
+    }
+};
+
+class PushArg : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::PUSH_ARG;
+
+    PushArg(Register src) : OpCode(ClassType, "PUSH_ARG"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PushArg>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
+class PushConstArg : public OpCode {
+public:
+    Register csrc;
+
+    static const OpCodes ClassType = OpCodes::PUSH_CONST_ARG;
+
+    PushConstArg(Register csrc) : OpCode(ClassType, "PUSH_CONST_ARG"), csrc(csrc) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << csrc;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PushConstArg>(other);
+        if (!casted) return false;
+        return casted->csrc == csrc;
+    }
+};
+
+class PushAddrArg : public OpCode {
+public:
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::PUSH_ADDR_ARG;
+
+    PushAddrArg(Address addr) : OpCode(ClassType, "PUSH_ADDR_ARG"), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t" << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PushAddrArg>(other);
+        if (!casted) return false;
+        return casted->addr == addr;
     }
 };
 

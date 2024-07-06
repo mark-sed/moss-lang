@@ -115,16 +115,16 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_address(o->addr);
         }
-        /*else if (auto o = dyn_cast<opcode::RETURN>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Return>(op_gen)){
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::RETURN_CONST>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::ReturnConst>(op_gen)){
+            write_register(o->csrc);
         }
-        else if (auto o = dyn_cast<opcode::RETURN_ADDR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::ReturnAddr>(op_gen)){
+            write_address(o->addr);
         }
-        else if (auto o = dyn_cast<opcode::PUSH_ARG>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::PUSH_ARG>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::PUSH_CONST_ARG>(op_gen)){
