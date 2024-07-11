@@ -182,6 +182,26 @@ void BuildClass::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void Copy::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void DeepCopy::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void CreateAnnt::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void Annotate::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void Output::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

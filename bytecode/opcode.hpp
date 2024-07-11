@@ -838,6 +838,115 @@ public:
     }
 };
 
+class Copy : public OpCode {
+public:
+    Register dst;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::COPY;
+
+    Copy(Register dst, Register src) : OpCode(ClassType, "COPY"), dst(dst), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Copy>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->src == src;
+    }
+};
+
+class DeepCopy : public OpCode {
+public:
+    Register dst;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::DEEP_COPY;
+
+    DeepCopy(Register dst, Register src) : OpCode(ClassType, "DEEP_COPY"), dst(dst), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<DeepCopy>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->src == src;
+    }
+};
+
+class CreateAnnt : public OpCode {
+public:
+    Register dst;
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::CREATE_ANNT;
+
+    CreateAnnt(Register dst, StringVal name) : OpCode(ClassType, "CREATE_ANNT"), dst(dst), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<CreateAnnt>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
+    }
+};
+
+class Annotate : public OpCode {
+public:
+    Register dst;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::ANNOTATE;
+
+    Annotate(Register dst, Register src) : OpCode(ClassType, "ANNOTATE"), dst(dst), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Annotate>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->src == src;
+    }
+};
+
+class Output : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::OUTPUT;
+
+    Output(Register src) : OpCode(ClassType, "OUTPUT"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Output>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:

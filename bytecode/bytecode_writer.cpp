@@ -154,22 +154,26 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::BuildClass>(op_gen)){
             write_register(o->src);
         }
-        /*else if (auto o = dyn_cast<opcode::COPY>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Copy>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::DEEP_COPY>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::DeepCopy>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_ANNT>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateAnnt>(op_gen)){
+            write_register(o->dst);
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::ANNOTATE>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Annotate>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::OUTPUT>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Output>(op_gen)){
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::CONCAT>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::CONCAT>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::EXP>(op_gen)){
