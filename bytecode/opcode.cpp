@@ -166,6 +166,22 @@ void ImportAll::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void PushParent::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void CreateObject::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void PromoteObject::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void BuildClass::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

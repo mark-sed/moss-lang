@@ -752,6 +752,92 @@ public:
     }
 };
 
+class PushParent : public OpCode {
+public:
+    Register parent;
+
+    static const OpCodes ClassType = OpCodes::PUSH_PARENT;
+
+    PushParent(Register parent) : OpCode(ClassType, "PUSH_PARENT"), parent(parent) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << parent;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PushParent>(other);
+        if (!casted) return false;
+        return casted->parent == parent;
+    }
+};
+
+class CreateObject : public OpCode {
+public:
+    Register dst;
+    Register cls;
+
+    static const OpCodes ClassType = OpCodes::CREATE_OBJ;
+
+    CreateObject(Register dst, Register cls) : OpCode(ClassType, "CREATE_OBJ"), dst(dst), cls(cls) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << cls;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<CreateObject>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->cls == cls;
+    }
+};
+
+class PromoteObject : public OpCode {
+public:
+    Register src;
+    Register cls;
+
+    static const OpCodes ClassType = OpCodes::PROMOTE_OBJ;
+
+    PromoteObject(Register src, Register cls) : OpCode(ClassType, "PROMOTE_OBJ"), src(src), cls(cls) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", %" << cls;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PromoteObject>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->cls == cls;
+    }
+};
+
+class BuildClass : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::BUILD_CLASS;
+
+    BuildClass(Register src) : OpCode(ClassType, "BUILD_CLASS"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<BuildClass>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:
