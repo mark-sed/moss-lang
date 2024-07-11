@@ -709,6 +709,49 @@ public:
     }
 };
 
+class Import : public OpCode {
+public:
+    Register dst;
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::IMPORT;
+
+    Import(Register dst, StringVal name) : OpCode(ClassType, "IMPORT"), dst(dst), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Import>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
+    }
+};
+
+class ImportAll : public OpCode {
+public:
+    StringVal name;
+
+    static const OpCodes ClassType = OpCodes::IMPORT_ALL;
+
+    ImportAll(StringVal name) : OpCode(ClassType, "IMPORT_ALL"), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t\"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ImportAll>(other);
+        if (!casted) return false;
+        return casted->name == name;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:

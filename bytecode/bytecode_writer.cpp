@@ -124,22 +124,23 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::ReturnAddr>(op_gen)){
             write_address(o->addr);
         }
-        /*else if (auto o = dyn_cast<opcode::PUSH_ARG>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::PushArg>(op_gen)){
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::PUSH_CONST_ARG>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::PushConstArg>(op_gen)){
+            write_register(o->csrc);
         }
-        else if (auto o = dyn_cast<opcode::PUSH_ADDR_ARG>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::PushAddrArg>(op_gen)){
+            write_address(o->addr);
         }
-        else if (auto o = dyn_cast<opcode::IMPORT>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Import>(op_gen)){
+            write_register(o->dst);
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::IMPORT_ALL>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::ImportAll>(op_gen)){
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::PUSH_PARENT>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::PUSH_PARENT>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::CREATE_OBJ>(op_gen)){

@@ -158,6 +158,14 @@ void PushAddrArg::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void Import::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void ImportAll::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {
