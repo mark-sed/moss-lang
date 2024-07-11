@@ -76,6 +76,9 @@ int main(int argc, const char *argv[]) {
     bc->push_back(new opcode::StoreIntConst(201, 14));
     bc->push_back(new opcode::JmpIfTrue(1, 9));
     bc->push_back(new opcode::StoreIntConst(201, 16));
+    bc->push_back(new opcode::StoreStrConst(203, "Hello, World!\n"));
+    bc->push_back(new opcode::StoreConst(2, 203));
+    bc->push_back(new opcode::Output(2));
     bc->push_back(new opcode::End());
 
     LOGMAX(*bc);

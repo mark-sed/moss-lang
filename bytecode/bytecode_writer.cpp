@@ -18,7 +18,7 @@ void BytecodeWriter::write_address(Address addr) {
     this->stream->write(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
 }
 
-void BytecodeWriter::write_string(StringVal val) {
+void BytecodeWriter::write_string(StringConst val) {
     const char *txt = val.c_str();
     strlen_t len = val.size();
     this->stream->write(reinterpret_cast<char *>(&len), BC_STR_LEN_SIZE);
@@ -94,13 +94,14 @@ void BytecodeWriter::write(Bytecode *code) {
             auto val = o->val;
             this->stream->write(reinterpret_cast<char *>(&val), BC_BOOL_SIZE);
         }
-        /*else if (auto o = dyn_cast<opcode::STORE_STR_CONST>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::StoreStrConst>(op_gen)){
+            write_register(o->dst);
+            write_string(o->val);
         }
-        else if (auto o = dyn_cast<opcode::STORE_NIL_CONST>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::StoreNilConst>(op_gen)){
+            write_register(o->dst);
         }
-        */else if (auto o = dyn_cast<opcode::Jmp>(op_gen)){
+        else if (auto o = dyn_cast<opcode::Jmp>(op_gen)){
             write_address(o->addr);
         }
         else if (auto o = dyn_cast<opcode::JmpIfTrue>(op_gen)){

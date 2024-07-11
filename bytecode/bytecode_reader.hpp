@@ -28,7 +28,7 @@ private:
     size_t buffer_size;
 
     opcode::Register read_register();
-    opcode::StringVal read_string();
+    opcode::StringConst read_string();
     opcode::IntConst read_const_int();
 public:
     BytecodeReader(BytecodeFile &file) : file(file), buffer_size(256) {

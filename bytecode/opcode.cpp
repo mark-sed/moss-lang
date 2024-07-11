@@ -93,6 +93,11 @@ void StoreBoolConst::exec(Interpreter *vm) {
     vm->store_const(dst, new BoolValue(val));
 }
 
+void StoreStrConst::exec(Interpreter *vm) {
+    // TODO: Load precreated value
+    vm->store_const(dst, new StringValue(val));
+}
+
 void StoreNilConst::exec(Interpreter *vm) {
     // TODO: Load precreated value
     vm->store_const(dst, new NilValue());
@@ -199,7 +204,12 @@ void Annotate::exec(Interpreter *vm) {
 }
 
 void Output::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    // FIXME: this is just a placeholder
+    auto *v = vm->load(src);
+    // FIXME:
+    assert(v && "TODO: Nonexistent name raise exception");
+    
+    std::cout << v->as_string();
 }
 
 /*

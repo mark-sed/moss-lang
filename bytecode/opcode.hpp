@@ -220,11 +220,11 @@ public:
 class Load : public OpCode {
 public:
     Register dst;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::LOAD;
 
-    Load(Register dst, StringVal name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
+    Load(Register dst, StringConst name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t\t%" << dst << ", \"" << name << "\"";
@@ -241,11 +241,11 @@ class LoadAttr : public OpCode {
 public:
     Register dst;
     Register src;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::LOAD_ATTR;
 
-    LoadAttr(Register dst, Register src, StringVal name) : OpCode(ClassType, "LOAD_ATTR"), dst(dst), src(src), name(name) {}
+    LoadAttr(Register dst, Register src, StringConst name) : OpCode(ClassType, "LOAD_ATTR"), dst(dst), src(src), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", %" << src << ", \"" << name << "\"";
@@ -261,11 +261,11 @@ public:
 class LoadGlobal : public OpCode {
 public:
     Register dst;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::LOAD_GLOBAL;
 
-    LoadGlobal(Register dst, StringVal name) : OpCode(ClassType, "LOAD_GLOBAL"), dst(dst), name(name) {}
+    LoadGlobal(Register dst, StringConst name) : OpCode(ClassType, "LOAD_GLOBAL"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", \"" << name << "\"";
@@ -281,11 +281,11 @@ public:
 class LoadNonLoc : public OpCode {
 public:
     Register dst;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::LOAD_NONLOC;
 
-    LoadNonLoc(Register dst, StringVal name) : OpCode(ClassType, "LOAD_NONLOC"), dst(dst), name(name) {}
+    LoadNonLoc(Register dst, StringConst name) : OpCode(ClassType, "LOAD_NONLOC"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "\t%" << dst << ", \"" << name << "\"";
@@ -321,11 +321,11 @@ public:
 class StoreName : public OpCode {
 public:
     Register dst;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::STORE_NAME;
 
-    StoreName(Register dst, StringVal name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {}
+    StoreName(Register dst, StringConst name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {}
     
     void exec(Interpreter *vm) override;
     
@@ -388,11 +388,11 @@ class StoreAttr : public OpCode {
 public:
     Register src;
     Register obj;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::STORE_ATTR;
 
-    StoreAttr(Register src, Register obj, StringVal name) : OpCode(ClassType, "STORE_ATTR"), src(src), obj(obj), name(name) {}
+    StoreAttr(Register src, Register obj, StringConst name) : OpCode(ClassType, "STORE_ATTR"), src(src), obj(obj), name(name) {}
     
     void exec(Interpreter *vm) override;
     
@@ -470,6 +470,28 @@ public:
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<StoreBoolConst>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->val == val;
+    }
+};
+
+class StoreStrConst : public OpCode {
+public:
+    Register dst;
+    StringConst val;
+
+    static const OpCodes ClassType = OpCodes::STORE_STR_CONST;
+
+    StoreStrConst(Register dst, StringConst val) : OpCode(ClassType, "STORE_STR_CONST"), dst(dst), val(val) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t#" << dst << ", \"" << val << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreStrConst>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->val == val;
     }
@@ -712,11 +734,11 @@ public:
 class Import : public OpCode {
 public:
     Register dst;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::IMPORT;
 
-    Import(Register dst, StringVal name) : OpCode(ClassType, "IMPORT"), dst(dst), name(name) {}
+    Import(Register dst, StringConst name) : OpCode(ClassType, "IMPORT"), dst(dst), name(name) {}
     
     void exec(Interpreter *vm) override;
     
@@ -733,11 +755,11 @@ public:
 
 class ImportAll : public OpCode {
 public:
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::IMPORT_ALL;
 
-    ImportAll(StringVal name) : OpCode(ClassType, "IMPORT_ALL"), name(name) {}
+    ImportAll(StringConst name) : OpCode(ClassType, "IMPORT_ALL"), name(name) {}
     
     void exec(Interpreter *vm) override;
     
@@ -885,11 +907,11 @@ public:
 class CreateAnnt : public OpCode {
 public:
     Register dst;
-    StringVal name;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::CREATE_ANNT;
 
-    CreateAnnt(Register dst, StringVal name) : OpCode(ClassType, "CREATE_ANNT"), dst(dst), name(name) {}
+    CreateAnnt(Register dst, StringConst name) : OpCode(ClassType, "CREATE_ANNT"), dst(dst), name(name) {}
     
     void exec(Interpreter *vm) override;
     

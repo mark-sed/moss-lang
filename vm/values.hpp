@@ -44,6 +44,8 @@ public:
     virtual Value *clone() = 0;
     virtual ~Value() {}
 
+    virtual ustring as_string() = 0;
+
     TypeKind get_kind() { return this->kind; }
     ustring get_name() { return this->name; }
 
@@ -88,6 +90,10 @@ public:
 
     int64_t get_value() { return this->value; }
 
+    virtual ustring as_string() override {
+        return std::to_string(value);
+    }
+
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Int(" << value << ")[refs: " << references << "]";
         return os;
@@ -106,6 +112,10 @@ public:
     }
 
     double get_value() { return this->value; }
+
+    virtual ustring as_string() override {
+        return std::to_string(value);
+    }
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Float(" << value << ")[refs: " << references << "]";
@@ -126,8 +136,35 @@ public:
 
     bool get_value() { return this->value; }
 
+    virtual ustring as_string() override {
+        return value ? "true" : "false";
+    }
+
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Bool(" << (value ? "true" : "false") << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class StringValue : public Value {
+private:
+    ustring value;
+public:
+    static const TypeKind ClassType = TypeKind::STRING;
+
+    StringValue(ustring value) : Value(ClassType, "String"), value(value) {}
+    virtual Value *clone() {
+        return new StringValue(this->value);
+    }
+
+    ustring get_value() { return this->value; }
+
+    virtual ustring as_string() override {
+        return value;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "String(\"" << value << "\")[refs: " << references << "]";
         return os;
     }
 };
@@ -139,6 +176,10 @@ public:
     NilValue() : Value(ClassType, "Nil") {}
     virtual Value *clone() {
         return new NilValue();
+    }
+
+    virtual ustring as_string() override {
+        return "nil";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {

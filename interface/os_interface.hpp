@@ -78,7 +78,7 @@ using Register = uint32_t;
 
 #define BC_STR_LEN_SIZE 4 /// How many bytes does the string size take
 using strlen_t = uint32_t;
-using StringVal = ustring;
+using StringConst = ustring;
 
 #define BC_ADDR_SIZE 4    /// How many bytes does bytecode address take
 using Address = uint32_t;

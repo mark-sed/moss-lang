@@ -15,7 +15,7 @@ Register BytecodeReader::read_register() {
     return *(Register *)&buffer[0];
 }
 
-StringVal BytecodeReader::read_string() {
+StringConst BytecodeReader::read_string() {
     char buffer[BC_STR_LEN_SIZE];
     char *buffer_ptr = &buffer[0];
     this->stream->read(buffer_ptr, BC_STR_LEN_SIZE);
@@ -28,7 +28,7 @@ StringVal BytecodeReader::read_string() {
     }
 
     this->stream->read(str_buffer, str_len);
-    return StringVal(str_buffer, str_len);
+    return StringConst(str_buffer, str_len);
 }
 
 IntConst BytecodeReader::read_const_int() {
