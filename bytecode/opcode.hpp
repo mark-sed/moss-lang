@@ -98,7 +98,6 @@ enum OpCodes : opcode_t {
     IN, //        %dst, %src1, %src2
     AND, //       %dst, %src1, %src2
     OR, //        %dst, %src1, %src2
-    NOT, //       %dst, %src1
     XOR, //       %dst, %src1, %src2
     SC_AND, //    %dst, %src1, %src2
     SC_OR, //     %dst, %src1, %src2
@@ -148,6 +147,8 @@ enum OpCodes : opcode_t {
     SC_OR3, //    %dst, %src1, #val
     SUBSC3, //    %dst, %src, #index
 
+    NOT, //       %dst, %src1
+
     ASSERT, //    %src
 
     COPY_ARGS, //
@@ -184,6 +185,8 @@ protected:
     ustring mnem;
 
     OpCode(OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {}
+
+    void check_load(Value *v, Interpreter *vm);
 public:
     virtual ~OpCode() {}
 
@@ -195,6 +198,31 @@ public:
     std::string err_mgs(std::string msg, Interpreter *vm);
     virtual bool equals(OpCode *other) = 0;
     virtual void exec(Interpreter *vm) = 0;
+};
+
+class BinExprOpCode: public OpCode {
+public:
+    Register dst;
+    Register src1;
+    Register src2;
+
+protected:
+    BinExprOpCode(OpCodes code, ustring mnem, Register dst, Register src1, Register src2) 
+        : OpCode(code, mnem), dst(dst), src1(src1), src2(src2) {}
+
+public:
+    virtual ~BinExprOpCode() {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src1 << ", %" << src2;
+        return os;
+    }
+
+    bool equals(OpCode *other) override {
+        if (other->get_type() != get_type()) return false;
+        auto casted = dynamic_cast<BinExprOpCode *>(other);
+        return casted->dst == dst && casted->src1 == src1 && casted->src2 == src2;
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, OpCode &op) {
@@ -967,6 +995,33 @@ public:
         if (!casted) return false;
         return casted->src == src;
     }
+};
+
+class Concat : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::CONCAT;
+
+    Concat(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "CONCAT", dst, src1, src2) {}
+    
+    void exec(Interpreter *vm) override;
+};
+
+class Concat2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::CONCAT2;
+
+    Concat2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "CONCAT2", dst, csrc1, src2) {}
+    
+    void exec(Interpreter *vm) override;
+};
+
+class Concat3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::CONCAT3;
+
+    Concat3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "CONCAT3", dst, src1, csrc2) {}
+    
+    void exec(Interpreter *vm) override;
 };
 
 /*
