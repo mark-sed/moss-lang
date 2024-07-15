@@ -218,15 +218,40 @@ void Concat::exec(Interpreter *vm) {
     auto *s2 = vm->load(src2);
     check_load(s2, vm);
 
-    // TODO: Finish
+    ustring s1_str = s1->as_string();
+    ustring s2_str = s2->as_string();
+
+    StringValue *ccat = new StringValue(s1_str + s2_str);
+
+    vm->store(dst, ccat);
 }
 
 void Concat2::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode"); // TODO copy
+    auto *s1 = vm->load_const(src1);
+    check_load(s1, vm);
+    auto *s2 = vm->load(src2);
+    check_load(s2, vm);
+
+    ustring s1_str = s1->as_string();
+    ustring s2_str = s2->as_string();
+
+    StringValue *ccat = new StringValue(s1_str + s2_str);
+
+    vm->store(dst, ccat);
 }
 
 void Concat3::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode"); // TODO copy
+    auto *s1 = vm->load(src1);
+    check_load(s1, vm);
+    auto *s2 = vm->load_const(src2);
+    check_load(s2, vm);
+
+    ustring s1_str = s1->as_string();
+    ustring s2_str = s2->as_string();
+
+    StringValue *ccat = new StringValue(s1_str + s2_str);
+
+    vm->store(dst, ccat);
 }
 
 /*

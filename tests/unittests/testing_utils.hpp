@@ -18,6 +18,7 @@ namespace testing {
 int64_t int_val(moss::Value *v);
 double float_val(moss::Value *v);
 bool bool_val(moss::Value *v);
+ustring string_val(moss::Value *v);
 
 }
 

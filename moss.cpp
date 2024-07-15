@@ -67,19 +67,16 @@ int main(int argc, const char *argv[]) {
     /*BytecodeFile bf("examples/test.msb");
     BytecodeReader *bcreader = new BytecodeReader(bf);*/
     Bytecode *bc = new Bytecode();
-    bc->push_back(new opcode::StoreBoolConst(200, false));
-    bc->push_back(new opcode::StoreIntConst(201, 42));
-    bc->push_back(new opcode::StoreBoolConst(202, true));
+    bc->push_back(new opcode::StoreStrConst(200, "Moss"));
+    bc->push_back(new opcode::StoreStrConst(201, " "));
+    bc->push_back(new opcode::StoreStrConst(202, "Language"));
+    bc->push_back(new opcode::StoreStrConst(203, "!"));
     bc->push_back(new opcode::StoreConst(0, 200));
-    bc->push_back(new opcode::StoreConst(1, 202));
-    bc->push_back(new opcode::JmpIfTrue(0, 9));
-    bc->push_back(new opcode::StoreIntConst(201, 14));
-    bc->push_back(new opcode::JmpIfTrue(1, 9));
-    bc->push_back(new opcode::StoreIntConst(201, 16));
-    bc->push_back(new opcode::StoreStrConst(203, "Hello, World!\n"));
+    bc->push_back(new opcode::Concat3(1, 0, 201));
     bc->push_back(new opcode::StoreConst(2, 203));
-    bc->push_back(new opcode::Output(2));
-    bc->push_back(new opcode::End());
+    bc->push_back(new opcode::Concat2(3, 202, 2));
+    bc->push_back(new opcode::Concat(4, 1, 3));
+    bc->push_back(new opcode::Output(4));
 
     LOGMAX(*bc);
 
