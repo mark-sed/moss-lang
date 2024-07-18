@@ -282,6 +282,41 @@ void Exp3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+static Value *add(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new IntValue(i1->get_value() + i2->get_value());
+    }
+    else if (is_float_expr(s1, s2)) {
+        res = new FloatValue(s1->as_float() + s2->as_float());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Add::exec(Interpreter *vm) {
+    auto res = add(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Add2::exec(Interpreter *vm) {
+    auto res = add(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Add3::exec(Interpreter *vm) {
+    auto res = add(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

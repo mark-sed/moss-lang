@@ -85,17 +85,23 @@ TEST(Bytecode, Concat) {
     delete bc;
 }
 
-TEST(Bytecode, Exp) {
+TEST(Bytecode, Arithmetics) {
     Bytecode *bc = new Bytecode();
     bc->push_back(new opcode::StoreIntConst(200, 2));
     bc->push_back(new opcode::StoreIntConst(201, 3));
     bc->push_back(new opcode::StoreIntConst(202, 9));
     bc->push_back(new opcode::StoreFloatConst(203, 0.5));
     bc->push_back(new opcode::StoreConst(0, 200));
+
+    // Exp
     bc->push_back(new opcode::Exp3(1, 0, 201)); // 8
     bc->push_back(new opcode::StoreConst(2, 203));
     bc->push_back(new opcode::Exp2(3, 202, 2)); // 3.0
     bc->push_back(new opcode::Exp(4, 1, 3)); // 512.0.
+
+    // Add
+    bc->push_back(new opcode::Add(5, 4, 1)); // 520.0 
+    bc->push_back(new opcode::Add3(6, 0, 202)); //11
 
     Interpreter *i = new Interpreter(bc);
     i->run();
@@ -104,6 +110,9 @@ TEST(Bytecode, Exp) {
     EXPECT_EQ(int_val(i->load(1)), 8);
     EXPECT_EQ(float_val(i->load(3)), 3.0);
     EXPECT_EQ(float_val(i->load(4)), 512.0);
+
+    EXPECT_EQ(float_val(i->load(5)), 520.0);
+    EXPECT_EQ(int_val(i->load(6)), 11);
 
     delete i;
     delete bc;
