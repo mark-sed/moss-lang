@@ -67,15 +67,15 @@ int main(int argc, const char *argv[]) {
     /*BytecodeFile bf("examples/test.msb");
     BytecodeReader *bcreader = new BytecodeReader(bf);*/
     Bytecode *bc = new Bytecode();
-    bc->push_back(new opcode::StoreStrConst(200, "Moss"));
-    bc->push_back(new opcode::StoreStrConst(201, " "));
-    bc->push_back(new opcode::StoreStrConst(202, "Language"));
-    bc->push_back(new opcode::StoreStrConst(203, "!"));
+    bc->push_back(new opcode::StoreIntConst(200, 2));
+    bc->push_back(new opcode::StoreIntConst(201, 3));
+    bc->push_back(new opcode::StoreIntConst(202, 9));
+    bc->push_back(new opcode::StoreFloatConst(203, 0.5));
     bc->push_back(new opcode::StoreConst(0, 200));
-    bc->push_back(new opcode::Concat3(1, 0, 201));
+    bc->push_back(new opcode::Exp3(1, 0, 201)); // 8
     bc->push_back(new opcode::StoreConst(2, 203));
-    bc->push_back(new opcode::Concat2(3, 202, 2));
-    bc->push_back(new opcode::Concat(4, 1, 3));
+    bc->push_back(new opcode::Exp2(3, 202, 2)); // 3.0
+    bc->push_back(new opcode::Exp(4, 1, 3)); // 512.0
     bc->push_back(new opcode::Output(4));
 
     LOGMAX(*bc);

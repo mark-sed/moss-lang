@@ -1,6 +1,7 @@
 #include "opcode.hpp"
 #include "errors.hpp"
 #include <sstream>
+#include <cmath>
 
 #include <iostream>
 
@@ -13,10 +14,27 @@ std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
     return ss.str();
 }
 
+/*
+When loading unknown value it will be nil, so it cannot be nullptr
 void OpCode::check_load(Value *v, Interpreter *vm) {
     if (v) return;
     auto msg = err_mgs("Loading value from non-existent register", vm);
     error::error(error::ErrorCode::BYTECODE, msg.c_str(), vm->get_src_file(), true);
+}*/
+
+/**
+ * True iff one of the values is a float and the other is float or int
+ */
+static bool is_float_expr(Value *v1, Value *v2) {
+    return (isa<FloatValue>(v1) && (isa<FloatValue>(v2) || isa<IntValue>(v2))) || 
+        (isa<FloatValue>(v2) && (isa<FloatValue>(v1) || isa<IntValue>(v1)));
+}
+
+/**
+ * True iff both values are ints
+ */
+static bool is_int_expr(Value *v1, Value *v2) {
+    return isa<IntValue>(v1) && isa<IntValue>(v2);
 }
 
 void End::exec(Interpreter *vm) {
@@ -33,7 +51,6 @@ void Load::exec(Interpreter *vm) {
 
 void LoadAttr::exec(Interpreter *vm) {
     auto *v = vm->load(this->src);
-    check_load(v, vm);
     auto attr = v->get_attr(this->name);
     assert(attr && "TODO: Nonexistent attr raise exception");
     attr->inc_refs();
@@ -54,7 +71,6 @@ void LoadNonLoc::exec(Interpreter *vm) {
 
 void Store::exec(Interpreter *vm) {
     auto *v = vm->load(src);
-    check_load(v, vm);
     v->inc_refs();
     vm->store(this->dst, v);
 }
@@ -65,7 +81,6 @@ void StoreName::exec(Interpreter *vm) {
 
 void StoreConst::exec(Interpreter *vm) {
     auto c = vm->load_const(csrc);
-    check_load(c, vm);
     c->inc_refs();
     vm->store(dst, c);
 }
@@ -76,9 +91,7 @@ void StoreAddr::exec(Interpreter *vm) {
 
 void StoreAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
-    check_load(dstobj, vm);
     auto *v = vm->load(this->src);
-    check_load(v, vm);
     v->inc_refs();
     dstobj->set_attr(this->name, v);
 }
@@ -112,7 +125,6 @@ void Jmp::exec(Interpreter *vm) {
 
 void JmpIfTrue::exec(Interpreter *vm) {
     auto *v = vm->load(src);
-    check_load(v, vm);
     auto bc = dyn_cast<BoolValue>(v);
     if (!bc) {
         auto msg = err_mgs("Expected Bool value, but got "+v->get_name(), vm);
@@ -125,7 +137,6 @@ void JmpIfTrue::exec(Interpreter *vm) {
 
 void JmpIfFalse::exec(Interpreter *vm) {
     auto *v = vm->load(src);
-    check_load(v, vm);
     auto bc = dyn_cast<BoolValue>(v);
     if (!bc) {
         auto msg = err_mgs("Expected Bool value, but got "+v->get_name(), vm);
@@ -207,51 +218,68 @@ void Annotate::exec(Interpreter *vm) {
 void Output::exec(Interpreter *vm) {
     // FIXME: this is just a placeholder
     auto *v = vm->load(src);
-    check_load(v, vm);
     
     std::cout << v->as_string();
 }
 
-void Concat::exec(Interpreter *vm) {
-    auto *s1 = vm->load(src1);
-    check_load(s1, vm);
-    auto *s2 = vm->load(src2);
-    check_load(s2, vm);
+static Value *concat(Value *s1, Value *s2, Interpreter *vm) {
+    assert(s1 && "Value or nil should have been loaded");
+    assert(s2 && "Value or nil should have been loaded");
 
     ustring s1_str = s1->as_string();
     ustring s2_str = s2->as_string();
 
-    StringValue *ccat = new StringValue(s1_str + s2_str);
+    return new StringValue(s1_str + s2_str);
+}
 
-    vm->store(dst, ccat);
+void Concat::exec(Interpreter *vm) {
+    auto res = concat(vm->load(src1), vm->load(src2), vm);
+    vm->store(dst, res);
 }
 
 void Concat2::exec(Interpreter *vm) {
-    auto *s1 = vm->load_const(src1);
-    check_load(s1, vm);
-    auto *s2 = vm->load(src2);
-    check_load(s2, vm);
-
-    ustring s1_str = s1->as_string();
-    ustring s2_str = s2->as_string();
-
-    StringValue *ccat = new StringValue(s1_str + s2_str);
-
-    vm->store(dst, ccat);
+    auto res = concat(vm->load_const(src1), vm->load(src2), vm);
+    vm->store(dst, res);
 }
 
 void Concat3::exec(Interpreter *vm) {
-    auto *s1 = vm->load(src1);
-    check_load(s1, vm);
-    auto *s2 = vm->load_const(src2);
-    check_load(s2, vm);
+    auto res = concat(vm->load(src1), vm->load_const(src2), vm);
+    vm->store(dst, res);
+}
 
-    ustring s1_str = s1->as_string();
-    ustring s2_str = s2->as_string();
+static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new IntValue(static_cast<long>(std::pow(static_cast<double>(i1->get_value()), static_cast<double>(i2->get_value()))));
+    }
+    else if (is_float_expr(s1, s2)) {
+        res = new FloatValue(std::pow(s1->as_float(), s2->as_float()));
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
 
-    StringValue *ccat = new StringValue(s1_str + s2_str);
+void Exp::exec(Interpreter *vm) {
+    auto res = exp(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
 
-    vm->store(dst, ccat);
+void Exp2::exec(Interpreter *vm) {
+    auto res = exp(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Exp3::exec(Interpreter *vm) {
+    auto res = exp(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
 }
 
 /*

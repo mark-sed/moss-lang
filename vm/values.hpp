@@ -44,7 +44,12 @@ public:
     virtual Value *clone() = 0;
     virtual ~Value() {}
 
-    virtual ustring as_string() = 0;
+    virtual opcode::StringConst as_string() = 0;
+    virtual opcode::FloatConst as_float() {
+        // FIXME: raise error
+        assert(false && "as_float requested on non numerical value");
+        return 0.0;
+    }
 
     TypeKind get_kind() { return this->kind; }
     ustring get_name() { return this->name; }
@@ -79,19 +84,23 @@ inline std::ostream& operator<< (std::ostream& os, Value &v) {
 
 class IntValue : public Value {
 private:
-    int64_t value;
+    opcode::IntConst value;
 public:
     static const TypeKind ClassType = TypeKind::INT;
 
-    IntValue(int64_t value) : Value(ClassType, "Int"), value(value) {}
+    IntValue(opcode::IntConst value) : Value(ClassType, "Int"), value(value) {}
     virtual Value *clone() {
         return new IntValue(this->value);
     }
 
-    int64_t get_value() { return this->value; }
+    opcode::IntConst get_value() { return this->value; }
 
-    virtual ustring as_string() override {
+    virtual opcode::StringConst as_string() override {
         return std::to_string(value);
+    }
+
+    virtual opcode::FloatConst as_float() override {
+        return static_cast<opcode::FloatConst>(value);
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
@@ -102,18 +111,21 @@ public:
 
 class FloatValue : public Value {
 private:
-    double value;
+    opcode::FloatConst value;
 public:
     static const TypeKind ClassType = TypeKind::FLOAT;
 
-    FloatValue(double value) : Value(ClassType, "Float"), value(value) {}
+    FloatValue(opcode::FloatConst value) : Value(ClassType, "Float"), value(value) {}
     virtual Value *clone() {
         return new FloatValue(this->value);
     }
 
-    double get_value() { return this->value; }
+    opcode::FloatConst get_value() { return this->value; }
+    virtual opcode::FloatConst as_float() override {
+        return this->value;
+    }
 
-    virtual ustring as_string() override {
+    virtual opcode::StringConst as_string() override {
         return std::to_string(value);
     }
 
@@ -125,18 +137,18 @@ public:
 
 class BoolValue : public Value {
 private:
-    bool value;
+    opcode::BoolConst value;
 public:
     static const TypeKind ClassType = TypeKind::BOOL;
 
-    BoolValue(bool value) : Value(ClassType, "Bool"), value(value) {}
+    BoolValue(opcode::BoolConst value) : Value(ClassType, "Bool"), value(value) {}
     virtual Value *clone() {
         return new BoolValue(this->value);
     }
 
-    bool get_value() { return this->value; }
+    opcode::BoolConst get_value() { return this->value; }
 
-    virtual ustring as_string() override {
+    virtual opcode::StringConst as_string() override {
         return value ? "true" : "false";
     }
 
@@ -148,18 +160,18 @@ public:
 
 class StringValue : public Value {
 private:
-    ustring value;
+    opcode::StringConst value;
 public:
     static const TypeKind ClassType = TypeKind::STRING;
 
-    StringValue(ustring value) : Value(ClassType, "String"), value(value) {}
+    StringValue(opcode::StringConst value) : Value(ClassType, "String"), value(value) {}
     virtual Value *clone() {
         return new StringValue(this->value);
     }
 
-    ustring get_value() { return this->value; }
+    opcode::StringConst get_value() { return this->value; }
 
-    virtual ustring as_string() override {
+    virtual opcode::StringConst as_string() override {
         return value;
     }
 
@@ -178,7 +190,7 @@ public:
         return new NilValue();
     }
 
-    virtual ustring as_string() override {
+    virtual opcode::StringConst as_string() override {
         return "nil";
     }
 

@@ -1000,27 +1000,42 @@ public:
 class Concat : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::CONCAT;
-
     Concat(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "CONCAT", dst, src1, src2) {}
-    
     void exec(Interpreter *vm) override;
 };
 
 class Concat2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::CONCAT2;
-
     Concat2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "CONCAT2", dst, csrc1, src2) {}
-    
     void exec(Interpreter *vm) override;
 };
 
 class Concat3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::CONCAT3;
-
     Concat3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "CONCAT3", dst, src1, csrc2) {}
-    
+    void exec(Interpreter *vm) override;
+};
+
+class Exp : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::EXP;
+    Exp(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EXP", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Exp2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::EXP2;
+    Exp2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "EXP2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Exp3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::EXP3;
+    Exp3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EXP3", dst, src1, csrc2) {}
     void exec(Interpreter *vm) override;
 };
 
@@ -1040,6 +1055,13 @@ public:
     bool equals(OpCode *other) override {
         assert(false && "TODO: equals")
     }
+};
+
+class Name : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::NAME;
+    Name(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "NAME", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
 };
 */
 
