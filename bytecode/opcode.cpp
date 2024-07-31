@@ -37,6 +37,10 @@ static bool is_int_expr(Value *v1, Value *v2) {
     return isa<IntValue>(v1) && isa<IntValue>(v2);
 }
 
+static bool is_primitive_type(Value *v) {
+    return v->get_kind() != TypeKind::USER_DEF;
+}
+
 void End::exec(Interpreter *vm) {
     // No op
 }
@@ -498,7 +502,7 @@ static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
             res = new BoolValue(true);
         }
         else {
-            assert(false && "TODO: unsupported operator type raise exception");
+            assert(false && "TODO: Call custom method for eq");
         }
     }
     else if (is_float_expr(s1, s2)) {
@@ -528,6 +532,39 @@ void Eq2::exec(Interpreter *vm) {
 
 void Eq3::exec(Interpreter *vm) {
     auto res = eq(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *neq(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_primitive_type(s1) && is_primitive_type(s2)) {
+        auto eqRes = eq(s1, s2, vm);
+        auto neqRes = new BoolValue(!dyn_cast<BoolValue>(eqRes)->get_value());
+        delete eqRes;
+        return neqRes;
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void NEq::exec(Interpreter *vm) {
+    auto res = neq(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void NEq2::exec(Interpreter *vm) {
+    auto res = neq(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void NEq3::exec(Interpreter *vm) {
+    auto res = neq(vm->load(src1), vm->load_const(src2), vm);
     if (res)
         vm->store(dst, res);
 }

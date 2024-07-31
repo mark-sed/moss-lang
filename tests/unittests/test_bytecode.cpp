@@ -150,7 +150,7 @@ TEST(Bytecode, Arithmetics) {
     delete bc;
 }
 
-TEST(Bytecode, Equals) {
+TEST(Bytecode, EqualsNotEquals) {
     Bytecode *bc = new Bytecode();
     bc->push_back(new opcode::StoreIntConst(200, 42));
     bc->push_back(new opcode::StoreIntConst(201, 82));
@@ -232,6 +232,11 @@ TEST(Bytecode, Equals) {
     bc->push_back(new opcode::Eq(49, 43, 10));
     bc->push_back(new opcode::Eq(50, 43, 13));
 
+    // NEq (calls Eq)
+    bc->push_back(new opcode::NEq(51, 43, 13));
+    bc->push_back(new opcode::NEq2(52, 216, 43));
+    bc->push_back(new opcode::NEq3(53, 5, 205));
+
     Interpreter *i = new Interpreter(bc);
     i->run();
 
@@ -274,6 +279,10 @@ TEST(Bytecode, Equals) {
     EXPECT_EQ(bool_val(i->load(48)), false);
     EXPECT_EQ(bool_val(i->load(49)), false);
     EXPECT_EQ(bool_val(i->load(50)), false);
+
+    EXPECT_EQ(bool_val(i->load(51)), true);
+    EXPECT_EQ(bool_val(i->load(52)), false);
+    EXPECT_EQ(bool_val(i->load(53)), true);
 
     delete i;
     delete bc;

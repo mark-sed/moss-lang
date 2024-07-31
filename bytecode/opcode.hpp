@@ -1167,6 +1167,27 @@ public:
     void exec(Interpreter *vm) override;
 };
 
+class NEq : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::NEQ;
+    NEq(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "NEQ", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class NEq2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::NEQ2;
+    NEq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "NEQ2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class NEq3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::NEQ3;
+    NEq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "NEQ3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
 /*
 class Name : public OpCode {
 public:
