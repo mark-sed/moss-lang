@@ -108,6 +108,20 @@ TEST(Bytecode, Arithmetics) {
     bc->push_back(new opcode::Sub(7, 5, 1)); // 512.0 
     bc->push_back(new opcode::Sub2(8, 204, 6)); //269
 
+    // Div
+    bc->push_back(new opcode::Div(9, 7, 1)); // 64.0 
+    bc->push_back(new opcode::Div2(10, 204, 1)); //35
+
+    // Mul
+    bc->push_back(new opcode::Mul(11, 7, 1)); // 4096.0
+    bc->push_back(new opcode::Mul3(12, 1, 204)); //2240
+
+    // Mod
+    bc->push_back(new opcode::StoreFloatConst(205, 2.2));
+    bc->push_back(new opcode::Mod(13, 7, 6)); // 6.0
+    bc->push_back(new opcode::Mod2(14, 204, 1)); //0
+    bc->push_back(new opcode::Mod3(15, 7, 205)); // 1.6...
+
     Interpreter *i = new Interpreter(bc);
     i->run();
 
@@ -121,6 +135,16 @@ TEST(Bytecode, Arithmetics) {
 
     EXPECT_EQ(float_val(i->load(7)), 512.0);
     EXPECT_EQ(int_val(i->load(8)), 269);
+
+    EXPECT_EQ(float_val(i->load(9)), 64.0);
+    EXPECT_EQ(int_val(i->load(10)), 35);
+
+    EXPECT_EQ(float_val(i->load(11)), 4096.0);
+    EXPECT_EQ(int_val(i->load(12)), 2240);
+
+    EXPECT_EQ(float_val(i->load(13)), 6.0);
+    EXPECT_EQ(int_val(i->load(14)), 0);
+    EXPECT_EQ(float_val(i->load(15)), std::fmod(512, 2.2));
 
     delete i;
     delete bc;

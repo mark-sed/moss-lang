@@ -1083,6 +1083,69 @@ public:
     void exec(Interpreter *vm) override;
 };
 
+class Div : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::DIV;
+    Div(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "DIV", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Div2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::DIV2;
+    Div2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "DIV2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Div3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::DIV3;
+    Div3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "DIV3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Mul : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::MUL;
+    Mul(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MUL", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Mul2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::MUL2;
+    Mul2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "MUL2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Mul3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::MUL3;
+    Mul3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MUL3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Mod : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::MOD;
+    Mod(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MOD", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Mod2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::MOD2;
+    Mod2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "MOD2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Mod3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::MOD3;
+    Mod3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MOD3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
 /*
 class Name : public OpCode {
 public:

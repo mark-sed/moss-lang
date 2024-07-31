@@ -247,6 +247,7 @@ void Concat3::exec(Interpreter *vm) {
     vm->store(dst, res);
 }
 
+// TODO: For most exprs is to check over/underflow when check is enabled
 static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -348,6 +349,127 @@ void Sub2::exec(Interpreter *vm) {
 
 void Sub3::exec(Interpreter *vm) {
     auto res = sub(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *div(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        if (i2->get_value() == 0) {
+            // FIXME: Raise division by 0 exception
+            assert(false && "TODO: division by 0 exception raise");
+        }
+        res = new IntValue(i1->get_value() / i2->get_value());
+    }
+    else if (is_float_expr(s1, s2)) {
+        if (s2->as_float() == 0.0) {
+            // FIXME: Raise division by 0 exception
+            assert(false && "TODO: division by 0.0 exception raise");
+        }
+        res = new FloatValue(s1->as_float() / s2->as_float());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Div::exec(Interpreter *vm) {
+    auto res = div(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Div2::exec(Interpreter *vm) {
+    auto res = div(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Div3::exec(Interpreter *vm) {
+    auto res = div(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *mul(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new IntValue(i1->get_value() * i2->get_value());
+    }
+    else if (is_float_expr(s1, s2)) {
+        res = new FloatValue(s1->as_float() * s2->as_float());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Mul::exec(Interpreter *vm) {
+    auto res = mul(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Mul2::exec(Interpreter *vm) {
+    auto res = mul(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Mul3::exec(Interpreter *vm) {
+    auto res = mul(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *mod(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        if (i2->get_value() == 0) {
+            // FIXME: Raise division by 0 exception
+            assert(false && "TODO: division by 0 exception raise");
+        }
+        res = new IntValue(i1->get_value() % i2->get_value());
+    }
+    else if (is_float_expr(s1, s2)) {
+        if (s2->as_float() == 0.0) {
+            // FIXME: Raise division by 0 exception
+            assert(false && "TODO: division by 0.0 exception raise");
+        }
+        res = new FloatValue(std::fmod(s1->as_float(), s2->as_float()));
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Mod::exec(Interpreter *vm) {
+    auto res = mod(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Mod2::exec(Interpreter *vm) {
+    auto res = mod(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Mod3::exec(Interpreter *vm) {
+    auto res = mod(vm->load(src1), vm->load_const(src2), vm);
     if (res)
         vm->store(dst, res);
 }
