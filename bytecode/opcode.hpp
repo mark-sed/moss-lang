@@ -53,7 +53,7 @@ enum OpCodes : opcode_t {
     STORE_INT_CONST, //   #dst, int
     STORE_FLOAT_CONST, // #dst, float
     STORE_BOOL_CONST, // #dst, bool
-    STORE_STR_CONST, //   #dst, "string"
+    STORE_STRING_CONST, //   #dst, "string"
     STORE_NIL_CONST, //   #dst
 
     JMP, //               addr
@@ -505,14 +505,14 @@ public:
     }
 };
 
-class StoreStrConst : public OpCode {
+class StoreStringConst : public OpCode {
 public:
     Register dst;
     StringConst val;
 
-    static const OpCodes ClassType = OpCodes::STORE_STR_CONST;
+    static const OpCodes ClassType = OpCodes::STORE_STRING_CONST;
 
-    StoreStrConst(Register dst, StringConst val) : OpCode(ClassType, "STORE_STR_CONST"), dst(dst), val(val) {}
+    StoreStringConst(Register dst, StringConst val) : OpCode(ClassType, "STORE_STRING_CONST"), dst(dst), val(val) {}
     
     void exec(Interpreter *vm) override;
     
@@ -521,7 +521,7 @@ public:
         return os;
     }
     bool equals(OpCode *other) override {
-        auto casted = dyn_cast<StoreStrConst>(other);
+        auto casted = dyn_cast<StoreStringConst>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->val == val;
     }
@@ -1143,6 +1143,27 @@ class Mod3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MOD3;
     Mod3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MOD3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Eq : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::EQ;
+    Eq(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EQ", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Eq2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::EQ2;
+    Eq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "EQ2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Eq3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::EQ3;
+    Eq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EQ3", dst, src1, csrc2) {}
     void exec(Interpreter *vm) override;
 };
 

@@ -94,7 +94,7 @@ void BytecodeWriter::write(Bytecode *code) {
             auto val = o->val;
             this->stream->write(reinterpret_cast<char *>(&val), BC_BOOL_SIZE);
         }
-        else if (auto o = dyn_cast<opcode::StoreStrConst>(op_gen)){
+        else if (auto o = dyn_cast<opcode::StoreStringConst>(op_gen)){
             write_register(o->dst);
             write_string(o->val);
         }

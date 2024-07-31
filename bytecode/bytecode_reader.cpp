@@ -78,7 +78,7 @@ Bytecode *BytecodeReader::read() {
             } break;
             case opcode::OpCodes::STORE_FLOAT_CONST: {} break;
             case opcode::OpCodes::STORE_BOOL_CONST: {} break;
-            case opcode::OpCodes::STORE_STR_CONST: {} break;
+            case opcode::OpCodes::STORE_STRING_CONST: {} break;
             case opcode::OpCodes::STORE_NIL_CONST: {} break;
             case opcode::OpCodes::JMP: {} break;
             case opcode::OpCodes::JMP_IF_TRUE: {} break;

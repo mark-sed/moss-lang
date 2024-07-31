@@ -109,7 +109,7 @@ void StoreBoolConst::exec(Interpreter *vm) {
     vm->store_const(dst, new BoolValue(val));
 }
 
-void StoreStrConst::exec(Interpreter *vm) {
+void StoreStringConst::exec(Interpreter *vm) {
     // TODO: Load precreated value
     vm->store_const(dst, new StringValue(val));
 }
@@ -248,6 +248,7 @@ void Concat3::exec(Interpreter *vm) {
 }
 
 // TODO: For most exprs is to check over/underflow when check is enabled
+// TODO: Call user defined method for non native type
 static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -470,6 +471,63 @@ void Mod2::exec(Interpreter *vm) {
 
 void Mod3::exec(Interpreter *vm) {
     auto res = mod(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (s1->get_kind() == s2->get_kind()) {
+        if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
+            IntValue *i2 = dyn_cast<IntValue>(s2);
+            res = new BoolValue(i1->get_value() == i2->get_value());
+        }
+        else if (FloatValue *f1 = dyn_cast<FloatValue>(s1)) {
+            FloatValue *f2 = dyn_cast<FloatValue>(s2);
+            res = new BoolValue(f1->get_value() == f2->get_value());
+        }
+        else if (BoolValue *b1 = dyn_cast<BoolValue>(s1)) {
+            BoolValue *b2 = dyn_cast<BoolValue>(s2);
+            res = new BoolValue(b1->get_value() == b2->get_value());
+        }
+        else if (StringValue *st1 = dyn_cast<StringValue>(s1)) {
+            StringValue *st2 = dyn_cast<StringValue>(s2);
+            res = new BoolValue(st1->get_value() == st2->get_value());
+        }
+        else if (isa<NilValue>(s1)) {
+            res = new BoolValue(true);
+        }
+        else {
+            assert(false && "TODO: unsupported operator type raise exception");
+        }
+    }
+    else if (is_float_expr(s1, s2)) {
+        res = new BoolValue(s1->as_float() == s2->as_float());
+    }
+    else if (isa<NilValue>(s1) || isa<NilValue>(s1)) {
+        res = new BoolValue(false);
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Eq::exec(Interpreter *vm) {
+    auto res = eq(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Eq2::exec(Interpreter *vm) {
+    auto res = eq(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Eq3::exec(Interpreter *vm) {
+    auto res = eq(vm->load(src1), vm->load_const(src2), vm);
     if (res)
         vm->store(dst, res);
 }
