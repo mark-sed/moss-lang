@@ -176,7 +176,7 @@ enum OpCodes : opcode_t {
     FOR, //       %i, %iterator
 
     BYTE_CODES_AMOUNT
-};  //static_assert(Bytecode::BYTE_CODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
+};
 
 /** Base Opcode class */
 class OpCode {
@@ -184,7 +184,9 @@ protected:
     OpCodes op_type;
     ustring mnem;
 
-    OpCode(OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {}
+    OpCode(OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {
+        static_assert(OpCodes::BYTE_CODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
+    }
 
     void check_load(Value *v, Interpreter *vm);
 public:
@@ -1057,6 +1059,27 @@ class Add3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::ADD3;
     Add3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "ADD3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Sub : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SUB;
+    Sub(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUB", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Sub2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SUB2;
+    Sub2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SUB2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Sub3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SUB3;
+    Sub3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUB3", dst, src1, csrc2) {}
     void exec(Interpreter *vm) override;
 };
 

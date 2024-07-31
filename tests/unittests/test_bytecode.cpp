@@ -103,6 +103,11 @@ TEST(Bytecode, Arithmetics) {
     bc->push_back(new opcode::Add(5, 4, 1)); // 520.0 
     bc->push_back(new opcode::Add3(6, 0, 202)); //11
 
+    // Sub
+    bc->push_back(new opcode::StoreIntConst(204, 280));
+    bc->push_back(new opcode::Sub(7, 5, 1)); // 512.0 
+    bc->push_back(new opcode::Sub2(8, 204, 6)); //269
+
     Interpreter *i = new Interpreter(bc);
     i->run();
 
@@ -113,6 +118,9 @@ TEST(Bytecode, Arithmetics) {
 
     EXPECT_EQ(float_val(i->load(5)), 520.0);
     EXPECT_EQ(int_val(i->load(6)), 11);
+
+    EXPECT_EQ(float_val(i->load(7)), 512.0);
+    EXPECT_EQ(int_val(i->load(8)), 269);
 
     delete i;
     delete bc;
