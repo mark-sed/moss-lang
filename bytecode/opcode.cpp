@@ -551,20 +551,100 @@ static Value *neq(Value *s1, Value *s2, Interpreter *vm) {
     return res;
 }
 
-void NEq::exec(Interpreter *vm) {
+void Neq::exec(Interpreter *vm) {
     auto res = neq(vm->load(src1), vm->load(src2), vm);
     if (res)
         vm->store(dst, res);
 }
 
-void NEq2::exec(Interpreter *vm) {
+void Neq2::exec(Interpreter *vm) {
     auto res = neq(vm->load_const(src1), vm->load(src2), vm);
     if (res)
         vm->store(dst, res);
 }
 
-void NEq3::exec(Interpreter *vm) {
+void Neq3::exec(Interpreter *vm) {
     auto res = neq(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *bt(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new BoolValue(i1->get_value() > i2->get_value());
+    }
+    else if (is_float_expr(s1, s2)) {
+        res = new BoolValue(s1->as_float() > s2->as_float());
+    }
+    else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
+        StringValue *st1 = dyn_cast<StringValue>(s1);
+        StringValue *st2 = dyn_cast<StringValue>(s2);
+        res = new BoolValue(st1->get_value() > st2->get_value());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Bt::exec(Interpreter *vm) {
+    auto res = bt(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Bt2::exec(Interpreter *vm) {
+    auto res = bt(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Bt3::exec(Interpreter *vm) {
+    auto res = bt(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *lt(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new BoolValue(i1->get_value() < i2->get_value());
+    }
+    else if (is_float_expr(s1, s2)) {
+        res = new BoolValue(s1->as_float() < s2->as_float());
+    }
+    else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
+        StringValue *st1 = dyn_cast<StringValue>(s1);
+        StringValue *st2 = dyn_cast<StringValue>(s2);
+        res = new BoolValue(st1->get_value() < st2->get_value());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Lt::exec(Interpreter *vm) {
+    auto res = lt(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Lt2::exec(Interpreter *vm) {
+    auto res = lt(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Lt3::exec(Interpreter *vm) {
+    auto res = lt(vm->load(src1), vm->load_const(src2), vm);
     if (res)
         vm->store(dst, res);
 }

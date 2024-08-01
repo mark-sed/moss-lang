@@ -3,6 +3,7 @@
 #include <limits>
 #include <cmath>
 #include "bytecode.hpp"
+#include "opcode.hpp"
 #include "values.hpp"
 #include "testing_utils.hpp"
 
@@ -232,10 +233,10 @@ TEST(Bytecode, EqualsNotEquals) {
     bc->push_back(new opcode::Eq(49, 43, 10));
     bc->push_back(new opcode::Eq(50, 43, 13));
 
-    // NEq (calls Eq)
-    bc->push_back(new opcode::NEq(51, 43, 13));
-    bc->push_back(new opcode::NEq2(52, 216, 43));
-    bc->push_back(new opcode::NEq3(53, 5, 205));
+    // Neq (calls Eq)
+    bc->push_back(new opcode::Neq(51, 43, 13));
+    bc->push_back(new opcode::Neq2(52, 216, 43));
+    bc->push_back(new opcode::Neq3(53, 5, 205));
 
     Interpreter *i = new Interpreter(bc);
     i->run();
@@ -283,6 +284,118 @@ TEST(Bytecode, EqualsNotEquals) {
     EXPECT_EQ(bool_val(i->load(51)), true);
     EXPECT_EQ(bool_val(i->load(52)), false);
     EXPECT_EQ(bool_val(i->load(53)), true);
+
+    delete i;
+    delete bc;
+}
+
+TEST(Bytecode, Comparisons) {
+    Bytecode *bc = new Bytecode();
+    bc->push_back(new opcode::StoreIntConst(200, -9922));
+    bc->push_back(new opcode::StoreIntConst(201, -9923));
+    bc->push_back(new opcode::StoreIntConst(202, 999));
+
+    bc->push_back(new opcode::StoreFloatConst(203, 0.0));
+    bc->push_back(new opcode::StoreFloatConst(204, 0.0001));
+    bc->push_back(new opcode::StoreFloatConst(205, -99.0));
+    bc->push_back(new opcode::StoreFloatConst(206, std::numeric_limits<double>::quiet_NaN()));
+    bc->push_back(new opcode::StoreFloatConst(207, std::numeric_limits<double>::infinity()));
+    bc->push_back(new opcode::StoreFloatConst(208, -std::numeric_limits<double>::infinity()));
+
+    bc->push_back(new opcode::StoreStringConst(209, "kača"));
+    bc->push_back(new opcode::StoreStringConst(210, "kaca"));
+
+    bc->push_back(new opcode::StoreStringConst(211, ""));
+    bc->push_back(new opcode::StoreStringConst(212, "hi"));
+    bc->push_back(new opcode::StoreStringConst(213, "hi2"));
+    bc->push_back(new opcode::StoreStringConst(214, "abcdefg"));
+    bc->push_back(new opcode::StoreStringConst(215, "abcdegg"));
+
+    bc->push_back(new opcode::StoreConst(0, 200));
+    bc->push_back(new opcode::StoreConst(1, 201));
+    bc->push_back(new opcode::StoreConst(2, 202));
+    bc->push_back(new opcode::StoreConst(3, 203));
+    bc->push_back(new opcode::StoreConst(4, 204));
+    bc->push_back(new opcode::StoreConst(5, 205));
+    bc->push_back(new opcode::StoreConst(6, 206));
+    bc->push_back(new opcode::StoreConst(7, 207));
+    bc->push_back(new opcode::StoreConst(8, 208));
+    bc->push_back(new opcode::StoreConst(9, 209));
+    bc->push_back(new opcode::StoreConst(10, 210));
+    bc->push_back(new opcode::StoreConst(11, 211));
+    bc->push_back(new opcode::StoreConst(12, 212));
+    bc->push_back(new opcode::StoreConst(13, 213));
+    bc->push_back(new opcode::StoreConst(14, 214));
+    bc->push_back(new opcode::StoreConst(15, 215));
+
+    // Bt
+    bc->push_back(new opcode::Bt2(16, 200, 0));
+    bc->push_back(new opcode::Bt3(17, 0, 201));
+    bc->push_back(new opcode::Bt(18, 1, 0));
+
+    bc->push_back(new opcode::Bt(19, 4, 3));
+    bc->push_back(new opcode::Bt(20, 3, 5));
+    bc->push_back(new opcode::Bt2(21, 206, 6));
+    bc->push_back(new opcode::Bt(22, 7, 6));
+    bc->push_back(new opcode::Bt3(23, 7, 207));
+    bc->push_back(new opcode::Bt(24, 7, 8));
+
+    bc->push_back(new opcode::Bt(25, 9, 10));
+    bc->push_back(new opcode::Bt(26, 9, 11));
+    bc->push_back(new opcode::Bt(27, 13, 12));
+    bc->push_back(new opcode::Bt(28, 15, 14));
+
+    // Lt
+    bc->push_back(new opcode::Lt2(29, 200, 0));
+    bc->push_back(new opcode::Lt3(30, 0, 201));
+    bc->push_back(new opcode::Lt(31, 1, 0));
+
+    bc->push_back(new opcode::Lt(32, 4, 3));
+    bc->push_back(new opcode::Lt(33, 3, 5));
+    bc->push_back(new opcode::Lt2(34, 206, 6));
+    bc->push_back(new opcode::Lt(35, 7, 6));
+    bc->push_back(new opcode::Lt3(36, 7, 207));
+    bc->push_back(new opcode::Lt(37, 7, 8));
+
+    bc->push_back(new opcode::Lt(38, 9, 10));
+    bc->push_back(new opcode::Lt(39, 9, 11));
+    bc->push_back(new opcode::Lt(40, 13, 12));
+    bc->push_back(new opcode::Lt(41, 15, 14));
+
+    Interpreter *i = new Interpreter(bc);
+    i->run();
+
+    EXPECT_EQ(bool_val(i->load(16)), false);
+    EXPECT_EQ(bool_val(i->load(17)), true);
+    EXPECT_EQ(bool_val(i->load(18)), false);
+
+    EXPECT_EQ(bool_val(i->load(19)), true);
+    EXPECT_EQ(bool_val(i->load(20)), true);
+    EXPECT_EQ(bool_val(i->load(21)), false);
+    EXPECT_EQ(bool_val(i->load(22)), false);
+    EXPECT_EQ(bool_val(i->load(23)), false);
+    EXPECT_EQ(bool_val(i->load(24)), true);
+
+    EXPECT_EQ(bool_val(i->load(25)), true);
+    EXPECT_EQ(bool_val(i->load(26)), true);
+    EXPECT_EQ(bool_val(i->load(27)), true);
+    EXPECT_EQ(bool_val(i->load(28)), true);
+
+    EXPECT_EQ(bool_val(i->load(29)), false);
+    EXPECT_EQ(bool_val(i->load(30)), false);
+    EXPECT_EQ(bool_val(i->load(31)), true);
+
+    EXPECT_EQ(bool_val(i->load(32)), false);
+    EXPECT_EQ(bool_val(i->load(33)), false);
+    EXPECT_EQ(bool_val(i->load(34)), false);
+    EXPECT_EQ(bool_val(i->load(35)), false);
+    EXPECT_EQ(bool_val(i->load(36)), false);
+    EXPECT_EQ(bool_val(i->load(37)), false);
+
+    EXPECT_EQ(bool_val(i->load(38)), false);
+    EXPECT_EQ(bool_val(i->load(39)), false);
+    EXPECT_EQ(bool_val(i->load(40)), false);
+    EXPECT_EQ(bool_val(i->load(41)), false);
 
     delete i;
     delete bc;

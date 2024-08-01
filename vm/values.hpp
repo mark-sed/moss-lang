@@ -59,9 +59,6 @@ public:
         return os;
     }
 
-    /*virtual bool equals(Value &v2) = 0;
-    virtual bool equals(Value *v2) = 0;*/
-
     /** Returns how many references are there for this value */
     int get_references() { return this->references; }
     /** Increments reference counter */
@@ -84,18 +81,6 @@ public:
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
     return v.debug(os);
 }
-
-/*inline bool operator== (Value &v1, Value &v2) {
-    return v1.equals(v2);
-}
-
-inline bool operator== (Value &v1, Value *v2) {
-    return v1.equals(v2);
-}
-
-inline bool operator== (Value *v1, Value &v2) {
-    return v1->equals(v2);
-}*/
 
 class IntValue : public Value {
 private:
