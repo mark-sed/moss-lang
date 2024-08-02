@@ -38,6 +38,13 @@ IntConst BytecodeReader::read_const_int() {
     return *(IntConst *)&buffer[0];
 }
 
+Address BytecodeReader::read_address() {
+    char buffer[BC_ADDR_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BC_ADDR_SIZE);
+    return *(Address *)&buffer[0];
+}
+
 Bytecode *BytecodeReader::read() {
     LOG1("Reading bytecode from file " << this->file.get_name());
 
@@ -55,21 +62,33 @@ Bytecode *BytecodeReader::read() {
             break;
 
         switch (opcode) {
-            case opcode::OpCodes::END: {} break;
+            case opcode::OpCodes::END: {
+                bc->push_back(new End());
+            } break;
             case opcode::OpCodes::LOAD: {
                 bc->push_back(new Load(read_register(), read_string()));
             } break;
-            case opcode::OpCodes::LOAD_ATTR: {} break;
-            case opcode::OpCodes::LOAD_GLOBAL: {} break;
-            case opcode::OpCodes::LOAD_NONLOC: {} break;
+            case opcode::OpCodes::LOAD_ATTR: {
+                bc->push_back(new LoadAttr(read_register(), read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::LOAD_GLOBAL: {
+                bc->push_back(new LoadGlobal(read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::LOAD_NONLOC: {
+                bc->push_back(new LoadNonLoc(read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::STORE: {
+                bc->push_back(new Store(read_register(), read_register()));
+            } break;
             case opcode::OpCodes::STORE_NAME: {
                 bc->push_back(new StoreName(read_register(), read_string()));
             } break;
-            case opcode::OpCodes::STORE: {} break;
             case opcode::OpCodes::STORE_CONST: {
                 bc->push_back(new StoreConst(read_register(), read_register()));
             } break;
-            case opcode::OpCodes::STORE_ADDR: {} break;
+            case opcode::OpCodes::STORE_ADDR: {
+                bc->push_back(new StoreAddr(read_register(), read_address()));
+            } break;
             case opcode::OpCodes::STORE_ATTR: {} break;
             case opcode::OpCodes::STORE_ADDR_ATTR: {} break;
             case opcode::OpCodes::STORE_CONST_ATTR: {} break;

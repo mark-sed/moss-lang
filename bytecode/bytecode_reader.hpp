@@ -30,6 +30,7 @@ private:
     opcode::Register read_register();
     opcode::StringConst read_string();
     opcode::IntConst read_const_int();
+    opcode::Address read_address();
 public:
     BytecodeReader(BytecodeFile &file) : file(file), buffer_size(256) {
         this->stream = file.get_new_stream();

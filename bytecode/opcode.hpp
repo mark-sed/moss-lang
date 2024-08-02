@@ -233,6 +233,10 @@ inline std::ostream& operator<< (std::ostream& os, OpCode &op) {
     return op.debug(os);
 }
 
+inline std::ostream& operator<< (std::ostream& os, const OpCode &op) {
+    return op.debug(os);
+}
+
 inline bool operator==(OpCode &a, OpCode &b) {
     return a.equals(&b);
 }

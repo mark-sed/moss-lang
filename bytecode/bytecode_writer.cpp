@@ -181,10 +181,11 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(binExp->src1);
             write_register(binExp->src2);
         }
-        /*else if (auto o = dyn_cast<opcode::NOT>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Not>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::ASSERT>(op_gen)){
+        /*else if (auto o = dyn_cast<opcode::ASSERT>(op_gen)){
             assert(false && "TODO: Unimplemented opcode in writer");
         }
         else if (auto o = dyn_cast<opcode::COPY_ARGS>(op_gen)){
