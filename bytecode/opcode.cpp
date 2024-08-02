@@ -772,7 +772,6 @@ static Value *andOP(Value *s1, Value *s2, Interpreter *vm) {
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
-        // s1 in s2 => s2.find(s1)
         res = new BoolValue(b1->get_value() && b2->get_value());
     }
     else {
@@ -810,7 +809,6 @@ static Value *orOP(Value *s1, Value *s2, Interpreter *vm) {
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
-        // s1 in s2 => s2.find(s1)
         res = new BoolValue(b1->get_value() || b2->get_value());
     }
     else {
@@ -848,7 +846,6 @@ static Value *xorOP(Value *s1, Value *s2, Interpreter *vm) {
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
-        // s1 in s2 => s2.find(s1)
         res = new BoolValue(b1->get_value() ^ b2->get_value());
     }
     else {
@@ -887,7 +884,6 @@ static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
         else if (static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size()) {
             assert(false && "TODO: out of bounds exception");
         }
-        // s1 in s2 => s2.find(s1)
         res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
     }
     else {
@@ -911,6 +907,41 @@ void Subsc2::exec(Interpreter *vm) {
 
 void Subsc3::exec(Interpreter *vm) {
     auto res = subsc(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *slice(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    assert(false && "TODO: Unimplemented opcode");
+    return res;
+}
+
+void Slice::exec(Interpreter *vm) {
+    auto res = slice(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Slice2::exec(Interpreter *vm) {
+    auto res = slice(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Not::exec(Interpreter *vm) {
+    auto *s1 = vm->load(src);
+    Value *res = nullptr;
+    if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
+        res = new IntValue(~(i1->get_value()));
+    }
+    else if (BoolValue *b1 = dyn_cast<BoolValue>(s1)) {
+        res = new BoolValue(!(b1->get_value()));
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
     if (res)
         vm->store(dst, res);
 }

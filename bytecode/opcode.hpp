@@ -1377,6 +1377,42 @@ public:
     void exec(Interpreter *vm) override;
 };
 
+class Slice : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SLICE;
+    Slice(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "SLICE", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Slice2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SLICE2;
+    Slice2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SLICE2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Not : public OpCode {
+public:
+    Register dst;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::NOT;
+
+    Not(Register dst, Register src) : OpCode(ClassType, "NOT"), dst(dst), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Not>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:

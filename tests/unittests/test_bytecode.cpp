@@ -500,6 +500,12 @@ TEST(Bytecode, BitWiseOperators) {
     bc->push_back(new opcode::Xor(24, 5, 4));
     bc->push_back(new opcode::Xor(25, 4, 5));
 
+    // Not
+    bc->push_back(new opcode::Not(26, 0));
+    bc->push_back(new opcode::Not(27, 1));
+    bc->push_back(new opcode::Not(28, 4));
+    bc->push_back(new opcode::Not(29, 5));
+
     Interpreter *i = new Interpreter(bc);
     i->run();
 
@@ -527,6 +533,11 @@ TEST(Bytecode, BitWiseOperators) {
     EXPECT_EQ(bool_val(i->load(23)), false);
     EXPECT_EQ(bool_val(i->load(24)), true);
     EXPECT_EQ(bool_val(i->load(25)), true);
+
+    EXPECT_EQ(int_val(i->load(26)), -1);
+    EXPECT_EQ(int_val(i->load(27)), 0);
+    EXPECT_EQ(bool_val(i->load(28)), false);
+    EXPECT_EQ(bool_val(i->load(29)), true);
 
     delete i;
     delete bc;
