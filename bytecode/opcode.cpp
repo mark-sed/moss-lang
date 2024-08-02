@@ -729,6 +729,39 @@ void Leq3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+static Value *in(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
+        StringValue *st1 = dyn_cast<StringValue>(s1);
+        StringValue *st2 = dyn_cast<StringValue>(s2);
+        // s1 in s2 => s2.find(s1)
+        res = new BoolValue(st2->get_value().find(st1->get_value()) != ustring::npos);
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void In::exec(Interpreter *vm) {
+    auto res = in(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void In2::exec(Interpreter *vm) {
+    auto res = in(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void In3::exec(Interpreter *vm) {
+    auto res = in(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

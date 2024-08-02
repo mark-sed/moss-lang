@@ -417,4 +417,45 @@ TEST(Bytecode, Comparisons) {
     delete bc;
 }
 
+TEST(Bytecode, In) {
+    Bytecode *bc = new Bytecode();
+    bc->push_back(new opcode::StoreStringConst(200, "Moss"));
+    bc->push_back(new opcode::StoreStringConst(201, " "));
+    bc->push_back(new opcode::StoreStringConst(202, "Language"));
+    bc->push_back(new opcode::StoreStringConst(203, ""));
+    bc->push_back(new opcode::StoreStringConst(204, "gu"));
+    bc->push_back(new opcode::StoreStringConst(205, "os"));
+    
+    bc->push_back(new opcode::StoreConst(0, 200));
+    bc->push_back(new opcode::StoreConst(1, 201));
+    bc->push_back(new opcode::StoreConst(2, 202));
+    bc->push_back(new opcode::StoreConst(3, 203));
+    bc->push_back(new opcode::StoreConst(4, 204));
+    bc->push_back(new opcode::StoreConst(5, 205));
+
+    bc->push_back(new opcode::In3(6, 0, 202));
+    bc->push_back(new opcode::In2(7, 200, 0));
+    bc->push_back(new opcode::In(8, 4, 2));
+    bc->push_back(new opcode::In(9, 2, 4));
+    bc->push_back(new opcode::In(10, 3, 1));
+    bc->push_back(new opcode::In(11, 5, 0));
+    bc->push_back(new opcode::In2(12, 202, 2));
+
+    Interpreter *i = new Interpreter(bc);
+    i->run();
+
+    EXPECT_EQ(i->get_exit_code(), 0);
+
+    EXPECT_EQ(bool_val(i->load(6)), false);
+    EXPECT_EQ(bool_val(i->load(7)), true);
+    EXPECT_EQ(bool_val(i->load(8)), true);
+    EXPECT_EQ(bool_val(i->load(9)), false);
+    EXPECT_EQ(bool_val(i->load(10)), true);
+    EXPECT_EQ(bool_val(i->load(11)), true);
+    EXPECT_EQ(bool_val(i->load(12)), true);
+
+    delete i;
+    delete bc;
+}
+
 }

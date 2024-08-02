@@ -1272,6 +1272,27 @@ public:
     void exec(Interpreter *vm) override;
 };
 
+class In : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::IN;
+    In(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "IN", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class In2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::IN2;
+    In2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "IN2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class In3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::IN3;
+    In3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "IN3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
 /*
 class Name : public OpCode {
 public:
