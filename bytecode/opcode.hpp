@@ -1230,6 +1230,48 @@ public:
     void exec(Interpreter *vm) override;
 };
 
+class Beq : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::BEQ;
+    Beq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "BEQ", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Beq2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::BEQ2;
+    Beq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "BEQ2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Beq3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::BEQ3;
+    Beq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "BEQ3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Leq : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::LEQ;
+    Leq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "LEQ", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Leq2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::LEQ2;
+    Leq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "LEQ2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Leq3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::LEQ3;
+    Leq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "LEQ3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
 /*
 class Name : public OpCode {
 public:

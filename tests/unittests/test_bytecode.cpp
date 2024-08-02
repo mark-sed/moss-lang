@@ -362,6 +362,15 @@ TEST(Bytecode, Comparisons) {
     bc->push_back(new opcode::Lt(40, 13, 12));
     bc->push_back(new opcode::Lt(41, 15, 14));
 
+    // Beq
+    bc->push_back(new opcode::Beq3(42, 0, 201));
+    bc->push_back(new opcode::Beq2(43, 200, 0));
+    bc->push_back(new opcode::Beq(44, 7, 7));
+
+    // Leq
+    bc->push_back(new opcode::Leq3(45, 7, 207));
+    bc->push_back(new opcode::Leq(46, 13, 12));
+
     Interpreter *i = new Interpreter(bc);
     i->run();
 
@@ -396,6 +405,13 @@ TEST(Bytecode, Comparisons) {
     EXPECT_EQ(bool_val(i->load(39)), false);
     EXPECT_EQ(bool_val(i->load(40)), false);
     EXPECT_EQ(bool_val(i->load(41)), false);
+
+    EXPECT_EQ(bool_val(i->load(42)), true);
+    EXPECT_EQ(bool_val(i->load(43)), true);
+    EXPECT_EQ(bool_val(i->load(44)), true);
+
+    EXPECT_EQ(bool_val(i->load(45)), true);
+    EXPECT_EQ(bool_val(i->load(46)), false);
 
     delete i;
     delete bc;
