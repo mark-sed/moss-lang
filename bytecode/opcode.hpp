@@ -60,6 +60,8 @@ enum OpCodes : opcode_t {
     JMP_IF_TRUE, //       %src, addr
     JMP_IF_FALSE, //      %src, addr
     CALL, //              %dst, addr
+    PUSH_FRAME, //
+    POP_FRAME,  //
     RETURN, //            %src
     RETURN_CONST, //      #val
     RETURN_ADDR, //       addr
@@ -632,6 +634,40 @@ public:
         auto casted = dyn_cast<Call>(other);
         if (!casted) return false;
         return casted->addr == addr && casted->dst == dst;
+    }
+};
+
+class PushFrame : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::PUSH_FRAME;
+
+    PushFrame() : OpCode(ClassType, "PUSH_FRAME") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<PushFrame>(other);
+    }
+};
+
+class PopFrame : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::POP_FRAME;
+
+    PopFrame() : OpCode(ClassType, "POP_FRAME") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<PopFrame>(other);
     }
 };
 

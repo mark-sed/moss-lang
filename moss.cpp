@@ -79,7 +79,6 @@ int main(int argc, const char *argv[]) {
 
     bc->push_back(new opcode::Add(5, 4, 1)); // 520.0 
     bc->push_back(new opcode::Add3(6, 0, 202)); //11
-    bc->push_back(new opcode::Output(4));
 
     LOGMAX(*bc);
 

@@ -84,6 +84,8 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::JMP_IF_TRUE: {} break;
             case opcode::OpCodes::JMP_IF_FALSE: {} break;
             case opcode::OpCodes::CALL: {} break;
+            case opcode::OpCodes::PUSH_FRAME: {} break;
+            case opcode::OpCodes::POP_FRAME: {} break;
             case opcode::OpCodes::RETURN: {} break;
             case opcode::OpCodes::RETURN_CONST: {} break;
             case opcode::OpCodes::RETURN_ADDR: {} break;
