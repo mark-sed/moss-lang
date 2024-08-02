@@ -119,8 +119,8 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::OR: {} break;
             case opcode::OpCodes::NOT: {} break;
             case opcode::OpCodes::XOR: {} break;
-            case opcode::OpCodes::SC_AND: {} break;
-            case opcode::OpCodes::SC_OR: {} break;
+            //case opcode::OpCodes::SC_AND: {} break;
+            //case opcode::OpCodes::SC_OR: {} break;
             case opcode::OpCodes::SUBSC: {} break;
             case opcode::OpCodes::SLICE: {} break;
             case opcode::OpCodes::CONCAT2: {} break;
@@ -140,8 +140,8 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::AND2: {} break;
             case opcode::OpCodes::OR2: {} break;
             case opcode::OpCodes::XOR2: {} break;
-            case opcode::OpCodes::SC_AND2: {} break;
-            case opcode::OpCodes::SC_OR2: {} break;
+            //case opcode::OpCodes::SC_AND2: {} break;
+            //case opcode::OpCodes::SC_OR2: {} break;
             case opcode::OpCodes::SUBSC2: {} break;
             case opcode::OpCodes::SLICE2: {} break;
             case opcode::OpCodes::CONCAT3: {} break;
@@ -161,8 +161,8 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::AND3: {} break;
             case opcode::OpCodes::OR3: {} break;
             case opcode::OpCodes::XOR3: {} break;
-            case opcode::OpCodes::SC_AND3: {} break;
-            case opcode::OpCodes::SC_OR3: {} break;
+            //case opcode::OpCodes::SC_AND3: {} break;
+            //case opcode::OpCodes::SC_OR3: {} break;
             case opcode::OpCodes::SUBSC3: {} break;
             case opcode::OpCodes::ASSERT: {} break;
             case opcode::OpCodes::COPY_ARGS: {} break;

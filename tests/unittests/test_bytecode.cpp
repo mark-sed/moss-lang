@@ -532,4 +532,43 @@ TEST(Bytecode, BitWiseOperators) {
     delete bc;
 }
 
+TEST(Bytecode, Subscript) {
+    Bytecode *bc = new Bytecode();
+    bc->push_back(new opcode::StoreStringConst(200, "Moss"));
+    bc->push_back(new opcode::StoreStringConst(201, " "));
+    bc->push_back(new opcode::StoreStringConst(202, "Language"));
+    bc->push_back(new opcode::StoreIntConst(203, 0));
+    bc->push_back(new opcode::StoreIntConst(204, 2));
+    bc->push_back(new opcode::StoreIntConst(205, 7));
+    
+    bc->push_back(new opcode::StoreConst(0, 200));
+    bc->push_back(new opcode::StoreConst(1, 201));
+    bc->push_back(new opcode::StoreConst(2, 202));
+    bc->push_back(new opcode::StoreConst(3, 203));
+    bc->push_back(new opcode::StoreConst(4, 204));
+    bc->push_back(new opcode::StoreConst(5, 205));
+
+    bc->push_back(new opcode::Subsc3(6, 0, 203));
+    bc->push_back(new opcode::Subsc2(7, 200, 4));
+    bc->push_back(new opcode::Subsc(8, 1, 3));
+    bc->push_back(new opcode::Subsc(9, 2, 3));
+    bc->push_back(new opcode::Subsc(10, 2, 4));
+    bc->push_back(new opcode::Subsc(11, 2, 5));
+
+    Interpreter *i = new Interpreter(bc);
+    i->run();
+
+    EXPECT_EQ(i->get_exit_code(), 0);
+
+    EXPECT_EQ(string_val(i->load(6)), "M");
+    EXPECT_EQ(string_val(i->load(7)), "s");
+    EXPECT_EQ(string_val(i->load(8)), " ");
+    EXPECT_EQ(string_val(i->load(9)), "L");
+    EXPECT_EQ(string_val(i->load(10)), "n");
+    EXPECT_EQ(string_val(i->load(11)), "e");
+
+    delete i;
+    delete bc;
+}
+
 }

@@ -876,6 +876,45 @@ void Xor3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (isa<StringValue>(s1) && isa<IntValue>(s2)) {
+        StringValue *st1 = dyn_cast<StringValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        if (i2->get_value() < 0) {
+            assert(false && "TODO: negative index");
+        }
+        else if (static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size()) {
+            assert(false && "TODO: out of bounds exception");
+        }
+        // s1 in s2 => s2.find(s1)
+        res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Subsc::exec(Interpreter *vm) {
+    auto res = subsc(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Subsc2::exec(Interpreter *vm) {
+    auto res = subsc(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Subsc3::exec(Interpreter *vm) {
+    auto res = subsc(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
 /*
 
 void ::exec(Interpreter *vm) {
