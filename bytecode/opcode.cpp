@@ -762,6 +762,120 @@ void In3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+static Value *andOP(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new IntValue(i1->get_value() & i2->get_value());
+    }
+    else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
+        BoolValue *b1 = dyn_cast<BoolValue>(s1);
+        BoolValue *b2 = dyn_cast<BoolValue>(s2);
+        // s1 in s2 => s2.find(s1)
+        res = new BoolValue(b1->get_value() && b2->get_value());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void And::exec(Interpreter *vm) {
+    auto res = andOP(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void And2::exec(Interpreter *vm) {
+    auto res = andOP(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void And3::exec(Interpreter *vm) {
+    auto res = andOP(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *orOP(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new IntValue(i1->get_value() | i2->get_value());
+    }
+    else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
+        BoolValue *b1 = dyn_cast<BoolValue>(s1);
+        BoolValue *b2 = dyn_cast<BoolValue>(s2);
+        // s1 in s2 => s2.find(s1)
+        res = new BoolValue(b1->get_value() || b2->get_value());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Or::exec(Interpreter *vm) {
+    auto res = orOP(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Or2::exec(Interpreter *vm) {
+    auto res = orOP(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Or3::exec(Interpreter *vm) {
+    auto res = orOP(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+static Value *xorOP(Value *s1, Value *s2, Interpreter *vm) {
+    Value *res = nullptr;
+    if (is_int_expr(s1, s2)) {
+        IntValue *i1 = dyn_cast<IntValue>(s1);
+        IntValue *i2 = dyn_cast<IntValue>(s2);
+        res = new IntValue(i1->get_value() ^ i2->get_value());
+    }
+    else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
+        BoolValue *b1 = dyn_cast<BoolValue>(s1);
+        BoolValue *b2 = dyn_cast<BoolValue>(s2);
+        // s1 in s2 => s2.find(s1)
+        res = new BoolValue(b1->get_value() ^ b2->get_value());
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    return res;
+}
+
+void Xor::exec(Interpreter *vm) {
+    auto res = xorOP(vm->load(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Xor2::exec(Interpreter *vm) {
+    auto res = xorOP(vm->load_const(src1), vm->load(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void Xor3::exec(Interpreter *vm) {
+    auto res = xorOP(vm->load(src1), vm->load_const(src2), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

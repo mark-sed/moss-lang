@@ -1293,6 +1293,69 @@ public:
     void exec(Interpreter *vm) override;
 };
 
+class And : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::AND;
+    And(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "AND", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class And2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::AND2;
+    And2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "AND2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class And3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::AND3;
+    And3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "AND3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Or : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::OR;
+    Or(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "OR", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Or2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::OR2;
+    Or2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "OR2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Or3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::OR3;
+    Or3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "OR3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Xor : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::XOR;
+    Xor(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "XOR", dst, src1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Xor2 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::XOR2;
+    Xor2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "XOR2", dst, csrc1, src2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class Xor3 : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::XOR3;
+    Xor3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "XOR3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
 /*
 class Name : public OpCode {
 public:

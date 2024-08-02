@@ -458,4 +458,78 @@ TEST(Bytecode, In) {
     delete bc;
 }
 
+TEST(Bytecode, BitWiseOperators) {
+    Bytecode *bc = new Bytecode();
+    bc->push_back(new opcode::StoreIntConst(200, 0));
+    bc->push_back(new opcode::StoreIntConst(201, -1));
+    bc->push_back(new opcode::StoreIntConst(202, 0xF0));
+    bc->push_back(new opcode::StoreIntConst(203, 0xF));
+    bc->push_back(new opcode::StoreBoolConst(204, true));
+    bc->push_back(new opcode::StoreBoolConst(205, false));
+    
+    bc->push_back(new opcode::StoreConst(0, 200));
+    bc->push_back(new opcode::StoreConst(1, 201));
+    bc->push_back(new opcode::StoreConst(2, 202));
+    bc->push_back(new opcode::StoreConst(3, 203));
+    bc->push_back(new opcode::StoreConst(4, 204));
+    bc->push_back(new opcode::StoreConst(5, 205));
+
+    // And
+    bc->push_back(new opcode::And3(6, 0, 202));
+    bc->push_back(new opcode::And2(7, 203, 1));
+    bc->push_back(new opcode::And(8, 3, 2));
+    bc->push_back(new opcode::And(9, 4, 4));
+    bc->push_back(new opcode::And(10, 4, 5));
+    bc->push_back(new opcode::And(11, 5, 5));
+
+    // Or
+    bc->push_back(new opcode::Or3(12, 0, 202));
+    bc->push_back(new opcode::Or2(13, 203, 2));
+    bc->push_back(new opcode::Or(14, 1, 0));
+    bc->push_back(new opcode::Or2(15, 200, 0));
+    bc->push_back(new opcode::Or3(16, 4, 204));
+    bc->push_back(new opcode::Or(17, 4, 5));
+    bc->push_back(new opcode::Or2(18, 205, 5));
+
+    // Xor
+    bc->push_back(new opcode::Xor3(19, 3, 201));
+    bc->push_back(new opcode::Xor2(20, 203, 3));
+    bc->push_back(new opcode::Xor(21, 2, 3));
+    bc->push_back(new opcode::Xor2(22, 204, 4));
+    bc->push_back(new opcode::Xor3(23, 5, 205));
+    bc->push_back(new opcode::Xor(24, 5, 4));
+    bc->push_back(new opcode::Xor(25, 4, 5));
+
+    Interpreter *i = new Interpreter(bc);
+    i->run();
+
+    EXPECT_EQ(i->get_exit_code(), 0);
+
+    EXPECT_EQ(int_val(i->load(6)), 0);
+    EXPECT_EQ(int_val(i->load(7)), 0xF);
+    EXPECT_EQ(int_val(i->load(8)), 0);
+    EXPECT_EQ(bool_val(i->load(9)), true);
+    EXPECT_EQ(bool_val(i->load(10)), false);
+    EXPECT_EQ(bool_val(i->load(11)), false);
+
+    EXPECT_EQ(int_val(i->load(12)), 0xF0);
+    EXPECT_EQ(int_val(i->load(13)), 0xFF);
+    EXPECT_EQ(int_val(i->load(14)), -1);
+    EXPECT_EQ(int_val(i->load(15)), 0);
+    EXPECT_EQ(bool_val(i->load(16)), true);
+    EXPECT_EQ(bool_val(i->load(17)), true);
+    EXPECT_EQ(bool_val(i->load(18)), false);
+
+    EXPECT_EQ(int_val(i->load(19)), -16);
+    EXPECT_EQ(int_val(i->load(20)), 0);
+    EXPECT_EQ(int_val(i->load(21)), 0xFF);
+    EXPECT_EQ(bool_val(i->load(22)), false);
+    EXPECT_EQ(bool_val(i->load(23)), false);
+    EXPECT_EQ(bool_val(i->load(24)), true);
+    EXPECT_EQ(bool_val(i->load(25)), true);
+
+    delete i;
+    delete bc;
+}
+
 }
