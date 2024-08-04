@@ -172,7 +172,7 @@ xxh - SC_AND3   %dst, %src1, #val
 xxh - SC_OR3    %dst, %src1, #val
 xxh - SUBSC3    %dst, %src, #index
 
-xxh - ASSERT    %src
+xxh - ASSERT    %src, %msg
 
 xxh - COPY_ARGS
 

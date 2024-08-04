@@ -191,7 +191,7 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::CHECK_CATCH: {} break;
             case opcode::OpCodes::LIST_PUSH: {} break;
             case opcode::OpCodes::LIST_PUSH_CONST: {} break;
-            case opcode::OpCodes::LIST_PUSH_ADDR: {} break;
+            //case opcode::OpCodes::LIST_PUSH_ADDR: {} break;
             case opcode::OpCodes::BUILD_LIST: {} break;
             case opcode::OpCodes::BUILD_DICT: {} break;
             case opcode::OpCodes::CREATE_RANGE: {} break;

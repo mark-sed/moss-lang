@@ -954,6 +954,48 @@ void Not::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+void Assert::exec(Interpreter *vm) {
+    auto *s1 = vm->load(src);
+    auto *assert_msg = vm->load(msg);
+    
+    auto *check = dyn_cast<BoolValue>(s1);
+    assert(check && "Assertion value is not a boolean");
+    auto *str_msg = dyn_cast<StringValue>(assert_msg);
+    assert(str_msg && "Assertion message is not a string");
+
+    if (!check->get_value()) {
+        assert(false && "TODO: Raise assertion exception");
+    }
+}
+
+void CopyArgs::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void Raise::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void CheckCatch::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void ListPush::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void ListPushConst::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void BuildList::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void BuildDict::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

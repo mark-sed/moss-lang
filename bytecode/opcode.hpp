@@ -151,7 +151,7 @@ enum OpCodes : opcode_t {
 
     NOT, //       %dst, %src1
 
-    ASSERT, //    %src
+    ASSERT, //    %src, %msg
 
     COPY_ARGS, //
 
@@ -160,7 +160,7 @@ enum OpCodes : opcode_t {
 
     LIST_PUSH, //         %val
     LIST_PUSH_CONST, //   #val
-    LIST_PUSH_ADDR, //    addr
+    //LIST_PUSH_ADDR, //    addr
     BUILD_LIST, //        %dst
 
     BUILD_DICT, //        %keys, %vals
@@ -1449,7 +1449,174 @@ public:
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Not>(other);
         if (!casted) return false;
+        return casted->src == src && casted->dst == dst;
+    }
+};
+
+class Assert : public OpCode {
+public:
+    Register src;
+    Register msg;
+
+    static const OpCodes ClassType = OpCodes::ASSERT;
+
+    Assert(Register src, Register msg) : OpCode(ClassType, "ASSERT"), src(src), msg(msg) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", %" << msg;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Assert>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->msg == msg;
+    }
+};
+
+class CopyArgs : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::COPY_ARGS;
+
+    CopyArgs() : OpCode(ClassType, "COPY_ARGS") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<CopyArgs>(other);
+    }
+};
+
+class Raise : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::RAISE;
+
+    Raise(Register src) : OpCode(ClassType, "RAISE"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Raise>(other);
+        if (!casted) return false;
         return casted->src == src;
+    }
+};
+
+class CheckCatch : public OpCode {
+public:
+    Register src;
+    Register klass;
+
+    static const OpCodes ClassType = OpCodes::CHECK_CATCH;
+
+    CheckCatch(Register src, Register klass) : OpCode(ClassType, "CHECK_CATCH"), src(src), klass(klass) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", %" << klass;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<CheckCatch>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->klass == klass;
+    }
+};
+
+class ListPush : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::LIST_PUSH;
+
+    ListPush(Register src) : OpCode(ClassType, "LIST_PUSH"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ListPush>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
+class ListPushConst : public OpCode {
+public:
+    Register csrc;
+
+    static const OpCodes ClassType = OpCodes::LIST_PUSH_CONST;
+
+    ListPushConst(Register csrc) : OpCode(ClassType, "LIST_PUSH_CONST"), csrc(csrc) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << csrc;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ListPushConst>(other);
+        if (!casted) return false;
+        return casted->csrc == csrc;
+    }
+};
+
+class BuildList : public OpCode {
+public:
+    Register dst;
+
+    static const OpCodes ClassType = OpCodes::BUILD_LIST;
+
+    BuildList(Register dst) : OpCode(ClassType, "BUILD_LIST"), dst(dst) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<BuildList>(other);
+        if (!casted) return false;
+        return casted->dst == dst;
+    }
+};
+
+class BuildDict : public OpCode {
+public:
+    Register keys;
+    Register vals;
+
+    static const OpCodes ClassType = OpCodes::BUILD_DICT;
+
+    BuildDict(Register keys, Register vals) : OpCode(ClassType, "BUILD_DICT"), keys(keys), vals(vals) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << keys << ", %" << vals;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<BuildDict>(other);
+        if (!casted) return false;
+        return casted->keys == keys && casted->vals == vals;
     }
 };
 
