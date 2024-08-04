@@ -443,6 +443,52 @@ public:
     }
 };
 
+class StoreAddrAttr : public OpCode {
+public:
+    Address addr;
+    Register obj;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::STORE_ADDR_ATTR;
+
+    StoreAddrAttr(Address addr, Register obj, StringConst name) : OpCode(ClassType, "STORE_ADDR_ATTR"), addr(addr), obj(obj), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << addr << ", %" << obj << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreAddrAttr>(other);
+        if (!casted) return false;
+        return casted->addr == addr && casted->obj == obj && casted->name == name;
+    }
+};
+
+class StoreConstAttr : public OpCode {
+public:
+    Register csrc;
+    Register obj;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::STORE_ATTR;
+
+    StoreConstAttr(Register csrc, Register obj, StringConst name) : OpCode(ClassType, "STORE_CONST_ATTR"), csrc(csrc), obj(obj), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << csrc << ", %" << obj << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreConstAttr>(other);
+        if (!casted) return false;
+        return casted->csrc == csrc && casted->obj == obj && casted->name == name;
+    }
+};
+
 class StoreIntConst : public OpCode {
 public:
     Register dst;

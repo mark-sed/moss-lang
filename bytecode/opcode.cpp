@@ -100,6 +100,14 @@ void StoreAttr::exec(Interpreter *vm) {
     dstobj->set_attr(this->name, v);
 }
 
+void StoreAddrAttr::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void StoreConstAttr::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 void StoreIntConst::exec(Interpreter *vm) {
     vm->store_const(dst, new IntValue(val));
 }
