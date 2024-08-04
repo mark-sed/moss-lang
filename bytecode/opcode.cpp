@@ -996,6 +996,60 @@ void BuildDict::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+static Value *range(Value *start, Value *step, Value *end, Interpreter *vm) {
+    Value *res = nullptr;
+    assert(false && "TODO: Unimplemented range generation");
+    return res;
+}
+
+void CreateRange::exec(Interpreter *vm) {
+    auto res = range(vm->load(start), vm->load(step), vm->load(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange2::exec(Interpreter *vm) {
+    auto res = range(vm->load_const(start), vm->load(step), vm->load(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange3::exec(Interpreter *vm) {
+    auto res = range(vm->load(start), vm->load_const(step), vm->load(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange4::exec(Interpreter *vm) {
+    auto res = range(vm->load(start), vm->load(step), vm->load_const(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange5::exec(Interpreter *vm) {
+    auto res = range(vm->load_const(start), vm->load_const(step), vm->load(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange6::exec(Interpreter *vm) {
+    auto res = range(vm->load_const(start), vm->load(step), vm->load_const(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange7::exec(Interpreter *vm) {
+    auto res = range(vm->load(start), vm->load_const(step), vm->load_const(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
+void CreateRange8::exec(Interpreter *vm) {
+    auto res = range(vm->load_const(start), vm->load_const(step), vm->load_const(end), vm);
+    if (res)
+        vm->store(dst, res);
+}
+
 /*
 
 void ::exec(Interpreter *vm) {
