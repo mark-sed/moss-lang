@@ -1062,6 +1062,10 @@ void Switch::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void For::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {

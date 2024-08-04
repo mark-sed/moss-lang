@@ -73,12 +73,16 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->obj);
             write_string(o->name);
         }
-        /*else if (auto o = dyn_cast<opcode::STORE_ADDR_ATTR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::StoreAddrAttr>(op_gen)){
+            write_address(o->addr);
+            write_register(o->obj);
+            write_string(o->name);
         }
-        else if (auto o = dyn_cast<opcode::STORE_CONST_ATTR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
-        }*/
+        else if (auto o = dyn_cast<opcode::StoreConstAttr>(op_gen)){
+            write_register(o->csrc);
+            write_register(o->obj);
+            write_string(o->name);
+        }
         else if (auto o = dyn_cast<opcode::StoreIntConst>(op_gen)){
             write_register(o->dst);
             auto val = o->val;
@@ -185,63 +189,90 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_register(o->src);
         }
-        /*else if (auto o = dyn_cast<opcode::ASSERT>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Assert>(op_gen)){
+            write_register(o->src);
+            write_register(o->msg);
         }
-        else if (auto o = dyn_cast<opcode::COPY_ARGS>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (isa<opcode::CopyArgs>(op_gen)){
+            // Nothing to do
         }
-        else if (auto o = dyn_cast<opcode::RAISE>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Raise>(op_gen)){
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::CHECK_CATCH>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CheckCatch>(op_gen)){
+            write_register(o->dst);
+            write_register(o->klass);
         }
-        else if (auto o = dyn_cast<opcode::LIST_PUSH>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::ListPush>(op_gen)){
+            write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::LIST_PUSH_CONST>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::ListPushConst>(op_gen)){
+            write_register(o->csrc);
         }
-        else if (auto o = dyn_cast<opcode::LIST_PUSH_ADDR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::BuildList>(op_gen)){
+            write_register(o->dst);
         }
-        else if (auto o = dyn_cast<opcode::BUILD_LIST>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::BuildDict>(op_gen)){
+            write_register(o->keys);
+            write_register(o->vals);
         }
-        else if (auto o = dyn_cast<opcode::BUILD_DICT>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange2>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE2>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange3>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE3>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange4>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE4>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange5>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE5>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange6>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE6>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange7>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE7>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::CreateRange8>(op_gen)){
+            write_register(o->dst);
+            write_register(o->start);
+            write_register(o->step);
+            write_register(o->end);
         }
-        else if (auto o = dyn_cast<opcode::CREATE_RANGE8>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::Switch>(op_gen)){
+            write_register(o->vals);
+            write_register(o->addrs);
+            write_register(o->default_addr);
         }
-        else if (auto o = dyn_cast<opcode::SWITCH>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
+        else if (auto o = dyn_cast<opcode::For>(op_gen)){
+            write_register(o->index);
+            write_register(o->iterator);
         }
-        else if (auto o = dyn_cast<opcode::FOR>(op_gen)){
-            assert(false && "TODO: Unimplemented opcode in writer");
-        }*/
         else
             error::error(error::ErrorCode::BYTECODE, "unknown opcode", &this->file, true);
     }

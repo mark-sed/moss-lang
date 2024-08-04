@@ -155,7 +155,7 @@ enum OpCodes : opcode_t {
 
     COPY_ARGS, //
 
-    RAISE, //         %val
+    RAISE, //         %src
     CHECK_CATCH, //   %dst, %class
 
     LIST_PUSH, //         %val
@@ -1561,23 +1561,23 @@ public:
 
 class CheckCatch : public OpCode {
 public:
-    Register src;
+    Register dst;
     Register klass;
 
     static const OpCodes ClassType = OpCodes::CHECK_CATCH;
 
-    CheckCatch(Register src, Register klass) : OpCode(ClassType, "CHECK_CATCH"), src(src), klass(klass) {}
+    CheckCatch(Register dst, Register klass) : OpCode(ClassType, "CHECK_CATCH"), dst(dst), klass(klass) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", %" << klass;
+        os << mnem << "\t%" << dst << ", %" << klass;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CheckCatch>(other);
         if (!casted) return false;
-        return casted->src == src && casted->klass == klass;
+        return casted->dst == dst && casted->klass == klass;
     }
 };
 
