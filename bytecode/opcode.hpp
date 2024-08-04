@@ -1820,6 +1820,52 @@ public:
     }
 };
 
+class Switch : public OpCode {
+public:
+    Register vals;
+    Register addrs;
+    Register default_addr;
+
+    static const OpCodes ClassType = OpCodes::SWITCH;
+
+    Switch(Register vals, Register addrs, Register default_addr) :
+        OpCode(ClassType, "SWITCH"), vals(vals), addrs(addrs), default_addr(default_addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << vals << ", %" << addrs << ", %" << default_addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Switch>(other);
+        if (!casted) return false;
+        return casted->vals == vals && casted->addrs == addrs && casted->default_addr == default_addr;
+    }
+};
+
+class For : public OpCode {
+public:
+    Register index;
+    Register iterator;
+
+    static const OpCodes ClassType = OpCodes::FOR;
+
+    For(Register index, Register iterator) : OpCode(ClassType, "FOR"), index(index), iterator(iterator) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << index << ", %" << iterator;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<For>(other);
+        if (!casted) return false;
+        return casted->index == index && casted->iterator == iterator;
+    }
+};
+
 /*
 class Name : public OpCode {
 public:

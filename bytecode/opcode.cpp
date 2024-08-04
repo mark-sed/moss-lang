@@ -1050,6 +1050,10 @@ void CreateRange8::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+void Switch::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 /*
 
 void ::exec(Interpreter *vm) {
