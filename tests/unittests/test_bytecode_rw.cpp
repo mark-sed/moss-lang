@@ -46,6 +46,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     Bytecode *bc = new Bytecode();
     // This bytecode is incorrect and should not be interpreted nor verified
 
+    bc->push_back(new opcode::End());
+
     bc->push_back(new opcode::Load(0, "some_name"));
     bc->push_back(new opcode::LoadAttr(1, 0, "some_attr"));
     bc->push_back(new opcode::LoadGlobal(0, "some_name"));
@@ -62,6 +64,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::StoreIntConst(4, 0xFFFFFFFF));
     bc->push_back(new opcode::StoreFloatConst(5, 0.0e-8));
     bc->push_back(new opcode::StoreBoolConst(6, true));
+    bc->push_back(new opcode::StoreStringConst(9, "string value\n"));
     bc->push_back(new opcode::StoreNilConst(7));
 
     bc->push_back(new opcode::Jmp(5));
@@ -179,9 +182,6 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
 
     bc->push_back(new opcode::Switch(0, 5, -3));
     bc->push_back(new opcode::For(10, 11));
-    
-    // End
-    bc->push_back(new opcode::End());
 
     auto file_path = "/tmp/mosstest_all.msb";
 
@@ -193,9 +193,11 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     BytecodeReader *bcreader = new BytecodeReader(bf);
     Bytecode *bc_read = bcreader->read();
 
+    EXPECT_EQ(bc->size(), static_cast<unsigned>(opcode::OpCodes::OPCODES_AMOUNT));
     ASSERT_EQ(bc->size(), bc_read->size());
     for (unsigned int i = 0; i < bc->size(); ++i) {
         EXPECT_TRUE(*bc->get_code()[i] == *bc_read->get_code()[i]) << "Written: \'" << *(bc->get_code()[i]) << "'\n   Read: '" << *(bc_read->get_code()[i]) << "'";
+        EXPECT_EQ(static_cast<unsigned int>(bc_read->get_code()[i]->get_type()), i) << "Read: '" << *(bc_read->get_code()[i]) << "'";
     }
 
     delete bc;

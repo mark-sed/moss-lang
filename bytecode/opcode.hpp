@@ -177,7 +177,7 @@ enum OpCodes : opcode_t {
     SWITCH, //    %listvals, %listaddr, addr_def
     FOR, //       %i, %iterator
 
-    BYTE_CODES_AMOUNT
+    OPCODES_AMOUNT
 };
 
 /** Base Opcode class */
@@ -187,7 +187,7 @@ protected:
     ustring mnem;
 
     OpCode(OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {
-        static_assert(OpCodes::BYTE_CODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
+        static_assert(OpCodes::OPCODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
     }
 
     void check_load(Value *v, Interpreter *vm);
