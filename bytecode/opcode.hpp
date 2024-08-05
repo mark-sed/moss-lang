@@ -160,7 +160,7 @@ enum OpCodes : opcode_t {
 
     LIST_PUSH, //         %val
     LIST_PUSH_CONST, //   #val
-    //LIST_PUSH_ADDR, //    addr
+    LIST_PUSH_ADDR, //    addr
     BUILD_LIST, //        %dst
 
     BUILD_DICT, //        %keys, %vals
@@ -472,7 +472,7 @@ public:
     Register obj;
     StringConst name;
 
-    static const OpCodes ClassType = OpCodes::STORE_ATTR;
+    static const OpCodes ClassType = OpCodes::STORE_CONST_ATTR;
 
     StoreConstAttr(Register csrc, Register obj, StringConst name) : OpCode(ClassType, "STORE_CONST_ATTR"), csrc(csrc), obj(obj), name(name) {}
     
@@ -1620,6 +1620,27 @@ public:
         auto casted = dyn_cast<ListPushConst>(other);
         if (!casted) return false;
         return casted->csrc == csrc;
+    }
+};
+
+class ListPushAddr : public OpCode {
+public:
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::LIST_PUSH_ADDR;
+
+    ListPushAddr(Address addr) : OpCode(ClassType, "LIST_PUSH_ADDR"), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t" << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ListPushAddr>(other);
+        if (!casted) return false;
+        return casted->addr == addr;
     }
 };
 

@@ -38,6 +38,20 @@ IntConst BytecodeReader::read_const_int() {
     return *(IntConst *)&buffer[0];
 }
 
+FloatConst BytecodeReader::read_const_float() {
+    char buffer[BC_FLOAT_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BC_FLOAT_SIZE);
+    return *(FloatConst *)&buffer[0];
+}
+
+BoolConst BytecodeReader::read_const_bool() {
+    char buffer[BC_BOOL_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BC_BOOL_SIZE);
+    return *(BoolConst *)&buffer[0];
+}
+
 Address BytecodeReader::read_address() {
     char buffer[BC_ADDR_SIZE];
     char *buffer_ptr = &buffer[0];
@@ -89,122 +103,330 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::STORE_ADDR: {
                 bc->push_back(new StoreAddr(read_register(), read_address()));
             } break;
-            case opcode::OpCodes::STORE_ATTR: {} break;
-            case opcode::OpCodes::STORE_ADDR_ATTR: {} break;
-            case opcode::OpCodes::STORE_CONST_ATTR: {} break;
+            case opcode::OpCodes::STORE_ATTR: {
+                bc->push_back(new StoreAttr(read_register(), read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::STORE_ADDR_ATTR: {
+                bc->push_back(new StoreAddrAttr(read_address(), read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::STORE_CONST_ATTR: {
+                bc->push_back(new StoreConstAttr(read_register(), read_register(), read_string()));
+            } break;
             case opcode::OpCodes::STORE_INT_CONST: {
                 bc->push_back(new StoreIntConst(read_register(), read_const_int()));
             } break;
-            case opcode::OpCodes::STORE_FLOAT_CONST: {} break;
-            case opcode::OpCodes::STORE_BOOL_CONST: {} break;
-            case opcode::OpCodes::STORE_STRING_CONST: {} break;
-            case opcode::OpCodes::STORE_NIL_CONST: {} break;
-            case opcode::OpCodes::JMP: {} break;
-            case opcode::OpCodes::JMP_IF_TRUE: {} break;
-            case opcode::OpCodes::JMP_IF_FALSE: {} break;
-            case opcode::OpCodes::CALL: {} break;
-            case opcode::OpCodes::PUSH_FRAME: {} break;
-            case opcode::OpCodes::POP_FRAME: {} break;
-            case opcode::OpCodes::RETURN: {} break;
-            case opcode::OpCodes::RETURN_CONST: {} break;
-            case opcode::OpCodes::RETURN_ADDR: {} break;
-            case opcode::OpCodes::PUSH_ARG: {} break;
-            case opcode::OpCodes::PUSH_CONST_ARG: {} break;
-            case opcode::OpCodes::PUSH_ADDR_ARG: {} break;
-            case opcode::OpCodes::IMPORT: {} break;
-            case opcode::OpCodes::IMPORT_ALL: {} break;
-            case opcode::OpCodes::PUSH_PARENT: {} break;
-            case opcode::OpCodes::CREATE_OBJ: {} break;
-            case opcode::OpCodes::PROMOTE_OBJ: {} break;
-            case opcode::OpCodes::BUILD_CLASS: {} break;
-            case opcode::OpCodes::COPY: {} break;
-            case opcode::OpCodes::DEEP_COPY: {} break;
-            case opcode::OpCodes::CREATE_ANNT: {} break;
-            case opcode::OpCodes::ANNOTATE: {} break;
-            case opcode::OpCodes::OUTPUT: {} break;
-            case opcode::OpCodes::CONCAT: {} break;
-            case opcode::OpCodes::EXP: {} break;
-            case opcode::OpCodes::ADD: {} break;
-            case opcode::OpCodes::SUB: {} break;
-            case opcode::OpCodes::DIV: {} break;
-            case opcode::OpCodes::MUL: {} break;
-            case opcode::OpCodes::MOD: {} break;
-            case opcode::OpCodes::EQ: {} break;
-            case opcode::OpCodes::NEQ: {} break;
-            case opcode::OpCodes::BT: {} break;
-            case opcode::OpCodes::LT: {} break;
-            case opcode::OpCodes::BEQ: {} break;
-            case opcode::OpCodes::LEQ: {} break;
-            case opcode::OpCodes::IN: {} break;
-            case opcode::OpCodes::AND: {} break;
-            case opcode::OpCodes::OR: {} break;
-            case opcode::OpCodes::NOT: {} break;
-            case opcode::OpCodes::XOR: {} break;
-            //case opcode::OpCodes::SC_AND: {} break;
-            //case opcode::OpCodes::SC_OR: {} break;
-            case opcode::OpCodes::SUBSC: {} break;
-            case opcode::OpCodes::SLICE: {} break;
-            case opcode::OpCodes::CONCAT2: {} break;
-            case opcode::OpCodes::EXP2: {} break;
-            case opcode::OpCodes::ADD2: {} break;
-            case opcode::OpCodes::SUB2: {} break;
-            case opcode::OpCodes::DIV2: {} break;
-            case opcode::OpCodes::MUL2: {} break;
-            case opcode::OpCodes::MOD2: {} break;
-            case opcode::OpCodes::EQ2: {} break;
-            case opcode::OpCodes::NEQ2: {} break;
-            case opcode::OpCodes::BT2: {} break;
-            case opcode::OpCodes::LT2: {} break;
-            case opcode::OpCodes::BEQ2: {} break;
-            case opcode::OpCodes::LEQ2: {} break;
-            case opcode::OpCodes::IN2: {} break;
-            case opcode::OpCodes::AND2: {} break;
-            case opcode::OpCodes::OR2: {} break;
-            case opcode::OpCodes::XOR2: {} break;
-            //case opcode::OpCodes::SC_AND2: {} break;
-            //case opcode::OpCodes::SC_OR2: {} break;
-            case opcode::OpCodes::SUBSC2: {} break;
-            case opcode::OpCodes::SLICE2: {} break;
-            case opcode::OpCodes::CONCAT3: {} break;
-            case opcode::OpCodes::EXP3: {} break;
-            case opcode::OpCodes::ADD3: {} break;
-            case opcode::OpCodes::SUB3: {} break;
-            case opcode::OpCodes::DIV3: {} break;
-            case opcode::OpCodes::MUL3: {} break;
-            case opcode::OpCodes::MOD3: {} break;
-            case opcode::OpCodes::EQ3: {} break;
-            case opcode::OpCodes::NEQ3: {} break;
-            case opcode::OpCodes::BT3: {} break;
-            case opcode::OpCodes::LT3: {} break;
-            case opcode::OpCodes::BEQ3: {} break;
-            case opcode::OpCodes::LEQ3: {} break;
-            case opcode::OpCodes::IN3: {} break;
-            case opcode::OpCodes::AND3: {} break;
-            case opcode::OpCodes::OR3: {} break;
-            case opcode::OpCodes::XOR3: {} break;
-            //case opcode::OpCodes::SC_AND3: {} break;
-            //case opcode::OpCodes::SC_OR3: {} break;
-            case opcode::OpCodes::SUBSC3: {} break;
-            case opcode::OpCodes::ASSERT: {} break;
-            case opcode::OpCodes::COPY_ARGS: {} break;
-            case opcode::OpCodes::RAISE: {} break;
-            case opcode::OpCodes::CHECK_CATCH: {} break;
-            case opcode::OpCodes::LIST_PUSH: {} break;
-            case opcode::OpCodes::LIST_PUSH_CONST: {} break;
-            //case opcode::OpCodes::LIST_PUSH_ADDR: {} break;
-            case opcode::OpCodes::BUILD_LIST: {} break;
-            case opcode::OpCodes::BUILD_DICT: {} break;
-            case opcode::OpCodes::CREATE_RANGE: {} break;
-            case opcode::OpCodes::CREATE_RANGE2: {} break;
-            case opcode::OpCodes::CREATE_RANGE3: {} break;
-            case opcode::OpCodes::CREATE_RANGE4: {} break;
-            case opcode::OpCodes::CREATE_RANGE5: {} break;
-            case opcode::OpCodes::CREATE_RANGE6: {} break;
-            case opcode::OpCodes::CREATE_RANGE7: {} break;
-            case opcode::OpCodes::CREATE_RANGE8: {} break;
-            case opcode::OpCodes::SWITCH: {} break;
-            case opcode::OpCodes::FOR: {} break;
-            default: error::error(error::ErrorCode::BYTECODE, "unknown opcode", &this->file, true);
+            case opcode::OpCodes::STORE_FLOAT_CONST: {
+                bc->push_back(new StoreFloatConst(read_register(), read_const_float()));
+            } break;
+            case opcode::OpCodes::STORE_BOOL_CONST: {
+                bc->push_back(new StoreBoolConst(read_register(), read_const_bool()));
+            } break;
+            case opcode::OpCodes::STORE_STRING_CONST: {
+                bc->push_back(new StoreStringConst(read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::STORE_NIL_CONST: {
+                bc->push_back(new StoreNilConst(read_register()));
+            } break;
+            case opcode::OpCodes::JMP: {
+                bc->push_back(new Jmp(read_address()));
+            } break;
+            case opcode::OpCodes::JMP_IF_TRUE: {
+                bc->push_back(new JmpIfTrue(read_register(), read_address()));
+            } break;
+            case opcode::OpCodes::JMP_IF_FALSE: {
+                bc->push_back(new JmpIfFalse(read_register(), read_address()));
+            } break;
+            case opcode::OpCodes::CALL: {
+                bc->push_back(new Call(read_register(), read_address()));
+            } break;
+            case opcode::OpCodes::PUSH_FRAME: {
+                bc->push_back(new PushFrame());
+            } break;
+            case opcode::OpCodes::POP_FRAME: {
+                bc->push_back(new PopFrame());
+            } break;
+            case opcode::OpCodes::RETURN: {
+                bc->push_back(new Return(read_register()));
+            } break;
+            case opcode::OpCodes::RETURN_CONST: {
+                bc->push_back(new ReturnConst(read_register()));
+            } break;
+            case opcode::OpCodes::RETURN_ADDR: {
+                bc->push_back(new ReturnAddr(read_address()));
+            } break;
+            case opcode::OpCodes::PUSH_ARG: {
+                bc->push_back(new PushArg(read_register()));
+            } break;
+            case opcode::OpCodes::PUSH_CONST_ARG: {
+                bc->push_back(new PushConstArg(read_register()));
+            } break;
+            case opcode::OpCodes::PUSH_ADDR_ARG: {
+                bc->push_back(new PushAddrArg(read_address()));
+            } break;
+            case opcode::OpCodes::IMPORT: {
+                bc->push_back(new Import(read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::IMPORT_ALL: {
+                bc->push_back(new ImportAll(read_string()));
+            } break;
+            case opcode::OpCodes::PUSH_PARENT: {
+                bc->push_back(new PushParent(read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_OBJ: {
+                bc->push_back(new CreateObject(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::PROMOTE_OBJ: {
+                bc->push_back(new PromoteObject(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BUILD_CLASS: {
+                bc->push_back(new BuildClass(read_register()));
+            } break;
+            case opcode::OpCodes::COPY: {
+                bc->push_back(new Copy(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::DEEP_COPY: {
+                bc->push_back(new DeepCopy(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_ANNT: {
+                bc->push_back(new CreateAnnt(read_register(), read_string()));
+            } break;
+            case opcode::OpCodes::ANNOTATE: {
+                bc->push_back(new Annotate(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::OUTPUT: {
+                bc->push_back(new Output(read_register()));
+            } break;
+            case opcode::OpCodes::CONCAT: {
+                bc->push_back(new Concat(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::EXP: {
+                bc->push_back(new Exp(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::ADD: {
+                bc->push_back(new Add(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SUB: {
+                bc->push_back(new Sub(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::DIV: {
+                bc->push_back(new Div(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::MUL: {
+                bc->push_back(new Mul(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::MOD: {
+                bc->push_back(new Mod(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::EQ: {
+                bc->push_back(new Eq(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::NEQ: {
+                bc->push_back(new Neq(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BT: {
+                bc->push_back(new Bt(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LT: {
+                bc->push_back(new Lt(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BEQ: {
+                bc->push_back(new Beq(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LEQ: {
+                bc->push_back(new Leq(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::IN: {
+                bc->push_back(new In(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::AND: {
+                bc->push_back(new And(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::OR: {
+                bc->push_back(new Or(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::XOR: {
+                bc->push_back(new Xor(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SUBSC: {
+                bc->push_back(new Subsc(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SLICE: {
+                bc->push_back(new Slice(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CONCAT2: {
+                bc->push_back(new Concat2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::EXP2: {
+                bc->push_back(new Exp2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::ADD2: {
+                bc->push_back(new Add2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SUB2: {
+                bc->push_back(new Sub2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::DIV2: {
+                bc->push_back(new Div2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::MUL2: {
+                bc->push_back(new Mul2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::MOD2: {
+                bc->push_back(new Mod2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::EQ2: {
+                bc->push_back(new Eq2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::NEQ2: {
+                bc->push_back(new Neq2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BT2: {
+                bc->push_back(new Bt2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LT2: {
+                bc->push_back(new Lt2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BEQ2: {
+                bc->push_back(new Beq2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LEQ2: {
+                bc->push_back(new Leq2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::IN2: {
+                bc->push_back(new In2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::AND2: {
+                bc->push_back(new And2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::OR2: {
+                bc->push_back(new Or2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::XOR2: {
+                bc->push_back(new Xor2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SUBSC2: {
+                bc->push_back(new Subsc2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SLICE2: {
+                bc->push_back(new Slice2(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CONCAT3: {
+                bc->push_back(new Concat3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::EXP3: {
+                bc->push_back(new Exp3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::ADD3: {
+                bc->push_back(new Add3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SUB3: {
+                bc->push_back(new Sub3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::DIV3: {
+                bc->push_back(new Div3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::MUL3: {
+                bc->push_back(new Mul3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::MOD3: {
+                bc->push_back(new Mod3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::EQ3: {
+                bc->push_back(new Eq3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::NEQ3: {
+                bc->push_back(new Neq3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BT3: {
+                bc->push_back(new Bt3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LT3: {
+                bc->push_back(new Lt3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::BEQ3: {
+                bc->push_back(new Beq3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LEQ3: {
+                bc->push_back(new Leq3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::IN3: {
+                bc->push_back(new In3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::AND3: {
+                bc->push_back(new And3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::OR3: {
+                bc->push_back(new Or3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::XOR3: {
+                bc->push_back(new Xor3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SUBSC3: {
+                bc->push_back(new Subsc3(read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::NOT: {
+                bc->push_back(new Not(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::ASSERT: {
+                bc->push_back(new Assert(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::COPY_ARGS: {
+                bc->push_back(new CopyArgs());
+            } break;
+            case opcode::OpCodes::RAISE: {
+                bc->push_back(new Raise(read_register()));
+            } break;
+            case opcode::OpCodes::CHECK_CATCH: {
+                bc->push_back(new CheckCatch(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::LIST_PUSH: {
+                bc->push_back(new ListPush(read_register()));
+            } break;
+            case opcode::OpCodes::LIST_PUSH_CONST: {
+                bc->push_back(new ListPushConst(read_register()));
+            } break;
+            case opcode::OpCodes::LIST_PUSH_ADDR: {
+                bc->push_back(new ListPushAddr(read_address()));
+            } break;
+            case opcode::OpCodes::BUILD_LIST: {
+                bc->push_back(new BuildList(read_register()));
+            } break;
+            case opcode::OpCodes::BUILD_DICT: {
+                bc->push_back(new BuildDict(read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE: {
+                bc->push_back(new CreateRange(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE2: {
+                bc->push_back(new CreateRange2(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE3: {
+                bc->push_back(new CreateRange3(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE4: {
+                bc->push_back(new CreateRange4(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE5: {
+                bc->push_back(new CreateRange5(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE6: {
+                bc->push_back(new CreateRange6(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE7: {
+                bc->push_back(new CreateRange7(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::CREATE_RANGE8: {
+                bc->push_back(new CreateRange8(read_register(), read_register(), read_register(), read_register()));
+            } break;
+            case opcode::OpCodes::SWITCH: {
+                bc->push_back(new Switch(read_register(), read_register(), read_address()));
+            } break;
+            case opcode::OpCodes::FOR: {
+                bc->push_back(new For(read_register(), read_register()));
+            } break;
+            default: 
+                std::string msg = "unknown opcode in bytecode reader: "+std::to_string(opcode);
+                error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
         }
     } while(!this->stream->eof());
 

@@ -55,7 +55,130 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::StoreName(2, "some_name2"));
     bc->push_back(new opcode::StoreConst(3, 200));
     bc->push_back(new opcode::StoreAddr(4, 42));
-    //bc->push_back(new opcode::StoreAttr(0, 1, "aname"));
+    bc->push_back(new opcode::StoreAttr(0, 1, "aname"));
+    bc->push_back(new opcode::StoreAddrAttr(-5, 2, "att"));
+    bc->push_back(new opcode::StoreConstAttr(1, 2, "aaa"));
+
+    bc->push_back(new opcode::StoreIntConst(4, 0xFFFFFFFF));
+    bc->push_back(new opcode::StoreFloatConst(5, 0.0e-8));
+    bc->push_back(new opcode::StoreBoolConst(6, true));
+    bc->push_back(new opcode::StoreNilConst(7));
+
+    bc->push_back(new opcode::Jmp(5));
+    bc->push_back(new opcode::JmpIfTrue(2, -7));
+    bc->push_back(new opcode::JmpIfFalse(3, -12));
+    bc->push_back(new opcode::Call(11, 7));
+    bc->push_back(new opcode::PushFrame());
+    bc->push_back(new opcode::PopFrame());
+    bc->push_back(new opcode::Return(12));
+    bc->push_back(new opcode::ReturnConst(13));
+    bc->push_back(new opcode::ReturnAddr(14));
+    bc->push_back(new opcode::PushArg(11));
+    bc->push_back(new opcode::PushConstArg(200));
+    bc->push_back(new opcode::PushAddrArg(50));
+    
+    bc->push_back(new opcode::Import(18, "module1"));
+    bc->push_back(new opcode::ImportAll("modules"));
+
+    bc->push_back(new opcode::PushParent(11));
+    bc->push_back(new opcode::CreateObject(11, 18));
+    bc->push_back(new opcode::PromoteObject(13, 4));
+    bc->push_back(new opcode::BuildClass(0));
+    bc->push_back(new opcode::Copy(1, 0));
+    bc->push_back(new opcode::DeepCopy(2, 3));
+    
+    bc->push_back(new opcode::CreateAnnt(5, "text=2"));
+    bc->push_back(new opcode::Annotate(12, 5));
+
+    bc->push_back(new opcode::Output(3));
+    
+    bc->push_back(new opcode::Concat(0, 1, 2));
+    bc->push_back(new opcode::Exp(0, 1, 2));
+    bc->push_back(new opcode::Add(0, 1, 2));
+    bc->push_back(new opcode::Sub(0, 1, 2));
+    bc->push_back(new opcode::Div(0, 1, 2));
+    bc->push_back(new opcode::Mul(0, 1, 2));
+    bc->push_back(new opcode::Mod(0, 1, 2));
+    bc->push_back(new opcode::Eq(0, 1, 2));
+    bc->push_back(new opcode::Neq(0, 1, 2));
+    bc->push_back(new opcode::Bt(0, 1, 2));
+    bc->push_back(new opcode::Lt(0, 1, 2));
+    bc->push_back(new opcode::Beq(0, 1, 2));
+    bc->push_back(new opcode::Leq(0, 1, 2));
+    bc->push_back(new opcode::In(0, 1, 2));
+    bc->push_back(new opcode::And(0, 1, 2));
+    bc->push_back(new opcode::Or(0, 1, 2));
+    bc->push_back(new opcode::Xor(0, 1, 2));
+    bc->push_back(new opcode::Subsc(0, 1, 2));
+    bc->push_back(new opcode::Slice(0, 1, 2));
+
+    bc->push_back(new opcode::Concat2(0, 1, 2));
+    bc->push_back(new opcode::Exp2(0, 1, 2));
+    bc->push_back(new opcode::Add2(0, 1, 2));
+    bc->push_back(new opcode::Sub2(0, 1, 2));
+    bc->push_back(new opcode::Div2(0, 1, 2));
+    bc->push_back(new opcode::Mul2(0, 1, 2));
+    bc->push_back(new opcode::Mod2(0, 1, 2));
+    bc->push_back(new opcode::Eq2(0, 1, 2));
+    bc->push_back(new opcode::Neq2(0, 1, 2));
+    bc->push_back(new opcode::Bt2(0, 1, 2));
+    bc->push_back(new opcode::Lt2(0, 1, 2));
+    bc->push_back(new opcode::Beq2(0, 1, 2));
+    bc->push_back(new opcode::Leq2(0, 1, 2));
+    bc->push_back(new opcode::In2(0, 1, 2));
+    bc->push_back(new opcode::And2(0, 1, 2));
+    bc->push_back(new opcode::Or2(0, 1, 2));
+    bc->push_back(new opcode::Xor2(0, 1, 2));
+    bc->push_back(new opcode::Subsc2(0, 1, 2));
+    bc->push_back(new opcode::Slice2(0, 1, 2));
+
+    bc->push_back(new opcode::Concat3(0, 1, 2));
+    bc->push_back(new opcode::Exp3(0, 1, 2));
+    bc->push_back(new opcode::Add3(0, 1, 2));
+    bc->push_back(new opcode::Sub3(0, 1, 2));
+    bc->push_back(new opcode::Div3(0, 1, 2));
+    bc->push_back(new opcode::Mul3(0, 1, 2));
+    bc->push_back(new opcode::Mod3(0, 1, 2));
+    bc->push_back(new opcode::Eq3(0, 1, 2));
+    bc->push_back(new opcode::Neq3(0, 1, 2));
+    bc->push_back(new opcode::Bt3(0, 1, 2));
+    bc->push_back(new opcode::Lt3(0, 1, 2));
+    bc->push_back(new opcode::Beq3(0, 1, 2));
+    bc->push_back(new opcode::Leq3(0, 1, 2));
+    bc->push_back(new opcode::In3(0, 1, 2));
+    bc->push_back(new opcode::And3(0, 1, 2));
+    bc->push_back(new opcode::Or3(0, 1, 2));
+    bc->push_back(new opcode::Xor3(0, 1, 2));
+    bc->push_back(new opcode::Subsc3(0, 1, 2));
+
+    bc->push_back(new opcode::Not(0, 1));
+    
+    bc->push_back(new opcode::Assert(7, 4));
+
+    bc->push_back(new opcode::CopyArgs());
+
+    bc->push_back(new opcode::Raise(14));
+    bc->push_back(new opcode::CheckCatch(10, 9));
+
+    bc->push_back(new opcode::ListPush(5));
+    bc->push_back(new opcode::ListPushConst(6));
+    bc->push_back(new opcode::ListPushAddr(7));
+
+    bc->push_back(new opcode::BuildList(8));
+
+    bc->push_back(new opcode::BuildDict(4, 13));
+
+    bc->push_back(new opcode::CreateRange(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange2(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange3(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange4(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange5(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange6(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange7(1, 2, 3, 4));
+    bc->push_back(new opcode::CreateRange8(1, 2, 3, 4));
+
+    bc->push_back(new opcode::Switch(0, 5, -3));
+    bc->push_back(new opcode::For(10, 11));
     
     // End
     bc->push_back(new opcode::End());

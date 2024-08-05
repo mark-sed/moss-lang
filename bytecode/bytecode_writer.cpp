@@ -120,6 +120,12 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_address(o->addr);
         }
+        else if (isa<opcode::PushFrame>(op_gen)){
+            // Nothing to do
+        }
+        else if (isa<opcode::PopFrame>(op_gen)){
+            // Nothing to do
+        }
         else if (auto o = dyn_cast<opcode::Return>(op_gen)){
             write_register(o->src);
         }
@@ -209,6 +215,9 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::ListPushConst>(op_gen)){
             write_register(o->csrc);
         }
+        else if (auto o = dyn_cast<opcode::ListPushAddr>(op_gen)){
+            write_address(o->addr);
+        }
         else if (auto o = dyn_cast<opcode::BuildList>(op_gen)){
             write_register(o->dst);
         }
@@ -273,8 +282,10 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->index);
             write_register(o->iterator);
         }
-        else
-            error::error(error::ErrorCode::BYTECODE, "unknown opcode", &this->file, true);
+        else {
+            std::string msg = "unknown opcode in bytecode writer: "+std::to_string(opc);
+            error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
+        }
     }
 
     this->stream->flush();

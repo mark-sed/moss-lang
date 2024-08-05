@@ -996,6 +996,10 @@ void ListPushConst::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void ListPushAddr::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 void BuildList::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
