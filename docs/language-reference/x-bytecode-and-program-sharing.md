@@ -84,6 +84,8 @@ xxh - JMP               addr
 xxh - JMP_IF_TRUE       %src, addr
 xxh - JMP_IF_FALSE      %src, addr
 xxh - CALL              %dst, addr
+xxh - PUSH_FRAME
+xxh - POP_FRAME
 xxh - RETURN            %val
 xxh - RETURN_CONST      #val
 xxh - RETURN_ADDR       addr
@@ -196,7 +198,7 @@ xxh - CREATE_RANGE7     %dst, %start, #step, #end
 xxh - CREATE_RANGE8     %dst, #start, #step, #end
 
 xxh - SWITCH    %listvals, %listaddr, addr_def
-xxh - FOR       %i, %iterator
+115 - FOR       %i, %iterator
 
 ## Examples
 

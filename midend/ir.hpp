@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <list>
 
 namespace moss {
 
@@ -58,9 +59,15 @@ inline std::ostream& operator<< (std::ostream& os, IR &ir) {
  */
 class Construct : public IR {
 protected:
-    Construct(IRType ir_type, ustring name) : IR(ir_type, name) {}
+    std::list<IR *> body;
+    Construct(IRType ir_type, ustring name) : IR(ir_type, name), body() {}
+    Construct(IRType ir_type, ustring name, std::list<IR *> body) : IR(ir_type, name), body(body) {}
 public:
     static const IRType ClassType = IRType::CONSTRUCT;
+
+    void push_back(IR *i) {
+        body.push_back(i);
+    }
 };
 
 /**
@@ -94,6 +101,8 @@ public:
 
     Module(ustring name, SourceFile &src_file, bool is_main) 
         : Construct(ClassType, name), src_file(src_file), is_main(is_main) {}
+    Module(ustring name, SourceFile &src_file, std::list<IR *> body, bool is_main) 
+        : Construct(ClassType, name, body), src_file(src_file), is_main(is_main) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "<Module>" << name;

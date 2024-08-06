@@ -41,7 +41,6 @@ TEST(BytecodeWriterAndReader, TestCorrectness){
 }
 
 // Test for all opcodes
-// TODO: Finish
 TEST(BytecodeWriterAndReader, AllOpCodes){
     Bytecode *bc = new Bytecode();
     // This bytecode is incorrect and should not be interpreted nor verified
@@ -193,7 +192,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     BytecodeReader *bcreader = new BytecodeReader(bf);
     Bytecode *bc_read = bcreader->read();
 
-    EXPECT_EQ(bc->size(), static_cast<unsigned>(opcode::OpCodes::OPCODES_AMOUNT));
+    EXPECT_EQ(bc->size(), static_cast<unsigned>(opcode::OpCodes::OPCODES_AMOUNT)) << "Not all opcodes are being tested";
     ASSERT_EQ(bc->size(), bc_read->size());
     for (unsigned int i = 0; i < bc->size(); ++i) {
         EXPECT_TRUE(*bc->get_code()[i] == *bc_read->get_code()[i]) << "Written: \'" << *(bc->get_code()[i]) << "'\n   Read: '" << *(bc_read->get_code()[i]) << "'";

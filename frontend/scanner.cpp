@@ -100,6 +100,10 @@ ErrorToken *Scanner::err_tokenize(int value, ustring note, error::msgtype msg, A
     return err_tokenize(ustring(1, value), note, msg, args ...);
 }
 
+/*bool Scanner::is_end() {
+    return peek_nonutf() == EOF;
+}*/
+
 bool Scanner::check_and_advance(char c) {
     if(peek_nonutf() == c) {
         advance();

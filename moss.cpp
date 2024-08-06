@@ -4,6 +4,7 @@
 #include "os_interface.hpp"
 #include "clopts.hpp"
 #include "args.hpp"
+#include "parser.hpp"
 #include "logging.hpp"
 #include <iostream>
 
@@ -53,9 +54,9 @@ int main(int argc, const char *argv[]) {
     LOG1("Logging enabled with level: " << clopts::get_logging_level());
     LOG5("Unicode output test (sushi emoji, umlaut u and japanese): " << "🍣 ü ラーメン");
 
-    /*auto main_file = get_input();
+    auto main_file = get_input();
 
-    Scanner scanner(main_file);
+    /*Scanner scanner(main_file);
     Token *t = scanner.next_nonws_token();
     while(t->get_type() != TokenType::END_OF_FILE) {
         outs << *t << " ";
@@ -64,38 +65,18 @@ int main(int argc, const char *argv[]) {
     }
     delete t;*/
 
-    /*BytecodeFile bf("examples/test.msb");
-    BytecodeReader *bcreader = new BytecodeReader(bf);*/
-    Bytecode *bc = new Bytecode();
-    bc->push_back(new opcode::StoreIntConst(200, 2));
-    bc->push_back(new opcode::StoreIntConst(201, 3));
-    bc->push_back(new opcode::StoreIntConst(202, 9));
-    bc->push_back(new opcode::StoreFloatConst(203, 0.5));
-    bc->push_back(new opcode::StoreConst(0, 200));
-    bc->push_back(new opcode::Exp3(1, 0, 201)); // 8
-    bc->push_back(new opcode::StoreConst(2, 203));
-    bc->push_back(new opcode::Exp2(3, 202, 2)); // 3.0
-    bc->push_back(new opcode::Exp(4, 1, 3)); // 512.0
+    Parser parser(main_file);
+    auto module = parser.parse(true);
 
-    bc->push_back(new opcode::Add(5, 4, 1)); // 520.0 
-    bc->push_back(new opcode::Add3(6, 0, 202)); //11
+    LOGMAX(*module);
 
-    LOGMAX(*bc);
-
-    BytecodeFile bfo("examples/generated.msb");
-    BytecodeWriter *bcwriter = new BytecodeWriter(bfo);
-    bcwriter->write(bc);
-
-    Interpreter *interpreter = new Interpreter(bc, &bfo);
+    /*Interpreter *interpreter = new Interpreter(bc, &bfo);
     interpreter->run();
 
     LOGMAX(*interpreter);
     int exit_code = interpreter->get_exit_code();
 
-    delete interpreter;
-    delete bc;
-    delete bcwriter;
-    //delete bcreader;
+    delete interpreter;*/
 
-    return exit_code;
+    return 0; //exit_code;
 }
