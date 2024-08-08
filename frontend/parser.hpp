@@ -13,6 +13,7 @@
 #include "scanner.hpp"
 #include "source.hpp"
 #include "ast.hpp"
+#include "diagnostics.hpp"
 #include <memory>
 #include <vector>
 
@@ -29,19 +30,22 @@ private:
     size_t curr_token;
     std::vector<Token *> tokens;
 
-    ir::IR *parse_declaration();
+    ir::IR *declaration();
+    ir::Expression *expression();
 
     bool check(TokenType type);
     bool match(TokenType type);
-    Token *expect(TokenType type, ustring msg);
+    Token *expect(TokenType type, diags::Diagnostic msg);
     Token *advance();
 
-    bool check_nonws(TokenType type);
-    bool match_nonws(TokenType type);
-    Token *expect_nonws(TokenType type, ustring msg);
-    Token *advance_nonws();
+    bool check_ws(TokenType type);
+    bool match_ws(TokenType type);
+    Token *expect_ws(TokenType type, diags::Diagnostic msg);
+    Token *advance_ws();
 
-    //void skip_ws();
+    inline diags::Diagnostic create_diag(diags::DiagID id) {
+        return diags::Diagnostic(id, this->src_file, tokens[curr_token]);
+    }
 public:
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0) {}
 

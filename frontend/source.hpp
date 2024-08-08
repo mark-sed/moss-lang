@@ -89,6 +89,8 @@ public:
         : file(file), lines(lines), cols(cols) {}
 
     const SourceFile &get_file() { return file; }
+    std::pair<unsigned, unsigned> get_lines() { return lines; }
+    std::pair<unsigned, unsigned> get_cols() { return cols; }
 };
 
 

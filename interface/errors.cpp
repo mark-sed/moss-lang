@@ -7,6 +7,7 @@
 #include <string>
 
 using namespace moss;
+using namespace error;
 
 namespace moss {
 namespace error {
@@ -58,6 +59,26 @@ void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit
     errs << msg << "." << std::endl;
     if(exit){
         error::exit(code);
+    }
+}
+
+void error::error(diags::Diagnostic msg) {
+    errs << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset();
+    if (!msg.warning)
+        errs << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": ";
+    else
+        errs << error::colors::colorize(error::colors::PURPLE) << "warning" << error::colors::reset() << ": ";
+    
+    SourceInfo info = msg.token->get_src_info();
+
+    errs << msg.src_f.get_name() << ":" << info.get_lines().first+1 << ":" << info.get_cols().first+1 << ":\n    | ";
+
+    errs << diags::DIAG_MSGS[msg.id] << "." << std::endl;
+
+    // TODO: Print code snippet
+
+    if(!msg.warning){
+        error::exit(error::ErrorCode::RUNTIME_ERROR);
     }
 }
 

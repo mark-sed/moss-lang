@@ -30,6 +30,8 @@ enum class IRType {
     MODULE,
     SPACE,
 
+    ASSERT,
+
     BINARY_EXPR,
     VARIABLE,
     INT_LITERAL,
@@ -113,7 +115,12 @@ public:
         : Construct(ClassType, name, body), src_file(src_file), is_main(is_main) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "<Module>" << name;
+        os << "<Module>" << name << "{\n";
+        for (auto d: body) {
+            if (!d) os << "nullptr";
+            else os << *d << "\n";
+        }
+        os << "}\n";
         return os;
     }
 };
@@ -126,6 +133,27 @@ public:
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "space " << name;
+        return os;
+    }
+};
+
+class Assert : public Statement {
+private:
+    Expression *cond;
+    Expression *msg;
+
+public:
+    static const IRType ClassType = IRType::ASSERT;
+
+    Assert(Expression *cond, Expression *msg=nullptr) 
+           : Statement(ClassType, "assert"), cond(cond), msg(msg) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "assert(" << *cond;
+        if (msg)
+            os << ", " << *msg << ")";
+        else
+            os << ")";
         return os;
     }
 };
@@ -220,8 +248,10 @@ private:
     Expression *right;
     const Operator op;
 public:
+    static const IRType ClassType = IRType::BINARY_EXPR;
+
     BinaryExpr(Expression *left, Expression *right, Operator op) 
-              : Expression(IRType::BINARY_EXPR, "<binary-expression>"),
+              : Expression(ClassType, "<binary-expression>"),
                 left(left), right(right), op(op) {}
 
     Expression *get_left() { return this->left; }
@@ -235,7 +265,9 @@ public:
 
 class Variable : public Expression {
 public:
-    Variable(ustring name) : Expression(IRType::VARIABLE, name) {}
+    static const IRType ClassType = IRType::VARIABLE;
+
+    Variable(ustring name) : Expression(ClassType, name) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << name;
@@ -247,13 +279,15 @@ class IntLiteral : public Expression {
 private:
     opcode::IntConst value;
 public:
-    IntLiteral(opcode::IntConst value) : Expression(IRType::INT_LITERAL, "<int-literal>"), value(value) {}
+    static const IRType ClassType = IRType::INT_LITERAL;
+
+    IntLiteral(opcode::IntConst value) : Expression(ClassType, "<int-literal>"), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << value;
         return os;
     }
-};
+}; 
 
 }
 

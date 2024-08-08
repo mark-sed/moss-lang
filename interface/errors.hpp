@@ -13,6 +13,7 @@
 #include "os_interface.hpp"
 #include "scanner.hpp"
 #include "source.hpp"
+#include "diagnostics.hpp"
 #include <iostream>
 #include <cstddef>
 #include <cstdlib>
@@ -95,6 +96,7 @@ namespace error {
      */
     enum ErrorCode {
         NO_ERROR = 0,  ///< When no error occurred but program had to exit (otherwise return code would be for some error 0)
+        RUNTIME_ERROR, ///< Error caused by users program
         INTERNAL,      ///< Internal compiler error (such as unable to allocate memory)
         FILE_ACCESS,   ///< Problem opening/writing/working with users files (not internal config files)
         UNIMPLEMENTED, ///< Problems with instruction
@@ -118,6 +120,8 @@ namespace error {
      * @param exit If true (default), then after the message is printed program exits with code
      */
     void error(error::ErrorCode code, const char *msg, File *src_f=nullptr, bool exit=true);
+
+    void error(diags::Diagnostic msg);
 
     /**
      * Prints warning to std::wcerr
