@@ -305,6 +305,20 @@ public:
     }
 }; 
 
+class StringLiteral : public Expression {
+private:
+    opcode::StringConst value;
+public:
+    static const IRType ClassType = IRType::STRING_LITERAL;
+
+    StringLiteral(opcode::StringConst value) : Expression(ClassType, "<string-literal>"), value(value) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << value;
+        return os;
+    }
+}; 
+
 }
 
 // Helper functions

@@ -23,12 +23,30 @@ Module *Parser::parse(bool is_main) {
     LOGMAX("Finished scanning");
 
     while (!check(TokenType::END_OF_FILE)) {
-        auto decl = declaration();
+        IR *decl;
+        try {
+            decl = declaration();
+        } catch (IR *raise) {
+            decl = raise;
+            // Eat tokens until next declaration, to recover in interactive mode
+            next_decl();
+        }
         assert(decl && "Declaration in parser is nullptr");
         m->push_back(decl);
     }
     LOGMAX("Finished parsing module");
     return m;
+}
+
+void Parser::next_decl() {
+    Token *t;
+    do {
+        t = advance();
+    } while (t->get_type() != TokenType::END &&
+             t->get_type() != TokenType::END_NL &&
+             t->get_type() != TokenType::END_OF_FILE);
+    // Skip also the end of the declaration
+    advance();
 }
 
 bool Parser::check_ws(TokenType type) {
@@ -44,13 +62,17 @@ bool Parser::match_ws(TokenType type) {
 }
 
 Token *Parser::expect_ws(TokenType type, diags::Diagnostic msg) {
-    if (check_ws(type)) return advance_ws();
+    if (check_ws(type))
+        return advance_ws();
 
-    // TODO: Throw an error
+    create_exception(msg);
     return nullptr;
 }
 
 Token *Parser::advance_ws() {
+    if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE) {
+        tokens[curr_token];
+    }
     return tokens[curr_token++];
 }
 
@@ -73,9 +95,10 @@ bool Parser::match(TokenType type) {
 }
 
 Token *Parser::expect(TokenType type, diags::Diagnostic msg) {
-    if (check(type)) return advance();
+    if (check(type)) 
+        return advance();
 
-    error::error(msg);
+    create_exception(msg);
     return nullptr;
 }
 
@@ -83,7 +106,19 @@ Token *Parser::advance() {
     if (tokens[curr_token]->get_type() == TokenType::WS) {
         ++curr_token;
     }
+    else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE) {
+        tokens[curr_token];
+    }
     return tokens[curr_token++];
+}
+
+Raise *Parser::create_exception(diags::Diagnostic err_msg) {
+    if (src_file.get_type() != SourceFile::SourceType::INTERACTIVE) {
+        error::error(err_msg);
+    }
+    // TODO: Change to specific exception child type (such as TypeError)
+    auto str_msg = error::format_error(err_msg);
+    throw new Raise(new StringLiteral(str_msg));
 }
 
 IR *Parser::declaration() {
@@ -109,7 +144,7 @@ IR *Parser::declaration() {
     
     // assert / raise / return
 
-        /// TODO: Add raise and change error::error for a raise IR with the error message as an argument
+        // TODO: Add raise and change error::error for a raise IR with the error message as an argument
 
     if (match(TokenType::ASSERT)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));

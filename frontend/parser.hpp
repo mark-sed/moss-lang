@@ -27,7 +27,9 @@ private:
     Scanner *scanner;
     
     size_t curr_token;
+    int try_block_depth;
     std::vector<Token *> tokens;
+
 
     ir::IR *declaration();
     ir::Expression *expression();
@@ -42,6 +44,8 @@ private:
     Token *expect_ws(TokenType type, diags::Diagnostic msg);
     Token *advance_ws();
 
+    void next_decl();
+
     template<typename ... Args>
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
         return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);
@@ -49,7 +53,7 @@ private:
 
     ir::Raise *create_exception(diags::Diagnostic err_msg);
 public:
-    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0) {}
+    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0), try_block_depth(0) {}
 
     ir::Module *parse(bool is_main=false);
 };
