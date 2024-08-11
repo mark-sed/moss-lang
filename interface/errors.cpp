@@ -62,20 +62,57 @@ void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit
     }
 }
 
-void error::error(diags::Diagnostic msg) {
-    errs << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset();
-    if (!msg.warning)
-        errs << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": ";
-    else
-        errs << error::colors::colorize(error::colors::PURPLE) << "warning" << error::colors::reset() << ": ";
+ustring error::format_error(diags::Diagnostic msg) {
+    std::stringstream ss;
+    const char *bar = "      | ";
     
     SourceInfo info = msg.token->get_src_info();
 
-    errs << msg.src_f.get_name() << ":" << info.get_lines().first+1 << ":" << info.get_cols().first+1 << ":\n    | ";
+    ss << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset();
+    if (!msg.warning)
+        ss << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": ";
+    else
+        ss << error::colors::colorize(error::colors::PURPLE) << "warning" << error::colors::reset() << ": ";
 
-    errs << diags::DIAG_MSGS[msg.id] << "." << std::endl;
+    ss << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
 
-    // TODO: Print code snippet
+    ss << bar << msg.msg << "." << std::endl;
+
+    const long LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
+    const long LINE_LEN_POST = 20;
+
+    std::string curr_line = msg.scanner->get_src_text()[info.get_lines().first];
+    unsigned col_start = info.get_cols().first;
+    unsigned col_end = info.get_cols().second;
+    if(curr_line.size() > LINE_LEN_PRE+LINE_LEN_POST) {
+        size_t start = 0;
+        if(info.get_cols().first > LINE_LEN_PRE) {
+            start = col_start - LINE_LEN_PRE;
+        }
+        size_t end = col_end + LINE_LEN_POST;
+        if(end > curr_line.size()-1)
+            end = curr_line.size()-1;
+        curr_line = curr_line.substr(start, end-start);
+
+        col_end -= start;
+        if(col_end > end) {
+            col_end = end;
+        }
+        col_start -= start;
+    }
+
+    curr_line.insert(col_end, error::colors::colorize(error::colors::RESET));
+    curr_line.insert(col_start, error::colors::colorize(error::colors::RED));
+
+    ss << bar << std::endl << std::setfill(' ') << std::setw(sizeof(bar)-3) << info.get_lines().first+1 << " | " << curr_line << std::endl;
+    ustring underline = ustring(col_end - col_start, '^');
+    ss << bar << std::setfill(' ') << std::setw(col_start + sizeof(bar) - 1) << error::colors::colorize(error::colors::RED) << underline << error::colors::reset() << std::endl;
+
+    return ss.str();
+}
+
+void error::error(diags::Diagnostic msg) {
+    errs << format_error(msg);
 
     if(!msg.warning){
         error::exit(error::ErrorCode::RUNTIME_ERROR);

@@ -63,6 +63,8 @@ inline void trim(ustring &s) {
  */
 template<typename ... Args>
 inline ustring formatv(const ustring& format, Args ... args) {
+    if(sizeof...(Args) == 0)
+        return format;
     int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1;
     if( size_s <= 0 ){
         // TODO: Call error

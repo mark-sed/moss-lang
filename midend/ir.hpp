@@ -31,6 +31,7 @@ enum class IRType {
     SPACE,
 
     ASSERT,
+    RAISE,
 
     BINARY_EXPR,
     VARIABLE,
@@ -154,6 +155,21 @@ public:
             os << ", " << *msg << ")";
         else
             os << ")";
+        return os;
+    }
+};
+
+class Raise : public Statement {
+private:
+    Expression *exception;
+
+public:
+    static const IRType ClassType = IRType::RAISE;
+
+    Raise(Expression *exception) : Statement(ClassType, "raise"), exception(exception) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "raise " << *exception;
         return os;
     }
 };

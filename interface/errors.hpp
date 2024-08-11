@@ -123,6 +123,8 @@ namespace error {
 
     void error(diags::Diagnostic msg);
 
+    ustring format_error(diags::Diagnostic msg);
+
     /**
      * Prints warning to std::wcerr
      * @param msg Message to print

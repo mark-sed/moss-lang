@@ -325,6 +325,7 @@ private:
     unsigned line;
     unsigned col;
     unsigned len;
+    std::vector<ustring> src_text;
     static const std::unordered_map<ustring, TokenType> KEYWORDS;
 
     Token *tokenize(ustring value, TokenType type);
@@ -350,7 +351,7 @@ private:
     int peek_nonutf();
     void unput();
 public:
-    Scanner(SourceFile &file) : file(file), line(0), col(0), len(0), curr_line(), curr_byte(0) {
+    Scanner(SourceFile &file) : file(file), line(0), col(0), len(0), src_text(), curr_line(), curr_byte(0) {
         this->stream = file.get_new_stream();
     }
     ~Scanner() {
@@ -364,6 +365,8 @@ public:
     Token *next_token();
     /** @return Next token from the current file, that is not a whitespace token*/
     Token *next_nonws_token();
+
+    std::vector<ustring> get_src_text() { return this->src_text; }
 };
 
 }

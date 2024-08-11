@@ -15,6 +15,7 @@ UTF8Char Scanner::advance() {
             ++this->len;
             return EOF;
         }
+        src_text.push_back(l);
         curr_line.assign(l.begin(), l.end());
         ++curr_byte = 0;
         if(stream->peek() != EOF)

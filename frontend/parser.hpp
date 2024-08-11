@@ -14,7 +14,6 @@
 #include "source.hpp"
 #include "ast.hpp"
 #include "diagnostics.hpp"
-#include <memory>
 #include <vector>
 
 namespace moss {
@@ -25,7 +24,7 @@ namespace moss {
 class Parser {
 private:
     SourceFile &src_file;
-    std::unique_ptr<Scanner> scanner;
+    Scanner *scanner;
     
     size_t curr_token;
     std::vector<Token *> tokens;
@@ -43,9 +42,12 @@ private:
     Token *expect_ws(TokenType type, diags::Diagnostic msg);
     Token *advance_ws();
 
-    inline diags::Diagnostic create_diag(diags::DiagID id) {
-        return diags::Diagnostic(id, this->src_file, tokens[curr_token]);
+    template<typename ... Args>
+    inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
+        return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);
     }
+
+    ir::Raise *create_exception(diags::Diagnostic err_msg);
 public:
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0) {}
 

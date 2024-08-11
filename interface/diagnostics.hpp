@@ -12,10 +12,14 @@
 
 #include "source.hpp"
 #include "scanner.hpp"
+#include "os_interface.hpp"
+#include "utils.hpp"
+#include <cassert>
 
 namespace moss {
 
 class Token;
+class Scanner;
 
 namespace diags {
 
@@ -23,14 +27,16 @@ enum DiagID {
     UNKNOWN = 0,
     DECL_EXPECTED_END,
     ASSERT_MISSING_PARENTH,
-    ASSERT_EXPECTS_ARG
+    ASSERT_EXPECTS_ARG,
+    SOME_ERR
 };
 
 static const char * DIAG_MSGS[] = {
     "unknown",
     "missing new line ('\\n') or semicolon (';') after a declaration",
     "assert expects its arguments in parenthesis",
-    "assert expects 1 or 2 arguments -- condition and optional message"
+    "assert expects 1 or 2 arguments -- condition and optional message",
+    "value '%s' is undefined"
 };
 
 class Diagnostic {
@@ -38,11 +44,19 @@ public:
     DiagID id;
     SourceFile &src_f;
     Token *token;
-    // TODO: Add params for the msg
+    Scanner *scanner;
     bool warning;
+    ustring msg;
 
-    Diagnostic(DiagID id, SourceFile &src_f, Token *token, bool warning=false) 
-               : id(id), src_f(src_f), token(token), warning(warning) {}
+    template<typename ... Args>
+    Diagnostic(SourceFile &src_f, Token *token, Scanner *scanner, DiagID id, Args ... args) 
+               : id(id), src_f(src_f), token(token), scanner(scanner), warning(false) {
+        assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
+        if (sizeof...(Args) > 0)
+            this->msg = utils::formatv(DIAG_MSGS[id], args ...);
+        else
+            this->msg = DIAG_MSGS[id];
+    }
 };
 
 }

@@ -108,6 +108,9 @@ IR *Parser::declaration() {
     // constructor
     
     // assert / raise / return
+
+        /// TODO: Add raise and change error::error for a raise IR with the error message as an argument
+
     if (match(TokenType::ASSERT)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
         auto cond = expression();
@@ -125,6 +128,14 @@ IR *Parser::declaration() {
         }
         expect(TokenType::RIGHT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
         decl = new Assert(cond, msg);
+    }
+    else if (match(TokenType::RAISE)) {
+        auto exc = expression();
+        if (!exc) {
+            assert("Expception is null");
+            // Raise error
+        }
+        decl = new Raise(exc);
     }
 
     // break / continue
