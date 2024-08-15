@@ -28,7 +28,7 @@ enum DiagID {
     DECL_EXPECTED_END,
     ASSERT_MISSING_PARENTH,
     ASSERT_EXPECTS_ARG,
-    SOME_ERR
+    EXPR_EXPECTED
 };
 
 static const char * DIAG_MSGS[] = {
@@ -36,7 +36,7 @@ static const char * DIAG_MSGS[] = {
     "missing new line ('\\n') or semicolon (';') after a declaration",
     "assert expects its arguments in parenthesis",
     "assert expects 1 or 2 arguments -- condition and optional message",
-    "value '%s' is undefined"
+    "expecting an expression"
 };
 
 class Diagnostic {

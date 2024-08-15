@@ -172,6 +172,8 @@ public:
         os << "raise " << *exception;
         return os;
     }
+
+    Expression *get_exception() { return this->exception; }
 };
 
 /**
@@ -317,6 +319,8 @@ public:
         os << value;
         return os;
     }
+
+    opcode::StringConst get_value() { return this->value; }
 }; 
 
 }

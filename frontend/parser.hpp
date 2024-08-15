@@ -51,7 +51,8 @@ private:
         return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);
     }
 
-    ir::Raise *create_exception(diags::Diagnostic err_msg);
+    //ir::Raise *create_exception(diags::Diagnostic err_msg);
+    void parser_error(diags::Diagnostic err_msg);
 public:
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0), try_block_depth(0) {}
 

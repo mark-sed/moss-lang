@@ -84,6 +84,11 @@ ustring error::format_error(diags::Diagnostic msg) {
     std::string curr_line = msg.scanner->get_src_text()[info.get_lines().first];
     unsigned col_start = info.get_cols().first;
     unsigned col_end = info.get_cols().second;
+    // Append space to take place for a new line which was removed and is at
+    // fault here. This makes sure that the token error indicator (^) is
+    // pointing right after the token
+    if (col_end >= curr_line.size())
+        curr_line.push_back(' ');
     if(curr_line.size() > LINE_LEN_PRE+LINE_LEN_POST) {
         size_t start = 0;
         if(info.get_cols().first > LINE_LEN_PRE) {

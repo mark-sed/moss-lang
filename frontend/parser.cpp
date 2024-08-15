@@ -6,6 +6,13 @@
 #include "errors.hpp"
 #include <cassert>
 
+/**
+ * This macro asserts that condition is true otherwise it raises a parser_error
+ * This macro REQUIRES to be called withing Parser class as it calls its
+ * method.
+ */ 
+#define parser_assert(cond, msg) do { if(!(cond)) parser_error(msg); } while(0)
+
 using namespace moss;
 using namespace ir;
 
@@ -18,7 +25,6 @@ Module *Parser::parse(bool is_main) {
     do {
         t = scanner->next_token();
         tokens.push_back(t);
-        //LOGMAX(*t << " ");
     } while(t->get_type() != TokenType::END_OF_FILE);
     LOGMAX("Finished scanning");
 
@@ -26,8 +32,14 @@ Module *Parser::parse(bool is_main) {
         IR *decl;
         try {
             decl = declaration();
-        } catch (IR *raise) {
+        } catch (Raise *raise) {
             decl = raise;
+            StringLiteral *err_msg = dyn_cast<StringLiteral>(raise->get_exception());
+            assert(err_msg && "Error message from parser is not a String literal");
+            errs << err_msg->get_value();
+            if (src_file.get_type() != SourceFile::SourceType::INTERACTIVE) {
+                error::exit(error::ErrorCode::RUNTIME_ERROR);
+            }
             // Eat tokens until next declaration, to recover in interactive mode
             next_decl();
         }
@@ -45,8 +57,8 @@ void Parser::next_decl() {
     } while (t->get_type() != TokenType::END &&
              t->get_type() != TokenType::END_NL &&
              t->get_type() != TokenType::END_OF_FILE);
-    // Skip also the end of the declaration
-    advance();
+    // Advance moves the curr_token to the next one, so no
+    // need to advance anymore, we are after the END_X
 }
 
 bool Parser::check_ws(TokenType type) {
@@ -65,13 +77,13 @@ Token *Parser::expect_ws(TokenType type, diags::Diagnostic msg) {
     if (check_ws(type))
         return advance_ws();
 
-    create_exception(msg);
+    parser_error(msg);
     return nullptr;
 }
 
 Token *Parser::advance_ws() {
     if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE) {
-        tokens[curr_token];
+        return tokens[curr_token];
     }
     return tokens[curr_token++];
 }
@@ -98,7 +110,7 @@ Token *Parser::expect(TokenType type, diags::Diagnostic msg) {
     if (check(type)) 
         return advance();
 
-    create_exception(msg);
+    parser_error(msg);
     return nullptr;
 }
 
@@ -107,26 +119,36 @@ Token *Parser::advance() {
         ++curr_token;
     }
     else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE) {
-        tokens[curr_token];
+        return tokens[curr_token];
     }
     return tokens[curr_token++];
 }
 
-Raise *Parser::create_exception(diags::Diagnostic err_msg) {
+void Parser::parser_error(diags::Diagnostic err_msg) {
+    // TODO: Change to specific exception child type (such as TypeError)
+    auto str_msg = error::format_error(err_msg);
+    throw new Raise(new StringLiteral(str_msg));
+}
+
+/*Raise *Parser::create_exception(diags::Diagnostic err_msg) {
     if (src_file.get_type() != SourceFile::SourceType::INTERACTIVE) {
         error::error(err_msg);
     }
     // TODO: Change to specific exception child type (such as TypeError)
     auto str_msg = error::format_error(err_msg);
     throw new Raise(new StringLiteral(str_msg));
-}
+}*/
 
 IR *Parser::declaration() {
     IR *decl = nullptr;
 
+    while(match(TokenType::END) || match(TokenType::END_NL))
+        ; // Skipping empty new line and random ;
+
     // outer / inner annotation
 
     // import
+    // Import has to accept parser errors since it may be in try catch block
 
     // if
 
@@ -143,33 +165,22 @@ IR *Parser::declaration() {
     // constructor
     
     // assert / raise / return
-
-        // TODO: Add raise and change error::error for a raise IR with the error message as an argument
-
     if (match(TokenType::ASSERT)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
         auto cond = expression();
-        if (!cond) {
-            error::error(create_diag(diags::ASSERT_EXPECTS_ARG));
-        }
+        parser_assert(cond, create_diag(diags::ASSERT_EXPECTS_ARG));
         // msg can be nullptr
         Expression *msg = nullptr;
         if (match(TokenType::COMMA)) {
             msg = expression();
-            if (!msg) {
-                // FIXME:
-                assert(false && "FIX: Error expected expression");
-            }
+            parser_assert(msg, create_diag(diags::EXPR_EXPECTED));
         }
         expect(TokenType::RIGHT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
         decl = new Assert(cond, msg);
     }
     else if (match(TokenType::RAISE)) {
         auto exc = expression();
-        if (!exc) {
-            assert("Expception is null");
-            // Raise error
-        }
+        parser_assert(exc, create_diag(diags::EXPR_EXPECTED));
         decl = new Raise(exc);
     }
 
@@ -187,7 +198,7 @@ IR *Parser::declaration() {
 
     // Every declaration has to end with nl or semicolon or eof
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
-        error::error(create_diag(diags::DECL_EXPECTED_END));
+        parser_error(create_diag(diags::DECL_EXPECTED_END));
     }
     return decl;
 }
@@ -207,3 +218,5 @@ Expression *Parser::expression() {
     
     return nullptr;
 }
+
+#undef parser_assert
