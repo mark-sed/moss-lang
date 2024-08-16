@@ -34,6 +34,11 @@ void Repl::run() {
                 eof_reached = true;
                 outs << "\n";
             }
+            // TODO: Remove once IR is interpreted
+            else if (auto raise = dyn_cast<ir::Raise>(i)) {
+                auto msg = dyn_cast<ir::StringLiteral>(raise->get_exception());
+                errs << msg->get_value();
+            }
         }
     }
 

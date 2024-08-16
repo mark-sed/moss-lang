@@ -20,11 +20,13 @@ namespace moss {
 
 class Token;
 class Scanner;
+class ErrorToken;
 
 namespace diags {
 
 enum DiagID {
     UNKNOWN = 0,
+    SYNTAX_ERROR,
     DECL_EXPECTED_END,
     ASSERT_MISSING_PARENTH,
     ASSERT_EXPECTS_ARG,
@@ -33,6 +35,7 @@ enum DiagID {
 
 static const char * DIAG_MSGS[] = {
     "unknown",
+    "syntax error", // This is for ErrorToken so it will be replaced with custom message
     "missing new line ('\\n') or semicolon (';') after a declaration",
     "assert expects its arguments in parenthesis",
     "assert expects 1 or 2 arguments — condition and optional message",
@@ -42,7 +45,7 @@ static const char * DIAG_MSGS[] = {
 class Diagnostic {
 public:
     DiagID id;
-    SourceFile &src_f;
+    const SourceFile &src_f;
     Token *token;
     Scanner *scanner;
     bool warning;
@@ -57,6 +60,8 @@ public:
         else
             this->msg = DIAG_MSGS[id];
     }
+
+    Diagnostic(ErrorToken *token, Scanner *scanner);
 };
 
 }

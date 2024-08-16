@@ -33,6 +33,7 @@ set(SOURCES
     midend/ast.cpp
     midend/ir.cpp
     interface/clopts.cpp
+    interface/diagnostics.cpp
     interface/errors.cpp
     interface/logging.cpp
     interface/repl.cpp

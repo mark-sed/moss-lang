@@ -192,6 +192,12 @@ IR *Parser::declaration() {
         return new EndOfFile();
     }
 
+    if (check(TokenType::ERROR_TOKEN)) {
+        auto err_tok = dynamic_cast<ErrorToken *>(advance());
+        auto str_msg = error::format_error(diags::Diagnostic(err_tok, scanner));
+        throw new Raise(new StringLiteral(str_msg));
+    }
+
     // outer / inner annotation
 
     // import

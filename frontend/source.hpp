@@ -26,7 +26,7 @@ protected:
     virtual std::istream *get_new_stream() = 0;
 public:
     ustring get_path() { return this->path; }
-    virtual ustring get_name() { return this->path; }
+    virtual ustring get_name() const { return this->path; }
 };
 
 /** 
@@ -65,7 +65,7 @@ public:
     ustring get_path_or_code() { return this->path_or_code; }
     SourceType get_type() { return this->type; }
     virtual std::istream *get_new_stream() override;
-    virtual ustring get_name() override {
+    virtual ustring get_name() const override {
         if (type == SourceType::STRING) return "<one-liner>";
         return path_or_code;
     }

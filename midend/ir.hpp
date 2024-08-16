@@ -13,6 +13,7 @@
 
 #include "source.hpp"
 #include "os_interface.hpp"
+#include "utils.hpp"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -324,7 +325,7 @@ public:
     StringLiteral(opcode::StringConst value) : Expression(ClassType, "<string-literal>"), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << value;
+        os << utils::sanitize(value);
         return os;
     }
 

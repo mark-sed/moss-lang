@@ -489,7 +489,7 @@ Token *Scanner::next_token() {
             case '|': {
                 if (check_and_advance('|'))
                     return tokenize("||", TokenType::SHORT_C_OR);
-                return err_tokenize(c, "Bitwise or is done with 'or' or did you mean '||'?", error::msgs::UNKNOWN_SYMBOL, "!");
+                return err_tokenize(c, "Bitwise or is done with 'or' or did you mean '||'?", error::msgs::UNKNOWN_SYMBOL, "|");
             }
             case '"': {
                 if (check_and_advance('"')) {
