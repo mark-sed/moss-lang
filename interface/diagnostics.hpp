@@ -35,7 +35,7 @@ static const char * DIAG_MSGS[] = {
     "unknown",
     "missing new line ('\\n') or semicolon (';') after a declaration",
     "assert expects its arguments in parenthesis",
-    "assert expects 1 or 2 arguments -- condition and optional message",
+    "assert expects 1 or 2 arguments — condition and optional message",
     "expecting an expression"
 };
 

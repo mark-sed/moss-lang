@@ -17,16 +17,16 @@ using namespace moss;
 using namespace ir;
 
 IR *Parser::parse(bool is_main) {
-    LOGMAX("Started parsing module");
+    LOG1("Started parsing module");
     Module *m = new Module(this->src_file.get_module_name(), this->src_file, is_main);
 
-    LOGMAX("Running scanner");
+    LOG2("Running scanner");
     Token *t = nullptr;
     do {
         t = scanner->next_token();
         tokens.push_back(t);
     } while(t->get_type() != TokenType::END_OF_FILE);
-    LOGMAX("Finished scanning");
+    LOG2("Finished scanning");
 
     while (!check(TokenType::END_OF_FILE)) {
         IR *decl;
@@ -47,7 +47,7 @@ IR *Parser::parse(bool is_main) {
         assert(decl && "Declaration in parser is nullptr");
         m->push_back(decl);
     }
-    LOGMAX("Finished parsing module");
+    LOG1("Finished parsing module");
     return m;
 }
 
@@ -127,7 +127,7 @@ bool Parser::check(TokenType type) {
 
 bool Parser::match(TokenType type) {
     if (tokens[curr_token]->get_type() == TokenType::WS) {
-        advance();
+        advance_ws();
     }
     if (tokens[curr_token]->get_type() == type) {
         advance();
@@ -181,6 +181,7 @@ void Parser::skip_nls() {
 }
 
 IR *Parser::declaration() {
+    LOGMAX("Parsing declaration");
     IR *decl = nullptr;
 
     // Skip random new lines and ;
@@ -247,6 +248,7 @@ IR *Parser::declaration() {
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
         parser_error(create_diag(diags::DECL_EXPECTED_END));
     }
+    LOGMAX("Parsed declaration " << *decl);
     return decl;
 }
 
