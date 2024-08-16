@@ -1,5 +1,6 @@
 #include "scanner.hpp"
 #include "errors.hpp"
+#include "logging.hpp"
 #include <istream>
 #include <iostream>
 #include <cstring>
@@ -12,13 +13,14 @@ UTF8Char Scanner::advance() {
     if (this->curr_byte >= curr_line.size()) {
         std::string l;
         if (!std::getline(*stream, l)) {
+            std::cin.clear();
             ++this->len;
             return EOF;
         }
         src_text.push_back(l);
         curr_line.assign(l.begin(), l.end());
-        ++curr_byte = 0;
-        if(stream->peek() != EOF)
+        curr_byte = 0;
+        if(file.get_type() == SourceFile::SourceType::REPL || stream->peek() != EOF)
             curr_line += '\n';
     }
 

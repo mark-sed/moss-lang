@@ -44,7 +44,7 @@ public:
         FILE,
         STRING,
         STDIN,
-        INTERACTIVE
+        REPL
     };
 private:
     ustring path_or_code;
@@ -52,12 +52,12 @@ private:
 public:
     SourceFile(ustring path_or_code, SourceType src_type) : File(path_or_code), path_or_code(path_or_code), type(src_type) {
         assert(src_type != SourceType::STDIN && "Path set, but type is STDIN");
-        assert(src_type != SourceType::INTERACTIVE && "Path set, but type is INTERACTIVE");
+        assert(src_type != SourceType::REPL && "Path set, but type is REPL");
     }
     SourceFile(SourceType src_type) : File("<stdin>"), type(src_type) {
-        assert((src_type == SourceType::STDIN || src_type == SourceType::INTERACTIVE) && "File without path");
-        if(src_type == SourceType::INTERACTIVE)
-            this->path_or_code = "<im>";
+        assert((src_type == SourceType::STDIN || src_type == SourceType::REPL) && "File without path");
+        if(src_type == SourceType::REPL)
+            this->path_or_code = "<repl>";
         else
             this->path_or_code = "<stdin>";
     }

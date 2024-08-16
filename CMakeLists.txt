@@ -27,18 +27,19 @@ include_directories(interface)
 
 # Source files excluding main
 set(SOURCES 
-    frontend/scanner.cpp
     frontend/parser.cpp
+    frontend/scanner.cpp
     frontend/source.cpp
     midend/ast.cpp
     midend/ir.cpp
+    interface/clopts.cpp
     interface/errors.cpp
     interface/logging.cpp
-    interface/clopts.cpp
+    interface/repl.cpp
     interface/utils.cpp
     bytecode/bytecode.cpp
-    bytecode/bytecode_writer.cpp
     bytecode/bytecode_reader.cpp
+    bytecode/bytecode_writer.cpp
     bytecode/opcode.cpp
     vm/interpreter.cpp
     vm/memory.cpp
@@ -66,12 +67,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(TEST_SRCS
         tests/unittests/testing_utils.cpp
 
-        tests/unittests/test_clopts.cpp
-        tests/unittests/test_scanner.cpp
-        tests/unittests/test_ir.cpp
-        tests/unittests/test_bytecode_rw.cpp
-        tests/unittests/test_memory.cpp
         tests/unittests/test_bytecode.cpp
+        tests/unittests/test_bytecode_rw.cpp
+        tests/unittests/test_clopts.cpp
+        tests/unittests/test_ir.cpp
+        tests/unittests/test_memory.cpp
+        tests/unittests/test_scanner.cpp
     )
 
     # Enable gtest

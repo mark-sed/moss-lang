@@ -16,7 +16,7 @@
 using namespace moss;
 using namespace ir;
 
-Module *Parser::parse(bool is_main) {
+IR *Parser::parse(bool is_main) {
     LOGMAX("Started parsing module");
     Module *m = new Module(this->src_file.get_module_name(), this->src_file, is_main);
 
@@ -37,17 +37,46 @@ Module *Parser::parse(bool is_main) {
             StringLiteral *err_msg = dyn_cast<StringLiteral>(raise->get_exception());
             assert(err_msg && "Error message from parser is not a String literal");
             errs << err_msg->get_value();
-            if (src_file.get_type() != SourceFile::SourceType::INTERACTIVE) {
+            if (is_main) {
                 error::exit(error::ErrorCode::RUNTIME_ERROR);
             }
-            // Eat tokens until next declaration, to recover in interactive mode
-            next_decl();
+            else {
+                return raise;
+            }
         }
         assert(decl && "Declaration in parser is nullptr");
         m->push_back(decl);
     }
     LOGMAX("Finished parsing module");
     return m;
+}
+
+std::vector<ir::IR *> Parser::parse_line() {
+    std::vector<ir::IR *> line_decls;
+    tokens.clear();
+    curr_token = 0;
+    Token *t = nullptr;
+    do {
+        t = scanner->next_token();
+        tokens.push_back(t);
+    } while(t->get_type() != TokenType::END_NL && t->get_type() != TokenType::END_OF_FILE);
+
+    do {
+        IR *decl;
+        try {
+            decl = declaration();
+        } catch (Raise *raise) {
+            decl = raise;
+            // Error occurred -- it does not make sense to continue this line
+            // as it could have relied on the errorous value, so just append the
+            // exception and return it.
+            line_decls.push_back(decl);
+            return line_decls;
+        }
+        assert(decl && "Declaration in parser is nullptr");
+        line_decls.push_back(decl);
+    } while (!check(TokenType::END_NL) && !check(TokenType::END_OF_FILE));
+    return line_decls;
 }
 
 void Parser::next_decl() {
@@ -82,7 +111,8 @@ Token *Parser::expect_ws(TokenType type, diags::Diagnostic msg) {
 }
 
 Token *Parser::advance_ws() {
-    if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE) {
+    if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
+        (src_file.get_type() == SourceFile::SourceType::REPL && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
     return tokens[curr_token++];
@@ -118,7 +148,8 @@ Token *Parser::advance() {
     if (tokens[curr_token]->get_type() == TokenType::WS) {
         ++curr_token;
     }
-    else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE) {
+    else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
+             (src_file.get_type() == SourceFile::SourceType::REPL && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
     return tokens[curr_token++];
@@ -131,7 +162,7 @@ void Parser::parser_error(diags::Diagnostic err_msg) {
 }
 
 /*Raise *Parser::create_exception(diags::Diagnostic err_msg) {
-    if (src_file.get_type() != SourceFile::SourceType::INTERACTIVE) {
+    if (src_file.get_type() != SourceFile::SourceType::REPL) {
         error::error(err_msg);
     }
     // TODO: Change to specific exception child type (such as TypeError)
@@ -139,11 +170,26 @@ void Parser::parser_error(diags::Diagnostic err_msg) {
     throw new Raise(new StringLiteral(str_msg));
 }*/
 
+void Parser::skip_ends() {
+    while(match(TokenType::END) || match(TokenType::END_NL))
+        ; // Skipping empty new line and ;
+}
+
+void Parser::skip_nls() {
+    while(match(TokenType::END_NL))
+        ; // Skipping empty new line and ;
+}
+
 IR *Parser::declaration() {
     IR *decl = nullptr;
 
-    while(match(TokenType::END) || match(TokenType::END_NL))
-        ; // Skipping empty new line and random ;
+    // Skip random new lines and ;
+    skip_ends();
+
+    // end of file returns End IR
+    if (match(TokenType::END_OF_FILE)) {
+        return new EndOfFile();
+    }
 
     // outer / inner annotation
 
@@ -172,6 +218,7 @@ IR *Parser::declaration() {
         // msg can be nullptr
         Expression *msg = nullptr;
         if (match(TokenType::COMMA)) {
+            skip_nls();
             msg = expression();
             parser_assert(msg, create_diag(diags::EXPR_EXPECTED));
         }

@@ -30,6 +30,7 @@ private:
     int try_block_depth;
     std::vector<Token *> tokens;
 
+    ir::Module *repl_module;
 
     ir::IR *declaration();
     ir::Expression *expression();
@@ -45,6 +46,8 @@ private:
     Token *advance_ws();
 
     void next_decl();
+    void skip_ends();
+    void skip_nls();
 
     template<typename ... Args>
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
@@ -54,9 +57,12 @@ private:
     //ir::Raise *create_exception(diags::Diagnostic err_msg);
     void parser_error(diags::Diagnostic err_msg);
 public:
-    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0), try_block_depth(0) {}
+    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0), try_block_depth(0), repl_module(nullptr) {}
 
-    ir::Module *parse(bool is_main=false);
+    /// Returns Module or Raise with error
+    ir::IR *parse(bool is_main=false);
+
+    std::vector<ir::IR *> parse_line();
 };
 
 }

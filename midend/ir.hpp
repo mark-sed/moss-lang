@@ -32,6 +32,7 @@ enum class IRType {
 
     ASSERT,
     RAISE,
+    END_OF_FILE,
 
     BINARY_EXPR,
     VARIABLE,
@@ -174,6 +175,13 @@ public:
     }
 
     Expression *get_exception() { return this->exception; }
+};
+
+class EndOfFile : public Statement {
+public:
+    static const IRType ClassType = IRType::END_OF_FILE;
+
+    EndOfFile() : Statement(ClassType, "<end of file>") {}
 };
 
 /**

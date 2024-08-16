@@ -5,6 +5,7 @@
 #include "clopts.hpp"
 #include "args.hpp"
 #include "parser.hpp"
+#include "repl.hpp"
 #include "logging.hpp"
 #include <iostream>
 
@@ -26,7 +27,7 @@ static SourceFile get_input() {
     if (clopts::code)
         return SourceFile(args::get(clopts::code), SourceFile::SourceType::STRING);
     if (is_stdin_atty())
-        return SourceFile(SourceFile::SourceType::INTERACTIVE);
+        return SourceFile(SourceFile::SourceType::REPL);
     return SourceFile(SourceFile::SourceType::STDIN);
 }
 
@@ -64,6 +65,13 @@ int main(int argc, const char *argv[]) {
         t = scanner.next_nonws_token();
     }
     delete t;*/
+
+    // REPL
+    if (main_file.get_type() == SourceFile::SourceType::REPL) {
+        Repl repl(main_file);
+        repl.run();
+        return 0;
+    }
 
     Parser parser(main_file);
     auto module = parser.parse(true);

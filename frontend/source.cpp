@@ -19,7 +19,10 @@ std::istream *SourceFile::get_new_stream() {
             return new std::istringstream(this->path_or_code);
         }
         case SourceFile::SourceType::STDIN: return &std::cin;
-        case SourceFile::SourceType::INTERACTIVE: return &std::cin; // FIXME: this should be reading input
+        case SourceFile::SourceType::REPL: {
+            // REPL input is handled on its own, but reads from stdin
+            return &std::cin;
+        }
     }
     error::error(error::ErrorCode::INTERNAL, "Unknown input format", this);
     return nullptr;

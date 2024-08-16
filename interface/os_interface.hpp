@@ -24,7 +24,7 @@ namespace moss {
     /** Returns true is stdin is read from terminal (not redirect) */
     inline bool is_stdin_atty() {
         assert(false && "Check for stdin redirection on non-linux machine is not yet implemented");
-        return false; // This way interactive mode will be off
+        return false; // This way repl mode will be off
     }
 
     /**
@@ -33,7 +33,7 @@ namespace moss {
      */ 
     inline bool is_stderr_atty() {
         assert(false && "Check for stderr redirection on non-linux machine is not yet implemented");
-        return false; // This way interactive mode will be off
+        return false; // This way repl mode will be off
     }
 #else
     #ifndef __linux__
