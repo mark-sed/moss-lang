@@ -249,9 +249,22 @@ IR *Parser::declaration() {
         parser_assert(exc, create_diag(diags::EXPR_EXPECTED));
         decl = new Raise(exc);
     }
-
+    else if (match(TokenType::RETURN)) { // TODO: Check if inside of a function
+        auto exc = expression();
+        if (!exc) {
+            decl = new Return(new NilLiteral());
+        }
+        else {
+            decl = new Return(exc);
+        }
+    }
     // break / continue
-
+    else if (match(TokenType::BREAK)) {
+        decl = new Break();
+    }
+    else if (match(TokenType::CONTINUE)) {
+        decl = new Continue();
+    }
     // enum
 
     // class
@@ -264,7 +277,7 @@ IR *Parser::declaration() {
 
     // Every declaration has to end with nl or semicolon or eof
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
-        parser_error(create_diag(diags::DECL_EXPECTED_END));
+        parser_error(create_diag(diags::EXPECTED_END));
     }
     LOGMAX("Parsed declaration " << *decl);
     return decl;

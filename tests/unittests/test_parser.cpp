@@ -46,6 +46,16 @@ assert(cond)
 
 // Raise
 raise except
+
+// Return
+return
+return value
+
+// Continue
+continue
+
+// Break
+break
 )";
 
     IRType expected[] = {
@@ -53,6 +63,12 @@ raise except
         IRType::ASSERT,
         
         IRType::RAISE,
+
+        IRType::RETURN,
+        IRType::RETURN,
+
+        IRType::CONTINUE,
+        IRType::BREAK,
         
         IRType::END_OF_FILE
     };

@@ -27,7 +27,7 @@ namespace diags {
 enum DiagID {
     UNKNOWN = 0,
     SYNTAX_ERROR,
-    DECL_EXPECTED_END,
+    EXPECTED_END,
     ASSERT_MISSING_PARENTH,
     ASSERT_EXPECTS_ARG,
     EXPR_EXPECTED
@@ -36,7 +36,7 @@ enum DiagID {
 static const char * DIAG_MSGS[] = {
     "Unknown error",
     "Syntax error", // This is for ErrorToken so it will be replaced with custom message
-    "Missing new line ('\\n') or semicolon (';') after a declaration",
+    "Missing a new line ('\\n') or a semicolon (';') after a statement",
     "Assert expects its arguments in parenthesis",
     "Assert expects 1 or 2 arguments — condition and optional message",
     "Expecting an expression"

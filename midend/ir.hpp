@@ -33,6 +33,9 @@ enum class IRType {
 
     ASSERT,
     RAISE,
+    RETURN,
+    BREAK,
+    CONTINUE,
     END_OF_FILE,
 
     BINARY_EXPR,
@@ -188,6 +191,47 @@ public:
     Expression *get_exception() { return this->exception; }
 };
 
+class Return : public Statement {
+private:
+    Expression *expr;
+
+public:
+    static const IRType ClassType = IRType::RETURN;
+
+    Return(Expression *expr) : Statement(ClassType, "return"), expr(expr) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "return " << *expr;
+        return os;
+    }
+
+    Expression *get_expr() { return this->expr; }
+};
+
+class Break : public Statement {
+public:
+    static const IRType ClassType = IRType::BREAK;
+
+    Break() : Statement(ClassType, "break") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "break";
+        return os;
+    }
+};
+
+class Continue : public Statement {
+public:
+    static const IRType ClassType = IRType::CONTINUE;
+
+    Continue() : Statement(ClassType, "break") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "continue";
+        return os;
+    }
+};
+
 class EndOfFile : public Statement {
 public:
     static const IRType ClassType = IRType::END_OF_FILE;
@@ -340,6 +384,18 @@ public:
     }
 
     opcode::StringConst get_value() { return this->value; }
+};
+
+class NilLiteral : public Expression {
+public:
+    static const IRType ClassType = IRType::NIL_LITERAL;
+
+    NilLiteral() : Expression(ClassType, "<nil-literal>") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "nil";
+        return os;
+    }
 }; 
 
 }
