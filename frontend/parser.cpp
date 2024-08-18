@@ -56,12 +56,18 @@ std::vector<ir::IR *> Parser::parse_line() {
     tokens.clear();
     curr_token = 0;
     Token *t = nullptr;
+    bool padding_start = true;
     do {
         t = scanner->next_token();
+        // Skip any whitespace at the start
+        if (padding_start && t->get_type() == TokenType::WS)
+            continue;
+        padding_start = false;
+        LOGMAX(*t);
         tokens.push_back(t);
     } while(t->get_type() != TokenType::END_NL && t->get_type() != TokenType::END_OF_FILE);
 
-    do {
+    while (!check(TokenType::END_NL) && !check(TokenType::END_OF_FILE)) {
         IR *decl;
         try {
             decl = declaration();
@@ -75,7 +81,7 @@ std::vector<ir::IR *> Parser::parse_line() {
         }
         assert(decl && "Declaration in parser is nullptr");
         line_decls.push_back(decl);
-    } while (!check(TokenType::END_NL) && !check(TokenType::END_OF_FILE));
+    }
     return line_decls;
 }
 
@@ -119,17 +125,15 @@ Token *Parser::advance_ws() {
 }
 
 bool Parser::check(TokenType type) {
-    if (tokens[curr_token]->get_type() == TokenType::WS) {
-        return tokens[curr_token+1]->get_type() == type;
+    int offset = 0;
+    while (tokens[curr_token+offset]->get_type() == TokenType::WS) {
+        ++offset;
     }
-    return tokens[curr_token]->get_type() == type;
+    return tokens[curr_token+offset]->get_type() == type;
 }
 
 bool Parser::match(TokenType type) {
-    if (tokens[curr_token]->get_type() == TokenType::WS) {
-        advance_ws();
-    }
-    if (tokens[curr_token]->get_type() == type) {
+    if (check(type)) {
         advance();
         return true;
     }
@@ -145,11 +149,11 @@ Token *Parser::expect(TokenType type, diags::Diagnostic msg) {
 }
 
 Token *Parser::advance() {
-    if (tokens[curr_token]->get_type() == TokenType::WS) {
+    while (tokens[curr_token]->get_type() == TokenType::WS) {
         ++curr_token;
     }
-    else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
-             (src_file.get_type() == SourceFile::SourceType::REPL && tokens[curr_token]->get_type() == TokenType::END_NL)) {
+    if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
+        (src_file.get_type() == SourceFile::SourceType::REPL && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
     return tokens[curr_token++];

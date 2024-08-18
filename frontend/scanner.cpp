@@ -369,6 +369,9 @@ Token *Scanner::next_token() {
         if (std::isdigit(c)) {
             return parse_number(c);
         }
+        // \0
+        if (c == 0)
+            c = EOF;
 
         switch (c) {
             case '(': return tokenize(c, TokenType::LEFT_PAREN);
