@@ -35,12 +35,12 @@ namespace error {
     
     using msgtype = const char *;
     namespace msgs {
-        inline msgtype UNKNOWN_SYMBOL = "unknown symbol \"%s\"";
-        inline msgtype FLOAT_NON_DEC_BASE = "float can be only of base 10";
-        inline msgtype INCORRECT_INT_LITERAL = "invalid %s number literal";
-        inline msgtype INCORRECT_FLOAT_LITERAL = "invalid float literal";
-        inline msgtype UNTERMINATED_STRING_LITERAL = "unterminated string literal";
-        inline msgtype UNTERMINATED_COMMENT = "unterminated comment";
+        inline msgtype UNKNOWN_SYMBOL = "Unknown symbol \"%s\"";
+        inline msgtype FLOAT_NON_DEC_BASE = "Float can be only of base 10";
+        inline msgtype INCORRECT_INT_LITERAL = "Invalid %s number literal";
+        inline msgtype INCORRECT_FLOAT_LITERAL = "Invalid float literal";
+        inline msgtype UNTERMINATED_STRING_LITERAL = "Unterminated string literal";
+        inline msgtype UNTERMINATED_COMMENT = "Unterminated comment";
     }
 
     /**

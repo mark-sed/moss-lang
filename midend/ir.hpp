@@ -81,6 +81,16 @@ public:
     void push_back(IR *i) {
         body.push_back(i);
     }
+
+    IR *back() {
+        return this->body.back();
+    }
+
+    size_t size() {
+        return this->body.size();
+    }
+
+    std::list<IR *> get_body() { return this->body; }
 };
 
 /**

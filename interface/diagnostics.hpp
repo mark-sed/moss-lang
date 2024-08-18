@@ -34,12 +34,12 @@ enum DiagID {
 };
 
 static const char * DIAG_MSGS[] = {
-    "unknown",
-    "syntax error", // This is for ErrorToken so it will be replaced with custom message
-    "missing new line ('\\n') or semicolon (';') after a declaration",
-    "assert expects its arguments in parenthesis",
-    "assert expects 1 or 2 arguments — condition and optional message",
-    "expecting an expression"
+    "Unknown error",
+    "Syntax error", // This is for ErrorToken so it will be replaced with custom message
+    "Missing new line ('\\n') or semicolon (';') after a declaration",
+    "Assert expects its arguments in parenthesis",
+    "Assert expects 1 or 2 arguments — condition and optional message",
+    "Expecting an expression"
 };
 
 class Diagnostic {

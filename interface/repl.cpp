@@ -35,9 +35,10 @@ void Repl::run() {
                 outs << "\n";
             }
             // TODO: Remove once IR is interpreted
+            // This is incorrect and will print user raises
             else if (auto raise = dyn_cast<ir::Raise>(i)) {
-                auto msg = dyn_cast<ir::StringLiteral>(raise->get_exception());
-                errs << msg->get_value();
+                if(auto msg = dyn_cast<ir::StringLiteral>(raise->get_exception()))
+                    errs << msg->get_value();
             }
         }
     }

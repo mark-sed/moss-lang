@@ -47,6 +47,12 @@ IR *Parser::parse(bool is_main) {
         assert(decl && "Declaration in parser is nullptr");
         m->push_back(decl);
     }
+
+    // Append EOF, but only when not already present as it may be added by
+    // an empty last line
+    if (!isa<EndOfFile>(m->back()))
+        m->push_back(new ir::EndOfFile());
+        
     LOG1("Finished parsing module");
     return m;
 }
@@ -67,7 +73,7 @@ std::vector<ir::IR *> Parser::parse_line() {
         tokens.push_back(t);
     } while(t->get_type() != TokenType::END_NL && t->get_type() != TokenType::END_OF_FILE);
 
-    while (!check(TokenType::END_NL) && !check(TokenType::END_OF_FILE)) {
+    while (!check(TokenType::END_NL)) {
         IR *decl;
         try {
             decl = declaration();
@@ -81,6 +87,8 @@ std::vector<ir::IR *> Parser::parse_line() {
         }
         assert(decl && "Declaration in parser is nullptr");
         line_decls.push_back(decl);
+        if (isa<EndOfFile>(decl))
+            break;
     }
     return line_decls;
 }
