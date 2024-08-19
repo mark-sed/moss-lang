@@ -77,6 +77,7 @@ int main(int argc, const char *argv[]) {
     auto main_mod = parser.parse(true);
 
     LOGMAX(*main_mod);
+    delete main_mod;
 
     /*Interpreter *interpreter = new Interpreter(bc, &bfo);
     interpreter->run();

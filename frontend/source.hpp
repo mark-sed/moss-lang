@@ -17,15 +17,36 @@
 
 namespace moss {
 
+/**
+ * @brief Base class for all sources
+ * Base "file", but this may be also just a string or stdin it mainly
+ * provides get_new_stream method for reading this source.
+ */
 class File {
 protected:
     ustring path;
 
     File(ustring path) : path(path) {}
     virtual ~File() {}
+
+    /**
+     * @return Source as an input stream
+     */
     virtual std::istream *get_new_stream() = 0;
 public:
+    /**
+     * Getter for path to this file. But as this may hold also string or stream
+     * source, then this path is not an actual path and this should be checked 
+     * @return Path to this file
+     * @warning The path returned might not be valid nor an actual path
+     */
     ustring get_path() { return this->path; }
+
+    /**
+     * Getter for name of the file/stream. This may be the path to the file
+     * or the stream/string name.
+     * @return Name or path of this file
+     */
     virtual ustring get_name() const { return this->path; }
 };
 
@@ -62,18 +83,54 @@ public:
             this->path_or_code = "<stdin>";
     }
 
+    /**
+     * @return Path to this source file if it is a file, if the source is a repl
+     *         input or stdin, then it will be its name and if the source is a
+     *         string then it will be its contents.
+     */
     ustring get_path_or_code() { return this->path_or_code; }
+
+    /** @return Type of this source file */
     SourceType get_type() { return this->type; }
+
+    /**
+     * For SourceFile that is an actual file this will open it as std::ifstream,
+     * for string source it will be a new std::istringstream and for stdin or
+     * repl it will be std::cin
+     */
     virtual std::istream *get_new_stream() override;
+
+    /** @return Name of this source file */
     virtual ustring get_name() const override {
         if (type == SourceType::STRING) return "<one-liner>";
         return path_or_code;
     }
+
+    /** 
+     * @return Name that is stemmed -- just the file name without path and
+     *         extensions. 
+     */
     ustring get_module_name() {
         return std::filesystem::path(get_name()).stem();
     }
 };
 
+/**
+ * @brief Bytecode source file
+ * A source file that contains moss bytecode (.msb file)
+ */
+class BytecodeFile : public File {
+public:
+    BytecodeFile(ustring path) : File(path) {}
+
+    virtual std::istream *get_new_stream() override;
+
+    /**
+     * Creates a new binary std::ofstream for writing a bytecode into this file
+     * @return Created output stream 
+     */
+    std::ostream *create_out_stream();
+};
 
 /** Stores source file information for a given token */
 class SourceInfo {
@@ -91,15 +148,6 @@ public:
     const SourceFile &get_file() { return file; }
     std::pair<unsigned, unsigned> get_lines() { return lines; }
     std::pair<unsigned, unsigned> get_cols() { return cols; }
-};
-
-
-class BytecodeFile : public File {
-public:
-    BytecodeFile(ustring path) : File(path) {}
-
-    virtual std::istream *get_new_stream() override;
-    std::ostream *create_out_stream();
 };
 
 }

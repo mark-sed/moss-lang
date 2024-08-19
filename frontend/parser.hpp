@@ -20,6 +20,7 @@ namespace moss {
 
 /**
  * @brief Moss token parsing into AST
+ * Parser can parse the whole file at once or go line by line.
  */
 class Parser {
 private:
@@ -27,10 +28,7 @@ private:
     Scanner *scanner;
     
     size_t curr_token;
-    int try_block_depth;
     std::vector<Token *> tokens;
-
-    ir::Module *repl_module;
 
     ir::IR *declaration();
     ir::Expression *expression();
@@ -54,14 +52,27 @@ private:
         return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);
     }
 
-    //ir::Raise *create_exception(diags::Diagnostic err_msg);
     void parser_error(diags::Diagnostic err_msg);
 public:
-    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0), try_block_depth(0), repl_module(nullptr) {}
+    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0) {}
+    ~Parser() {
+        delete scanner;
+        for (auto *t: tokens)
+            delete t;
+    }
 
-    /// Returns Module or Raise with error
+    /**
+     * Parses a moss file into an AST
+     * @return File parsed into a ir::Module. If there is an error then ir::Raise is thrown
+     * @throw ir::Raise with parser/scanner error to be rethrown by moss
+     */
     ir::IR *parse(bool is_main=false);
 
+    /**
+     * Parses a single line or multiple ones if it is a multi-line declaration into an AST
+     * @return Vector of parsed IRs. If there is an error then ir::Raise is thrown
+     * @throw ir::Raise with parser/scanner error to be rethrown by moss
+     */ 
     std::vector<ir::IR *> parse_line();
 };
 

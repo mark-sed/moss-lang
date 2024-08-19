@@ -82,6 +82,7 @@ inline std::ostream& operator<< (std::ostream& os, Value &v) {
     return v.debug(os);
 }
 
+/** Moss integer value */
 class IntValue : public Value {
 private:
     opcode::IntConst value;
@@ -109,6 +110,7 @@ public:
     }
 };
 
+/** Moss float value */
 class FloatValue : public Value {
 private:
     opcode::FloatConst value;
@@ -135,6 +137,7 @@ public:
     }
 };
 
+/** Moss boolean value */
 class BoolValue : public Value {
 private:
     opcode::BoolConst value;
@@ -158,6 +161,7 @@ public:
     }
 };
 
+/** Moss string value */
 class StringValue : public Value {
 private:
     opcode::StringConst value;
@@ -181,6 +185,7 @@ public:
     }
 };
 
+/** Moss nil value (holds only one value) */
 class NilValue : public Value {
 public:
     static const TypeKind ClassType = TypeKind::NIL;

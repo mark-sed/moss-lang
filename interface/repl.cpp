@@ -41,6 +41,11 @@ void Repl::run() {
                     errs << msg->get_value();
             }
         }
+
+        // TODO: Interpret or append to some module
+        for (auto i : line_irs) {
+            delete i;
+        }
     }
 
     LOGMAX("REPL finished");

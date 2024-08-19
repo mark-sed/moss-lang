@@ -116,8 +116,8 @@ namespace error {
     const char *get_code_name(ErrorCode code);
 
     /**
-     * Function for when fatal error occurres
-     * Prints error information passed in and exits with passed in code
+     * Function for when error occurs
+     * Prints error information passed in and might exit with passed in code
      * @param code Code of an error that occurred
      * @param msg Info message to be printed for the user
      * @param src_f Source file
@@ -125,8 +125,18 @@ namespace error {
      */
     void error(error::ErrorCode code, const char *msg, File *src_f=nullptr, bool exit=true);
 
-    void error(diags::Diagnostic msg);
+    /**
+     * Prints diagnostics error and exits with RUNTIME_ERROR code
+     * @param msg Diagnostics message
+     * @warning This will terminate the program
+     */
+    [[noreturn]] void error(diags::Diagnostic msg);
 
+    /**
+     * Formats Diagnostics error into a string message with colors (unless
+     * output redirection is detected).
+     * @return Formatted Diagnostics error
+     */
     ustring format_error(diags::Diagnostic msg);
 
     /**

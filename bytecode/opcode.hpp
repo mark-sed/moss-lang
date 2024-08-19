@@ -204,6 +204,7 @@ public:
     virtual void exec(Interpreter *vm) = 0;
 };
 
+/** Binary expression opcode */
 class BinExprOpCode: public OpCode {
 public:
     Register dst;

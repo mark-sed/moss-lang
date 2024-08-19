@@ -17,6 +17,14 @@
 
 namespace moss {
 
+/**
+ * @brief Read-Eval-Print-Loop interface for moss
+ * REPL is textual, but user-friendly interface for scripting is moss.
+ * It reads user input line/declaration by line/declaration, then parses it,
+ * interprets it and prints the result.
+ * It has also some special commands for working with repl and if it encounters
+ * an exception then it prints it and continues evaluation all new lines.
+ */
 class Repl {
 private:
     SourceFile &src_file;
@@ -27,7 +35,12 @@ public:
     Repl(SourceFile &src_file) : src_file(src_file), parser(src_file) {
         LOGMAX("REPL initialized");
     }
+    ~Repl() {}
 
+    /** 
+     * @brief Runs REPL
+     * This is the main loop with reading, evaluating and printing
+     */
     void run();
 };
 

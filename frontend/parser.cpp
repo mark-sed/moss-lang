@@ -173,15 +173,6 @@ void Parser::parser_error(diags::Diagnostic err_msg) {
     throw new Raise(new StringLiteral(str_msg));
 }
 
-/*Raise *Parser::create_exception(diags::Diagnostic err_msg) {
-    if (src_file.get_type() != SourceFile::SourceType::REPL) {
-        error::error(err_msg);
-    }
-    // TODO: Change to specific exception child type (such as TypeError)
-    auto str_msg = error::format_error(err_msg);
-    throw new Raise(new StringLiteral(str_msg));
-}*/
-
 void Parser::skip_ends() {
     while(match(TokenType::END) || match(TokenType::END_NL))
         ; // Skipping empty new line and ;

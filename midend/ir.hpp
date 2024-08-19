@@ -81,6 +81,11 @@ protected:
 public:
     static const IRType ClassType = IRType::CONSTRUCT;
 
+    virtual ~Construct() {
+        for (auto i: body)
+            delete i;
+    }
+
     void push_back(IR *i) {
         body.push_back(i);
     }
@@ -163,6 +168,11 @@ public:
 
     Assert(Expression *cond, Expression *msg=nullptr) 
            : Statement(ClassType, "assert"), cond(cond), msg(msg) {}
+    ~Assert() {
+        delete cond;
+        if (msg)
+            delete msg;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "assert(" << *cond;
@@ -182,6 +192,9 @@ public:
     static const IRType ClassType = IRType::RAISE;
 
     Raise(Expression *exception) : Statement(ClassType, "raise"), exception(exception) {}
+    ~Raise() {
+        delete exception;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "raise " << *exception;
@@ -199,6 +212,9 @@ public:
     static const IRType ClassType = IRType::RETURN;
 
     Return(Expression *expr) : Statement(ClassType, "return"), expr(expr) {}
+    ~Return() {
+        delete expr;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "return " << *expr;
@@ -334,6 +350,10 @@ public:
     BinaryExpr(Expression *left, Expression *right, Operator op) 
               : Expression(ClassType, "<binary-expression>"),
                 left(left), right(right), op(op) {}
+    ~BinaryExpr() {
+        delete left;
+        delete right;
+    }
 
     Expression *get_left() { return this->left; }
     Expression *get_right() { return this->right; }

@@ -366,6 +366,7 @@ public:
     /** @return Next token from the current file, that is not a whitespace token*/
     Token *next_nonws_token();
 
+    /** @return Vector that contains lines from the source file (for error reporting) */
     std::vector<ustring> get_src_text() { return this->src_text; }
 };
 
