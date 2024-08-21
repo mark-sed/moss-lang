@@ -69,7 +69,7 @@ std::vector<ir::IR *> Parser::parse_line() {
         if (padding_start && t->get_type() == TokenType::WS)
             continue;
         padding_start = false;
-        LOGMAX(*t);
+        //LOGMAX(*t);
         tokens.push_back(t);
     } while(t->get_type() != TokenType::END_NL && t->get_type() != TokenType::END_OF_FILE);
 
@@ -268,6 +268,11 @@ IR *Parser::declaration() {
     else if (auto expr = expression()) {
         decl = expr;
     }
+    else if (match(TokenType::SILENT)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED_NOTE, "only expressions are outputted and can be silenced"));
+        decl = new Silent(expr);
+    }
 
     // Every declaration has to end with nl or semicolon or eof
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
@@ -278,7 +283,18 @@ IR *Parser::declaration() {
 }
 
 Expression *Parser::expression() {
-    if (check(TokenType::ID)) {
+    // TODO: This allows for combination of `not - not a`... Should this be allowed?
+    if (match(TokenType::MINUS)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_NEG));
+    }
+    else if (match(TokenType::NOT)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT));
+    }
+    else if (check(TokenType::ID)) {
         auto id = advance();
         
         if (check(TokenType::LEFT_PAREN)) {

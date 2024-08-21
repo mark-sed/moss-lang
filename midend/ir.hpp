@@ -36,15 +36,19 @@ enum class IRType {
     RETURN,
     BREAK,
     CONTINUE,
-    END_OF_FILE,
+    SILENT,
 
     BINARY_EXPR,
+    UNARY_EXPR,
+
     VARIABLE,
     INT_LITERAL,
     FLOAT_LITERAL,
     BOOL_LITERAL,
     STRING_LITERAL,
-    NIL_LITERAL
+    NIL_LITERAL,
+
+    END_OF_FILE,
 };
 
 /** Base class for any IR value */
@@ -248,6 +252,27 @@ public:
     }
 };
 
+class Silent : public Statement {
+private:
+    Expression *expr;
+
+public:
+    static const IRType ClassType = IRType::SILENT;
+
+    Silent(Expression *expr) : Statement(ClassType, "~"), expr(expr) {}
+    ~Silent() {
+        delete expr;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "~" << *expr;
+        return os;
+    }
+
+    Expression *get_expr() { return this->expr; }
+};
+
+
 class EndOfFile : public Statement {
 public:
     static const IRType ClassType = IRType::END_OF_FILE;
@@ -259,6 +284,7 @@ public:
  * Types of operators
  */
 enum OperatorKind {
+    OP_NEG,    ///< `-`
     OP_CONCAT, ///< ++
     OP_EXP,    ///< ^
     OP_PLUS,   ///< `+`
@@ -301,6 +327,7 @@ public:
 
     inline std::ostream& debug(std::ostream& os) const { 
         switch(kind) {
+        case OP_NEG: os << "-"; break;
         case OP_CONCAT: os << "++"; break;
         case OP_EXP: os << "^"; break;
         case OP_PLUS: os << "+"; break;
@@ -360,6 +387,28 @@ public:
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << *left << " " << op << " " << *right;
+        return os;
+    }
+};
+
+class UnaryExpr : public Expression {
+private:
+    Expression *expr;
+    const Operator op;
+public:
+    static const IRType ClassType = IRType::UNARY_EXPR;
+
+    UnaryExpr(Expression *expr, Operator op) 
+             : Expression(ClassType, "<unary-expression>"), 
+               expr(expr), op(op) {}
+    ~UnaryExpr() {
+        delete expr;
+    }
+
+    Expression *get_expr() { return this->expr; }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << op << " " << *expr;
         return os;
     }
 };
