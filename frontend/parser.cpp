@@ -265,6 +265,9 @@ IR *Parser::declaration() {
     // fun
 
     // expression
+    else if (auto expr = expression()) {
+        decl = expr;
+    }
 
     // Every declaration has to end with nl or semicolon or eof
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
@@ -285,6 +288,27 @@ Expression *Parser::expression() {
         else {
             return new Variable(id->get_value());
         }
+    }
+    else if (check(TokenType::INT)) {
+        auto val = advance();
+        // The value was parsed and checked, so no need to check for
+        // correct conversion
+        return new IntLiteral(atol(val->get_value().c_str()));
+    }
+    else if (check(TokenType::FLOAT)) {
+        auto val = advance();
+        // The value was parsed and checked, so no need to check for
+        // correct conversion
+        return new FloatLiteral(std::stod(val->get_value()));
+    }
+    else if (match(TokenType::TRUE)) {
+        return new BoolLiteral(true);
+    }
+    else if (match(TokenType::FALSE)) {
+        return new BoolLiteral(false);
+    }
+    else if (match(TokenType::NIL)) {
+        return new NilLiteral();
     }
     
     return nullptr;

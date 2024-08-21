@@ -388,6 +388,34 @@ public:
         os << value;
         return os;
     }
+};
+
+class FloatLiteral : public Expression {
+private:
+    opcode::FloatConst value;
+public:
+    static const IRType ClassType = IRType::FLOAT_LITERAL;
+
+    FloatLiteral(opcode::FloatConst value) : Expression(ClassType, "<float-literal>"), value(value) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << value;
+        return os;
+    }
+};
+
+class BoolLiteral : public Expression {
+private:
+    opcode::BoolConst value;
+public:
+    static const IRType ClassType = IRType::BOOL_LITERAL;
+
+    BoolLiteral(opcode::BoolConst value) : Expression(ClassType, "<bool-literal>"), value(value) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << (value ? "true" : "false");
+        return os;
+    }
 }; 
 
 class StringLiteral : public Expression {
