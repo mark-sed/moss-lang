@@ -283,6 +283,8 @@ IR *Parser::declaration() {
 }
 
 Expression *Parser::expression() {
+    // NOTE: Allow a == b == c; 2 < a < 7...
+
     // TODO: This allows for combination of `not - not a`... Should this be allowed?
     if (match(TokenType::MINUS)) {
         auto expr = expression();

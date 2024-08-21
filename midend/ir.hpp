@@ -323,7 +323,7 @@ private:
 public:
     Operator(OperatorKind kind) : kind(kind) {}
 
-    OperatorKind getKind() const { return kind; }
+    OperatorKind get_kind() const { return kind; }
 
     inline std::ostream& debug(std::ostream& os) const { 
         switch(kind) {
@@ -384,6 +384,7 @@ public:
 
     Expression *get_left() { return this->left; }
     Expression *get_right() { return this->right; }
+    Operator get_op() { return this->op; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << *left << " " << op << " " << *right;
@@ -406,6 +407,7 @@ public:
     }
 
     Expression *get_expr() { return this->expr; }
+    Operator get_op() { return this->op; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << op << " " << *expr;
