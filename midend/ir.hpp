@@ -386,7 +386,7 @@ public:
     Operator get_op() { return this->op; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << *left << " " << op << " " << *right;
+        os << "(" << *left << " " << op << " " << *right << ")";
         return os;
     }
 };

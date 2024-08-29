@@ -16,6 +16,45 @@
 using namespace moss;
 using namespace ir;
 
+static Operator token2operator(TokenType t) {
+    switch(t) {
+        case TokenType::CONCAT: return Operator(OperatorKind::OP_CONCAT);
+        case TokenType::EXP: return Operator(OperatorKind::OP_EXP);
+        case TokenType::PLUS: return Operator(OperatorKind::OP_PLUS);
+        case TokenType::MINUS: return Operator(OperatorKind::OP_MINUS);
+        case TokenType::DIV: return Operator(OperatorKind::OP_DIV);
+        case TokenType::MUL: return Operator(OperatorKind::OP_MUL);
+        case TokenType::MOD: return Operator(OperatorKind::OP_MOD);
+        case TokenType::SET: return Operator(OperatorKind::OP_SET);
+        /*case TokenType::SET_CONCAT: return Operator(OperatorKind::OP_SET_CONCAT);
+        case TokenType::SET_EXP: return Operator(OperatorKind::OP_SET_EXP);
+        case TokenType::SET_PLUS: return Operator(OperatorKind::OP_SET_PLUS);
+        case TokenType::SET_MINUS: return Operator(OperatorKind::OP_SET_MINUS);
+        case TokenType::SET_DIV: return Operator(OperatorKind::OP_SET_DIV);
+        case TokenType::SET_MUL: return Operator(OperatorKind::OP_SET_MUL);
+        case TokenType::SET_MOD: return Operator(OperatorKind::OP_SET_MOD);*/
+        case TokenType::EQ: return Operator(OperatorKind::OP_EQ);
+        case TokenType::NEQ: return Operator(OperatorKind::OP_NEQ);
+        case TokenType::BT: return Operator(OperatorKind::OP_BT);
+        case TokenType::LT: return Operator(OperatorKind::OP_LT);
+        case TokenType::BEQ: return Operator(OperatorKind::OP_BEQ);
+        case TokenType::LEQ: return Operator(OperatorKind::OP_LEQ);
+        case TokenType::SHORT_C_AND: return Operator(OperatorKind::OP_SHORT_C_AND);
+        case TokenType::SHORT_C_OR: return Operator(OperatorKind::OP_SHORT_C_OR);
+        case TokenType::AND: return Operator(OperatorKind::OP_AND);
+        case TokenType::OR: return Operator(OperatorKind::OP_OR);
+        case TokenType::NOT: return Operator(OperatorKind::OP_NOT);
+        case TokenType::XOR: return Operator(OperatorKind::OP_XOR);
+        case TokenType::IN: return Operator(OperatorKind::OP_IN);
+        /*case TokenType::DOT: return Operator(OperatorKind::OP_DOT);
+        case TokenType::RANGE: return Operator(OperatorKind::OP_RANGE);
+        case TokenType::SCOPE: return Operator(OperatorKind::OP_SCOPE);*/
+        default:
+            assert(false && "Token is not an operator");
+            return Operator(OperatorKind::OP_UNKNOWN);
+    }
+}
+
 IR *Parser::parse(bool is_main) {
     LOG1("Started parsing module");
     Module *m = new Module(this->src_file.get_module_name(), this->src_file, is_main);
@@ -370,26 +409,9 @@ Expression *Parser::compare_gl() {
 
     while (check({TokenType::LEQ, TokenType::BEQ, TokenType::LT, TokenType::BT})) {
         auto op = advance();
-        OperatorKind op_kind = OperatorKind::OP_UNKNOWN;
-        switch (op->get_type()) {
-            case TokenType::LEQ:
-                op_kind = OperatorKind::OP_LEQ;
-            break;
-            case TokenType::BEQ:
-                op_kind = OperatorKind::OP_BEQ;
-            break;
-            case TokenType::LT:
-                op_kind = OperatorKind::OP_LT;
-            break;
-            case TokenType::BT:
-                op_kind = OperatorKind::OP_BT;
-            break;
-            default:
-                assert(false && "Sanity check");
-        }
         auto right = expression();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, Operator(op_kind));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
     }
 
     return expr;
