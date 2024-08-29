@@ -33,6 +33,36 @@ private:
     ir::IR *declaration();
     ir::Expression *expression();
 
+    ir::Expression *scope();
+    ir::Expression *call();
+    ir::Expression *subscript();
+    ir::Expression *element_access();
+    ir::Expression *unary_plus_minus();
+    ir::Expression *exponentiation();
+    ir::Expression *multiplication();
+    ir::Expression *division();
+    ir::Expression *modulo();
+    ir::Expression *addition();
+    ir::Expression *subtraction();
+    ir::Expression *concatenation();
+    ir::Expression *range();
+    ir::Expression *membership();
+    ir::Expression *cmp_le();
+    ir::Expression *cmp_ge();
+    ir::Expression *cmp_lt();
+    ir::Expression *cmp_gt();
+    ir::Expression *equals();
+    ir::Expression *not_equals();
+    ir::Expression *op_not();
+    ir::Expression *op_scand();
+    ir::Expression *op_and();
+    ir::Expression *op_scor();
+    ir::Expression *op_or();
+    ir::Expression *op_xor();
+    ir::Expression *ternary_if();
+    ir::Expression *assignment();
+    ir::Expression *constant();
+
     bool check(TokenType type);
     bool match(TokenType type);
     Token *expect(TokenType type, diags::Diagnostic msg);
