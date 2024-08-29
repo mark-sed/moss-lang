@@ -140,6 +140,13 @@ bool Parser::check(TokenType type) {
     return tokens[curr_token+offset]->get_type() == type;
 }
 
+bool Parser::check(std::initializer_list<TokenType> types) {
+    for (auto t : types) {
+        if (check(t)) return true;
+    }
+    return false;
+}
+
 bool Parser::match(TokenType type) {
     if (check(type)) {
         advance();
@@ -313,229 +320,159 @@ IR *Parser::declaration() {
  * TernaryExpr -> Expression (>|<|==|<=|>=) Expression (>|<|==|<=|>=) Expression
  */
 Expression *Parser::expression() {
-    // NOTE: Allow a == b == c; 2 < a < 7...
-
-    Expression *expr = scope();
-
-    // TODO: This allows for combination of `not - not a`... Should this be allowed?
-    /*if (auto be = binary_expr()) {
-        return be;
-    }
-    else if (match(TokenType::MINUS)) {
-        auto expr = expression();
-        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_NEG));
-    }
-    else if (match(TokenType::NOT)) {
-        auto expr = expression();
-        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT));
-    }
-    else if (check(TokenType::ID)) {
-        auto id = advance();
-        
-        if (check(TokenType::LEFT_PAREN)) {
-            // Function call
-            // TODO
-        }
-        else {
-            return new Variable(id->get_value());
-        }
-    }
-    else if (check(TokenType::INT)) {
-        auto val = advance();
-        // The value was parsed and checked, so no need to check for
-        // correct conversion
-        return new IntLiteral(atol(val->get_value().c_str()));
-    }
-    else if (check(TokenType::FLOAT)) {
-        auto val = advance();
-        // The value was parsed and checked, so no need to check for
-        // correct conversion
-        return new FloatLiteral(std::stod(val->get_value()));
-    }
-    else if (match(TokenType::TRUE)) {
-        return new BoolLiteral(true);
-    }
-    else if (match(TokenType::FALSE)) {
-        return new BoolLiteral(false);
-    }
-    else if (match(TokenType::NIL)) {
-        return new NilLiteral();
-    }*/
-    
-    return nullptr;
-}
-
-Expression *Parser::scope() {
-    Expression *expr = nullptr;
-
+    Expression *expr = assignment();
     return expr;
 }
 
-Expression *Parser::call() {
-    Expression *expr = nullptr;
 
-    return expr;
-}
-
-Expression *Parser::subscript() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::element_access() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::unary_plus_minus() {
-    Expression *expr = nullptr;
-    
-    return expr;
-}
-
-Expression *Parser::exponentiation() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::multiplication() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::division() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::modulo() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::addition() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::subtraction() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::concatenation() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::range() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::membership() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::cmp_le() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::cmp_ge() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::cmp_lt() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::cmp_gt() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::equals() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::not_equals() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::op_not() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::op_scand() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::op_and() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::op_scor() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::op_or() {
-    Expression *expr = nullptr;
-
-    return expr;
-}
-
-Expression *Parser::op_xor() {
-    Expression *expr = nullptr;
+Expression *Parser::assignment() {
+    Expression *expr = ternary_if();
 
     return expr;
 }
 
 Expression *Parser::ternary_if() {
-    Expression *expr = nullptr;
+    Expression *expr = short_circuit();
 
     return expr;
 }
 
-Expression *Parser::assignment() {
-    Expression *expr = nullptr;
+Expression *Parser::short_circuit() {
+    Expression *expr = and_or_xor();
 
     return expr;
 }
+
+Expression *Parser::and_or_xor() {
+    Expression *expr = op_not();
+
+    return expr;
+}
+
+Expression *Parser::op_not() {
+    if (match(TokenType::NOT)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT));
+    }
+
+    return eq_neq();
+}
+
+Expression *Parser::eq_neq() {
+    Expression *expr = compare_gl();
+
+    return expr;
+}
+
+Expression *Parser::compare_gl() {
+    Expression *expr = membership();
+
+    while (check({TokenType::LEQ, TokenType::BEQ, TokenType::LT, TokenType::BT})) {
+        auto op = advance();
+        OperatorKind op_kind = OperatorKind::OP_UNKNOWN;
+        switch (op->get_type()) {
+            case TokenType::LEQ:
+                op_kind = OperatorKind::OP_LEQ;
+            break;
+            case TokenType::BEQ:
+                op_kind = OperatorKind::OP_BEQ;
+            break;
+            case TokenType::LT:
+                op_kind = OperatorKind::OP_LT;
+            break;
+            case TokenType::BT:
+                op_kind = OperatorKind::OP_BT;
+            break;
+            default:
+                assert(false && "Sanity check");
+        }
+        auto right = expression();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, Operator(op_kind));
+    }
+
+    return expr;
+}
+
+Expression *Parser::membership() {
+    Expression *expr = range();
+
+    return expr;
+}
+
+Expression *Parser::range() {
+    Expression *expr = concatenation();
+
+    return expr;
+}
+
+Expression *Parser::concatenation() {
+    Expression *expr = add_sub();
+
+    return expr;
+}
+
+Expression *Parser::add_sub() {
+    Expression *expr = mul_div_mod();
+
+    return expr;
+}
+
+Expression *Parser::mul_div_mod() {
+    Expression *expr = exponentiation();
+
+    return expr;
+}
+
+Expression *Parser::exponentiation() {
+    Expression *expr = unary_plus_minus();
+
+    return expr;
+}
+
+Expression *Parser::unary_plus_minus() {
+    if (match(TokenType::MINUS)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_NEG));
+    }
+    else if (match(TokenType::PLUS)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return expr;
+    }
+
+    return element_access();
+}
+
+Expression *Parser::element_access() {
+    Expression *expr = subscript();
+
+    return expr;
+}
+
+Expression *Parser::subscript() {
+    Expression *expr = call();
+
+    return expr;
+}
+
+Expression *Parser::call() {
+    Expression *expr = scope();
+
+    return expr;
+}
+
+Expression *Parser::scope() {
+    Expression *expr = constant();
+
+    return expr;
+}
+
 
 Expression *Parser::constant() {
+    LOGMAX("Parsing Constant");
     if (check(TokenType::ID)) {
         auto id = advance();
         return new Variable(id->get_value());

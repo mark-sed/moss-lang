@@ -284,6 +284,7 @@ public:
  * Types of operators
  */
 enum OperatorKind {
+    OP_UNKNOWN,
     OP_NEG,    ///< `-`
     OP_CONCAT, ///< ++
     OP_EXP,    ///< ^
@@ -309,9 +310,7 @@ enum OperatorKind {
     OP_IN,     ///< in
     OP_SLICE,  ///< [..]
     OP_ACCESS, ///< `.`
-    OP_SUBSC,  ///< []
-
-    //OP_UNKNOWN
+    OP_SUBSC   ///< []
 };
 
 /**
@@ -353,7 +352,7 @@ public:
         case OP_SLICE: os << "[..]"; break;
         case OP_ACCESS: os << "."; break;
         case OP_SUBSC: os << "[]"; break;
-        //case OP_UNKNOWN: os << "unknown"; break;
+        case OP_UNKNOWN: os << "unknown"; break;
         default:
             assert(false && "Missing operator in debug for Operator class"); 
             os << "unknown operator"; break;
