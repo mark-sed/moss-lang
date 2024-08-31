@@ -71,7 +71,7 @@ enum class TokenType {
     SET_MUL,    ///< *=
     SET_MOD,    ///< %=
 
-    UNWRAP, ///< <<
+    UNPACK, ///< <<
     SILENT, ///< ~
 
     EQ,  ///< ==
@@ -172,7 +172,7 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::SET_DIV: os << "SET_DIV"; break;
         case TokenType::SET_MUL: os << "SET_MUL"; break;
         case TokenType::SET_MOD: os << "SET_MOD"; break;
-        case TokenType::UNWRAP: os << "UNWRAP"; break;
+        case TokenType::UNPACK: os << "UNPACK"; break;
         case TokenType::SILENT: os << "SILENT"; break;
         case TokenType::EQ: os << "EQ"; break;
         case TokenType::NEQ: os << "NEQ"; break;
@@ -241,6 +241,7 @@ public:
     virtual ~Token() {}
 
     ustring get_value() { return this->value; }
+    const char *get_cstr() { return this->value.c_str(); }
     TokenType get_type() { return this->type; }
     SourceInfo get_src_info() { return this->src_info; }
 

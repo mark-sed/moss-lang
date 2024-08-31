@@ -463,7 +463,7 @@ Token *Scanner::next_token() {
             case '~': return tokenize(c, TokenType::SILENT);
             case '<': {
                 if (check_and_advance('<'))
-                    return tokenize("<<", TokenType::UNWRAP);
+                    return tokenize("<<", TokenType::UNPACK);
                 if (check_and_advance('='))
                     return tokenize("<=", TokenType::LEQ);
                 return tokenize(c, TokenType::LT);

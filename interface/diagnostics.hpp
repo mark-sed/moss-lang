@@ -37,6 +37,8 @@ enum DiagID {
     ASSERT_EXPECTS_ARG,     ///< Assert specific - incorrect arguments
     EXPR_EXPECTED,          ///< Parser expected an expression
     EXPR_EXPECTED_NOTE,     ///< As above but with extra note
+    MISSING_RIGHT_PAREN,    ///< No ')' found
+    CHAINED_COMPOUND_ASSIGN,    ///< Chained compound assignment operators
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -54,6 +56,8 @@ static const char * DIAG_MSGS[] = {
     "Assert expects 1 or 2 arguments — condition and optional message",
     "Expecting an expression",
     "Expecting an expression -- %s",
+    "Missing ')'",
+    "Compound assignment operators ('%s') cannot be chained"
 };
 
 /**

@@ -26,13 +26,14 @@ static Operator token2operator(TokenType t) {
         case TokenType::MUL: return Operator(OperatorKind::OP_MUL);
         case TokenType::MOD: return Operator(OperatorKind::OP_MOD);
         case TokenType::SET: return Operator(OperatorKind::OP_SET);
-        /*case TokenType::SET_CONCAT: return Operator(OperatorKind::OP_SET_CONCAT);
+        // For compound assignment return the operator without assignment 
+        case TokenType::SET_CONCAT: return Operator(OperatorKind::OP_SET_CONCAT);
         case TokenType::SET_EXP: return Operator(OperatorKind::OP_SET_EXP);
         case TokenType::SET_PLUS: return Operator(OperatorKind::OP_SET_PLUS);
         case TokenType::SET_MINUS: return Operator(OperatorKind::OP_SET_MINUS);
         case TokenType::SET_DIV: return Operator(OperatorKind::OP_SET_DIV);
         case TokenType::SET_MUL: return Operator(OperatorKind::OP_SET_MUL);
-        case TokenType::SET_MOD: return Operator(OperatorKind::OP_SET_MOD);*/
+        case TokenType::SET_MOD: return Operator(OperatorKind::OP_SET_MOD);
         case TokenType::EQ: return Operator(OperatorKind::OP_EQ);
         case TokenType::NEQ: return Operator(OperatorKind::OP_NEQ);
         case TokenType::BT: return Operator(OperatorKind::OP_BT);
@@ -331,11 +332,11 @@ IR *Parser::declaration() {
     else if (auto expr = expression()) {
         decl = expr;
     }
-    else if (match(TokenType::SILENT)) {
+    /*else if (match(TokenType::SILENT)) {
         auto expr = expression();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED_NOTE, "only expressions are outputted and can be silenced"));
         decl = new Silent(expr);
-    }
+    }*/
 
     // Every declaration has to end with nl or semicolon or eof
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
@@ -347,27 +348,76 @@ IR *Parser::declaration() {
 
 /** 
  * 
+ * Expression -> ( Expression )
+ * 
  * UnaryExpr -> MINUS Expression
  *            | NOT Expression
+ *            | << Expression
+ *            | ~ Expression
  * 
- * Variable -> ID
+ * Constant -> ID
+ *           | true | false | nil
+ *           | NUMBER
+ *           | FLOAT
+ *           | STRING
  * 
  * BinaryExpr -> Expression (::|+|-|*|^|/|%|++) Expression
  *             | Expression (&&|'||'|and|or|xor|in) Expression
  *             | Expression (==|!=|>|<|<=|>=) Expression
+ *             | Expression = Expression
  * 
- * TernaryExpr -> Expression (>|<|==|<=|>=) Expression (>|<|==|<=|>=) Expression
  */
 Expression *Parser::expression() {
-    Expression *expr = assignment();
+    Expression *expr = silent();
     return expr;
 }
 
+Expression *Parser::silent() {
+    if (match(TokenType::SILENT)) {
+        auto expr = ternary_if(); // Assignment does not return a value for output
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT));
+    }
+
+    return assignment();
+}
 
 Expression *Parser::assignment() {
-    Expression *expr = ternary_if();
+    Expression *expr = unpack();
+
+    bool is_set = false;
+    while (match(TokenType::SET)) {
+        is_set = true;
+        auto right = ternary_if();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right,  Operator(OperatorKind::OP_SET));
+    }
+    // We use while to check for any compound assignment chains, which doesn't make sense
+    while (check({TokenType::SET_CONCAT, TokenType::SET_EXP, TokenType::SET_PLUS,
+                  TokenType::SET_MINUS, TokenType::SET_DIV, TokenType::SET_MUL, TokenType::SET_MOD})) {
+        auto op = advance();
+        if (is_set) {
+            parser_error(create_diag(diags::CHAINED_COMPOUND_ASSIGN, op->get_cstr()));
+        }
+        is_set = true;
+        auto right = ternary_if();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        // We cannot transform this into set and operation as then the left and
+        // right pointers would be the same
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+    }
 
     return expr;
+}
+
+Expression *Parser::unpack() {
+    if (match(TokenType::UNPACK)) {
+        auto expr = ternary_if();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_UNPACK));
+    }
+
+    return ternary_if();
 }
 
 Expression *Parser::ternary_if() {
@@ -379,18 +429,32 @@ Expression *Parser::ternary_if() {
 Expression *Parser::short_circuit() {
     Expression *expr = and_or_xor();
 
+    while (check({TokenType::SHORT_C_AND, TokenType::SHORT_C_OR})) {
+        auto op = advance();
+        auto right = and_or_xor();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+    }
+
     return expr;
 }
 
 Expression *Parser::and_or_xor() {
     Expression *expr = op_not();
 
+    while (check({TokenType::AND, TokenType::OR, TokenType::XOR})) {
+        auto op = advance();
+        auto right = op_not();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+    }
+
     return expr;
 }
 
 Expression *Parser::op_not() {
     if (match(TokenType::NOT)) {
-        auto expr = expression();
+        auto expr = op_not();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT));
     }
@@ -401,6 +465,13 @@ Expression *Parser::op_not() {
 Expression *Parser::eq_neq() {
     Expression *expr = compare_gl();
 
+    while (check({TokenType::EQ, TokenType::NEQ})) {
+        auto op = advance();
+        auto right = op_not();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+    }
+
     return expr;
 }
 
@@ -409,7 +480,7 @@ Expression *Parser::compare_gl() {
 
     while (check({TokenType::LEQ, TokenType::BEQ, TokenType::LT, TokenType::BT})) {
         auto op = advance();
-        auto right = expression();
+        auto right = membership();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
     }
@@ -455,12 +526,13 @@ Expression *Parser::exponentiation() {
 
 Expression *Parser::unary_plus_minus() {
     if (match(TokenType::MINUS)) {
-        auto expr = expression();
+        LOGMAX("Parsed unary minus");
+        auto expr = unary_plus_minus();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         return new UnaryExpr(expr, Operator(OperatorKind::OP_NEG));
     }
     else if (match(TokenType::PLUS)) {
-        auto expr = expression();
+        auto expr = unary_plus_minus();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         return expr;
     }
@@ -495,7 +567,13 @@ Expression *Parser::scope() {
 
 Expression *Parser::constant() {
     LOGMAX("Parsing Constant");
-    if (check(TokenType::ID)) {
+    if (match(TokenType::LEFT_PAREN)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        return expr;
+    }
+    else if (check(TokenType::ID)) {
         auto id = advance();
         return new Variable(id->get_value());
     }

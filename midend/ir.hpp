@@ -252,7 +252,7 @@ public:
     }
 };
 
-class Silent : public Statement {
+/*class Silent : public Statement {
 private:
     Expression *expr;
 
@@ -270,7 +270,7 @@ public:
     }
 
     Expression *get_expr() { return this->expr; }
-};
+};*/
 
 
 class EndOfFile : public Statement {
@@ -293,7 +293,14 @@ enum OperatorKind {
     OP_DIV,    ///< /
     OP_MUL,    ///< `*`
     OP_MOD,    ///< %
-    OP_SET,    ///< =
+    OP_SET,         ///< =
+    OP_SET_CONCAT,  ///< ++=
+    OP_SET_EXP,     ///< ^= 
+    OP_SET_PLUS,    ///< +=
+    OP_SET_MINUS,   ///< -=
+    OP_SET_DIV,     ///< /=
+    OP_SET_MUL,     ///< *=
+    OP_SET_MOD,     ///< %=
     OP_SILENT, ///< ~
     OP_EQ,     ///< ==
     OP_NEQ,    ///< !=
@@ -310,7 +317,8 @@ enum OperatorKind {
     OP_IN,     ///< in
     OP_SLICE,  ///< [..]
     OP_ACCESS, ///< `.`
-    OP_SUBSC   ///< []
+    OP_SUBSC,   ///< []
+    OP_UNPACK
 };
 
 /**
@@ -335,6 +343,13 @@ public:
         case OP_MUL: os << "*"; break;
         case OP_MOD: os << "%"; break;
         case OP_SET: os << "="; break;
+        case OP_SET_CONCAT: os << "++="; break;
+        case OP_SET_EXP: os << "^="; break;
+        case OP_SET_PLUS: os << "+="; break;
+        case OP_SET_MINUS: os << "-="; break;
+        case OP_SET_DIV: os << "/="; break;
+        case OP_SET_MUL: os << "+="; break;
+        case OP_SET_MOD: os << "%="; break;
         case OP_SILENT: os << "~"; break;
         case OP_EQ: os << "=="; break;
         case OP_NEQ: os << "!="; break;
@@ -352,6 +367,7 @@ public:
         case OP_SLICE: os << "[..]"; break;
         case OP_ACCESS: os << "."; break;
         case OP_SUBSC: os << "[]"; break;
+        case OP_UNPACK: os << "<<"; break;
         case OP_UNKNOWN: os << "unknown"; break;
         default:
             assert(false && "Missing operator in debug for Operator class"); 
@@ -409,7 +425,7 @@ public:
     Operator get_op() { return this->op; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << op << " " << *expr;
+        os << "(" << op << " " << *expr << ")";
         return os;
     }
 };

@@ -36,6 +36,8 @@ private:
 
     ir::Expression *constant();
 
+    ir::Expression *unpack();
+    ir::Expression *silent();
     ir::Expression *assignment();
     ir::Expression *ternary_if();
     ir::Expression *short_circuit();
