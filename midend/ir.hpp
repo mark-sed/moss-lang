@@ -36,7 +36,7 @@ enum class IRType {
     RETURN,
     BREAK,
     CONTINUE,
-    SILENT,
+    ANNOTATION,
 
     BINARY_EXPR,
     UNARY_EXPR,
@@ -54,11 +54,14 @@ enum class IRType {
     END_OF_FILE,
 };
 
+class Annotation;
+
 /** Base class for any IR value */
 class IR {
 protected:
     IRType ir_type;
     ustring name;
+    std::list<Annotation *> annotations;
 
     IR(IRType ir_type, ustring name) : ir_type(ir_type), name(name) {}
 public:
@@ -69,11 +72,17 @@ public:
         os << "<IR: " << name << ">";
         return os;
     }
+
+    virtual void add_annot(Annotation *ann) {
+        annotations.push_back(ann);
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
     return ir.debug(os);
 }
+
+bool can_be_annotated(IR *decl);
 
 /** 
  * @brief IRs that are constructs
@@ -122,6 +131,10 @@ protected:
     Statement(IRType ir_type, ustring name) : IR(ir_type, name) {}
 public:
     static const IRType ClassType = IRType::STATEMENT;
+
+    virtual void add_annot(Annotation *ann) override {
+        assert(false && "Adding annotation to a statement");
+    }
 };
 
 /**
@@ -132,6 +145,10 @@ protected:
     Expression(IRType ir_type, ustring name) : IR(ir_type, name) {}
 public:
     static const IRType ClassType = IRType::EXPRESSION;
+
+    virtual void add_annot(Annotation *ann) override {
+        assert(false && "Adding annotation to an expression");
+    }
 };
 
 class Module : public Construct {
@@ -259,26 +276,24 @@ public:
     }
 };
 
-/*class Silent : public Statement {
+class Annotation : public Statement {
 private:
-    Expression *expr;
-
+    Expression *value;
+    bool inner;
 public:
-    static const IRType ClassType = IRType::SILENT;
+    static const IRType ClassType = IRType::ANNOTATION;
 
-    Silent(Expression *expr) : Statement(ClassType, "~"), expr(expr) {}
-    ~Silent() {
-        delete expr;
+    Annotation(Expression *value, bool inner) 
+        : Statement(ClassType, "annotation"), value(value), inner(inner) {}
+    ~Annotation() {
+        delete value;
     }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "~" << *expr;
+        os << (inner ? "@!" : "@") << *value;
         return os;
     }
-
-    Expression *get_expr() { return this->expr; }
-};*/
-
+};
 
 class EndOfFile : public Statement {
 public:
@@ -325,7 +340,7 @@ enum OperatorKind {
     OP_ACCESS, ///< `.`
     OP_SUBSC,  ///< [] or [..]
     OP_SCOPE,  ///< :: 
-    OP_UNPACK
+    OP_UNPACK  ///< <<
 };
 
 /**

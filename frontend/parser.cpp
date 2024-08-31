@@ -244,6 +244,44 @@ void Parser::skip_nls() {
  * Continue  -> CONTINUE
  * 
  * Expression -> ...
+ * 
+ * Annotation -> @|@! Expression
+ * 
+ * Block -> { Declaration* }
+ * Body -> Block | Expression
+ * 
+ * If -> if ( Expression ) Body Elif* Else?
+ * Elif -> elif ( Expression ) Body
+ * Else -> else Body
+ * 
+ * While -> while ( Expression ) Body
+ * 
+ * DoWhile -> do Body while ( Expression )
+ * 
+ * For -> for ( Expression : Expression ) Body
+ * 
+ * Try -> try Body Catch+ Finally?
+ * Catch -> catch ( Expression ) Body
+ *        | catch ( Expression : Expression ) Body
+ * Finally -> finally Body
+ * 
+ * Space -> space ID? Block
+ * 
+ * Import -> import ImportList
+ * ImportList -> ImportName
+ *             | ImportName as ID
+ *             | ImportList , ImportName
+ *             | ImportList , ImportName as ID
+ * ImportName -> ID
+ *             | SCOPE
+ *             | ImportName :: *
+ * 
+ * Switch ->
+ * Function ->
+ * Constructor ->
+ * Enum ->
+ * Class -> 
+ * 
  */
 IR *Parser::declaration() {
     LOGMAX("Parsing declaration");
@@ -267,6 +305,17 @@ IR *Parser::declaration() {
     }
 
     // outer / inner annotation
+    // TODO: Tie annotation to proper IR
+    if (match(TokenType::OUT_ANNOTATION)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        decl = new Annotation(expr, false);
+    }
+    else if (match(TokenType::IN_ANNOTATION)) {
+        auto expr = expression();
+        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+        decl = new Annotation(expr, true);
+    }
 
     // import
     // Import has to accept parser errors since it may be in try catch block
@@ -286,7 +335,7 @@ IR *Parser::declaration() {
     // constructor
     
     // assert / raise / return
-    if (match(TokenType::ASSERT)) {
+    else if (match(TokenType::ASSERT)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
         std::vector<Expression *> args = arg_list();
         parser_assert((args.size() == 1 || args.size() == 2), create_diag(diags::ASSERT_EXPECTS_ARG));
