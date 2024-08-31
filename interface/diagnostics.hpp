@@ -38,8 +38,12 @@ enum DiagID {
     EXPR_EXPECTED,          ///< Parser expected an expression
     EXPR_EXPECTED_NOTE,     ///< As above but with extra note
     MISSING_RIGHT_PAREN,    ///< No ')' found
+    MISSING_RIGHT_SQUARE,   ///< No ']' found
+    UNMATCHED_RIGHT_PAREN,  ///< Extra ')' found
     CHAINED_COMPOUND_ASSIGN,    ///< Chained compound assignment operators
+    CANNOT_CHAIN_SILENT,        ///< Chained ~
     TERNARY_IF_MISSING_FALSE,   ///< Missing false branch in ternary if
+    RANGE_EXPECTED,         ///< Range without ..
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -58,8 +62,12 @@ static const char * DIAG_MSGS[] = {
     "Expecting an expression",
     "Expecting an expression — %s",
     "Missing ')'",
+    "Missing ']'",
+    "Unmatched ')'",
     "Compound assignment operators ('%s') cannot be chained",
+    "Silent operator ('~') cannot be chained",
     "Missing ':' — ternary if requires false branch",
+    "Expecting '..' in a range expression",
 };
 
 /**

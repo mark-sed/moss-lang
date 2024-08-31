@@ -31,10 +31,13 @@ private:
     size_t curr_token;
     std::vector<Token *> tokens;
 
+    bool lower_range_prec;
+
     ir::IR *declaration();
     ir::Expression *expression();
 
     ir::Expression *constant();
+    std::vector<ir::Expression *> arg_list();
 
     ir::Expression *unpack();
     ir::Expression *silent();
@@ -79,7 +82,8 @@ private:
 
     void parser_error(diags::Diagnostic err_msg);
 public:
-    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0) {}
+    Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
+                               lower_range_prec(false) {}
     ~Parser() {
         delete scanner;
         for (auto *t: tokens)

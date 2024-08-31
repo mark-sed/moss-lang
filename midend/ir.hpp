@@ -43,6 +43,8 @@ enum class IRType {
 
     VARIABLE,
     TERNARY_IF,
+    RANGE,
+    CALL,
     INT_LITERAL,
     FLOAT_LITERAL,
     BOOL_LITERAL,
@@ -101,6 +103,10 @@ public:
 
     size_t size() {
         return this->body.size();
+    }
+
+    bool empty() {
+        return this->body.empty();
     }
 
     std::list<IR *> get_body() { return this->body; }
@@ -316,9 +322,9 @@ enum OperatorKind {
     OP_NOT,    ///< not
     OP_XOR,    ///< xor
     OP_IN,     ///< in
-    OP_SLICE,  ///< [..]
     OP_ACCESS, ///< `.`
-    OP_SUBSC,   ///< []
+    OP_SUBSC,  ///< [] or [..]
+    OP_SCOPE,  ///< :: 
     OP_UNPACK
 };
 
@@ -365,9 +371,9 @@ public:
         case OP_NOT: os << "not"; break;
         case OP_XOR: os << "xor"; break;
         case OP_IN: os << "in"; break;
-        case OP_SLICE: os << "[..]"; break;
         case OP_ACCESS: os << "."; break;
         case OP_SUBSC: os << "[]"; break;
+        case OP_SCOPE: os << "::"; break;
         case OP_UNPACK: os << "<<"; break;
         case OP_UNKNOWN: os << "unknown"; break;
         default:
@@ -451,14 +457,80 @@ private:
 public:
     static const IRType ClassType = IRType::TERNARY_IF;
 
-    TernaryIf(Expression * condition, Expression * value_true, Expression * value_false)
+    TernaryIf(Expression *condition, Expression *value_true, Expression *value_false)
         : Expression(ClassType, "<ternary-if>"),
           condition(condition),
           value_true(value_true),
           value_false(value_false) {}
+    ~TernaryIf() {
+        delete condition;
+        delete value_true;
+        delete value_false;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "(" << *condition << " ? " << *value_true << " : " << *value_false << ")";
+        return os;
+    }
+};
+
+class Range : public Expression {
+private:
+    Expression *start;
+    Expression *end;
+    Expression *second; // Might be nullptr
+public:
+    static const IRType ClassType = IRType::RANGE;
+
+    Range(Expression *start, Expression *end, Expression *second=nullptr)
+        : Expression(ClassType, "<range>"),
+          start(start),
+          end(end),
+          second(second) {}
+    ~Range() {
+        delete start;
+        delete end;
+        if (second)
+            delete second;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        if (second)
+            os << "(" << *start << ", " << *second << ".." << *end << ")";
+        else
+            os << "(" << *start << ".." << *end << ")";
+        return os;
+    }
+};
+
+class Call : public Expression {
+private:
+    Expression *fun;
+    std::vector<Expression *> args;
+public:
+    static const IRType ClassType = IRType::CALL;
+
+    Call(Expression *fun, std::vector<Expression *> args)
+        : Expression(ClassType, "<call>"), fun(fun), args(args) {}
+    ~Call() {
+        delete fun;
+        for (auto a : args) {
+            delete a;
+        }
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << *fun << "(";
+        bool first = true;
+        for (auto a: args) {
+            if (first) {
+                os << *a;
+                first = false;
+                continue;
+            }
+            os << ", " << *a; 
+        }
+        os << ")"; 
         return os;
     }
 };

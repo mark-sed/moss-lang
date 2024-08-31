@@ -90,7 +90,7 @@ IR *Parser::parse(bool is_main) {
 
     // Append EOF, but only when not already present as it may be added by
     // an empty last line
-    if (!isa<EndOfFile>(m->back()))
+    if (m->empty() || !isa<EndOfFile>(m->back()))
         m->push_back(new ir::EndOfFile());
         
     LOG1("Finished parsing module");
@@ -243,13 +243,14 @@ void Parser::skip_nls() {
  * Break     -> BREAK
  * Continue  -> CONTINUE
  * 
- * Silent    -> '~' Expression
- * 
  * Expression -> ...
  */
 IR *Parser::declaration() {
     LOGMAX("Parsing declaration");
     IR *decl = nullptr;
+    // In case we errored out inside of function call, reset range
+    // precedence lowering
+    lower_range_prec = false;
 
     // Skip random new lines and ;
     skip_ends();
@@ -287,17 +288,10 @@ IR *Parser::declaration() {
     // assert / raise / return
     if (match(TokenType::ASSERT)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
-        auto cond = expression();
-        parser_assert(cond, create_diag(diags::ASSERT_EXPECTS_ARG));
-        // msg can be nullptr
-        Expression *msg = nullptr;
-        if (match(TokenType::COMMA)) {
-            skip_nls();
-            msg = expression();
-            parser_assert(msg, create_diag(diags::EXPR_EXPECTED));
-        }
+        std::vector<Expression *> args = arg_list();
+        parser_assert((args.size() == 1 || args.size() == 2), create_diag(diags::ASSERT_EXPECTS_ARG));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
-        decl = new Assert(cond, msg);
+        decl = new Assert(args[0], args.size() == 2 ? args[1] : nullptr);
     }
     else if (match(TokenType::RAISE)) {
         auto exc = expression();
@@ -332,21 +326,24 @@ IR *Parser::declaration() {
     else if (auto expr = expression()) {
         decl = expr;
     }
-    /*else if (match(TokenType::SILENT)) {
-        auto expr = expression();
-        parser_assert(expr, create_diag(diags::EXPR_EXPECTED_NOTE, "only expressions are outputted and can be silenced"));
-        decl = new Silent(expr);
-    }*/
 
     // Every declaration has to end with nl or semicolon or eof
     if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
-        parser_error(create_diag(diags::EXPECTED_END));
+        // Dangling ')'
+        if (match(TokenType::RIGHT_PAREN)) {
+            parser_error(create_diag(diags::UNMATCHED_RIGHT_PAREN));
+        }
+        else {
+            parser_error(create_diag(diags::EXPECTED_END));
+        }
     }
     LOGMAX("Parsed declaration " << *decl);
     return decl;
 }
 
 /** 
+ * Note: Expression prioritizes argument list comma over range comma, meaning
+ *       that when calling foo(1,2..4), this will result in foo(1,(2..4)).
  * 
  * Expression -> ( Expression )
  * 
@@ -368,6 +365,15 @@ IR *Parser::declaration() {
  * 
  * TernaryIf -> Expression ? Expression : Expression
  * 
+ * Range -> Expression , Expression .. Expression
+ *        | Expression .. Expression
+ * 
+ * Call -> Expression ( ArgList )
+ * 
+ * ArgList -> 
+ *          | Expression
+ *          | ArgList , Expression
+ * 
  */
 Expression *Parser::expression() {
     Expression *expr = silent();
@@ -375,8 +381,14 @@ Expression *Parser::expression() {
 }
 
 Expression *Parser::silent() {
-    if (match(TokenType::SILENT)) {
-        auto expr = ternary_if(); // Assignment does not return a value for output
+    bool is_silent = false;
+    while (match(TokenType::SILENT)) {
+        if (is_silent)
+            parser_error(create_diag(diags::CANNOT_CHAIN_SILENT));
+        is_silent = true;
+        // Calling unpack makes this left associative, but this operator
+        // Cannot be chained and has the lowest precedence
+        auto expr = unpack();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT));
     }
@@ -390,11 +402,12 @@ Expression *Parser::assignment() {
     bool is_set = false;
     while (match(TokenType::SET)) {
         is_set = true;
-        auto right = ternary_if();
+        auto right = assignment();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right,  Operator(OperatorKind::OP_SET));
     }
-    // We use while to check for any compound assignment chains, which doesn't make sense
+    // TODO: Check for any compound assignment chains, which doesn't make sense
+    // Current check only check if this is not after =
     while (check({TokenType::SET_CONCAT, TokenType::SET_EXP, TokenType::SET_PLUS,
                   TokenType::SET_MINUS, TokenType::SET_DIV, TokenType::SET_MUL, TokenType::SET_MOD})) {
         auto op = advance();
@@ -402,7 +415,7 @@ Expression *Parser::assignment() {
             parser_error(create_diag(diags::CHAINED_COMPOUND_ASSIGN, op->get_cstr()));
         }
         is_set = true;
-        auto right = ternary_if();
+        auto right = assignment();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         // We cannot transform this into set and operation as then the left and
         // right pointers would be the same
@@ -426,7 +439,7 @@ Expression *Parser::ternary_if() {
     Expression *expr = short_circuit();
 
     if (match(TokenType::QUESTION_M)) {
-        auto val_true = ternary_if();
+        auto val_true = ternary_if(); // Right associative
         parser_assert(val_true, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::COLON, create_diag(diags::TERNARY_IF_MISSING_FALSE));
         auto val_false = ternary_if();
@@ -465,7 +478,7 @@ Expression *Parser::and_or_xor() {
 
 Expression *Parser::op_not() {
     if (match(TokenType::NOT)) {
-        auto expr = op_not();
+        auto expr = op_not(); // Right associative
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT));
     }
@@ -478,7 +491,9 @@ Expression *Parser::eq_neq() {
 
     while (check({TokenType::EQ, TokenType::NEQ})) {
         auto op = advance();
-        auto right = op_not();
+        // Note: 'not' cannot be RHS without parenthesis
+        // TODO: Add error note for this
+        auto right = compare_gl();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
     }
@@ -502,11 +517,34 @@ Expression *Parser::compare_gl() {
 Expression *Parser::membership() {
     Expression *expr = range();
 
+    if (match(TokenType::IN)) {
+        auto right = range(); // Chaining in is not allowed, parenthesis have to be used
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        return new BinaryExpr(expr, right, Operator(OperatorKind::OP_IN));
+    }
+
     return expr;
 }
 
 Expression *Parser::range() {
     Expression *expr = concatenation();
+
+    // expr..end
+    // TODO: Raise a warning if in fun args and not in parenthesis
+    if (match(TokenType::RANGE)) {
+        auto end = concatenation();
+        parser_assert(end, create_diag(diags::EXPR_EXPECTED));
+        return new Range(expr, end);
+    }
+    // expr,second..end
+    else if (!lower_range_prec && match(TokenType::COMMA)) {
+        auto second = concatenation();
+        parser_assert(second, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RANGE, create_diag(diags::RANGE_EXPECTED));
+        auto end = concatenation();
+        parser_assert(second, create_diag(diags::EXPR_EXPECTED));
+        return new Range(expr, end, second);
+    }
 
     return expr;
 }
@@ -514,11 +552,24 @@ Expression *Parser::range() {
 Expression *Parser::concatenation() {
     Expression *expr = add_sub();
 
+    while (match(TokenType::CONCAT)) {
+        auto right = add_sub();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_CONCAT));
+    }
+
     return expr;
 }
 
 Expression *Parser::add_sub() {
     Expression *expr = mul_div_mod();
+
+    while (check({TokenType::PLUS, TokenType::MINUS})) {
+        auto op = advance();
+        auto right = mul_div_mod();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+    }
 
     return expr;
 }
@@ -526,19 +577,31 @@ Expression *Parser::add_sub() {
 Expression *Parser::mul_div_mod() {
     Expression *expr = exponentiation();
 
+    while (check({TokenType::MUL, TokenType::DIV, TokenType::MOD})) {
+        auto op = advance();
+        auto right = exponentiation();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+    }
+
     return expr;
 }
 
 Expression *Parser::exponentiation() {
     Expression *expr = unary_plus_minus();
 
+    while (match(TokenType::EXP)) {
+        auto right = exponentiation(); // Right associative, so call itself
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_EXP));
+    }
+
     return expr;
 }
 
 Expression *Parser::unary_plus_minus() {
     if (match(TokenType::MINUS)) {
-        LOGMAX("Parsed unary minus");
-        auto expr = unary_plus_minus();
+        auto expr = unary_plus_minus(); // Right associative
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         return new UnaryExpr(expr, Operator(OperatorKind::OP_NEG));
     }
@@ -554,17 +617,55 @@ Expression *Parser::unary_plus_minus() {
 Expression *Parser::element_access() {
     Expression *expr = subscript();
 
+    while (match(TokenType::DOT)) {
+        auto elem = subscript();
+        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
+    }
+
     return expr;
 }
 
+// Subscript or slice
 Expression *Parser::subscript() {
     Expression *expr = call();
 
+    while (match(TokenType::LEFT_SQUARE)) {
+        auto index = ternary_if();
+        parser_assert(index, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+        expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC));
+    }
+
     return expr;
+}
+
+std::vector<ir::Expression *> Parser::arg_list() {
+    std::vector<ir::Expression *> args;
+    // Setting this to true will indicate to not give precedence to range over
+    // another argument
+    lower_range_prec = true;
+
+    Expression *expr = nullptr;
+    do {
+        expr = expression();
+        if (expr)
+            args.push_back(expr);
+    } while (match(TokenType::COMMA) && expr);
+
+    lower_range_prec = false;
+
+    return args;
 }
 
 Expression *Parser::call() {
     Expression *expr = scope();
+
+    while (match(TokenType::LEFT_PAREN)) {
+        auto args = arg_list();
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        expr = new Call(expr, args);
+    } 
 
     return expr;
 }
@@ -572,16 +673,24 @@ Expression *Parser::call() {
 Expression *Parser::scope() {
     Expression *expr = constant();
 
+    while (match(TokenType::SCOPE)) {
+        auto elem = constant();
+        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_SCOPE));
+    }
+
     return expr;
 }
 
 
 Expression *Parser::constant() {
-    LOGMAX("Parsing Constant");
     if (match(TokenType::LEFT_PAREN)) {
-        auto expr = expression();
+        bool prev_fun_args_state = lower_range_prec;
+        lower_range_prec = false; // This will allow for range in function call
+        auto expr = ternary_if();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        lower_range_prec = prev_fun_args_state;
         return expr;
     }
     else if (check(TokenType::ID)) {
@@ -613,6 +722,7 @@ Expression *Parser::constant() {
     else if (match(TokenType::NIL)) {
         return new NilLiteral();
     }
+    return nullptr;
 }
 
 #undef parser_assert

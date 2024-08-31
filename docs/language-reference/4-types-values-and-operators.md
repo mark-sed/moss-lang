@@ -328,7 +328,16 @@ __Class methods__:
 ## Range
 
 Range is the result for range construct (`1,3..10`), which can be used
-for easy iterator or sequence creation
+for easy iterator or sequence creation.
+
+Beware that in calls and subscripts it is highly recommended to surround ranges
+in parenthesis as arguments have precedence over ranges, meaning that the
+first comma after a value in a function call will be taken as an argument
+separator and not a second value in a range:
+
+```c
+foo(1,2..5) // this is equivalent to foo(1, (2..5))
+```
 
 __Class constructors__:
 * `new Range(start, end, step=1)`

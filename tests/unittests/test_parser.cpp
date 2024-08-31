@@ -12,7 +12,7 @@ using namespace moss;
 using namespace ir;
 
 /** Test correct parsing regardless of the new line */
-TEST(Parser, WhiteSpace){
+TEST(Parsing, WhiteSpace){
     ustring code = R"(
 
 
@@ -38,7 +38,7 @@ TEST(Parser, WhiteSpace){
     delete mod;
 }
 
-TEST(Parser, Statements){
+TEST(Parsing, Statements){
     ustring code = R"(
 // Assert
 assert(a, b);
@@ -56,10 +56,6 @@ continue
 
 // Break
 break
-
-// Silent
-~42
-~nil
 )";
 
     IRType expected[] = {
@@ -73,9 +69,6 @@ break
 
         IRType::CONTINUE,
         IRType::BREAK,
-
-        IRType::SILENT,
-        IRType::SILENT,
         
         IRType::END_OF_FILE
     };
@@ -93,7 +86,7 @@ break
     delete mod;
 }
 
-TEST(Parser, Expressions){
+TEST(Parsing, SimpleValues){
     ustring code = R"(
 4545156
 -121
@@ -152,5 +145,103 @@ nil
     delete mod;
 }
 
+TEST(Parsing, Expressions){
+    ustring code = R"(-a > 4
+-(a > 9 < -8 <= 8)
+not -a > -4
+----+a
+a >= a and b
+a >= (not a) // Parenthesis are needed
+not a > 4
+
+true and false and true or a xor b and not c
+
+a && b > 4 || (c and b && -f)
+//false || ~a
+
+(a > 5 ? -4 : "hello")
+(a > 4 ? c : d) != 0 ? some : not other
+
+value in something
+not 4 in somewhere
+"x" in "hello " ++ "x" ++ "y"
+
+a == b
+b == c != d == (not g)
+
+_1 = _2 = _3 = "hello"
+
+a + 4 + b * -2
+a * b / x % 3 - -1
+((a + b) * (2 / v) + 1)
+a ^ b ^ -1
+b ^ (4 * 2 ^ a ^ 2)
+
+a[-2]
+g2["sfd"][a+1][8]
+a[1+a^-2]
+
+"Hello"[1,2..length]
+a[-2*a,-2*a-2..some_value - 10]
+
+foo()
+foo(true)
+foo(a+2, a++4, 1+(1*2))
+foo(1,3..4) // 1 has precedence as an argument
+
+std::math::pi + 4
+foo::goo
+)";
+
+    ustring expected = R"(((- a) > 4)
+(- (((a > 9) < (- 8)) <= 8))
+(not ((- a) > (- 4)))
+(- (- (- (- a))))
+((a >= a) and b)
+(a >= (not a))
+(not (a > 4))
+(((((true and false) and true) or a) xor b) and (not c))
+((a && (b > 4)) || ((c and b) && (- f)))
+((a > 5) ? (- 4) : "hello")
+((((a > 4) ? c : d) != 0) ? some : (not other))
+(value in something)
+(not (4 in somewhere))
+("x" in (("hello " ++ "x") ++ "y"))
+(a == b)
+(((b == c) != d) == (not g))
+(_1 = (_2 = (_3 = "hello")))
+((a + 4) + (b * (- 2)))
+((((a * b) / x) % 3) - (- 1))
+(((a + b) * (2 / v)) + 1)
+(a ^ (b ^ (- 1)))
+(b ^ (4 * (2 ^ (a ^ 2))))
+(a [] (- 2))
+(((g2 [] "sfd") [] (a + 1)) [] 8)
+(a [] (1 + (a ^ (- 2))))
+("Hello" [] (1, 2..length))
+(a [] (((- 2) * a), (((- 2) * a) - 2)..(some_value - 10)))
+foo()
+foo(true)
+foo((a + 2), (a ++ 4), (1 + (1 * 2)))
+foo(1, (3..4))
+(((std :: math) :: pi) + 4)
+(foo :: goo)
+<IR: <end-of-file>>
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    std::stringstream ss;
+    for (auto decl: mod->get_body()) {
+        ss << *decl << "\n";
+    }
+
+    EXPECT_EQ(ss.str(), expected);
+
+    delete mod;
+}
 
 }
