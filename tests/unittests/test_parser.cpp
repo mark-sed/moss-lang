@@ -86,7 +86,7 @@ break
     delete mod;
 }
 
-TEST(Parsing, SimpleValues){
+TEST(Parsing, AllExpressionTypes){
     ustring code = R"(
 4545156
 -121
@@ -94,10 +94,49 @@ TEST(Parsing, SimpleValues){
 -0.0
 true
 false
+"moss language"
 not true
 -----9 // Still valid
 not not not false
-nil
+(nil)
+hello
+a ? true : nil
+1,4..someval
+foo(1, 2)
+foo(1, (1,3..9))
+
+a ++ b ++ "\n"
+2 ^ b ^ 2
+4 + g1 + c2
+8 - g2 - 2 - a
+h / 2 / a
+g * 2 * g
+a % 3
+a = b = 3
+a ++= "!"
+b ^= 2 * a
+c += (a)
+g -= a
+hu /= a ? 2 : 4
+hy *= 5
+jh %= 2
+~a
+c == a == 5
+c != 45
+a > 4 > b
+c < 3
+g >= 2*r
+g <= 22
+a && foo()
+a || goo()
+true and false
+false or c
+42 xor a xor c
+"a" in "hi"
+a.access.b
+some[2]
+some[1,2..60]
+std::math::pi
 )";
 
     IRType expected[] = {
@@ -107,10 +146,49 @@ nil
         IRType::UNARY_EXPR,
         IRType::BOOL_LITERAL,
         IRType::BOOL_LITERAL,
+        IRType::STRING_LITERAL,
         IRType::UNARY_EXPR,
         IRType::UNARY_EXPR,
         IRType::UNARY_EXPR,
         IRType::NIL_LITERAL,
+        IRType::VARIABLE,
+        IRType::TERNARY_IF,
+        IRType::RANGE,
+        IRType::CALL,
+        IRType::CALL,
+
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::UNARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
         
         IRType::END_OF_FILE
     };
@@ -121,6 +199,40 @@ nil
         OperatorKind::OP_NOT,
         OperatorKind::OP_NEG,
         OperatorKind::OP_NOT,
+
+        
+        OperatorKind::OP_CONCAT,
+        OperatorKind::OP_EXP,
+        OperatorKind::OP_PLUS,
+        OperatorKind::OP_MINUS,
+        OperatorKind::OP_DIV,
+        OperatorKind::OP_MUL,
+        OperatorKind::OP_MOD,
+        OperatorKind::OP_SET,        
+        OperatorKind::OP_SET_CONCAT, 
+        OperatorKind::OP_SET_EXP,    
+        OperatorKind::OP_SET_PLUS,   
+        OperatorKind::OP_SET_MINUS,  
+        OperatorKind::OP_SET_DIV,    
+        OperatorKind::OP_SET_MUL,    
+        OperatorKind::OP_SET_MOD,    
+        OperatorKind::OP_SILENT,
+        OperatorKind::OP_EQ,  
+        OperatorKind::OP_NEQ, 
+        OperatorKind::OP_BT,  
+        OperatorKind::OP_LT,  
+        OperatorKind::OP_BEQ, 
+        OperatorKind::OP_LEQ, 
+        OperatorKind::OP_SHORT_C_AND,
+        OperatorKind::OP_SHORT_C_OR, 
+        OperatorKind::OP_AND,   
+        OperatorKind::OP_OR,
+        OperatorKind::OP_XOR,   
+        OperatorKind::OP_IN,
+        OperatorKind::OP_ACCESS,
+        OperatorKind::OP_SUBSC,
+        OperatorKind::OP_SUBSC,
+        OperatorKind::OP_SCOPE, 
     };
 
     SourceFile sf(code, SourceFile::SourceType::STRING);
@@ -135,10 +247,12 @@ nil
         if (decl->get_type() == IRType::UNARY_EXPR) {
             auto un_expr = dyn_cast<UnaryExpr>(decl);
             EXPECT_TRUE(un_expr->get_op().get_kind() == expected_ops[op_index++]) << "Incorrect Operator at index: " 
-                << index << " (" << op_index << ")" << "\nExpected: " << Operator(expected_ops[op_index-1]) << "\nBut got: " << un_expr->get_op();
+                << index << " (" << op_index-1 << ")" << "\nExpected: " << Operator(expected_ops[op_index-1]) << "\nBut got: " << un_expr->get_op();
         }
         else if (decl->get_type() == IRType::BINARY_EXPR) {
-            
+            auto bin_expr = dyn_cast<BinaryExpr>(decl);
+            EXPECT_TRUE(bin_expr->get_op().get_kind() == expected_ops[op_index++]) << "Incorrect Operator at index: " 
+                << index << " (" << op_index-1 << ")" << "\nExpected: " << Operator(expected_ops[op_index-1]) << "\nBut got: " << bin_expr->get_op();
         }
     }
 

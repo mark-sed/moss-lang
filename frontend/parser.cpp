@@ -231,6 +231,7 @@ void Parser::skip_nls() {
 }
 
 /**
+ * ```
  * EndOfFile -> EOF
  * 
  * Raise     -> ERROR_TOKEN
@@ -281,7 +282,7 @@ void Parser::skip_nls() {
  * Constructor ->
  * Enum ->
  * Class -> 
- * 
+ * ```
  */
 IR *Parser::declaration() {
     LOGMAX("Parsing declaration");
@@ -394,6 +395,7 @@ IR *Parser::declaration() {
  * Note: Expression prioritizes argument list comma over range comma, meaning
  *       that when calling foo(1,2..4), this will result in foo(1,(2..4)).
  * 
+ * ```
  * Expression -> ( Expression )
  * 
  * UnaryExpr -> MINUS Expression
@@ -422,7 +424,7 @@ IR *Parser::declaration() {
  * ArgList -> 
  *          | Expression
  *          | ArgList , Expression
- * 
+ * ```
  */
 Expression *Parser::expression() {
     Expression *expr = silent();
