@@ -42,6 +42,7 @@ enum class IRType {
     UNARY_EXPR,
 
     VARIABLE,
+    TERNARY_IF,
     INT_LITERAL,
     FLOAT_LITERAL,
     BOOL_LITERAL,
@@ -63,7 +64,7 @@ public:
 
     IRType get_type() { return ir_type; }
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "<IR>" << name;
+        os << "<IR: " << name << ">";
         return os;
     }
 };
@@ -277,7 +278,7 @@ class EndOfFile : public Statement {
 public:
     static const IRType ClassType = IRType::END_OF_FILE;
 
-    EndOfFile() : Statement(ClassType, "<end of file>") {}
+    EndOfFile() : Statement(ClassType, "<end-of-file>") {}
 };
 
 /**
@@ -442,6 +443,26 @@ public:
     }
 };
 
+class TernaryIf : public Expression {
+private:
+    Expression *condition;
+    Expression *value_true;
+    Expression *value_false;
+public:
+    static const IRType ClassType = IRType::TERNARY_IF;
+
+    TernaryIf(Expression * condition, Expression * value_true, Expression * value_false)
+        : Expression(ClassType, "<ternary-if>"),
+          condition(condition),
+          value_true(value_true),
+          value_false(value_false) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "(" << *condition << " ? " << *value_true << " : " << *value_false << ")";
+        return os;
+    }
+};
+
 class IntLiteral : public Expression {
 private:
     opcode::IntConst value;
@@ -493,7 +514,7 @@ public:
     StringLiteral(opcode::StringConst value) : Expression(ClassType, "<string-literal>"), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << utils::sanitize(value);
+        os << "\"" << utils::sanitize(value) << "\"";
         return os;
     }
 

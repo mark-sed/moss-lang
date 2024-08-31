@@ -366,6 +366,8 @@ IR *Parser::declaration() {
  *             | Expression (==|!=|>|<|<=|>=) Expression
  *             | Expression = Expression
  * 
+ * TernaryIf -> Expression ? Expression : Expression
+ * 
  */
 Expression *Parser::expression() {
     Expression *expr = silent();
@@ -422,6 +424,15 @@ Expression *Parser::unpack() {
 
 Expression *Parser::ternary_if() {
     Expression *expr = short_circuit();
+
+    if (match(TokenType::QUESTION_M)) {
+        auto val_true = ternary_if();
+        parser_assert(val_true, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::COLON, create_diag(diags::TERNARY_IF_MISSING_FALSE));
+        auto val_false = ternary_if();
+        parser_assert(val_false, create_diag(diags::EXPR_EXPECTED));
+        return new TernaryIf(expr, val_true, val_false);
+    }
 
     return expr;
 }
@@ -588,6 +599,10 @@ Expression *Parser::constant() {
         // The value was parsed and checked, so no need to check for
         // correct conversion
         return new FloatLiteral(std::stod(val->get_value()));
+    }
+    else if (check(TokenType::STRING)) {
+        auto val = advance();
+        return new StringLiteral(val->get_value());
     }
     else if (match(TokenType::TRUE)) {
         return new BoolLiteral(true);
