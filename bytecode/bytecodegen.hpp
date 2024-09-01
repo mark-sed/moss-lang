@@ -96,8 +96,9 @@ private:
     opcode::Register curr_reg;
 
     BCValue *emit(ir::BinaryExpr *expr);
-    BCValue *emit(ir::Expression *expr);
+    BCValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
+    void emit(ir::Raise *mod);
     void emit(ir::Module *mod);
     void emit(ir::IR *decl);
 

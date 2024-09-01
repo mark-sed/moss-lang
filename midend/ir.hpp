@@ -19,6 +19,8 @@
 #include <cassert>
 #include <list>
 
+#include <sstream>
+
 namespace moss {
 
 namespace ir {
@@ -316,7 +318,6 @@ public:
  */
 enum OperatorKind {
     OP_UNKNOWN,
-    OP_NEG,    ///< `-`
     OP_CONCAT, ///< ++
     OP_EXP,    ///< ^
     OP_PLUS,   ///< `+`
@@ -365,7 +366,6 @@ public:
 
     inline std::ostream& debug(std::ostream& os) const { 
         switch(kind) {
-        case OP_NEG: os << "-"; break;
         case OP_CONCAT: os << "++"; break;
         case OP_EXP: os << "^"; break;
         case OP_PLUS: os << "+"; break;

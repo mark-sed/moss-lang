@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "clopts.hpp"
+#include "errors.hpp"
 #include <sstream>
 #include <regex>
 #include <initializer_list>
@@ -33,7 +34,7 @@ TEST(CmdOptions, Terminating){
     int argc3 = sizeof(argv3) / sizeof(argv3[0]);
 
     // Test that we dont exit with other code that 0, force 0 after no exit
-    EXPECT_EXIT(clopts::parse_clopts(argc3, argv3), testing::ExitedWithCode(1), ".*Flag could not be matched.*");
+    EXPECT_EXIT(clopts::parse_clopts(argc3, argv3), testing::ExitedWithCode(error::ErrorCode::ARGUMENT), ".*Flag could not be matched.*");
 }
 
 /** Correct command line options, that should not terminate the program */

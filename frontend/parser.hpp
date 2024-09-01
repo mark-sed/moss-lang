@@ -77,6 +77,8 @@ private:
     void skip_ends();
     void skip_nls();
 
+    ustring unescapeString(ustring str);
+
     template<typename ... Args>
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
         return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);

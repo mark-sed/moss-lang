@@ -47,6 +47,7 @@ enum DiagID {
     MISSING_SPACE_BODY,     ///< Incorrect space construction
     MISSING_BLOCK,          ///< Expected {
     MISSING_RIGHT_CURLY,    ///< No '}' found
+    UNKNOWN_ESC_SEQ,        ///< Unknown escape sequence in string
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -74,6 +75,7 @@ static const char * DIAG_MSGS[] = {
     "Space has to have a body ('{}')",
     "Expecting code block ('{}')",
     "Missing '}'",
+    "Unknown string escape sequence '\\%c'"
 };
 
 /**

@@ -17,6 +17,23 @@ BCValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
 
     // TODO: Optimize 2 consts into literals
     switch (expr->get_op().get_kind()) {
+        case OperatorKind::OP_CONCAT: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Concat2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Concat2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Concat3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Concat(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
         case OperatorKind::OP_PLUS: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), right->reg()));
@@ -41,33 +58,49 @@ BCValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     return nullptr;
 }
 
-BCValue *BytecodeGen::emit(ir::Expression *expr) {
+BCValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
+    BCValue *bcv = nullptr;
     if (auto val = dyn_cast<IntLiteral>(expr)) {
         append(new StoreIntConst(next_creg(), val->get_value()));
-        return last_creg();
+        bcv = last_creg();
     }
-    if (auto val = dyn_cast<FloatLiteral>(expr)) {
+    else if (auto val = dyn_cast<FloatLiteral>(expr)) {
         append(new StoreFloatConst(next_creg(), val->get_value()));
-        return last_creg();
+        bcv = last_creg();
     }
-    if (auto val = dyn_cast<StringLiteral>(expr)) {
+    else if (auto val = dyn_cast<StringLiteral>(expr)) {
         append(new StoreStringConst(next_creg(), val->get_value()));
-        return last_creg();
+        bcv = last_creg();
     }
-    if (auto val = dyn_cast<BoolLiteral>(expr)) {
+    else if (auto val = dyn_cast<BoolLiteral>(expr)) {
         append(new StoreBoolConst(next_creg(), val->get_value()));
-        return last_creg();
+        bcv = last_creg();
     }
-    if (isa<NilLiteral>(expr)) {
+    else if (isa<NilLiteral>(expr)) {
         append(new StoreNilConst(next_creg()));
-        return last_creg();
+        bcv = last_creg();
     }
-    if (auto be = dyn_cast<BinaryExpr>(expr)) {
-        return emit(be);
+    else if (auto be = dyn_cast<BinaryExpr>(expr)) {
+        bcv = emit(be);
+    }
+    else {
+        assert(false && "Missing Expression generation");
+        return nullptr;
     }
 
-    assert(false && "Missing Expression generation");
-    return nullptr;
+    if (!get_as_ncreg)
+        return bcv;
+    
+    auto regv = dyn_cast<RegValue>(bcv);
+    if (!regv->is_const())
+        return bcv;
+    append(new StoreConst(next_reg(), free_reg(bcv)));
+    return last_reg();
+}
+
+void BytecodeGen::emit(ir::Raise *r) {
+    auto exc = emit(r->get_exception(), true);
+    append(new opcode::Raise(free_reg(exc)));
 }
 
 void BytecodeGen::emit(ir::Module *mod) {
@@ -82,6 +115,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto e = dyn_cast<Expression>(decl)) {
         output(emit(e));
+    }
+    else if (auto r = dyn_cast<ir::Raise>(decl)) {
+        emit(r);
     }
     else if (isa<EndOfFile>(decl)) {
         append(new End());

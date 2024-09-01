@@ -981,7 +981,10 @@ void CopyArgs::exec(Interpreter *vm) {
 }
 
 void Raise::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto *s1 = vm->load(src);
+    // TODO: Change
+    auto *str_msg = dyn_cast<StringValue>(s1);
+    errs << str_msg->get_value();
 }
 
 void CheckCatch::exec(Interpreter *vm) {

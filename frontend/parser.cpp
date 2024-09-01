@@ -695,7 +695,7 @@ Expression *Parser::unary_plus_minus() {
     if (match(TokenType::MINUS)) {
         auto expr = unary_plus_minus(); // Right associative
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_NEG));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_MINUS));
     }
     else if (match(TokenType::PLUS)) {
         auto expr = unary_plus_minus();
@@ -774,7 +774,6 @@ Expression *Parser::scope() {
     return expr;
 }
 
-
 Expression *Parser::constant() {
     if (match(TokenType::LEFT_PAREN)) {
         bool prev_fun_args_state = lower_range_prec;
@@ -803,7 +802,7 @@ Expression *Parser::constant() {
     }
     else if (check(TokenType::STRING)) {
         auto val = advance();
-        return new StringLiteral(val->get_value());
+        return new StringLiteral(unescapeString(val->get_value()));
     }
     else if (match(TokenType::TRUE)) {
         return new BoolLiteral(true);
@@ -815,6 +814,71 @@ Expression *Parser::constant() {
         return new NilLiteral();
     }
     return nullptr;
+}
+
+ustring Parser::unescapeString(ustring str) {
+    std::stringstream res;
+    bool backslash = false;
+    for(int i = 0; str[i] != '\0'; ++i) {
+        char c = str[i];
+        if(backslash) {
+            switch(c) {
+            case '\"': 
+                res << '\"';
+            break;
+            case '\\': 
+                res << '\\';
+            break;
+            case 'a': 
+                res << '\a';
+            break;
+            case 'b': 
+                res << '\b';
+            break;
+            case 'f': 
+                res << '\f';
+            break;
+            case 'n': 
+                res << '\n';
+            break;
+            case 'r': 
+                res << '\r';
+            break;
+            case 't': 
+                res << '\t';
+            break;
+            case 'v': 
+                res << '\v';
+            break;
+            // TODO: https://en.cppreference.com/w/cpp/language/escape
+            case 'x':
+            case 'X':
+                assert(false && "Hexadecimal escape sequences are not yet implemented");
+            break;
+            case 'q':
+            case 'Q':
+                assert(false && "Octal escape sequences are not yet implemented");
+            break;
+            case 'u':
+            case 'U':
+                assert(false && "Unicode escape sequences are not yet implemented");
+            break;
+            case 'N': // TODO: Should this be kept?
+                assert(false && "Named unicode escape sequences are not yet implemented");
+            break;
+            default:
+                parser_error(create_diag(diags::UNKNOWN_ESC_SEQ, c));
+            }
+            backslash = false;
+            continue;
+        }
+        if(c == '\\') {
+            backslash = true;
+            continue;
+        }
+        res << c;
+    }
+    return res.str();
 }
 
 #undef parser_assert

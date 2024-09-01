@@ -42,20 +42,14 @@ void Repl::run() {
                 eof_reached = true;
                 outs << "\n";
             }
-            // TODO: Remove once IR is interpreted
-            // This is incorrect and will print user raises
-            else if (auto raise = dyn_cast<ir::Raise>(i)) {
-                if(auto msg = dyn_cast<ir::StringLiteral>(raise->get_exception()))
-                    errs << msg->get_value();
-            }
 
             cgen.generate(i);
         }
 
+        //LOGMAX(*bc);
         interpreter->run();
         outs << "\n";
         
-        // TODO: Interpret or append to some module
         for (auto i : line_irs) {
             delete i;
         }

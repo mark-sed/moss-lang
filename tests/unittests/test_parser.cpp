@@ -194,10 +194,10 @@ std::math::pi
     };
 
     OperatorKind expected_ops[] = {
-        OperatorKind::OP_NEG,
-        OperatorKind::OP_NEG,
+        OperatorKind::OP_MINUS,
+        OperatorKind::OP_MINUS,
         OperatorKind::OP_NOT,
-        OperatorKind::OP_NEG,
+        OperatorKind::OP_MINUS,
         OperatorKind::OP_NOT,
 
         
