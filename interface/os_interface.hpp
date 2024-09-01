@@ -22,9 +22,12 @@ namespace moss {
     #define outs std::cout
     #define errs std::cerr
 
+    #include <io.h>    // For _isatty() on Windows
+    #include <fcntl.h> // For _fileno()
+
     /** Returns true is stdin is read from terminal (not redirect) */
     inline bool is_stdin_atty() {
-        return true; // This way REPL will work, but output might have colors
+        return _isatty(_fileno(stdin));
     }
 
     /**
@@ -32,7 +35,7 @@ namespace moss {
      * @return true if stderr is redirected
      */ 
     inline bool is_stderr_atty() {
-        return true; // This way REPL will work, but output might have colors
+        return _isatty(_fileno(stderr));
     }
 #else
     #ifndef __linux__
@@ -58,12 +61,12 @@ namespace moss {
      */ 
     inline bool is_stderr_atty() {
         static bool initialized(false);
-        static bool is_redir;
+        static bool is_atty;
         if (!initialized) {
             initialized = true;
-            is_redir = ttyname(fileno(stderr)) == nullptr;
+            is_atty = ttyname(fileno(stderr)) != nullptr;
         }
-        return is_redir;
+        return is_atty;
     }
 #endif
 

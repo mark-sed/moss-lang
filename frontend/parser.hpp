@@ -15,6 +15,7 @@
 #include "ast.hpp"
 #include "diagnostics.hpp"
 #include <vector>
+#include <list>
 #include <initializer_list>
 
 namespace moss {
@@ -35,6 +36,7 @@ private:
 
     ir::IR *declaration();
     ir::Expression *expression();
+    std::list<ir::IR *> block();
 
     ir::Expression *constant();
     std::vector<ir::Expression *> arg_list();

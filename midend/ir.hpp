@@ -171,7 +171,7 @@ public:
             if (!d) os << "nullptr";
             else os << *d << "\n";
         }
-        os << "}\n";
+        os << "}";
         return os;
     }
 };
@@ -180,10 +180,17 @@ class Space : public Construct {
 public:
     static const IRType ClassType = IRType::SPACE;
 
-    Space(ustring name) : Construct(ClassType, name) {}
+    Space(ustring name, std::list<IR *> spbody) : Construct(ClassType, name) {
+        this->body = spbody;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "space " << name;
+        os << "space " << name << " {\n";
+        for (auto d: body) {
+            if (!d) os << "nullptr";
+            else os << *d << "\n";
+        }
+        os << "}";
         return os;
     }
 };

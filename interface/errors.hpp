@@ -75,7 +75,7 @@ namespace error {
          */ 
         inline const char *colorize(const char * color) {
             // Check if stderr is redirected
-            if(is_stderr_atty()) {
+            if(!is_stderr_atty()) {
                 return "";
             }
             return color;
@@ -87,7 +87,7 @@ namespace error {
          */ 
         inline const char *reset() {
             // Check if stderr is redirected
-            if(is_stderr_atty()) {
+            if(!is_stderr_atty()) {
                 return "";
             }
             return colors::RESET;

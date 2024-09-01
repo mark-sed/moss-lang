@@ -290,6 +290,7 @@ IR *Parser::declaration() {
     // In case we errored out inside of function call, reset range
     // precedence lowering
     lower_range_prec = false;
+    bool no_end_needed = false;
 
     // Skip random new lines and ;
     skip_ends();
@@ -369,6 +370,22 @@ IR *Parser::declaration() {
     // class
 
     // space
+    else if (match(TokenType::SPACE)) {
+        if (check(TokenType::ID)) {
+            auto name = advance();
+            auto body = block();
+            decl = new Space(name->get_value(), body);
+            no_end_needed = true;
+        }
+        else if (check(TokenType::LEFT_CURLY)) {
+            auto body = block();
+            decl = new Space("", body);
+            no_end_needed = true;
+        }
+        else {
+            parser_error(create_diag(diags::MISSING_SPACE_BODY));
+        }
+    }
 
     // fun
 
@@ -378,7 +395,7 @@ IR *Parser::declaration() {
     }
 
     // Every declaration has to end with nl or semicolon or eof
-    if(!match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
+    if(!no_end_needed && !match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
         // Dangling ')'
         if (match(TokenType::RIGHT_PAREN)) {
             parser_error(create_diag(diags::UNMATCHED_RIGHT_PAREN));
@@ -389,6 +406,31 @@ IR *Parser::declaration() {
     }
     LOGMAX("Parsed declaration " << *decl);
     return decl;
+}
+
+std::list<ir::IR *> Parser::block() {
+    // Skip new lines
+    while(match(TokenType::END_NL))
+        ; // Skipping empty new lines
+    expect(TokenType::LEFT_CURLY, create_diag(diags::MISSING_BLOCK));
+    while(match(TokenType::END_NL))
+        ; // Skipping empty new lines
+    std::list<ir::IR *> decls;
+
+    IR *decl = nullptr;
+    while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
+        decl = declaration();
+        if (!decl)
+            break;
+        decls.push_back(decl);
+        skip_ends(); // Skip here so that we can check for } or eof
+    }
+
+    if (!match(TokenType::RIGHT_CURLY)) {
+        parser_error(create_diag(diags::MISSING_RIGHT_CURLY));
+    }
+
+    return decls;
 }
 
 /** 

@@ -358,4 +358,59 @@ foo(1, (3..4))
     delete mod;
 }
 
+TEST(Parsing, Spaces){
+    ustring code = R"(
+space foo { Some_val = 4; goo(); space foo2 {} } a = 4
+
+space {
+    space {
+        
+        space {space{}}
+    }
+}
+
+space o1_1231
+{
+
+    1 + 1
+
+}
+
+space toto {
+
+    space rosana {
+
+    }
+
+    space gift {
+        space of {
+            space faith {}
+        }
+    }
+}
+)";
+
+    IRType expected[] = {
+        IRType::SPACE,
+        IRType::BINARY_EXPR,
+        IRType::SPACE,
+        IRType::SPACE,
+        IRType::SPACE,
+        
+        IRType::END_OF_FILE
+    };
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    int index = 0;
+    for (auto decl: mod->get_body()) {
+        EXPECT_TRUE(decl->get_type() == expected[index++]) << "Incorrect IR at index: " << index;
+    }
+
+    delete mod;
+}
+
 }

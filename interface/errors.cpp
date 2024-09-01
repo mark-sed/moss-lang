@@ -73,7 +73,7 @@ ustring error::format_error(diags::Diagnostic msg) {
        << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
        << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
 
-    ss << bar << msg.msg << "." << error::colors::colorize(error::colors::GRAY) << " [EDx" << std::hex << msg.id << std::dec << "]" << error::colors::reset() << std::endl;
+    ss << bar << msg.msg << "." << error::colors::colorize(error::colors::GRAY) << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" << error::colors::reset() << std::endl;
 
     const long LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
     const long LINE_LEN_POST = 20;

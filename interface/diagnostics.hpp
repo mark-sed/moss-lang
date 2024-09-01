@@ -44,6 +44,9 @@ enum DiagID {
     CANNOT_CHAIN_SILENT,        ///< Chained ~
     TERNARY_IF_MISSING_FALSE,   ///< Missing false branch in ternary if
     RANGE_EXPECTED,         ///< Range without ..
+    MISSING_SPACE_BODY,     ///< Incorrect space construction
+    MISSING_BLOCK,          ///< Expected {
+    MISSING_RIGHT_CURLY,    ///< No '}' found
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -68,6 +71,9 @@ static const char * DIAG_MSGS[] = {
     "Silent operator ('~') cannot be chained",
     "Missing ':' — ternary if requires false branch",
     "Expecting '..' in a range expression",
+    "Space has to have a body ('{}')",
+    "Expecting code block ('{}')",
+    "Missing '}'",
 };
 
 /**
