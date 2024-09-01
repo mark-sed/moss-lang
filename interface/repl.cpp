@@ -4,6 +4,9 @@
 #include "moss.hpp"
 #include "errors.hpp"
 #include "ir.hpp"
+#include "bytecode.hpp"
+#include "bytecodegen.hpp"
+#include "interpreter.hpp"
 #include <vector>
 
 using namespace moss;
@@ -24,6 +27,11 @@ void Repl::run() {
     // TODO: Add cmd option to not print header or maybe print it just as text
     output_header();
 
+    Bytecode *bc = new Bytecode();
+    bcgen::BytecodeGen cgen(bc);
+
+    Interpreter *interpreter = new Interpreter(bc, &src_file);
+
     bool eof_reached = false;
     while (!eof_reached) {
         outs << error::colors::LIGHT_GREEN << "moss> " << error::colors::RESET;
@@ -40,8 +48,13 @@ void Repl::run() {
                 if(auto msg = dyn_cast<ir::StringLiteral>(raise->get_exception()))
                     errs << msg->get_value();
             }
+
+            cgen.generate(i);
         }
 
+        interpreter->run();
+        outs << "\n";
+        
         // TODO: Interpret or append to some module
         for (auto i : line_irs) {
             delete i;

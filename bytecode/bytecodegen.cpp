@@ -15,13 +15,22 @@ BCValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     auto left = get_reg(leftV);
     auto right = get_reg(rightV);
 
+    // TODO: Optimize 2 consts into literals
     switch (expr->get_op().get_kind()) {
         case OperatorKind::OP_PLUS: {
             if (left->is_const() && right->is_const()) {
-                // TODO: Optimize const adds and similar into literals
-                append(new StoreConst(next_reg(), left->reg()));
-                auto leftR = last_reg();
-                append(new Add3(next_reg(), leftR->reg(), right->reg()));
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Add2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Add2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Add3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Add(next_reg(), left->reg(), right->reg()));
             }
             return last_reg();
         }
