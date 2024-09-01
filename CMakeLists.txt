@@ -39,6 +39,7 @@ set(SOURCES
     interface/repl.cpp
     interface/utils.cpp
     bytecode/bytecode.cpp
+    bytecode/bytecodegen.cpp
     bytecode/bytecode_reader.cpp
     bytecode/bytecode_writer.cpp
     bytecode/opcode.cpp

@@ -68,6 +68,7 @@ public:
     virtual ~IR() {}
 
     IRType get_type() { return ir_type; }
+    ustring get_name() { return name; }
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "<IR: " << name << ">";
         return os;
@@ -571,6 +572,8 @@ public:
         os << value;
         return os;
     }
+
+    opcode::IntConst get_value() { return this->value; }
 };
 
 class FloatLiteral : public Expression {
@@ -585,6 +588,8 @@ public:
         os << value;
         return os;
     }
+
+    opcode::FloatConst get_value() { return this->value; }
 };
 
 class BoolLiteral : public Expression {
@@ -599,6 +604,8 @@ public:
         os << (value ? "true" : "false");
         return os;
     }
+
+    opcode::BoolConst get_value() { return this->value; }
 }; 
 
 class StringLiteral : public Expression {
