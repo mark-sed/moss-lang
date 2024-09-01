@@ -76,19 +76,17 @@ T *dyn_cast(bcgen::BCValue* t) {
 
 namespace bcgen {
 
-
-inline RegValue *get_reg(BCValue *val) {
-    auto v = dyn_cast<RegValue>(val);
-    assert(v && "Register value is not a register.");
-    return v;
-}
-
 inline opcode::Register free_reg(BCValue *val) {
     auto v = dyn_cast<RegValue>(val);
     assert(v && "Register value is not a register.");
     auto regval = v->reg();
     delete v;
     return regval;
+}
+
+inline void free_val(BCValue *val) {
+    assert(val);
+    delete val;
 }
 
 class BytecodeGen {
@@ -112,6 +110,21 @@ private:
 
     inline RegValue *last_creg() { return new RegValue(this->curr_creg-1, true); }
     inline RegValue *last_reg() { return new RegValue(this->curr_reg-1, false); }
+
+    inline RegValue *get_ncreg(BCValue *val) {
+        auto v = dyn_cast<RegValue>(val);
+        assert(v && "Register value is not a register.");
+        if (v->is_const()) {
+            append(new opcode::StoreConst(next_reg(), v->reg()));
+        }
+        return last_reg();
+    }
+
+    inline RegValue *get_reg(BCValue *val) {
+        auto v = dyn_cast<RegValue>(val);
+        assert(v && "Register value is not a register.");
+        return v;
+    }
 public:
     BytecodeGen(Bytecode *code) : code(code), curr_creg(0), curr_reg(0) {}
 

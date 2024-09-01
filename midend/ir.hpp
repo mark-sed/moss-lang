@@ -23,7 +23,7 @@ namespace moss {
 
 namespace ir {
 
-enum class IRType {
+enum IRType {
     CONSTRUCT,
     EXPRESSION,
     STATEMENT,
@@ -38,9 +38,8 @@ enum class IRType {
     CONTINUE,
     ANNOTATION,
 
-    BINARY_EXPR,
+    BINARY_EXPR, // Start of Expresion IDs -- Add any new to dyn_cast bellow!
     UNARY_EXPR,
-
     VARIABLE,
     TERNARY_IF,
     RANGE,
@@ -49,7 +48,7 @@ enum class IRType {
     FLOAT_LITERAL,
     BOOL_LITERAL,
     STRING_LITERAL,
-    NIL_LITERAL,
+    NIL_LITERAL, // End of Expression IDs
 
     END_OF_FILE,
 };
@@ -643,16 +642,49 @@ template<class T>
 bool isa(ir::IR& i) {
     return i.get_type() == T::ClassType;
 }
+template<> inline bool isa<ir::Expression>(ir::IR& i) {
+    return i.get_type() >= ir::IRType::BINARY_EXPR && i.get_type() <= ir::IRType::NIL_LITERAL;
+}
 
 template<class T>
 bool isa(ir::IR* i) {
     return i->get_type() == T::ClassType;
+}
+template<> inline bool isa<ir::Expression>(ir::IR* i) {
+    return i->get_type() >= ir::IRType::BINARY_EXPR && i->get_type() <= ir::IRType::NIL_LITERAL;
 }
 
 template<class T>
 T *dyn_cast(ir::IR* i) {
     if (!isa<T>(i)) return nullptr;
     return dynamic_cast<T *>(i);
+}
+template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
+    if (isa<ir::Expression>(i)) {
+        if (auto e = dyn_cast<ir::BinaryExpr>(i)) return e;
+        else if (auto e = dyn_cast<ir::UnaryExpr>(i)) return e;
+        else if (auto e = dyn_cast<ir::Variable>(i)) return e;
+        else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
+        else if (auto e = dyn_cast<ir::Range>(i)) return e;
+        else if (auto e = dyn_cast<ir::Call>(i)) return e;
+        else if (auto e = dyn_cast<ir::IntLiteral>(i)) return e;
+        else if (auto e = dyn_cast<ir::FloatLiteral>(i)) return e;
+        else if (auto e = dyn_cast<ir::BoolLiteral>(i)) return e;
+        else if (auto e = dyn_cast<ir::StringLiteral>(i)) return e;
+        else if (auto e = dyn_cast<ir::NilLiteral>(i)) return e;
+        assert(false && "TODO: Unimplemented dyn_cast to Expression");
+    }
+    return nullptr;
+}
+template<> inline ir::Construct *dyn_cast<>(ir::IR* i) {
+    (void)i;
+    assert(false && "TODO: Unimplemented dyn_cast to Construct");
+    return nullptr;
+}
+template<> inline ir::Statement *dyn_cast<>(ir::IR* i) {
+    (void)i;
+    assert(false && "TODO: Unimplemented dyn_cast to Statement");
+    return nullptr;
 }
 
 }

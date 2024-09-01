@@ -100,11 +100,12 @@ namespace error {
      */
     enum ErrorCode {
         NO_ERROR = 0,  ///< When no error occurred but program had to exit (otherwise return code would be for some error 0)
-        RUNTIME_ERROR, ///< Error caused by users program
+        RUNTIME,       ///< Error caused by users program
         INTERNAL,      ///< Internal compiler error (such as unable to allocate memory)
         FILE_ACCESS,   ///< Problem opening/writing/working with users files (not internal config files)
         UNIMPLEMENTED, ///< Problems with instruction
         BYTECODE,      ///< Problems with bytecode
+        ARGUMENT,      ///< Problems with argument parsing
         UNKNOWN,       ///< Unknown error (shouldn't be really used)
     };
 
@@ -126,7 +127,7 @@ namespace error {
     void error(error::ErrorCode code, const char *msg, File *src_f=nullptr, bool exit=true);
 
     /**
-     * Prints diagnostics error and exits with RUNTIME_ERROR code
+     * Prints diagnostics error and exits with RUNTIME error code
      * @param msg Diagnostics message
      * @warning This will terminate the program
      */

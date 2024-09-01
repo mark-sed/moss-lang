@@ -47,9 +47,8 @@ static Operator token2operator(TokenType t) {
         case TokenType::NOT: return Operator(OperatorKind::OP_NOT);
         case TokenType::XOR: return Operator(OperatorKind::OP_XOR);
         case TokenType::IN: return Operator(OperatorKind::OP_IN);
-        /*case TokenType::DOT: return Operator(OperatorKind::OP_DOT);
-        case TokenType::RANGE: return Operator(OperatorKind::OP_RANGE);
-        case TokenType::SCOPE: return Operator(OperatorKind::OP_SCOPE);*/
+        case TokenType::DOT: return Operator(OperatorKind::OP_ACCESS);
+        case TokenType::SCOPE: return Operator(OperatorKind::OP_SCOPE);
         default:
             assert(false && "Token is not an operator");
             return Operator(OperatorKind::OP_UNKNOWN);
@@ -78,7 +77,7 @@ IR *Parser::parse(bool is_main) {
             assert(err_msg && "Error message from parser is not a String literal");
             errs << err_msg->get_value();
             if (is_main) {
-                error::exit(error::ErrorCode::RUNTIME_ERROR);
+                error::exit(error::ErrorCode::RUNTIME);
             }
             else {
                 return raise;

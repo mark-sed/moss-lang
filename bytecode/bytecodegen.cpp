@@ -46,6 +46,25 @@ BCValue *BytecodeGen::emit(ir::Expression *expr) {
         append(new StoreIntConst(next_creg(), val->get_value()));
         return last_creg();
     }
+    if (auto val = dyn_cast<FloatLiteral>(expr)) {
+        append(new StoreFloatConst(next_creg(), val->get_value()));
+        return last_creg();
+    }
+    if (auto val = dyn_cast<StringLiteral>(expr)) {
+        append(new StoreStringConst(next_creg(), val->get_value()));
+        return last_creg();
+    }
+    if (auto val = dyn_cast<BoolLiteral>(expr)) {
+        append(new StoreBoolConst(next_creg(), val->get_value()));
+        return last_creg();
+    }
+    if (isa<NilLiteral>(expr)) {
+        append(new StoreNilConst(next_creg()));
+        return last_creg();
+    }
+    if (auto be = dyn_cast<BinaryExpr>(expr)) {
+        return emit(be);
+    }
 
     assert(false && "Missing Expression generation");
     return nullptr;
@@ -61,15 +80,25 @@ void BytecodeGen::emit(ir::IR *decl) {
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
     }
-    else if (auto be = dyn_cast<BinaryExpr>(decl)) {
-        output(emit(be));
+    else if (auto e = dyn_cast<Expression>(decl)) {
+        output(emit(e));
+    }
+    else if (isa<EndOfFile>(decl)) {
+        append(new End());
+    }
+    else {
+        LOGMAX("Unimplemented IR generation for: " << *decl);
+        assert(false && "Unimplemented IR generation");
     }
 }
 
 void BytecodeGen::output(BCValue *val) {
     if (!val->is_silent()) {
-        append(new Output(free_reg(val)));
+        auto ncreg = get_ncreg(val);
+        append(new Output(ncreg->reg()));
+        free_val(ncreg);
     }
+    free_val(val);
 }
 
 void BytecodeGen::generate(ir::IR *decl) {

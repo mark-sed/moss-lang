@@ -37,9 +37,12 @@ namespace colors {
 const char *error::get_code_name(error::ErrorCode code){
     const char *NAMES[] = {
         "None",
+        "Runtime",
         "Internal",
         "File access",
         "Unimplemented",
+        "Bytecode",
+        "Argument",
         "Unknown"
     };
     constexpr int names_size = sizeof(NAMES)/sizeof(char *);
@@ -115,7 +118,7 @@ ustring error::format_error(diags::Diagnostic msg) {
 
 void error::error(diags::Diagnostic msg) {
     errs << format_error(msg);
-    error::exit(error::ErrorCode::RUNTIME_ERROR);
+    error::exit(error::ErrorCode::RUNTIME);
 }
 
 void error::warning(const char *msg) {

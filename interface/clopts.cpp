@@ -1,5 +1,6 @@
 #include "clopts.hpp"
 #include "os_interface.hpp"
+#include "errors.hpp"
 #include "moss.hpp"
 #include "args.hpp"
 #include <string>
@@ -15,8 +16,6 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     code.KickOut(true);
     arg_parser.Prog(argv[0]);
     const std::vector<ustring> args(argv + 1, argv + argc);
-    const auto prog_args_begin = std::begin(args);
-    const auto prog_args_end = std::end(args);
 
     try {
         arg_parser.ParseCLI(argc, argv);
@@ -24,25 +23,16 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     catch (const args::Help&) {
         // print help
         outs << arg_parser;
-        // TODO: Handle this more elegantly
         exit(0);
     }
     catch (const args::ParseError& e) {
-        // TODO: call errors
-        errs << e.what() << std::endl;
-        exit(1);
+        error::error(error::ErrorCode::ARGUMENT, e.what());
     }
 
     if(version) {
         outs << "moss " << MOSS_VERSION << "\n";
         exit(0);
     }
-
-    // TODO: In case of code being set, remove first arg (-e) and
-    // replace second one with empty string
-    /*for(auto ra = prog_args_begin; ra != prog_args_end; ++ra) {
-        outs << "Arg: " << *ra << "\n";
-    }*/
 }
 
 int moss::clopts::get_logging_level() {
