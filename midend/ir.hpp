@@ -133,6 +133,7 @@ public:
     static const IRType ClassType = IRType::STATEMENT;
 
     virtual void add_annot(Annotation *ann) override {
+        (void)ann;
         assert(false && "Adding annotation to a statement");
     }
 };
@@ -147,6 +148,7 @@ public:
     static const IRType ClassType = IRType::EXPRESSION;
 
     virtual void add_annot(Annotation *ann) override {
+        (void)ann;
         assert(false && "Adding annotation to an expression");
     }
 };

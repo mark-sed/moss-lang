@@ -24,8 +24,7 @@ namespace moss {
 
     /** Returns true is stdin is read from terminal (not redirect) */
     inline bool is_stdin_atty() {
-        assert(false && "Check for stdin redirection on non-linux machine is not yet implemented");
-        return false; // This way repl mode will be off
+        return true; // This way REPL will work, but output might have colors
     }
 
     /**
@@ -33,8 +32,7 @@ namespace moss {
      * @return true if stderr is redirected
      */ 
     inline bool is_stderr_atty() {
-        assert(false && "Check for stderr redirection on non-linux machine is not yet implemented");
-        return false; // This way repl mode will be off
+        return true; // This way REPL will work, but output might have colors
     }
 #else
     #ifndef __linux__

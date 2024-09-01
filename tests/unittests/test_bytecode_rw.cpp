@@ -19,7 +19,11 @@ TEST(BytecodeWriterAndReader, TestCorrectness){
     bc->push_back(new opcode::StoreName(0, "foo"));
     bc->push_back(new opcode::Load(1, "foo"));
 
+#ifdef __linux__
     auto file_path = "/tmp/mosstest.msb";
+#else
+    auto file_path = "mosstest.msb";
+#endif
 
     BytecodeFile bfo(file_path);
     BytecodeWriter *bcwriter = new BytecodeWriter(bfo);
@@ -182,7 +186,11 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Switch(0, 5, -3));
     bc->push_back(new opcode::For(10, 11));
 
+#ifdef __linux__
     auto file_path = "/tmp/mosstest_all.msb";
+#else
+    auto file_path = "mosstest_all.msb";
+#endif
 
     BytecodeFile bfo(file_path);
     BytecodeWriter *bcwriter = new BytecodeWriter(bfo);

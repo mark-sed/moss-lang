@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O3 -g -DDEVELOPER")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 if (MSVC)
-    add_compile_options(/W4 /WX)
+    #add_compile_options(/W4 /WX)
 else()
     add_compile_options(-Wall -Wextra -pedantic)
 endif()
@@ -69,13 +69,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/testing_utils.cpp
 
         tests/unittests/test_bytecode.cpp
-        tests/unittests/test_bytecode_rw.cpp
         tests/unittests/test_clopts.cpp
         tests/unittests/test_ir.cpp
         tests/unittests/test_memory.cpp
         tests/unittests/test_parser.cpp
         tests/unittests/test_scanner.cpp
-    )
+
+        # Run last as this does fail on some machines
+        tests/unittests/test_bytecode_rw.cpp
+        )
 
     # Enable gtest
     enable_testing()

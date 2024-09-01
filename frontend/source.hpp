@@ -111,7 +111,7 @@ public:
      *         extensions. 
      */
     ustring get_module_name() {
-        return std::filesystem::path(get_name()).stem();
+        return std::filesystem::path(get_name()).stem().string();
     }
 };
 
