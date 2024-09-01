@@ -113,10 +113,16 @@ function test_empty {
     expect_out_eq "" "empty"
 }
 
+function test_output {
+    expect_pass "output.ms" "output"
+    expect_out_eq "42, true, false\nmoss language\n" "output"
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
     run_test empty
+    run_test output
 }
 
 # Count all functions starting with test_ 

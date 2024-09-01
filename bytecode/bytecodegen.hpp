@@ -18,76 +18,28 @@ namespace moss {
 
 namespace bcgen {
 
-enum BCValueKind {
-    REGISTER,
-    CREGISTER,
-    ADDRESS,
-    STRING_CONST,
-    INT_CONST,
-    FLOAT_CONST,
-    BOOL_CONST
-};
-
-class BCValue {
-protected:
-    BCValueKind kind;
+class RegValue {
+private:
+    opcode::Register value;
+    bool constant;
     bool silent;
-
-    BCValue(BCValueKind kind) : kind(kind), silent(false) {}
 public:
-    virtual ~BCValue() {}
-    BCValueKind get_kind() { return this->kind; }
+    RegValue(opcode::Register value, bool constant=false) : value(value), constant(constant) {}
+
+    opcode::Register reg() { return this->value; }
+
+    bool is_const() { return this->constant; }
+
+    void set_reg(opcode::Register r) { this->value = r; }
+    void set_const(bool c) { this->constant = c; }
 
     void set_silent(bool s) { this->silent = s; }
     bool is_silent() { return this->silent; }
 };
 
-class RegValue : public BCValue {
-private:
-    opcode::Register value;
-    bool constant;
-public:
-    static const BCValueKind ClassType = BCValueKind::REGISTER;
-
-    RegValue(opcode::Register value, bool constant=false) : BCValue(ClassType), value(value), constant(constant) {}
-
-    opcode::Register reg() { return this->value; }
-    bool is_const() { return this->constant; }
-};
-
-}
-
-// Helper functions for BCValues
-template<class T>
-bool isa(bcgen::BCValue& t) {
-    return t.get_kind() == T::ClassType;
-}
-
-template<class T>
-bool isa(bcgen::BCValue* t) {
-    return t->get_kind() == T::ClassType;
-}
-
-template<class T>
-T *dyn_cast(bcgen::BCValue* t) {
-    if (!isa<T>(t)) return nullptr;
-    return dynamic_cast<T *>(t);
 }
 
 namespace bcgen {
-
-inline opcode::Register free_reg(BCValue *val) {
-    auto v = dyn_cast<RegValue>(val);
-    assert(v && "Register value is not a register.");
-    auto regval = v->reg();
-    delete v;
-    return regval;
-}
-
-inline void free_val(BCValue *val) {
-    assert(val);
-    delete val;
-}
 
 class BytecodeGen {
 private:
@@ -95,14 +47,14 @@ private:
     opcode::Register curr_creg;
     opcode::Register curr_reg;
 
-    BCValue *emit(ir::BinaryExpr *expr);
-    BCValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
+    RegValue *emit(ir::BinaryExpr *expr);
+    RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
     void emit(ir::Raise *mod);
     void emit(ir::Module *mod);
     void emit(ir::IR *decl);
 
-    void output(BCValue *val);
+    void output(RegValue *val);
 
     inline void append(opcode::OpCode *opc) { code->push_back(opc); }
 
@@ -112,19 +64,21 @@ private:
     inline RegValue *last_creg() { return new RegValue(this->curr_creg-1, true); }
     inline RegValue *last_reg() { return new RegValue(this->curr_reg-1, false); }
 
-    inline RegValue *get_ncreg(BCValue *val) {
-        auto v = dyn_cast<RegValue>(val);
-        assert(v && "Register value is not a register.");
-        if (v->is_const()) {
-            append(new opcode::StoreConst(next_reg(), v->reg()));
+    inline RegValue *get_ncreg(RegValue *val) {
+        assert(val && "sanity check");
+        if (val->is_const()) {
+            append(new opcode::StoreConst(next_reg(), val->reg()));
+            val->set_reg(this->curr_reg-1);
+            val->set_const(false);
         }
-        return last_reg();
+        return val;
     }
 
-    inline RegValue *get_reg(BCValue *val) {
-        auto v = dyn_cast<RegValue>(val);
-        assert(v && "Register value is not a register.");
-        return v;
+    inline opcode::Register free_reg(RegValue *val) {
+        assert(val && "sanity check");
+        auto regval = val->reg();
+        delete val;
+        return regval;
     }
 public:
     BytecodeGen(Bytecode *code) : code(code), curr_creg(0), curr_reg(0) {}

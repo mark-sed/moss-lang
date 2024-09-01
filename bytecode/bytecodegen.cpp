@@ -8,12 +8,9 @@ using namespace ir;
 using namespace bcgen;
 using namespace opcode;
 
-BCValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
-    auto leftV = emit(expr->get_left());
-    auto rightV = emit(expr->get_right());
-
-    auto left = get_reg(leftV);
-    auto right = get_reg(rightV);
+RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
+    auto left = emit(expr->get_left());
+    auto right = emit(expr->get_right());
 
     // TODO: Optimize 2 consts into literals
     switch (expr->get_op().get_kind()) {
@@ -58,8 +55,8 @@ BCValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     return nullptr;
 }
 
-BCValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
-    BCValue *bcv = nullptr;
+RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
+    RegValue *bcv = nullptr;
     if (auto val = dyn_cast<IntLiteral>(expr)) {
         append(new StoreIntConst(next_creg(), val->get_value()));
         bcv = last_creg();
@@ -88,12 +85,9 @@ BCValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         return nullptr;
     }
 
-    if (!get_as_ncreg)
+    if (!get_as_ncreg || !bcv->is_const())
         return bcv;
-    
-    auto regv = dyn_cast<RegValue>(bcv);
-    if (!regv->is_const())
-        return bcv;
+
     append(new StoreConst(next_reg(), free_reg(bcv)));
     return last_reg();
 }
@@ -128,13 +122,12 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
 }
 
-void BytecodeGen::output(BCValue *val) {
+void BytecodeGen::output(RegValue *val) {
     if (!val->is_silent()) {
-        auto ncreg = get_ncreg(val);
-        append(new Output(ncreg->reg()));
-        free_val(ncreg);
+        val = get_ncreg(val);
+        append(new Output(val->reg()));
     }
-    free_val(val);
+    free_reg(val);
 }
 
 void BytecodeGen::generate(ir::IR *decl) {
