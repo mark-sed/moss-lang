@@ -43,6 +43,7 @@ enum IRType {
     BINARY_EXPR, // Start of Expresion IDs -- Add any new to dyn_cast bellow!
     UNARY_EXPR,
     VARIABLE,
+    NOTE,
     TERNARY_IF,
     RANGE,
     CALL,
@@ -623,6 +624,26 @@ public:
     opcode::StringConst get_value() { return this->value; }
 };
 
+
+class Note : public Expression {
+private:
+    Expression *prefix;
+    StringLiteral *note;
+public:
+    static const IRType ClassType = IRType::NOTE;
+
+    Note(Expression *prefix, StringLiteral *note) : Expression(ClassType, "<note>"), prefix(prefix), note(note) {}
+    ~Note() {
+        delete prefix;
+        delete note;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << *prefix << *note;
+        return os;
+    }
+};
+
 class NilLiteral : public Expression {
 public:
     static const IRType ClassType = IRType::NIL_LITERAL;
@@ -664,6 +685,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         if (auto e = dyn_cast<ir::BinaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::UnaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::Variable>(i)) return e;
+        else if (auto e = dyn_cast<ir::Note>(i)) return e;
         else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
         else if (auto e = dyn_cast<ir::Range>(i)) return e;
         else if (auto e = dyn_cast<ir::Call>(i)) return e;

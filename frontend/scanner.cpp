@@ -285,6 +285,9 @@ Token *Scanner::parse_multi_comment() {
             }
         }
         else if (!next_c.is_utf && next_c.c == '\n') {
+            ++this->line;
+            this->col = 0;
+            this->len = 0;
             newlines += "\n";
         }
         next_c = advance();
@@ -318,7 +321,9 @@ Token *Scanner::parse_string(bool triple_quote) {
             }
         }
         else if (!next_c.is_utf && next_c.c == '\n') {
-            this->line++;
+            ++this->line;
+            this->col = 0;
+            this->len = 0;
             if (!triple_quote) {
                 return err_tokenize(value, "", error::msgs::UNTERMINATED_STRING_LITERAL, "");
             }

@@ -751,13 +751,24 @@ std::vector<ir::Expression *> Parser::arg_list() {
 }
 
 Expression *Parser::call() {
-    Expression *expr = scope();
+    Expression *expr = note();
 
     while (match(TokenType::LEFT_PAREN)) {
         auto args = arg_list();
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         expr = new Call(expr, args);
     } 
+
+    return expr;
+}
+
+ir::Expression *Parser::note() {
+    Expression *expr = scope();
+
+    if (check(TokenType::STRING)) {
+        auto val = advance();
+        return new Note(expr, new StringLiteral(unescapeString(val->get_value())));
+    }
 
     return expr;
 }

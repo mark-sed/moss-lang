@@ -104,6 +104,10 @@ a ? true : nil
 1,4..someval
 foo(1, 2)
 foo(1, (1,3..9))
+note"Some value"
+md"""
+# Title
+"""
 
 a ++ b ++ "\n"
 2 ^ b ^ 2
@@ -156,6 +160,8 @@ std::math::pi
         IRType::RANGE,
         IRType::CALL,
         IRType::CALL,
+        IRType::NOTE,
+        IRType::NOTE,
 
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,

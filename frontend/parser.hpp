@@ -60,6 +60,7 @@ private:
     ir::Expression *element_access();
     ir::Expression *subscript();
     ir::Expression *call();
+    ir::Expression *note();
     ir::Expression *scope();
 
     bool check(TokenType type);

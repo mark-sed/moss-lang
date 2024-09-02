@@ -12,6 +12,7 @@
 
 #include "os_interface.hpp"
 #include "interpreter.hpp"
+#include "utils.hpp"
 #include <cstdint>
 
 namespace moss {
@@ -570,7 +571,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << dst << ", \"" << val << "\"";
+        os << mnem << "\t#" << dst << ", \"" << utils::sanitize(val) << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
