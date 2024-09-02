@@ -322,7 +322,7 @@ enum OperatorKind {
     OP_CONCAT, ///< ++
     OP_EXP,    ///< ^
     OP_PLUS,   ///< `+`
-    OP_MINUS,  ///< `-`
+    OP_MINUS,  ///< `-`, Unary and Binary
     OP_DIV,    ///< /
     OP_MUL,    ///< `*`
     OP_MOD,    ///< %
@@ -334,7 +334,7 @@ enum OperatorKind {
     OP_SET_DIV,     ///< /=
     OP_SET_MUL,     ///< *=
     OP_SET_MOD,     ///< %=
-    OP_SILENT, ///< ~
+    OP_SILENT, ///< ~, Unary
     OP_EQ,     ///< ==
     OP_NEQ,    ///< !=
     OP_BT,     ///< `>`
@@ -345,7 +345,7 @@ enum OperatorKind {
     OP_SHORT_C_OR,  ///< ||
     OP_AND,    ///< and
     OP_OR,     ///< or
-    OP_NOT,    ///< not
+    OP_NOT,    ///< not, Unary
     OP_XOR,    ///< xor
     OP_IN,     ///< in
     OP_ACCESS, ///< `.`

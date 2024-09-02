@@ -118,11 +118,18 @@ function test_output {
     expect_out_eq "42, true, false\nmoss language\n" "output"
 }
 
+function test_expressions {
+    expect_pass "expressions.ms" "expressions"
+    expect_out_eq "27\n13\n261\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue
+true\nfalse\n9\n255\n0\n" "expressions"
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
     run_test empty
     run_test output
+    run_test expressions
 }
 
 # Count all functions starting with test_ 

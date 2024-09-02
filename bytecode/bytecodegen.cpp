@@ -31,6 +31,23 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
             return last_reg();
         }
+        case OperatorKind::OP_EXP: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Exp2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Exp2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Exp3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Exp(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
         case OperatorKind::OP_PLUS: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), right->reg()));
@@ -48,6 +65,279 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
             return last_reg();
         }
+        case OperatorKind::OP_MINUS: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Sub2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Sub2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Sub3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Sub(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_DIV: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Div2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Div2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Div3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Div(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_MUL: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Mul2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Mul2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Mul3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Mul(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_MOD: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Mod2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Mod2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Mod3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Mod(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_SET:
+        case OperatorKind::OP_SET_CONCAT:
+        case OperatorKind::OP_SET_EXP:
+        case OperatorKind::OP_SET_PLUS:
+        case OperatorKind::OP_SET_MINUS:
+        case OperatorKind::OP_SET_DIV:
+        case OperatorKind::OP_SET_MUL:
+        case OperatorKind::OP_SET_MOD:
+            assert(false && "TODO: Operator");
+        case OperatorKind::OP_EQ: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Eq2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Eq2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Eq3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Eq(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_NEQ: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Neq2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Neq2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Neq3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Neq(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_BT: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Bt2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Bt2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Bt3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Bt(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_LT: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Lt2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Lt2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Lt3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Lt(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_BEQ: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Beq2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Beq2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Beq3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Beq(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_LEQ: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Leq2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Leq2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Leq3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Leq(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_SHORT_C_AND:
+        case OperatorKind::OP_SHORT_C_OR:
+            assert(false && "TODO: Unimplemented operator");
+        case OperatorKind::OP_AND: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new And2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new And2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new And3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new And(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_OR: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Or2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Or2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Or3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Or(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_XOR: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Xor2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Xor2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Xor3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Xor(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_IN: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new In2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new In2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new In3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new In(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_ACCESS:
+            assert(false && "TODO: Unimplemented operator");
+        case OperatorKind::OP_SUBSC: {
+            if (left->is_const() && right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto rightR = last_reg();
+                append(new Subsc2(next_reg(), left->reg(), rightR->reg()));
+            }
+            else if (left->is_const()) {
+                append(new Subsc2(next_reg(), left->reg(), right->reg()));
+            }
+            else if (right->is_const()) {
+                append(new Subsc3(next_reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Subsc(next_reg(), left->reg(), right->reg()));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_SCOPE: 
+        case OperatorKind::OP_UNPACK:
+            assert(false && "TODO: Unimplemented operator");
+
         default: assert(false && "Unknown operator");
     }
 
