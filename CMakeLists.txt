@@ -68,16 +68,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Test source files
     set(TEST_SRCS
         tests/unittests/testing_utils.cpp
-
+        tests/unittests/test_bytecode_rw.cpp
         tests/unittests/test_bytecode.cpp
         tests/unittests/test_clopts.cpp
         tests/unittests/test_ir.cpp
         tests/unittests/test_memory.cpp
         tests/unittests/test_parser.cpp
         tests/unittests/test_scanner.cpp
-
-        # Run last as this does fail on some machines
-        tests/unittests/test_bytecode_rw.cpp
         )
 
     # Enable gtest
