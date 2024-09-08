@@ -18,6 +18,7 @@
 #include <string>
 #include <cassert>
 #include <list>
+#include <vector>
 
 #include <sstream>
 
@@ -32,6 +33,7 @@ enum IRType {
 
     MODULE,
     SPACE,
+    ENUM,
 
     ASSERT,
     RAISE,
@@ -192,6 +194,24 @@ public:
         for (auto d: body) {
             if (!d) os << "nullptr";
             else os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class Enum : public IR {
+private:
+    std::vector<ustring> values;
+public:
+    static const IRType ClassType = IRType::ENUM;
+
+    Enum(ustring name, std::vector<ustring> values) : IR(ClassType, name), values(values) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "enum " << name << " {\n";
+        for (auto v: values) {
+            os << v << "\n";
         }
         os << "}";
         return os;

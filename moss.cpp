@@ -87,7 +87,7 @@ int main(int argc, const char *argv[]) {
     Interpreter *interpreter = new Interpreter(bc, &main_file);
     interpreter->run();
 
-    //LOGMAX(*interpreter);
+    LOGMAX(*interpreter);
     int exit_code = interpreter->get_exit_code();
 
     delete interpreter;

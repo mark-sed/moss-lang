@@ -422,4 +422,87 @@ space toto {
     delete mod;
 }
 
+TEST(Parsing, Enums){
+    ustring code = R"(
+enum Foo {}
+enum Foo2 
+{
+
+
+}
+
+enum Bar {
+    START
+}
+enum Bar2 {START}
+
+enum Baz {
+    START;
+    END; MID, MAX
+    LEFT
+}
+
+enum Colors { BLUE, RED, WHITE, GRAY, }
+)";
+
+    IRType expected[] = {
+        IRType::ENUM,
+        IRType::ENUM,
+        IRType::ENUM,
+        IRType::ENUM,
+        IRType::ENUM,
+        IRType::ENUM,
+
+        IRType::END_OF_FILE
+    };
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    int index = 0;
+    for (auto decl: mod->get_body()) {
+        EXPECT_TRUE(decl->get_type() == expected[index++]) << "Incorrect IR at index: " << index-1;
+    }
+
+    delete mod;
+
+    // Errors
+ustring incorrect = R"(
+enum
+enum {}
+enum Foo2 {a b}
+enum Foo3 { hi, 2 }
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    SourceFile sf2(incorrect, SourceFile::SourceType::STRING);
+    Parser parser2(sf2);
+
+    bool eof_reached = false;
+    index = 0;
+    while (!eof_reached) {
+        std::vector<ir::IR *> line_irs = parser2.parse_line();
+        for (auto i : line_irs) {
+            EXPECT_TRUE(i->get_type() == expected_incorr[index++]) << "Incorrect IR at index: " << index-1;
+            if (isa<ir::EndOfFile>(i)) {
+                eof_reached = true;
+            }
+        }
+
+        for (auto i : line_irs) {
+            delete i;
+        }
+    }
+}
+
 }

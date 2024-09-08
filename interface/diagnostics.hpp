@@ -54,6 +54,9 @@ enum DiagID {
     NO_LHS_IN_RANGE,        ///< Range without start
     NO_LHS_IN_ACCESS,       ///< Element access has no lhs
     NO_LHS_IN_SUBSCRIPT,    ///< No lhs for [] or [..]
+    ENUM_REQUIRES_NAME,     ///< For when enum declaration has no name
+    INCORRECT_ENUM_VALUE,   ///< Unknown value inside of an enum
+    MISSING_ENUM_SEPAR,     ///< Missing separator after enum value
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -88,6 +91,9 @@ static const char * DIAG_MSGS[] = {
     "Range requires a starting value",
     "Element access ('.') requires a value to access from",
     "Subscript or slice requires a left-hand side value",
+    "Enum declaration requires a name",
+    "Incorrect enum value",
+    "Enum values have to be separated by comma (','), semicolon (';') or a new line",
 };
 
 /**

@@ -58,6 +58,7 @@ static Operator token2operator(TokenType t) {
 
 IR *Parser::parse(bool is_main) {
     LOG1("Started parsing module");
+    reading_by_lines = false;
     Module *m = new Module(this->src_file.get_module_name(), this->src_file, is_main);
 
     LOG2("Running scanner");
@@ -99,6 +100,7 @@ IR *Parser::parse(bool is_main) {
 
 std::vector<ir::IR *> Parser::parse_line() {
     std::vector<ir::IR *> line_decls;
+    reading_by_lines = true;
     tokens.clear();
     curr_token = 0;
     Token *t = nullptr;
@@ -174,7 +176,7 @@ Token *Parser::expect_ws(TokenType type, diags::Diagnostic msg) {
 
 Token *Parser::advance_ws() {
     if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
-        (src_file.get_type() == SourceFile::SourceType::REPL && tokens[curr_token]->get_type() == TokenType::END_NL)) {
+        (reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
     return tokens[curr_token++];
@@ -216,7 +218,7 @@ Token *Parser::advance() {
         ++curr_token;
     }
     if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
-        (src_file.get_type() == SourceFile::SourceType::REPL && tokens[curr_token]->get_type() == TokenType::END_NL)) {
+        (reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
     return tokens[curr_token++];
@@ -374,6 +376,34 @@ IR *Parser::declaration() {
         decl = new Continue();
     }
     // enum
+    else if (match(TokenType::ENUM)) {
+        auto name = expect(TokenType::ID, create_diag(diags::ENUM_REQUIRES_NAME));
+        // Skip new lines
+        while(match(TokenType::END_NL))
+            ; // Skipping empty new lines
+        expect(TokenType::LEFT_CURLY, create_diag(diags::MISSING_BLOCK));
+        while(match(TokenType::END_NL))
+            ; // Skipping empty new lines
+        std::vector<ustring> values;
+
+        while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
+            auto val = expect(TokenType::ID, create_diag(diags::INCORRECT_ENUM_VALUE));
+            values.push_back(val->get_value());
+            if (!check({TokenType::COMMA, TokenType::END, TokenType::END_NL})) {
+                if (check(TokenType::RIGHT_CURLY))
+                    break;
+                parser_error(create_diag(diags::MISSING_ENUM_SEPAR));
+            }
+            advance();
+            skip_ends(); // Skip here so that we can check for } or eof
+        }
+
+        if (!match(TokenType::RIGHT_CURLY)) {
+            parser_error(create_diag(diags::MISSING_RIGHT_CURLY));
+        }
+
+        decl = new Enum(name->get_value(), values);
+    }
 
     // class
 
