@@ -48,7 +48,9 @@ void Repl::run() {
 
         //LOGMAX(*bc);
         interpreter->run();
-        outs << "\n";
+        // TODO: Also dont print if line is silent
+        if (line_irs.size() != 0)
+            outs << "\n";
         
         for (auto i : line_irs) {
             delete i;

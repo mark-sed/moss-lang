@@ -265,7 +265,10 @@ Token *Scanner::parse_number(int start) {
     }
 
     if (base != 10) {
-        long num_long = std::stoul(number_str, nullptr, base);
+        size_t pos;
+        // Offset the string to remove prefix
+        long num_long = std::stol(&number_str[2], &pos, base);
+        assert(pos == (number_str.size()-2) && "Integer of non-decimal base could not be converted, but was scanned");
         return tokenize(std::to_string(num_long), TokenType::INT);
     }
     return tokenize(number_str, TokenType::INT);

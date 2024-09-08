@@ -123,6 +123,11 @@ TEST(Bytecode, Arithmetics) {
     bc->push_back(new opcode::Mod2(14, 204, 1)); //0
     bc->push_back(new opcode::Mod3(15, 7, 205)); // 1.6...
 
+    // Neg
+    bc->push_back(new opcode::Neg(16, 1)); // -8
+    bc->push_back(new opcode::Neg(17, 2)); // -0.5 
+    bc->push_back(new opcode::Neg(18, 16)); // 8 
+
     Interpreter *i = new Interpreter(bc);
     i->run();
 
@@ -146,6 +151,10 @@ TEST(Bytecode, Arithmetics) {
     EXPECT_EQ(float_val(i->load(13)), 6.0);
     EXPECT_EQ(int_val(i->load(14)), 0);
     EXPECT_EQ(float_val(i->load(15)), std::fmod(512, 2.2));
+
+    EXPECT_EQ(int_val(i->load(16)), -8);
+    EXPECT_EQ(float_val(i->load(17)), -0.5);
+    EXPECT_EQ(int_val(i->load(18)), 8);
 
     delete i;
     delete bc;

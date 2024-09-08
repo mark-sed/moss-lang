@@ -367,6 +367,9 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::NOT: {
                 bc->push_back(new Not(read_register(), read_register()));
             } break;
+            case opcode::OpCodes::NEG: {
+                bc->push_back(new Neg(read_register(), read_register()));
+            } break;
             case opcode::OpCodes::ASSERT: {
                 bc->push_back(new Assert(read_register(), read_register()));
             } break;

@@ -24,7 +24,7 @@ private:
     bool constant;
     bool silent;
 public:
-    RegValue(opcode::Register value, bool constant=false) : value(value), constant(constant) {}
+    RegValue(opcode::Register value, bool constant=false) : value(value), constant(constant), silent(false) {}
 
     opcode::Register reg() { return this->value; }
 

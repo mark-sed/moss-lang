@@ -151,6 +151,7 @@ enum OpCodes : opcode_t {
     SUBSC3, //    %dst, %src, #index
 
     NOT, //       %dst, %src1
+    NEG, //       %dst, %src1
 
     ASSERT, //    %src, %msg
 
@@ -1496,6 +1497,28 @@ public:
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Not>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->dst == dst;
+    }
+};
+
+class Neg : public OpCode {
+public:
+    Register dst;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::NEG;
+
+    Neg(Register dst, Register src) : OpCode(ClassType, "NEG"), dst(dst), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Neg>(other);
         if (!casted) return false;
         return casted->src == src && casted->dst == dst;
     }

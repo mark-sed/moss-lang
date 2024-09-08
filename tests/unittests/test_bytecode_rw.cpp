@@ -158,6 +158,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Subsc3(0, 1, 2));
 
     bc->push_back(new opcode::Not(0, 1));
+    bc->push_back(new opcode::Neg(0, 1));
     
     bc->push_back(new opcode::Assert(7, 4));
 

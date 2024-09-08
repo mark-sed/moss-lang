@@ -962,6 +962,23 @@ void Not::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+void Neg::exec(Interpreter *vm) {
+    auto *s1 = vm->load(src);
+    Value *res = nullptr;
+    if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
+        res = new IntValue(-(i1->get_value()));
+    }
+    else if (FloatValue *f1 = dyn_cast<FloatValue>(s1)) {
+        res = new FloatValue(-(f1->get_value()));
+    }
+    else {
+        // FIXME: Raise unsupported operator type exception
+        assert(false && "TODO: unsupported operator type raise exception");
+    }
+    if (res)
+        vm->store(dst, res);
+}
+
 void Assert::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
     auto *assert_msg = vm->load(msg);

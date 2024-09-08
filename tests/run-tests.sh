@@ -115,7 +115,7 @@ function test_empty {
 
 function test_output {
     expect_pass "output.ms" "output"
-    expect_out_eq "42, true, false\nmoss language\n" "output"
+    expect_out_eq "42, true, false\nmoss language\n13\n9\n42\n" "output"
 }
 
 function test_expressions {

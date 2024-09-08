@@ -195,6 +195,10 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_register(o->src);
         }
+        else if (auto o = dyn_cast<opcode::Neg>(op_gen)){
+            write_register(o->dst);
+            write_register(o->src);
+        }
         else if (auto o = dyn_cast<opcode::Assert>(op_gen)){
             write_register(o->src);
             write_register(o->msg);
