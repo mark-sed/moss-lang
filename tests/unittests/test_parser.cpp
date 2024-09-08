@@ -141,6 +141,7 @@ a.access.b
 some[2]
 some[1,2..60]
 std::math::pi
+::NAME
 )";
 
     IRType expected[] = {
@@ -195,6 +196,7 @@ std::math::pi
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
+        IRType::UNARY_EXPR,
         
         IRType::END_OF_FILE
     };
@@ -238,7 +240,8 @@ std::math::pi
         OperatorKind::OP_ACCESS,
         OperatorKind::OP_SUBSC,
         OperatorKind::OP_SUBSC,
-        OperatorKind::OP_SCOPE, 
+        OperatorKind::OP_SCOPE,
+        OperatorKind::OP_SCOPE,
     };
 
     SourceFile sf(code, SourceFile::SourceType::STRING);

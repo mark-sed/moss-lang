@@ -4,6 +4,7 @@
 #include "diagnostics.hpp"
 #include "logging.hpp"
 #include "errors.hpp"
+#include "clopts.hpp"
 #include <cassert>
 
 /**
@@ -122,6 +123,14 @@ std::vector<ir::IR *> Parser::parse_line() {
             // as it could have relied on the errorous value, so just append the
             // exception and return it.
             line_decls.push_back(decl);
+#ifndef NDEBUG
+            // In case of parse-only mode in repl we want to print the error
+            // messages so that errors are visible even without logging
+            if (clopts::parse_only) {
+                StringLiteral *err_msg = dyn_cast<StringLiteral>(raise->get_exception());
+                errs << err_msg->get_value();
+            }
+#endif
             return line_decls;
         }
         assert(decl && "Declaration in parser is nullptr");
@@ -493,6 +502,7 @@ Expression *Parser::assignment() {
 
     bool is_set = false;
     while (match(TokenType::SET)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_FOR_SET));
         is_set = true;
         auto right = assignment();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
@@ -506,6 +516,7 @@ Expression *Parser::assignment() {
         if (is_set) {
             parser_error(create_diag(diags::CHAINED_COMPOUND_ASSIGN, op->get_cstr()));
         }
+        parser_assert(expr, create_diag(diags::NO_LHS_FOR_SET));
         is_set = true;
         auto right = assignment();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
@@ -531,6 +542,7 @@ Expression *Parser::ternary_if() {
     Expression *expr = short_circuit();
 
     if (match(TokenType::QUESTION_M)) {
+        parser_assert(expr, create_diag(diags::TERNARY_IF_MISSING_COND));
         auto val_true = ternary_if(); // Right associative
         parser_assert(val_true, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::COLON, create_diag(diags::TERNARY_IF_MISSING_FALSE));
@@ -547,6 +559,7 @@ Expression *Parser::short_circuit() {
 
     while (check({TokenType::SHORT_C_AND, TokenType::SHORT_C_OR})) {
         auto op = advance();
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = and_or_xor();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
@@ -560,6 +573,7 @@ Expression *Parser::and_or_xor() {
 
     while (check({TokenType::AND, TokenType::OR, TokenType::XOR})) {
         auto op = advance();
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = op_not();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
@@ -585,6 +599,7 @@ Expression *Parser::eq_neq() {
         auto op = advance();
         // Note: 'not' cannot be RHS without parenthesis
         // TODO: Add error note for this
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = compare_gl();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
@@ -598,6 +613,7 @@ Expression *Parser::compare_gl() {
 
     while (check({TokenType::LEQ, TokenType::BEQ, TokenType::LT, TokenType::BT})) {
         auto op = advance();
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = membership();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
@@ -610,6 +626,7 @@ Expression *Parser::membership() {
     Expression *expr = range();
 
     if (match(TokenType::IN)) {
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "in"));
         auto right = range(); // Chaining in is not allowed, parenthesis have to be used
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         return new BinaryExpr(expr, right, Operator(OperatorKind::OP_IN));
@@ -624,12 +641,14 @@ Expression *Parser::range() {
     // expr..end
     // TODO: Raise a warning if in fun args and not in parenthesis
     if (match(TokenType::RANGE)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_IN_RANGE));
         auto end = concatenation();
         parser_assert(end, create_diag(diags::EXPR_EXPECTED));
         return new Range(expr, end);
     }
     // expr,second..end
     else if (!lower_range_prec && match(TokenType::COMMA)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_IN_RANGE));
         auto second = concatenation();
         parser_assert(second, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RANGE, create_diag(diags::RANGE_EXPECTED));
@@ -645,6 +664,7 @@ Expression *Parser::concatenation() {
     Expression *expr = add_sub();
 
     while (match(TokenType::CONCAT)) {
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "++"));
         auto right = add_sub();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_CONCAT));
@@ -658,6 +678,7 @@ Expression *Parser::add_sub() {
 
     while (check({TokenType::PLUS, TokenType::MINUS})) {
         auto op = advance();
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = mul_div_mod();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
@@ -671,6 +692,7 @@ Expression *Parser::mul_div_mod() {
 
     while (check({TokenType::MUL, TokenType::DIV, TokenType::MOD})) {
         auto op = advance();
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = exponentiation();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
@@ -683,6 +705,7 @@ Expression *Parser::exponentiation() {
     Expression *expr = unary_plus_minus();
 
     while (match(TokenType::EXP)) {
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "^"));
         auto right = exponentiation(); // Right associative, so call itself
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_EXP));
@@ -710,6 +733,7 @@ Expression *Parser::element_access() {
     Expression *expr = subscript();
 
     while (match(TokenType::DOT)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
         auto elem = subscript();
         parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
         expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
@@ -723,6 +747,7 @@ Expression *Parser::subscript() {
     Expression *expr = call();
 
     while (match(TokenType::LEFT_SQUARE)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_IN_SUBSCRIPT));
         auto index = ternary_if();
         parser_assert(index, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
@@ -754,6 +779,8 @@ Expression *Parser::call() {
     Expression *expr = note();
 
     while (match(TokenType::LEFT_PAREN)) {
+        // This assert should never be raised as ( would be matched in constant
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
         auto args = arg_list();
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         expr = new Call(expr, args);
@@ -766,6 +793,8 @@ ir::Expression *Parser::note() {
     Expression *expr = scope();
 
     if (check(TokenType::STRING)) {
+        // expr should never be nullptr as string would be parsed in constant
+        assert(expr && "Somehow string was trying to be parsed as a note without prefix");
         auto val = advance();
         return new Note(expr, new StringLiteral(unescapeString(val->get_value())));
     }
@@ -779,7 +808,13 @@ Expression *Parser::scope() {
     while (match(TokenType::SCOPE)) {
         auto elem = constant();
         parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_SCOPE));
+        // Expr may be nullptr as that is the global scope
+        if (!expr) {
+            expr = new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE));
+        }
+        else {
+            expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_SCOPE));
+        }
     }
 
     return expr;

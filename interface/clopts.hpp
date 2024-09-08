@@ -30,6 +30,8 @@ inline args::ValueFlag<std::string> verbose2(arg_parser, "<csv file::method list
 inline args::ValueFlag<std::string> verbose3(arg_parser, "<csv file::method list>", "Enables prints for logs level 3", {"vvv", "v3", "verbose3"});
 inline args::ValueFlag<std::string> verbose4(arg_parser, "<csv file::method list>", "Enables prints for logs level 4", {"vvvv", "v4", "verbose4"});
 inline args::ValueFlag<std::string> verbose5(arg_parser, "<csv file::method list>", "Enables prints for logs level 5", {"vvvvv", "v5", "verbose5"});
+
+inline args::Flag parse_only(arg_parser, "parse-only", "Runs only the parser and does not execute any code", {"parse-only"});
 #endif
 
 /**

@@ -68,6 +68,13 @@ int main(int argc, const char *argv[]) {
     Parser parser(main_file);
     auto main_mod = parser.parse(true);
 
+#ifndef NDEBUG
+    if (clopts::parse_only) {
+        delete main_mod;
+        return 0;
+    }
+#endif
+
     //LOGMAX("Parsed: " << *main_mod);
 
     Bytecode *bc = new Bytecode();

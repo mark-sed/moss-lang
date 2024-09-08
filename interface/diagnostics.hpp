@@ -43,11 +43,17 @@ enum DiagID {
     CHAINED_COMPOUND_ASSIGN,    ///< Chained compound assignment operators
     CANNOT_CHAIN_SILENT,        ///< Chained ~
     TERNARY_IF_MISSING_FALSE,   ///< Missing false branch in ternary if
+    TERNARY_IF_MISSING_COND,   ///< Missing condition in ternary if
     RANGE_EXPECTED,         ///< Range without ..
     MISSING_SPACE_BODY,     ///< Incorrect space construction
     MISSING_BLOCK,          ///< Expected {
     MISSING_RIGHT_CURLY,    ///< No '}' found
     UNKNOWN_ESC_SEQ,        ///< Unknown escape sequence in string
+    BIN_OP_REQUIRES_LHS,    ///< Binary operator requires a lhs value
+    NO_LHS_FOR_SET,         ///< No left hand side value for assignment
+    NO_LHS_IN_RANGE,        ///< Range without start
+    NO_LHS_IN_ACCESS,       ///< Element access has no lhs
+    NO_LHS_IN_SUBSCRIPT,    ///< No lhs for [] or [..]
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -71,11 +77,17 @@ static const char * DIAG_MSGS[] = {
     "Compound assignment operators ('%s') cannot be chained",
     "Silent operator ('~') cannot be chained",
     "Missing ':' — ternary if requires false branch",
+    "Ternary if requires a condition",
     "Expecting '..' in a range expression",
     "Space has to have a body ('{}')",
     "Expecting code block ('{}')",
     "Missing '}'",
-    "Unknown string escape sequence '\\%c'"
+    "Unknown string escape sequence '\\%c'",
+    "Incorrect binary operator syntax — operator '%s' requires value on the left and right of it",
+    "Assignment requires a left-hand side value",
+    "Range requires a starting value",
+    "Element access ('.') requires a value to access from",
+    "Subscript or slice requires a left-hand side value",
 };
 
 /**

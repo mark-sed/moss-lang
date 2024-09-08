@@ -7,6 +7,7 @@
 #include "bytecode.hpp"
 #include "bytecodegen.hpp"
 #include "interpreter.hpp"
+#include "clopts.hpp"
 #include <vector>
 
 using namespace moss;
@@ -42,16 +43,29 @@ void Repl::run() {
                 eof_reached = true;
                 outs << "\n";
             }
-
+#ifndef NDEBUG
+            if (!clopts::parse_only)
+                cgen.generate(i);
+#else
             cgen.generate(i);
+#endif
         }
 
-        //LOGMAX(*bc);
+#ifndef NDEBUG
+        if (!clopts::parse_only) {
+            //LOGMAX(*bc);
+            interpreter->run();
+            // TODO: Also dont print if line is silent
+            if (line_irs.size() != 0)
+                outs << "\n";
+        }
+#else
         interpreter->run();
         // TODO: Also dont print if line is silent
         if (line_irs.size() != 0)
             outs << "\n";
-        
+#endif
+
         for (auto i : line_irs) {
             delete i;
         }
