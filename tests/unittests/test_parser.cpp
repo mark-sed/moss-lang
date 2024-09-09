@@ -474,8 +474,14 @@ enum
 enum {}
 enum Foo2 {a b}
 enum Foo3 { 
-hi, 
+hi,
+Hi2 
 2 
+}
+enum Foo4 {
+A
+B
+A
 }
 )";
 
@@ -483,6 +489,10 @@ hi,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
+        
+        IRType::RAISE,
+        IRType::RAISE,
+
         IRType::RAISE,
         IRType::RAISE,
 

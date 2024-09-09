@@ -13,12 +13,14 @@
 using namespace moss;
 
 void Repl::output_header() {
+    using namespace error;
+    using namespace colors;
     outs << std::endl
-<< error::colors::LIGHT_GREEN << "88888b.d88b.   .d88b.  .d8888b  .d8888b   " << error::colors::RESET << "| Version " << MOSS_VERSION << "\n"
-<< error::colors::LIGHT_GREEN <<       "888 \"888 \"88b d88\"\"88b 88K      88K       " << error::colors::RESET << "| Type \"help()\" for information and \"exit()\" to quit.\n"
-<< error::colors::GREEN <<       "888  888  888 888  888 \"Y8888b. \"Y8888b.  " << error::colors::RESET << "|\n"
-<< error::colors::LIGHT_PURPLE <<      "888  888  888 Y88..88P      X88      X88  " << error::colors::RESET << "| GitHub repository: https://github.com/mark-sed/moss-lang\n"
-<< error::colors::PURPLE <<      "888  888  888  \"Y88P\"   88888P'  88888P'  " << error::colors::RESET << "| Documentation: https://github.com/mark-sed/moss-lang/wiki\n"
+<< colorize(LIGHT_GREEN) << "88888b.d88b.   .d88b.  .d8888b  .d8888b   " << reset() << "| Version " << MOSS_VERSION << "\n"
+<< colorize(LIGHT_GREEN) <<       "888 \"888 \"88b d88\"\"88b 88K      88K       " << reset() << "| Type \"help()\" for information and \"exit()\" to quit.\n"
+<< colorize(GREEN) <<       "888  888  888 888  888 \"Y8888b. \"Y8888b.  " << reset() << "|\n"
+<< colorize(LIGHT_PURPLE) <<      "888  888  888 Y88..88P      X88      X88  " << reset() << "| GitHub repository: https://github.com/mark-sed/moss-lang\n"
+<< colorize(PURPLE) <<      "888  888  888  \"Y88P\"   88888P'  88888P'  " << reset() << "| Documentation: https://github.com/mark-sed/moss-lang/wiki\n"
          << std::endl;
 }
 
@@ -35,7 +37,7 @@ void Repl::run() {
 
     bool eof_reached = false;
     while (!eof_reached) {
-        outs << error::colors::LIGHT_GREEN << "moss> " << error::colors::RESET;
+        outs << error::colors::colorize(error::colors::LIGHT_GREEN) << "moss> " << error::colors::reset();
         std::vector<ir::IR *> line_irs = parser.parse_line();
         for (auto i : line_irs) {
             LOGMAX(*i);

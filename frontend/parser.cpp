@@ -246,13 +246,17 @@ void Parser::parser_error(diags::Diagnostic err_msg) {
 }
 
 void Parser::skip_ends() {
+    ++multi_line_parsing;
     while(match(TokenType::END) || match(TokenType::END_NL))
         ; // Skipping empty new line and ;
+    --multi_line_parsing;
 }
 
 void Parser::skip_nls() {
+    ++multi_line_parsing;
     while(match(TokenType::END_NL))
         ; // Skipping empty new line and ;
+    --multi_line_parsing;
 }
 
 /**
@@ -397,17 +401,18 @@ IR *Parser::declaration() {
     else if (match(TokenType::ENUM)) {
         ++multi_line_parsing;
         auto name = expect(TokenType::ID, create_diag(diags::ENUM_REQUIRES_NAME));
-        // Skip new lines
-        while(match(TokenType::END_NL))
-            ; // Skipping empty new lines
+        skip_nls();
         expect(TokenType::LEFT_CURLY, create_diag(diags::MISSING_BLOCK));
-        while(match(TokenType::END_NL))
-            ; // Skipping empty new lines
+        skip_nls();
         std::vector<ustring> values;
 
         while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
             auto val = expect(TokenType::ID, create_diag(diags::INCORRECT_ENUM_VALUE));
-            values.push_back(val->get_value());
+            auto val_str = val->get_value();
+            if (std::find(values.begin(), values.end(), val_str) != values.end()) {
+                parser_error(create_diag(diags::ENUM_VALUE_REDEFINITION, val_str.c_str(), name->get_value().c_str()));
+            }
+            values.push_back(val_str);
             if (!check({TokenType::COMMA, TokenType::END, TokenType::END_NL})) {
                 if (check(TokenType::RIGHT_CURLY))
                     break;
@@ -470,12 +475,9 @@ IR *Parser::declaration() {
 }
 
 std::list<ir::IR *> Parser::block() {
-    // Skip new lines
-    while(match(TokenType::END_NL))
-        ; // Skipping empty new lines
+    skip_nls();
     expect(TokenType::LEFT_CURLY, create_diag(diags::MISSING_BLOCK));
-    while(match(TokenType::END_NL))
-        ; // Skipping empty new lines
+    skip_nls();
     std::list<ir::IR *> decls;
 
     IR *decl = nullptr;
@@ -818,6 +820,7 @@ std::vector<ir::Expression *> Parser::arg_list() {
 
     Expression *expr = nullptr;
     do {
+        skip_nls();
         expr = expression();
         if (expr)
             args.push_back(expr);
@@ -835,6 +838,7 @@ Expression *Parser::call() {
         // This assert should never be raised as ( would be matched in constant
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
         auto args = arg_list();
+        skip_nls();
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         expr = new Call(expr, args);
     } 

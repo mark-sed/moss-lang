@@ -8,6 +8,8 @@
 
 using namespace moss::clopts;
 
+args::ValueFlag<bool> opt_use_color(arg_parser, "0 or 1", "Enables colored error messages", {"use-color"});
+
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     args::HelpFlag help(arg_parser, "help", "Display available options", {'h', "help"});
     args::Flag version(arg_parser, "version", "Display the version of this program", {"version"});
@@ -55,4 +57,9 @@ ustring moss::clopts::get_logging_list() {
         if (verbose5) return args::get(verbose5);
     #endif
     return 0;
+}
+
+bool moss::clopts::use_color() {
+    if (!opt_use_color) return true;
+    return args::get(opt_use_color);
 }

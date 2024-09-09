@@ -48,6 +48,8 @@ int get_logging_level();
 /** @return value passed to set verbose level (should be a csv of file::method values) */
 std::string get_logging_list();
 
+bool use_color();
+
 }
 
 }
