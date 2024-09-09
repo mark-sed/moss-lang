@@ -34,6 +34,7 @@ private:
 
     bool lower_range_prec;
     bool reading_by_lines;
+    int multi_line_parsing;
 
     ir::IR *declaration();
     ir::Expression *expression();
@@ -80,6 +81,7 @@ private:
     void skip_nls();
 
     ustring unescapeString(ustring str);
+    void scan_line();
 
     template<typename ... Args>
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
@@ -89,7 +91,8 @@ private:
     void parser_error(diags::Diagnostic err_msg);
 public:
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
-                               lower_range_prec(false), reading_by_lines(false) {}
+                               lower_range_prec(false), reading_by_lines(false),
+                               multi_line_parsing(0) {}
     ~Parser() {
         delete scanner;
         for (auto *t: tokens)

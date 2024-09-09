@@ -473,10 +473,14 @@ ustring incorrect = R"(
 enum
 enum {}
 enum Foo2 {a b}
-enum Foo3 { hi, 2 }
+enum Foo3 { 
+hi, 
+2 
+}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -492,8 +496,9 @@ enum Foo3 { hi, 2 }
     index = 0;
     while (!eof_reached) {
         std::vector<ir::IR *> line_irs = parser2.parse_line();
-        for (auto i : line_irs) {
-            EXPECT_TRUE(i->get_type() == expected_incorr[index++]) << "Incorrect IR at index: " << index-1;
+        ASSERT_TRUE(line_irs.size() <= 1);
+        for (ir::IR *i : line_irs) {
+            EXPECT_TRUE(i->get_type() == expected_incorr[index++]) << "Incorrect IR at index: " << index-1 << "\nExpected: " << static_cast<unsigned>(expected_incorr[index]) << "\nBut got: " << static_cast<unsigned>(i->get_type()) << " -- " << i->get_name();
             if (isa<ir::EndOfFile>(i)) {
                 eof_reached = true;
             }

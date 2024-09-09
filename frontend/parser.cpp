@@ -98,11 +98,7 @@ IR *Parser::parse(bool is_main) {
     return m;
 }
 
-std::vector<ir::IR *> Parser::parse_line() {
-    std::vector<ir::IR *> line_decls;
-    reading_by_lines = true;
-    tokens.clear();
-    curr_token = 0;
+void Parser::scan_line() {
     Token *t = nullptr;
     bool padding_start = true;
     do {
@@ -114,6 +110,15 @@ std::vector<ir::IR *> Parser::parse_line() {
         //LOGMAX(*t);
         tokens.push_back(t);
     } while(t->get_type() != TokenType::END_NL && t->get_type() != TokenType::END_OF_FILE);
+}
+
+std::vector<ir::IR *> Parser::parse_line() {
+    std::vector<ir::IR *> line_decls;
+    reading_by_lines = true;
+    tokens.clear();
+    curr_token = 0;
+    // Scan one line (this fills up tokens)
+    scan_line();
 
     while (!check(TokenType::END_NL)) {
         IR *decl;
@@ -175,7 +180,12 @@ Token *Parser::expect_ws(TokenType type, diags::Diagnostic msg) {
 }
 
 Token *Parser::advance_ws() {
-    if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
+    if (multi_line_parsing && reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL) {
+        // We have reached new line in parsing by lines, but we are inside of
+        // a multiline structure - scan another line
+        scan_line();
+    }
+    else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
         (reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
@@ -217,7 +227,12 @@ Token *Parser::advance() {
     while (tokens[curr_token]->get_type() == TokenType::WS) {
         ++curr_token;
     }
-    if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
+    if (multi_line_parsing && reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL) {
+        // We have reached new line in parsing by lines, but we are inside of
+        // a multiline structure - scan another line
+        scan_line();
+    }
+    else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
         (reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
@@ -300,6 +315,9 @@ IR *Parser::declaration() {
     // In case we errored out inside of function call, reset range
     // precedence lowering
     lower_range_prec = false;
+    // Multiline parsing cannot be zeroes in there as this might be called
+    // in multiline declaration
+    assert(multi_line_parsing >= 0 && "Got out of multiline structures more than into them?");
     bool no_end_needed = false;
 
     // Skip random new lines and ;
@@ -377,6 +395,7 @@ IR *Parser::declaration() {
     }
     // enum
     else if (match(TokenType::ENUM)) {
+        ++multi_line_parsing;
         auto name = expect(TokenType::ID, create_diag(diags::ENUM_REQUIRES_NAME));
         // Skip new lines
         while(match(TokenType::END_NL))
@@ -402,13 +421,16 @@ IR *Parser::declaration() {
             parser_error(create_diag(diags::MISSING_RIGHT_CURLY));
         }
 
+        --multi_line_parsing;
         decl = new Enum(name->get_value(), values);
+        no_end_needed = true;
     }
 
     // class
 
     // space
     else if (match(TokenType::SPACE)) {
+        ++multi_line_parsing;
         if (check(TokenType::ID)) {
             auto name = advance();
             auto body = block();
@@ -423,6 +445,7 @@ IR *Parser::declaration() {
         else {
             parser_error(create_diag(diags::MISSING_SPACE_BODY));
         }
+        --multi_line_parsing;
     }
 
     // fun
