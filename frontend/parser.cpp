@@ -360,15 +360,21 @@ IR *Parser::declaration() {
         auto cond = expression();
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        auto ifbody = body(no_end_needed); // Body asserts for missing declaration
+        auto ifbody = body(); // Body asserts for missing declaration
         skip_nls();
         if (match(TokenType::ELSE)) {
-            auto elsebody = body(no_end_needed);
+            auto elsebody = body();
             decl = new If(cond, ifbody, new Else(elsebody));
         }
         else {
             decl = new If(cond, ifbody);
         }
+        // This is true even for single declaration as that declaration itself
+        // has to have an end. No need for second one.
+        no_end_needed = true;
+    }
+    else if (match(TokenType::ELSE)) {
+        parser_error(create_diag(diags::ELSE_WITHOUT_IF));
     }
 
     // while
@@ -511,13 +517,11 @@ std::list<ir::IR *> Parser::block() {
     return decls;
 }
 
-std::list<ir::IR *> Parser::body(bool &was_block) {
+std::list<ir::IR *> Parser::body() {
     skip_nls();
     if (check(TokenType::LEFT_CURLY)) {
-        was_block = true;
         return block();
     }
-    was_block = false;
     auto decl = declaration();
     std::list<ir::IR *> decls{decl};
     parser_assert(decl, create_diag(diags::DECL_EXPECTED));
