@@ -36,6 +36,7 @@ enum DiagID {
     ASSERT_MISSING_PARENTH, ///< Assert specific - missing () for when someone uses raise syntax
     ASSERT_EXPECTS_ARG,     ///< Assert specific - incorrect arguments
     EXPR_EXPECTED,          ///< Parser expected an expression
+    DECL_EXPECTED,          ///< Parser expected a declaration
     EXPR_EXPECTED_NOTE,     ///< As above but with extra note
     MISSING_RIGHT_PAREN,    ///< No ')' found
     MISSING_RIGHT_SQUARE,   ///< No ']' found
@@ -58,6 +59,7 @@ enum DiagID {
     INCORRECT_ENUM_VALUE,   ///< Unknown value inside of an enum
     MISSING_ENUM_SEPAR,     ///< Missing separator after enum value
     ENUM_VALUE_REDEFINITION,///< Enum value already defined
+    IF_REQUIRES_PARENTH,    ///< If has to be followed by parenthesis 
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -74,6 +76,7 @@ static const char * DIAG_MSGS[] = {
     "Assert expects its arguments in parenthesis",
     "Assert expects 1 or 2 arguments — condition and optional message",
     "Expecting an expression",
+    "Expecting a declaration",
     "Expecting an expression — %s",
     "Missing ')'",
     "Missing ']'",
@@ -96,6 +99,7 @@ static const char * DIAG_MSGS[] = {
     "Incorrect enum value",
     "Enum values have to be separated by comma (','), semicolon (';') or a new line",
     "Value '%s' is already defined in enum '%s'",
+    "If statement has to have the condition in parenthesis",
 };
 
 /**

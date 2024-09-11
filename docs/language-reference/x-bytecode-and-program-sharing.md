@@ -125,6 +125,7 @@ xxh - IN        %dst, %src1, %src2
 xxh - AND       %dst, %src1, %src2
 xxh - OR        %dst, %src1, %src2
 xxh - NOT       %dst, %src1
+xxh - NEG       %dst, %src1
 xxh - XOR       %dst, %src1, %src2
 xxh - SC_AND    %dst, %src1, %src2
 xxh - SC_OR     %dst, %src1, %src2

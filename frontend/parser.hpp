@@ -39,6 +39,7 @@ private:
     ir::IR *declaration();
     ir::Expression *expression();
     std::list<ir::IR *> block();
+    std::list<ir::IR *> body(bool &was_block);
 
     ir::Expression *constant();
     std::vector<ir::Expression *> arg_list();

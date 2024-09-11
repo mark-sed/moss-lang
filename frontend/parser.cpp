@@ -355,6 +355,21 @@ IR *Parser::declaration() {
     // Import has to accept parser errors since it may be in try catch block
 
     // if
+    else if (match(TokenType::IF)) {
+        expect(TokenType::LEFT_PAREN, create_diag(diags::IF_REQUIRES_PARENTH));
+        auto cond = expression();
+        parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        auto ifbody = body(no_end_needed); // Body asserts for missing declaration
+        skip_nls();
+        if (match(TokenType::ELSE)) {
+            auto elsebody = body(no_end_needed);
+            decl = new If(cond, ifbody, new Else(elsebody));
+        }
+        else {
+            decl = new If(cond, ifbody);
+        }
+    }
 
     // while
 
@@ -373,7 +388,7 @@ IR *Parser::declaration() {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
         std::vector<Expression *> args = arg_list();
         parser_assert((args.size() == 1 || args.size() == 2), create_diag(diags::ASSERT_EXPECTS_ARG));
-        expect(TokenType::RIGHT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         decl = new Assert(args[0], args.size() == 2 ? args[1] : nullptr);
     }
     else if (match(TokenType::RAISE)) {
@@ -438,13 +453,13 @@ IR *Parser::declaration() {
         ++multi_line_parsing;
         if (check(TokenType::ID)) {
             auto name = advance();
-            auto body = block();
-            decl = new Space(name->get_value(), body);
+            auto stbody = block();
+            decl = new Space(name->get_value(), stbody);
             no_end_needed = true;
         }
         else if (check(TokenType::LEFT_CURLY)) {
-            auto body = block();
-            decl = new Space("", body);
+            auto stbody = block();
+            decl = new Space("", stbody);
             no_end_needed = true;
         }
         else {
@@ -493,6 +508,19 @@ std::list<ir::IR *> Parser::block() {
         parser_error(create_diag(diags::MISSING_RIGHT_CURLY));
     }
 
+    return decls;
+}
+
+std::list<ir::IR *> Parser::body(bool &was_block) {
+    skip_nls();
+    if (check(TokenType::LEFT_CURLY)) {
+        was_block = true;
+        return block();
+    }
+    was_block = false;
+    auto decl = declaration();
+    std::list<ir::IR *> decls{decl};
+    parser_assert(decl, create_diag(diags::DECL_EXPECTED));
     return decls;
 }
 

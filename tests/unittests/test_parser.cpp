@@ -520,4 +520,66 @@ A
     }
 }
 
+TEST(Parsing, Ifs){
+    ustring code = R"(
+if (true) "hi"
+else "bye"
+
+if (false) {
+
+}
+else {
+
+}
+
+if (true)
+
+
+{}else
+
+{
+    1+1
+}
+
+if (1 + 2 + 4 > 9) 
+    "yep"
+else
+    "nop"
+
+// If only
+
+if (42 > 2 > 1) {
+
+    if (8 > 4) {
+        "hi"
+    }
+}
+
+if ( not (true) ) "no"
+)";
+
+    IRType expected[] = {
+        IRType::IF,
+        IRType::IF,
+        IRType::IF,
+        IRType::IF,
+        IRType::IF,
+        IRType::IF,
+
+        IRType::END_OF_FILE
+    };
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    int index = 0;
+    for (auto decl: mod->get_body()) {
+        EXPECT_TRUE(decl->get_type() == expected[index++]) << "Incorrect IR at index: " << index-1;
+    }
+
+    delete mod;
+}
+
 }

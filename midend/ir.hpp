@@ -33,6 +33,8 @@ enum IRType {
 
     MODULE,
     SPACE,
+    IF,
+    ELSE,
     ENUM,
 
     ASSERT,
@@ -192,10 +194,58 @@ public:
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "space " << name << " {\n";
         for (auto d: body) {
-            if (!d) os << "nullptr";
-            else os << *d << "\n";
+            os << *d << "\n";
         }
         os << "}";
+        return os;
+    }
+};
+
+class Else : public Construct {
+public:
+    static const IRType ClassType = IRType::ELSE;
+
+    Else(std::list<IR *> elbody) : Construct(ClassType, "else") {
+        this->body = elbody;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "else {";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class If : public Construct {
+private:
+    Expression *cond;
+    Else *elseBranch;
+
+public:
+    static const IRType ClassType = IRType::IF;
+
+    If(Expression *cond, std::list<IR *> ifbody, Else *elseBranch=nullptr) 
+           : Construct(ClassType, "if"), cond(cond), elseBranch(elseBranch) {
+        this->body = ifbody;
+    }
+    ~If() {
+        delete cond;
+        if (elseBranch)
+            delete elseBranch;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "if (" << *cond << ") {";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        if (elseBranch) {
+            os << *elseBranch;
+        }
         return os;
     }
 };
