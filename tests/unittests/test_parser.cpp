@@ -576,6 +576,19 @@ else
 
 if (true) "i"; else "you";
 
+// else if
+
+if (a) "hi"
+else if (b) "ho"
+else if (c) "he"
+else "ha"
+
+if (true) {
+    12
+} else if (false) {
+    42
+}
+
 // If only
 
 if (42 > 2 > 1) {
@@ -590,6 +603,8 @@ if ( not (true) ) "no"
 )";
 
     IRType expected[] = {
+        IRType::IF,
+        IRType::IF,
         IRType::IF,
         IRType::IF,
         IRType::IF,

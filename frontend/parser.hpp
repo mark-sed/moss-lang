@@ -80,6 +80,7 @@ private:
     void next_decl();
     void skip_ends();
     void skip_nls();
+    void skip_nls(unsigned max);
 
     ustring unescapeString(ustring str);
     void scan_line();

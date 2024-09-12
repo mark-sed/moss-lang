@@ -246,16 +246,27 @@ void Parser::parser_error(diags::Diagnostic err_msg) {
 }
 
 void Parser::skip_ends() {
+    if (!check(TokenType::END_NL) && !check(TokenType::END))
+        return;
     ++multi_line_parsing;
     while(match(TokenType::END) || match(TokenType::END_NL))
-        ; // Skipping empty new line and ;
+        ; // Skipping empty new lines and ;
     --multi_line_parsing;
 }
 
 void Parser::skip_nls() {
+    if (!check(TokenType::END_NL))
+        return;
     ++multi_line_parsing;
     while(match(TokenType::END_NL))
-        ; // Skipping empty new line and ;
+        ; // Skipping empty new lines
+    --multi_line_parsing;
+}
+
+void Parser::skip_nls(unsigned max) {
+    ++multi_line_parsing;
+    while(max > 0 && match(TokenType::END_NL))
+        --max; // Skipping empty new lines
     --multi_line_parsing;
 }
 
@@ -361,7 +372,12 @@ IR *Parser::declaration() {
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         auto ifbody = body(); // Body asserts for missing declaration
-        skip_nls();
+        // In script you can have new lines in REPL only 1
+        if (!reading_by_lines)
+            skip_nls();
+        else {
+            skip_nls(1);
+        }
         if (match(TokenType::ELSE)) {
             auto elsebody = body();
             decl = new If(cond, ifbody, new Else(elsebody));
@@ -374,10 +390,12 @@ IR *Parser::declaration() {
         no_end_needed = true;
     }
     else if (match(TokenType::ELSE)) {
+        // TODO: Match this else to prev
         parser_error(create_diag(diags::ELSE_WITHOUT_IF));
     }
 
     // while
+    
 
     // do while
 
@@ -520,11 +538,15 @@ std::list<ir::IR *> Parser::block() {
 std::list<ir::IR *> Parser::body() {
     skip_nls();
     if (check(TokenType::LEFT_CURLY)) {
+        ++multi_line_parsing;
         return block();
+        --multi_line_parsing;
     }
     auto decl = declaration();
+    parser_assert((decl), create_diag(diags::DECL_EXPECTED));
+    if (isa<EndOfFile>(decl))
+        parser_error(create_diag(diags::UNEXPECTED_EOF));
     std::list<ir::IR *> decls{decl};
-    parser_assert(decl, create_diag(diags::DECL_EXPECTED));
     return decls;
 }
 
