@@ -413,6 +413,8 @@ void BytecodeGen::emit(ir::IR *decl) {
 }
 
 void BytecodeGen::output(RegValue *val) {
+    // TODO: Do we need this flag? Cant we just check if the operator is not "silent"?
+    // But what if it is `a || ~foo()`, then top is SHORTC_OR not SILENT
     if (!val->is_silent()) {
         val = get_ncreg(val);
         append(new Output(val->reg()));

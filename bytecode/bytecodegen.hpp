@@ -16,16 +16,25 @@
 
 namespace moss {
 
+/** Namespace for all bytecode code generation resources */
 namespace bcgen {
 
+/**
+ * This class represents a register value and its properties.
+ * This has to be encapsulated to store these properties and change them
+ * based on other IRs. 
+ * We mainly need to distinguish where this value is to be stored, if it should
+ * reside in the constant pool or variable pool
+ */
 class RegValue {
 private:
-    opcode::Register value;
-    bool constant;
-    bool silent;
+    opcode::Register value; ///< Actual register value for opcode
+    bool constant;          ///< If the value is from constant pool
+    bool silent;            ///< If the value should not be outputted
 public:
     RegValue(opcode::Register value, bool constant=false) : value(value), constant(constant), silent(false) {}
 
+    /** @return Opcode register this represents */
     opcode::Register reg() { return this->value; }
 
     bool is_const() { return this->constant; }
@@ -37,15 +46,18 @@ public:
     bool is_silent() { return this->silent; }
 };
 
-}
-
-namespace bcgen {
-
+/**
+ * @brief Bytecode generator
+ * 
+ * Generates bytecode from IR. This class works by modifying a Bytecode
+ * class passed to it, so it keeps its state and can be called to generate
+ * new code multiple times
+ */
 class BytecodeGen {
 private:
-    Bytecode *code;
-    opcode::Register curr_creg;
-    opcode::Register curr_reg;
+    Bytecode *code; ///< Bytecode it will be appending opcodes to
+    opcode::Register curr_creg; ///< Current free constant register
+    opcode::Register curr_reg;  ///< Current free register
 
     RegValue *emit(ir::BinaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
@@ -81,8 +93,21 @@ private:
         return regval;
     }
 public:
-    BytecodeGen(Bytecode *code) : code(code), curr_creg(0), curr_reg(0) {}
+    BytecodeGen(Bytecode *code) : code(code), curr_creg(0), curr_reg(0) {
+        assert(code && "Generator requires a non-null Bytecode");
+    }
 
+    /**
+     * @brief Generates opcodes from IR
+     * 
+     * This modifies the Bytecode object passed to this on creation and
+     * works with this as if it was connected to the previously passed in IRs.
+     * Meaning that the registers will not start from 0 if multiple Modules
+     * are passed to this.
+     * 
+     * @note This relies on the Bytecode object (passed on creation) being
+     *       valid and not modified by anyone else but this class.
+     */
     void generate(ir::IR *decl);
 };
 

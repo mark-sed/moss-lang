@@ -30,7 +30,6 @@ set(SOURCES
     frontend/parser.cpp
     frontend/scanner.cpp
     frontend/source.cpp
-    midend/ast.cpp
     midend/ir.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp

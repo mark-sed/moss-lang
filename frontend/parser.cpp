@@ -1,6 +1,5 @@
 #include "parser.hpp"
 #include "ir.hpp"
-#include "ast.hpp"
 #include "diagnostics.hpp"
 #include "logging.hpp"
 #include "errors.hpp"
@@ -526,6 +525,7 @@ IR *Parser::declaration() {
         }
     }
     LOGMAX("Parsed declaration " << *decl);
+    assert(decl && "Nothing parsed and no raise?");
     return decl;
 }
 

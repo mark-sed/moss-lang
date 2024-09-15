@@ -11,8 +11,8 @@
 #define _PARSER_HPP_
 
 #include "scanner.hpp"
+#include "ir.hpp"
 #include "source.hpp"
-#include "ast.hpp"
 #include "diagnostics.hpp"
 #include <vector>
 #include <list>
@@ -36,9 +36,33 @@ private:
     bool reading_by_lines;
     int multi_line_parsing;
 
+    /** 
+     * Parses an IR that is a declaration (if not throws an error)
+     * Declaration is a statement that can be on its own, so like a line in REPL
+     * 
+     * @note This will ignore all standalone new lines and semicolons
+     * @throw If error is encountered, this throws ir::Raise describing this
+     *        error, which can be interpreted by moss
+     * @return Parsed input into an IR class
+     */
     ir::IR *declaration();
+
+    /** 
+     * Tries to parse an expression
+     * 
+     * @throw If error is encountered, this throws ir::Raise describing this
+     *        error, which can be interpreted by moss
+     * @return Parsed input into an Expression class or nullptr if there is
+     *         not an expression on the input
+    */
     ir::Expression *expression();
+
+    /** Tries to parse a block of code */
     std::list<ir::IR *> block();
+    /** 
+     * Tries to parse a body,
+     * which might be a block of code or a declaration
+     */
     std::list<ir::IR *> body();
 
     ir::Expression *constant();
@@ -77,12 +101,26 @@ private:
     Token *expect_ws(TokenType type, diags::Diagnostic msg);
     Token *advance_ws();
 
+    /** 
+     * Skip all tokens until a new declaration 
+     * (new line or semicolon tells this)
+     */
     void next_decl();
+    /** Skip all new lines and semicolons until a new token */
     void skip_ends();
+    /** Skip all new lines until some other token */
     void skip_nls();
+    /** Skip `max` new lines */
     void skip_nls(unsigned max);
 
+    /** 
+     * Unescapes a string (for printing and so on) using moss string
+     * escape sequences
+     * 
+     * @throw ir::Raise if incorrect escape sequence is used
+     */
     ustring unescapeString(ustring str);
+
     void scan_line();
 
     template<typename ... Args>
