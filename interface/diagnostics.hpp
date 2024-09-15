@@ -60,8 +60,10 @@ enum DiagID {
     MISSING_ENUM_SEPAR,     ///< Missing separator after enum value
     ENUM_VALUE_REDEFINITION,///< Enum value already defined
     IF_REQUIRES_PARENTH,    ///< If has to be followed by parenthesis
+    WHILE_REQUIRES_PARENTH, ///< While has to be followed by parenthesis
     ELSE_WITHOUT_IF,        ///< Standalone else
     UNEXPECTED_EOF,         ///< Found EOF but some construct was not fully parsed
+    NO_WHILE_AFTER_DO,      ///< Do but then no while
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -101,9 +103,11 @@ static const char * DIAG_MSGS[] = {
     "Incorrect enum value",
     "Enum values have to be separated by comma (','), semicolon (';') or a new line",
     "Value '%s' is already defined in enum '%s'",
-    "If statement has to have the condition in parenthesis",
+    "If statement has to have its condition in parenthesis",
+    "While statement has to have its condition in parenthesis",
     "'else' without a previous 'if'",
     "Unexpected end of file",
+    "Keyword 'do' has to be followed by 'while' and a condition",
 };
 
 /**

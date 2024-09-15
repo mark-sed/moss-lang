@@ -641,4 +641,80 @@ if (true) "hi" else "no"
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Whiles){
+    ustring code = R"(
+while (4 > 9) "hi"
+
+while (a)
+
+{
+    "some" ++ " " ++ "output"
+}
+
+while (a or b) { "a or b\n"; } while (c)
+"d"
+
+// Do while
+do "hi"; while (4 > 9) 
+
+do
+
+{
+    "some" ++ " " ++ "output"
+}
+
+while (a)
+
+do  { "a or b\n"; } while (a or b); do
+"d"
+while (c)
+
+do do {} while (false); while (false)
+)";
+
+    IRType expected[] = {
+        IRType::WHILE,
+        IRType::WHILE,
+        IRType::WHILE,
+        IRType::WHILE,
+
+        IRType::DO_WHILE,
+        IRType::DO_WHILE,
+        IRType::DO_WHILE,
+        IRType::DO_WHILE,
+        IRType::DO_WHILE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+while true { "hi" }
+while {}
+
+// Do while
+do {
+"a"
+}
+do { 12 } while (false)
+do do {} while (false) while
+
+//do { "hi"; } while
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

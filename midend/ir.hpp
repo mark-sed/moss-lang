@@ -34,6 +34,8 @@ enum IRType {
     MODULE,
     SPACE,
     IF,
+    WHILE,
+    DO_WHILE,
     ELSE,
     ENUM,
 
@@ -210,7 +212,7 @@ public:
     }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "else {";
+        os << "else {\n";
         for (auto d: body) {
             os << *d << "\n";
         }
@@ -238,7 +240,7 @@ public:
     }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "if (" << *cond << ") {";
+        os << "if (" << *cond << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
         }
@@ -246,6 +248,56 @@ public:
         if (elseBranch) {
             os << *elseBranch;
         }
+        return os;
+    }
+};
+
+class While : public Construct {
+private:
+    Expression *cond;
+
+public:
+    static const IRType ClassType = IRType::WHILE;
+
+    While(Expression *cond, std::list<IR *> whbody) 
+           : Construct(ClassType, "while"), cond(cond) {
+        this->body = whbody;
+    }
+    ~While() {
+        delete cond;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "while (" << *cond << ") {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class DoWhile : public Construct {
+private:
+    Expression *cond;
+
+public:
+    static const IRType ClassType = IRType::DO_WHILE;
+
+    DoWhile(Expression *cond, std::list<IR *> whbody) 
+           : Construct(ClassType, "do-while"), cond(cond) {
+        this->body = whbody;
+    }
+    ~DoWhile() {
+        delete cond;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "do {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "while (" << *cond << ")";
         return os;
     }
 };

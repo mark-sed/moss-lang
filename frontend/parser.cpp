@@ -394,10 +394,26 @@ IR *Parser::declaration() {
         parser_error(create_diag(diags::ELSE_WITHOUT_IF));
     }
 
-    // while
-    
-
-    // do while
+    // while / do while
+    else if (match(TokenType::WHILE)) {
+        expect(TokenType::LEFT_PAREN, create_diag(diags::WHILE_REQUIRES_PARENTH));
+        auto cond = expression();
+        parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        auto whbody = body();
+        decl = new While(cond, whbody);
+        no_end_needed = true;
+    }
+    else if (match(TokenType::DO)) {
+        auto whbody = body();
+        skip_nls();
+        expect(TokenType::WHILE, create_diag(diags::NO_WHILE_AFTER_DO));
+        expect(TokenType::LEFT_PAREN, create_diag(diags::WHILE_REQUIRES_PARENTH));
+        auto cond = expression();
+        parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        decl = new DoWhile(cond, whbody);
+    }
 
     // for
 
