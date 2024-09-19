@@ -82,7 +82,7 @@ void Interpreter::pop_frame() {
 }
 
 void Interpreter::run() {
-    LOG1("Running interpreter");
+    LOG1("Running interpreter\n----- OUTPUT: -----");
 
     // TODO: Change for repl
     while(bci < code->size()) {

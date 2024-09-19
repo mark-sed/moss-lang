@@ -226,8 +226,13 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
         }
         else if (auto o = dyn_cast<opcode::BuildDict>(op_gen)){
+            write_register(o->dst);
             write_register(o->keys);
             write_register(o->vals);
+        }
+        else if (auto o = dyn_cast<opcode::BuildEnum>(op_gen)){
+            write_register(o->dst);
+            write_register(o->names);
         }
         else if (auto o = dyn_cast<opcode::CreateRange>(op_gen)){
             write_register(o->dst);

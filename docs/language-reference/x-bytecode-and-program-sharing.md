@@ -188,6 +188,7 @@ xxh - LIST_PUSH_ADDR    addr
 xxh - BUILD_LIST        %dst
 
 xxh - BUILD_DICT        %keys, %vals
+xxx - BUILD_ENUM        %names
 
 xxh - CREATE_RANGE      %dst, %start, %step, %end
 xxh - CREATE_RANGE2     %dst, #start, %step, %end
@@ -415,4 +416,20 @@ add2    RETURN_CONST #0
 add3    RETURN_CONST #200
 ```
 
-### Exception
+### Enum
+
+```cpp
+enum Colors {
+    BLACK
+    WHITE
+}
+```
+
+```
+x       STORE_STR_CONST #1, "BLACK"
+x       STORE_STR_CONST #2, "WHITE"
+x       LIST_PUSH_CONST #1
+x       LIST_PUSH_CONST #2
+x       BUILD_LIST      %0
+x       BUILD_ENUM      %1, %0
+```

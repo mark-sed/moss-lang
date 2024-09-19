@@ -1028,6 +1028,10 @@ void BuildDict::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void BuildEnum::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 static Value *range(Value *start, Value *step, Value *end, Interpreter *vm) {
     Value *res = nullptr;
     assert(false && "TODO: Unimplemented range generation");

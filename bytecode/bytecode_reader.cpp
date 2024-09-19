@@ -627,7 +627,13 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::BUILD_DICT: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
-                bc->push_back(new BuildDict(reg1, reg2));
+                auto reg3 = read_register();
+                bc->push_back(new BuildDict(reg1, reg2, reg3));
+            } break;
+            case opcode::OpCodes::BUILD_ENUM: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                bc->push_back(new BuildEnum(reg1, reg2));
             } break;
             case opcode::OpCodes::CREATE_RANGE: {
                 auto reg1 = read_register();

@@ -32,7 +32,6 @@ Value *MemoryPool::load_name(ustring name) {
     auto index = this->sym_table.find(name);
     if (index != this->sym_table.end()) {
         auto v = this->pool[index->second];
-        assert(v && "Somehow symtable index was incorrect");
         return v;
     }
     return nullptr;

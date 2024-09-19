@@ -173,7 +173,9 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
 
     bc->push_back(new opcode::BuildList(8));
 
-    bc->push_back(new opcode::BuildDict(4, 13));
+    bc->push_back(new opcode::BuildDict(4, 13, 14));
+
+    bc->push_back(new opcode::BuildEnum(5, 19));
 
     bc->push_back(new opcode::CreateRange(1, 2, 3, 4));
     bc->push_back(new opcode::CreateRange2(1, 2, 3, 4));

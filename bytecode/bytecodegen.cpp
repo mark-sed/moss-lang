@@ -138,6 +138,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         }
         case OperatorKind::OP_SET: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
                 append(new StoreConst(next_reg(), right->reg()));
                 auto reg = last_reg();
@@ -153,14 +154,100 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 return reg;
             }
         }
-        case OperatorKind::OP_SET_CONCAT:
-        case OperatorKind::OP_SET_EXP:
-        case OperatorKind::OP_SET_PLUS:
-        case OperatorKind::OP_SET_MINUS:
-        case OperatorKind::OP_SET_DIV:
-        case OperatorKind::OP_SET_MUL:
-        case OperatorKind::OP_SET_MOD:
-            assert(false && "TODO: Operator");
+        case OperatorKind::OP_SET_CONCAT: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Concat3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Concat(left->reg(), left->reg(), right->reg()));
+            }
+            // TODO: We need to store the name as the value was copied into a
+            // new register and that was modified. If we don't generate load,
+            // we could use just the original register and get rid of 
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
+        case OperatorKind::OP_SET_EXP: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Exp3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Exp(left->reg(), left->reg(), right->reg()));
+            }
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
+        case OperatorKind::OP_SET_PLUS: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Add3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Add(left->reg(), left->reg(), right->reg()));
+            }
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
+        case OperatorKind::OP_SET_MINUS: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Sub3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Sub(left->reg(), left->reg(), right->reg()));
+            }
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
+        case OperatorKind::OP_SET_DIV: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Div3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Div(left->reg(), left->reg(), right->reg()));
+            }
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
+        case OperatorKind::OP_SET_MUL: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Mul3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Mul(left->reg(), left->reg(), right->reg()));
+            }
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
+        case OperatorKind::OP_SET_MOD: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            assert(irvar && "Assigning to non-variable");
+            if (right->is_const()) {
+                append(new Mod3(left->reg(), left->reg(), right->reg()));
+            }
+            else {
+                append(new Mod(left->reg(), left->reg(), right->reg()));
+            }
+            append(new StoreName(left->reg(), irvar->get_name()));
+            left->set_silent(true);
+            return left;
+        }
         case OperatorKind::OP_EQ: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), right->reg()));

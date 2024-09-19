@@ -165,7 +165,8 @@ enum OpCodes : opcode_t {
     LIST_PUSH_ADDR, //    addr
     BUILD_LIST, //        %dst
 
-    BUILD_DICT, //        %keys, %vals
+    BUILD_DICT, //        %dst, %keys, %vals
+    BUILD_ENUM, //        %dst, %names
 
     CREATE_RANGE, //      %dst, %start, %step, %end
     CREATE_RANGE2, //     %dst, #start, %step, %end
@@ -1692,23 +1693,47 @@ public:
 
 class BuildDict : public OpCode {
 public:
+    Register dst;
     Register keys;
     Register vals;
 
     static const OpCodes ClassType = OpCodes::BUILD_DICT;
 
-    BuildDict(Register keys, Register vals) : OpCode(ClassType, "BUILD_DICT"), keys(keys), vals(vals) {}
+    BuildDict(Register dst, Register keys, Register vals) 
+              : OpCode(ClassType, "BUILD_DICT"), dst(dst), keys(keys), vals(vals) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << keys << ", %" << vals;
+        os << mnem << "\t%" << dst << ", %" << keys << ", %" << vals;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<BuildDict>(other);
         if (!casted) return false;
-        return casted->keys == keys && casted->vals == vals;
+        return casted->dst == dst && casted->keys == keys && casted->vals == vals;
+    }
+};
+
+class BuildEnum : public OpCode {
+public:
+    Register dst;
+    Register names;
+
+    static const OpCodes ClassType = OpCodes::BUILD_ENUM;
+
+    BuildEnum(Register dst, Register names) : OpCode(ClassType, "BUILD_ENUM"), dst(dst), names(names) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << dst << ", %" << names;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<BuildEnum>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->names == names;
     }
 };
 
