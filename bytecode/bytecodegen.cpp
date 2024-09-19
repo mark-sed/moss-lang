@@ -9,7 +9,10 @@ using namespace bcgen;
 using namespace opcode;
 
 RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
-    auto left = emit(expr->get_left());
+    // Dont emit for left if set and its variable
+    RegValue *left = nullptr;
+    if (expr->get_op().get_kind() != OperatorKind::OP_SET || !isa<Variable>(expr->get_left()))
+        left = emit(expr->get_left());
     auto right = emit(expr->get_right());
 
     // TODO: Optimize 2 consts into literals
@@ -133,7 +136,23 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
             return last_reg();
         }
-        case OperatorKind::OP_SET:
+        case OperatorKind::OP_SET: {
+            auto irvar = dyn_cast<Variable>(expr->get_left());
+            if (right->is_const()) {
+                append(new StoreConst(next_reg(), right->reg()));
+                auto reg = last_reg();
+                reg->set_silent(true);
+                append(new StoreName(reg->reg(), irvar->get_name()));
+                return reg;
+            }
+            else {
+                append(new Store(next_reg(), right->reg()));
+                auto reg = last_reg();
+                reg->set_silent(true);
+                append(new StoreName(reg->reg(), irvar->get_name()));
+                return reg;
+            }
+        }
         case OperatorKind::OP_SET_CONCAT:
         case OperatorKind::OP_SET_EXP:
         case OperatorKind::OP_SET_PLUS:
@@ -369,6 +388,10 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
     }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);
+    }
+    else if (auto val = dyn_cast<Variable>(expr)) {
+        append(new Load(next_reg(), val->get_name()));
+        bcv = last_reg();
     }
     else {
         assert(false && "Missing Expression generation");

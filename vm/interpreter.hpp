@@ -33,7 +33,7 @@ private:
     Bytecode *code;
     File *src_file;
     MemoryPool *const_pool;
-    std::list<MemoryPool *> reg_pools;
+    std::list<MemoryPool *> frames;
 
     opcode::Address bci;
 
@@ -42,8 +42,8 @@ private:
     bool bci_modified;
 
     MemoryPool *get_const_pool() { return this->const_pool; }
-    MemoryPool *get_reg_pool() { return this->reg_pools.back(); }
-    MemoryPool *get_global_reg_pool() { return this->reg_pools.front(); }
+    MemoryPool *get_local_frame() { return this->frames.back(); }
+    MemoryPool *get_global_frame() { return this->frames.front(); }
 public:
     Interpreter(Bytecode *code, File *src_file=nullptr);
     ~Interpreter();
@@ -80,7 +80,9 @@ public:
      */
     Value *load_global_name(ustring name);
 
-    // TODO: pop and push frame (with free)
+    void push_frame();
+
+    void pop_frame();
 
     int get_exit_code() { return exit_code; }
 

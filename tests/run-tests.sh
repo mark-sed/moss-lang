@@ -124,12 +124,18 @@ function test_expressions {
 true\nfalse\n9\n255\n0\n" "expressions"
 }
 
+function test_variables {
+    expect_pass "variables.ms" "variables"
+    expect_out_eq "42\n42\n44\n44\n5\n" "variables"
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
     run_test empty
     run_test output
     run_test expressions
+    run_test variables
 }
 
 # Count all functions starting with test_ 

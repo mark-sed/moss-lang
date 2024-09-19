@@ -164,11 +164,11 @@ void Call::exec(Interpreter *vm) {
 }
 
 void PushFrame::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    vm->push_frame();
 }
 
 void PopFrame::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    vm->pop_frame();
 }
 
 void Return::exec(Interpreter *vm) {

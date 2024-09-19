@@ -5,12 +5,13 @@ using namespace moss;
 
 Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0) {
     this->const_pool = new MemoryPool();
-    this->reg_pools.push_back(new MemoryPool());
+    // Global frame
+    this->frames.push_back(new MemoryPool());
 }
 
 Interpreter::~Interpreter() {
     delete const_pool;
-    for(auto p: reg_pools) {
+    for(auto p: frames) {
         delete p;
     }
 }
@@ -22,7 +23,7 @@ Interpreter::~Interpreter() {
 std::ostream& Interpreter::debug(std::ostream& os) const {
     os << "Interpreter {\n";
     // TODO: Debug all pools
-    os << "\tRegister pool:\n" << *reg_pools.back() << "\n";
+    os << "\tRegister pool:\n" << *frames.back() << "\n";
     os << "\tConstant pool:\n" << *const_pool << "\n";
     os << "\tExit code: " << exit_code << "\n";
     os << "}\n";
@@ -32,7 +33,7 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
 void Interpreter::store(opcode::Register reg, Value *v) {
     // TODO: Go through frames
     // FIXME: Incorrect
-    get_reg_pool()->store(reg, v);
+    get_local_frame()->store(reg, v);
 }
 
 void Interpreter::store_const(opcode::Register reg, Value *v) {
@@ -44,7 +45,7 @@ void Interpreter::store_const(opcode::Register reg, Value *v) {
 Value *Interpreter::load(opcode::Register reg) {
     // TODO: Go through frames
     // FIXME: Incorrect
-    return get_reg_pool()->load(reg);
+    return get_local_frame()->load(reg);
 }
 
 Value *Interpreter::load_const(opcode::Register reg) {
@@ -56,17 +57,28 @@ Value *Interpreter::load_const(opcode::Register reg) {
 void Interpreter::store_name(opcode::Register reg, ustring name) {
     // TODO: Go through frames
     // FIXME: Incorrect
-    get_reg_pool()->store_name(reg, name);
+    get_local_frame()->store_name(reg, name);
 }
 
 Value *Interpreter::load_name(ustring name) {
     // TODO: Go through frames
     // FIXME: Incorrect
-    return get_reg_pool()->load_name(name);
+    return get_local_frame()->load_name(name);
 }
 
 Value *Interpreter::load_global_name(ustring name) {
-    return get_global_reg_pool()->load_name(name);
+    return get_global_frame()->load_name(name);
+}
+
+void Interpreter::push_frame() {
+    this->frames.push_back(new MemoryPool());
+}
+
+void Interpreter::pop_frame() {
+    assert(frames.size() > 1 && "Trying to pop global frame");
+    auto top = frames.back();
+    frames.pop_back();
+    delete top;
 }
 
 void Interpreter::run() {
