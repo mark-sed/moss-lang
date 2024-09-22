@@ -62,10 +62,14 @@ enum DiagID {
     IF_REQUIRES_PARENTH,    ///< If has to be followed by parenthesis
     WHILE_REQUIRES_PARENTH, ///< While has to be followed by parenthesis
     FOR_REQUIRES_PARENTH,   ///< For loop has to be followed by parenthesis
+    CATCH_REQUIRES_PARENTH, ///< Catch has to be followed by parenthesis
     ELSE_WITHOUT_IF,        ///< Standalone else
     UNEXPECTED_EOF,         ///< Found EOF but some construct was not fully parsed
     NO_WHILE_AFTER_DO,      ///< Do but then no while
     FOR_MISSING_COLON,      ///< No : after iterator in for
+    CATCH_EXPECTED,         ///< Try without catch
+    INCORRECT_ARGUMENT,     ///< Value is not ID for argument
+    TYPE_EXPECTED,          ///< Expecting type name
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -108,10 +112,14 @@ static const char * DIAG_MSGS[] = {
     "If statement has to have its condition in parenthesis",
     "While statement has to have its condition in parenthesis",
     "For loop has to have its iterator and collection in parenthesis",
+    "Catch has to have its argument in parenthesis",
     "'else' without a previous 'if'",
     "Unexpected end of file",
     "Keyword 'do' has to be followed by 'while' and a condition",
     "Iterator in for loop has to be followed by a colon (':')",
+    "Expecting 'catch' after try",
+    "Incorrect argument",
+    "Type expected",
 };
 
 /**

@@ -431,8 +431,39 @@ IR *Parser::declaration() {
     // switch
 
     // try
-
-    // constructor
+    // TODO: Should we allow try ... finally without catch as Python does?
+    else if (match(TokenType::TRY)) {
+        auto trbody = body();
+        skip_nls();
+        std::vector<Catch *> catches;
+        while (match(TokenType::CATCH)) {
+            expect(TokenType::LEFT_PAREN, create_diag(diags::CATCH_REQUIRES_PARENTH));
+            auto arg = argument();
+            parser_assert(arg, create_diag(diags::EXPR_EXPECTED));
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+            auto ctbody = body();
+            catches.push_back(new Catch(arg, ctbody));
+            if (!reading_by_lines)
+                skip_nls();
+            else {
+                skip_nls(1);
+            }
+        }
+        if (catches.empty())
+            parser_error(create_diag(diags::CATCH_EXPECTED));
+        if (!reading_by_lines)
+            skip_nls();
+        else {
+            skip_nls(1);
+        }
+        Finally *finallyStmt = nullptr;
+        if (match(TokenType::FINALLY)) {
+            auto fnbody = body();
+            finallyStmt = new Finally(fnbody);
+        }
+        decl = new Try(catches, trbody, finallyStmt);
+        no_end_needed = true;
+    }
     
     // assert / raise / return
     else if (match(TokenType::ASSERT)) {
@@ -498,6 +529,8 @@ IR *Parser::declaration() {
     }
 
     // class
+
+    // constructor
 
     // space
     else if (match(TokenType::SPACE)) {
@@ -997,6 +1030,38 @@ Expression *Parser::constant() {
     }
     else if (match(TokenType::NIL)) {
         return new NilLiteral();
+    }
+    return nullptr;
+}
+
+Argument *Parser::argument() {
+    if (check(TokenType::ID)) {
+        auto id = advance();
+        std::vector<Expression *> types;
+        if (match(TokenType::COLON)) {
+            if (match(TokenType::LEFT_SQUARE)) {
+                lower_range_prec = true;
+                Expression *expr = nullptr;
+                do {
+                    skip_nls(); // TODO: Keep this?
+                    expr = expression();
+                    if (expr)
+                        types.push_back(expr);
+                } while (match(TokenType::COMMA) && expr);
+                parser_assert(!types.empty(), create_diag(diags::TYPE_EXPECTED));
+                expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+                lower_range_prec = false;
+            }
+            else {
+                auto type = expression();
+                parser_assert(type, create_diag(diags::TYPE_EXPECTED));
+                types.push_back(type);
+            }
+        }
+        return new Argument(id->get_value(), types);
+    }
+    else {
+        parser_error(create_diag(diags::INCORRECT_ARGUMENT));
     }
     return nullptr;
 }

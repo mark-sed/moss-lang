@@ -34,6 +34,9 @@ enum IRType {
     MODULE,
     SPACE,
     IF,
+    TRY,
+    CATCH,
+    FINALLY,
     WHILE,
     DO_WHILE,
     FOR_LOOP,
@@ -50,6 +53,7 @@ enum IRType {
     BINARY_EXPR, // Start of Expresion IDs -- Add any new to dyn_cast bellow!
     UNARY_EXPR,
     VARIABLE,
+    ARGUMENT,
     NOTE,
     TERNARY_IF,
     RANGE,
@@ -249,6 +253,107 @@ public:
         if (elseBranch) {
             os << *elseBranch;
         }
+        return os;
+    }
+};
+
+class Argument : public Expression {
+private:
+    std::vector<Expression *> types;
+
+public:
+    static const IRType ClassType = IRType::ARGUMENT;
+
+    Argument(ustring name, std::vector<Expression *> types) : Expression(ClassType, name), types(types) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << name;
+        bool first = true;
+        for (auto t: types) {
+            if (first) {
+                os << ":[" << *t;
+            }
+            os << ", " << *t;
+        }
+        if (!first)
+            os << "]";
+        return os;
+    }
+};
+
+class Catch : public Construct {
+private:
+    Argument *arg;
+
+public:
+    static const IRType ClassType = IRType::CATCH;
+
+    Catch(Argument *arg, std::list<IR *> ctbody) : Construct(ClassType, "catch"), arg(arg) {
+        this->body = ctbody;
+    }
+    ~Catch() {
+        delete arg;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "catch (" << *arg << ") {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class Finally : public Construct {
+public:
+    static const IRType ClassType = IRType::FINALLY;
+
+    Finally(std::list<IR *> fnbody) : Construct(ClassType, "finally") {
+        this->body = fnbody;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "finally {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class Try : public Construct {
+private:
+    std::vector<Catch *> catches;
+    Finally *finallyStmt;
+
+public:
+    static const IRType ClassType = IRType::TRY;
+
+    Try(std::vector<Catch *> catches, std::list<IR *> trbody, Finally *finallyStmt=nullptr) 
+           : Construct(ClassType, "try"), catches(catches), finallyStmt(finallyStmt) {
+        this->body = trbody;
+    }
+    ~Try() {
+        for (auto c : catches) {
+            delete c;
+        }
+        if (finallyStmt)
+            delete finallyStmt;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "try {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        for (auto c : catches) {
+            os << *c;
+        }
+        if (finallyStmt)
+            os << *finallyStmt;
         return os;
     }
 };
@@ -835,6 +940,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         if (auto e = dyn_cast<ir::BinaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::UnaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::Variable>(i)) return e;
+        else if (auto e = dyn_cast<ir::Argument>(i)) return e;
         else if (auto e = dyn_cast<ir::Note>(i)) return e;
         else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
         else if (auto e = dyn_cast<ir::Range>(i)) return e;

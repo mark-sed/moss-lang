@@ -771,4 +771,64 @@ for (j :) {}
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, TryCatchFinally){
+    ustring code = R"(
+try {
+
+} catch (a) {
+
+}
+
+try ""; catch (a:Bool) "bool"; catch(a:Int) "Int"; catch(x) "some other"
+
+try ""
+catch(e: [Int]) {}
+catch(e: [Int, Bool, A::Foo])
+    "exit"
+
+try ""; catch (a:Int) {
+} finally "finally"
+
+try ""; catch (a:A::C) "c"; catch(x) "some other"; finally {
+    exit(0)
+}
+
+try ""
+catch(e: [Int]) {}
+catch(e: [Int, Bool, A::Foo])
+    "e"
+finally
+    "finally"
+)";
+
+    IRType expected[] = {
+        IRType::TRY,
+        IRType::TRY,
+        IRType::TRY,
+        IRType::TRY,
+        IRType::TRY,
+        IRType::TRY,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+/*ustring incorrect = R"(
+
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));*/
+}
+
 }
