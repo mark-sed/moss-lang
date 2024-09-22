@@ -36,6 +36,7 @@ enum IRType {
     IF,
     WHILE,
     DO_WHILE,
+    FOR_LOOP,
     ELSE,
     ENUM,
 
@@ -298,6 +299,33 @@ public:
             os << *d << "\n";
         }
         os << "while (" << *cond << ")";
+        return os;
+    }
+};
+
+class ForLoop : public Construct {
+private:
+    Expression *iterator;
+    Expression *collection;
+
+public:
+    static const IRType ClassType = IRType::FOR_LOOP;
+
+    ForLoop(Expression *iterator, Expression *collection, std::list<IR *> frbody) 
+           : Construct(ClassType, "for"), iterator(iterator), collection(collection) {
+        this->body = frbody;
+    }
+    ~ForLoop() {
+        delete iterator;
+        delete collection;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "for (" << *iterator << ": " << *collection << ") {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
         return os;
     }
 };

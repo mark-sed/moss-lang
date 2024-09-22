@@ -415,6 +415,18 @@ IR *Parser::declaration() {
     }
 
     // for
+    else if (match(TokenType::FOR)) {
+        expect(TokenType::LEFT_PAREN, create_diag(diags::FOR_REQUIRES_PARENTH));
+        auto iterator = expression();
+        parser_assert(iterator, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::COLON, create_diag(diags::FOR_MISSING_COLON));
+        auto collection = expression();
+        parser_assert(collection, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        auto frbody = body();
+        decl = new ForLoop(iterator, collection, frbody);
+        no_end_needed = true;
+    }
 
     // switch
 

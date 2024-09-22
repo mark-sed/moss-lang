@@ -61,9 +61,11 @@ enum DiagID {
     ENUM_VALUE_REDEFINITION,///< Enum value already defined
     IF_REQUIRES_PARENTH,    ///< If has to be followed by parenthesis
     WHILE_REQUIRES_PARENTH, ///< While has to be followed by parenthesis
+    FOR_REQUIRES_PARENTH,   ///< For loop has to be followed by parenthesis
     ELSE_WITHOUT_IF,        ///< Standalone else
     UNEXPECTED_EOF,         ///< Found EOF but some construct was not fully parsed
     NO_WHILE_AFTER_DO,      ///< Do but then no while
+    FOR_MISSING_COLON,      ///< No : after iterator in for
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -105,9 +107,11 @@ static const char * DIAG_MSGS[] = {
     "Value '%s' is already defined in enum '%s'",
     "If statement has to have its condition in parenthesis",
     "While statement has to have its condition in parenthesis",
+    "For loop has to have its iterator and collection in parenthesis",
     "'else' without a previous 'if'",
     "Unexpected end of file",
     "Keyword 'do' has to be followed by 'while' and a condition",
+    "Iterator in for loop has to be followed by a colon (':')",
 };
 
 /**

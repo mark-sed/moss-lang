@@ -717,4 +717,58 @@ do do {} while (false) while
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, ForLoops){
+    ustring code = R"(
+for (a : b) {
+
+}
+
+for (v : "hello")
+    "Hi!"
+
+for ( some_v :  some_other ) { 1+2; }
+
+for (b : """Some
+multiline
+string""") 1+3
+
+for (i : arr1)
+    for (j : i)
+        for (k : j) {
+    k
+}
+)";
+
+    IRType expected[] = {
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+for a { "hi" }
+for {}
+for (a) {}
+for (j :) {}
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }
