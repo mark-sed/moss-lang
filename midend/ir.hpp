@@ -272,8 +272,10 @@ public:
         for (auto t: types) {
             if (first) {
                 os << ":[" << *t;
+                first = false;
             }
-            os << ", " << *t;
+            else
+                os << ", " << *t;
         }
         if (!first)
             os << "]";

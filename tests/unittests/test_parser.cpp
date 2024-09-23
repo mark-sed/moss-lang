@@ -815,12 +815,17 @@ finally
     run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
 
     // Errors
-/*ustring incorrect = R"(
+ustring incorrect = R"(
+try {}
 
+try {} catch () {}
+
+try {} catch(b) {} finally (a) {}
+
+try {} catch(a) ""; catch(a:) {}
 )";
 
     IRType expected_incorr[] = {
-        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -828,7 +833,7 @@ finally
         IRType::END_OF_FILE
     };
 
-    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));*/
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
 }
