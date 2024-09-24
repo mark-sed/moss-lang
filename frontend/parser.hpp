@@ -114,6 +114,8 @@ private:
     /** Skip `max` new lines */
     void skip_nls(unsigned max);
 
+    ustring get_last_id(ir::Expression *e);
+
     /** 
      * Unescapes a string (for printing and so on) using moss string
      * escape sequences

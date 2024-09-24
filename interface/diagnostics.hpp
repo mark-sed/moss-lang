@@ -70,6 +70,8 @@ enum DiagID {
     CATCH_EXPECTED,         ///< Try without catch
     INCORRECT_ARGUMENT,     ///< Value is not ID for argument
     TYPE_EXPECTED,          ///< Expecting type name
+    SCOPE_OR_ID_EXPECTED,   ///< Expecting name or scope
+    ID_EXPECTED,            ///< Name expected
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -120,6 +122,8 @@ static const char * DIAG_MSGS[] = {
     "Expecting 'catch' after try",
     "Incorrect argument",
     "Type expected",
+    "Expecting an identificator or a scope",
+    "Expecting an identificator"
 };
 
 /**

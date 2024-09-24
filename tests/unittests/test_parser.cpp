@@ -392,7 +392,7 @@ static void run_parser_by_line(ustring code, IRType *expected, unsigned expected
     bool eof_reached = false;
     unsigned index = 0;
     while (!eof_reached) {
-        ASSERT_TRUE(index < expected_size);
+        ASSERT_TRUE(index < expected_size) << " index: " << index << ", expected_size: " << expected_size;
         std::vector<ir::IR *> line_irs = parser.parse_line();
         ASSERT_TRUE(line_irs.size() <= 1);
         if (!line_irs.empty()) {
@@ -826,6 +826,90 @@ try {} catch(a) ""; catch(a:) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
+TEST(Parsing, Imports){
+    ustring code = R"(
+import math
+import FooBar as f
+import F, Boo as B, C, D as Dee
+
+import Some::Space::Value
+import So::Bo::Go as Goo, Foo::F as f1
+
+import A,
+       B::b,
+       C as C1,
+       D
+)";
+
+    IRType expected[] = {
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+
+        IRType::END_OF_FILE
+    };
+
+    ustring aliases[] = {
+        "math",
+        "f",
+        "F", "B", "C", "Dee",
+        "Value",
+        "Goo", "f1",
+        "A", "b", "C1", "D",
+    };
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    int index = 0;
+    int alias_index = 0;
+    for (auto decl: mod->get_body()) {
+        EXPECT_TRUE(decl->get_type() == expected[index]) << "Incorrect IR at index: " << index;
+        if (auto imp = dyn_cast<Import>(decl)) {
+            for(unsigned i = 0; i < imp->get_names().size(); i++) {
+                EXPECT_TRUE(imp->get_alias(i) == aliases[alias_index]) << "Incorrect alias at index: "
+                        << index << "\nExpected: " << aliases[alias_index] << "\nBut got: " << imp->get_alias(i);
+                ++alias_index;
+            }
+        }
+        index++;
+    }
+
+    delete mod;
+
+    // Errors
+ustring incorrect = R"(
+import Soo::Boo.c as D
+import
+import 32
+import "Foo"
+import Foo as F as G
+import Goo as Goo::Goo
+import O1 as "o1"
+import F::A[1]
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

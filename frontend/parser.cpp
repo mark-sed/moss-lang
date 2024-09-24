@@ -269,6 +269,22 @@ void Parser::skip_nls(unsigned max) {
     --multi_line_parsing;
 }
 
+ustring Parser::get_last_id(Expression *e) {
+    if (auto v = dyn_cast<Variable>(e)) {
+        return v->get_name();
+    }
+    else if (auto be = dyn_cast<BinaryExpr>(e)) {
+        if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
+            return get_last_id(be->get_right());
+        }
+        else {
+            parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
+        }
+    }
+    parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
+    return "";
+}
+
 /**
  * ```
  * EndOfFile -> EOF
@@ -362,7 +378,30 @@ IR *Parser::declaration() {
     }
 
     // import
-    // Import has to accept parser errors since it may be in try catch block
+    else if (match(TokenType::IMPORT)) {
+        std::vector<ir::Expression *> names;
+        std::vector<ustring> aliases;
+        lower_range_prec = true;
+
+        Expression *name = nullptr;
+        do {
+            if (name)
+                skip_nls();
+            name = expression();
+            parser_assert(name, create_diag(diags::SCOPE_OR_ID_EXPECTED));
+            names.push_back(name);
+            // We always call get_last_id as it checks that the name is ID or Scope
+            ustring alias = get_last_id(name);
+            if (match(TokenType::AS)) {
+                auto alias_tok = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
+                alias = alias_tok->get_value();
+            }
+            aliases.push_back(alias);
+        } while (match(TokenType::COMMA) && name);
+
+        lower_range_prec = false;
+        decl = new Import(names, aliases);
+    }
 
     // if
     else if (match(TokenType::IF)) {
@@ -530,8 +569,6 @@ IR *Parser::declaration() {
 
     // class
 
-    // constructor
-
     // space
     else if (match(TokenType::SPACE)) {
         ++multi_line_parsing;
@@ -553,6 +590,8 @@ IR *Parser::declaration() {
     }
 
     // fun
+
+    // constructor
 
     // expression
     else if (auto expr = expression()) {

@@ -253,8 +253,7 @@ x   LOAD        %1, "print"
 x   CALL        %42, %1
 x   RETURN      #105 (nil)
 
-x   STORE_NAME  %5, "foo(SpecialString,_)"
-x   ALIAS       %5, "foo(String,_)"
+x   STORE_NAME  %5, "foo(SpecialString,_)" ; We don't generate all children
 
 x   JMP         <byte at which main (call to foo) starts>
 x   STORE_ADDR  %5, <address of next bytecode>

@@ -43,6 +43,7 @@ enum IRType {
     ELSE,
     ENUM,
 
+    IMPORT,
     ASSERT,
     RAISE,
     RETURN,
@@ -451,6 +452,50 @@ public:
             os << v << "\n";
         }
         os << "}";
+        return os;
+    }
+};
+
+class Import : public Statement {
+private:
+    std::vector<Expression *> names;
+    std::vector<ustring> aliases;
+
+public:
+    static const IRType ClassType = IRType::IMPORT;
+
+    Import(std::vector<Expression *> names, std::vector<ustring> aliases) 
+           : Statement(ClassType, "import"), names(names), aliases(aliases) {}
+    ~Import() {
+        for (auto name : names)
+            delete name;
+    }
+
+    std::vector<Expression *> get_names() { return names; }
+    std::vector<ustring> get_aliases() { return aliases; }
+
+    Expression *get_name(unsigned index) {
+        assert(index < names.size() && "Out of bounds index");
+        return names[index];
+    }
+
+    ustring get_alias(unsigned index) {
+        assert(index < aliases.size() && "Out of bounds index");
+        return aliases[index];
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "import ";
+        bool first = true;
+        for (unsigned i = 0; i < names.size(); ++i) {
+            if (!first)
+                os << ", ";
+            else
+                first = false;
+            os << *names[i];
+            if (!aliases[i].empty())
+                os << " as " << aliases[i];
+        }
         return os;
     }
 };
