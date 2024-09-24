@@ -56,6 +56,10 @@ continue
 
 // Break
 break
+
+// Annotations
+@!SomeIDAnnotation
+@!min_version("1.1")
 )";
 
     IRType expected[] = {
@@ -69,6 +73,9 @@ break
 
         IRType::CONTINUE,
         IRType::BREAK,
+
+        IRType::ANNOTATION,
+        IRType::ANNOTATION,
         
         IRType::END_OF_FILE
     };
@@ -817,15 +824,16 @@ finally
     // Errors
 ustring incorrect = R"(
 try {}
-
 try {} catch () {}
-
 try {} catch(b) {} finally (a) {}
-
 try {} catch(a) ""; catch(a:) {}
+try { ""; } catch (e:[Int, F.a]) {} finally {}
+try { ""; } catch (e:3) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -902,9 +910,11 @@ import Foo as F as G
 import Goo as Goo::Goo
 import O1 as "o1"
 import F::A[1]
+import G::A.a::C::d
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

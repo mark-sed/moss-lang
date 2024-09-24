@@ -273,7 +273,7 @@ ustring Parser::get_last_id(Expression *e) {
     if (auto v = dyn_cast<Variable>(e)) {
         return v->get_name();
     }
-    else if (auto be = dyn_cast<BinaryExpr>(e)) {
+    if (auto be = dyn_cast<BinaryExpr>(e)) {
         if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
             return get_last_id(be->get_right());
         }
@@ -283,6 +283,19 @@ ustring Parser::get_last_id(Expression *e) {
     }
     parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
     return "";
+}
+
+bool Parser::is_id_or_scope(Expression *e) {
+    if (isa<Variable>(e)) {
+        return true;
+    }
+    if (auto be = dyn_cast<BinaryExpr>(e)) {
+        if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
+            return is_id_or_scope(be->get_right());
+        }
+        return false;
+    }
+    return false;
 }
 
 /**
@@ -301,7 +314,7 @@ ustring Parser::get_last_id(Expression *e) {
  * 
  * Expression -> ...
  * 
- * Annotation -> @|@! Expression
+ * Annotation -> (@|@!) Expression
  * 
  * Block -> { Declaration* }
  * Body -> Block | Expression
@@ -335,7 +348,11 @@ ustring Parser::get_last_id(Expression *e) {
  * Switch ->
  * Function ->
  * Constructor ->
- * Enum ->
+ * 
+ * IdList -> ID
+ *         | IdList (,|;|\n) ID
+ * Enum -> enum { IdList }
+ * 
  * Class -> 
  * ```
  */
@@ -1084,8 +1101,10 @@ Argument *Parser::argument() {
                 do {
                     skip_nls(); // TODO: Keep this?
                     expr = expression();
-                    if (expr)
+                    if (expr) {
+                        parser_assert(is_id_or_scope(expr), create_diag(diags::SCOPE_OR_ID_EXPECTED));
                         types.push_back(expr);
+                    }
                 } while (match(TokenType::COMMA) && expr);
                 parser_assert(!types.empty(), create_diag(diags::TYPE_EXPECTED));
                 expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
@@ -1094,6 +1113,7 @@ Argument *Parser::argument() {
             else {
                 auto type = expression();
                 parser_assert(type, create_diag(diags::TYPE_EXPECTED));
+                parser_assert(is_id_or_scope(type), create_diag(diags::SCOPE_OR_ID_EXPECTED));
                 types.push_back(type);
             }
         }

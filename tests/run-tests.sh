@@ -126,7 +126,8 @@ true\nfalse\n9\n255\n0\n" "expressions"
 
 function test_variables {
     expect_pass "variables.ms" "variables"
-    expect_out_eq "42\n42\n44\n44\n5\nMarek (me)\n25\n50\n20\n2\n8\n3\n" "variables"
+    expect_out_eq "42\n42\n44\n44\n5\nMarek (me)\n25\n50\n20\n2\n8\n3
+82\n:herb:🌿❗\n" "variables"
 }
 
 ###--- Running tests ---###
