@@ -270,6 +270,7 @@ void Parser::skip_nls(unsigned max) {
 }
 
 ustring Parser::get_last_id(Expression *e) {
+    assert(e && "nullptr passed for check");
     if (auto v = dyn_cast<Variable>(e)) {
         return v->get_name();
     }
@@ -288,6 +289,7 @@ ustring Parser::get_last_id(Expression *e) {
 }
 
 bool Parser::is_id_or_scope(Expression *e) {
+    assert(e && "nullptr passed for check");
     if (isa<Variable>(e)) {
         return true;
     }
@@ -611,6 +613,24 @@ IR *Parser::declaration() {
     }
 
     // class
+    else if (match(TokenType::CLASS)) {
+        ++multi_line_parsing;
+        if (check(TokenType::ID)) {
+            auto name = advance();
+            std::vector<Expression *> parents;
+            if (match(TokenType::COLON)) {
+                parents = arg_list(true);
+                parser_assert(!parents.empty(), create_diag(diags::PARENT_LIST_EXPECTED));
+            }
+            auto clbody = block();
+            decl = new Class(name->get_value(), parents, clbody);
+            no_end_needed = true;
+        }
+        else {
+            parser_error(create_diag(diags::MISSING_CLASS_NAME));
+        }
+        --multi_line_parsing;
+    }
 
     // space
     else if (match(TokenType::SPACE)) {
@@ -1039,7 +1059,7 @@ Expression *Parser::subscript() {
     return expr;
 }
 
-std::vector<ir::Expression *> Parser::arg_list() {
+std::vector<ir::Expression *> Parser::arg_list(bool only_scope_or_id) {
     std::vector<ir::Expression *> args;
     // Setting this to true will indicate to not give precedence to range over
     // another argument
@@ -1049,8 +1069,11 @@ std::vector<ir::Expression *> Parser::arg_list() {
     do {
         skip_nls();
         expr = expression();
-        if (expr)
+        if (expr) {
+            if (only_scope_or_id)
+                parser_assert(is_id_or_scope(expr), create_diag(diags::SCOPE_OR_ID_EXPECTED));
             args.push_back(expr);
+        }
     } while (match(TokenType::COMMA) && expr);
 
     lower_range_prec = false;

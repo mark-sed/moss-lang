@@ -485,6 +485,51 @@ space Foo+1
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Classes){
+    ustring code = R"(
+class Animal {}
+
+class Range : Is::Iterable, BaseClass {
+    NAME = "range"
+}
+
+class Bull : Animal,
+             Mammal
+{
+    STRONG = true
+}
+)";
+
+    IRType expected[] = {
+        IRType::CLASS,
+        IRType::CLASS,
+        IRType::CLASS,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+class {}
+class 12 {}
+class Bar : Base, 1 {}
+class Foo : {}
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 TEST(Parsing, Enums){
     ustring code = R"(
 enum Foo {}

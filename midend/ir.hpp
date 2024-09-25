@@ -33,6 +33,7 @@ enum IRType {
 
     MODULE,
     SPACE,
+    CLASS,
     IF,
     ELSE,
     SWITCH,
@@ -203,6 +204,38 @@ public:
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "space " << name << " {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class Class : public Construct {
+private:
+    std::vector<Expression *> parents;
+public:
+    static const IRType ClassType = IRType::CLASS;
+
+    Class(ustring name, std::vector<Expression *> parents, std::list<IR *> clbody) 
+        : Construct(ClassType, name), parents(parents) {
+        this->body = clbody;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "class " << name;
+        bool first = true;
+        for (auto p: parents) {
+            if (first) {
+                os << " : " << *p;
+                first = false;
+            }
+            else {
+                os << ", " << *p;
+            }
+        }
+        os << " {\n";
         for (auto d: body) {
             os << *d << "\n";
         }

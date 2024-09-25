@@ -81,6 +81,8 @@ enum DiagID {
     SWITCH_CASE_EXPECTED,   ///< Expecting case or default
     CASE_MISSING_COLON,     ///< No : after case values
     MULTIPLE_DEFAULTS,      ///< More than 1 default in a switch
+    PARENT_LIST_EXPECTED,   ///< No parents after a colon
+    MISSING_CLASS_NAME,     ///< Class without name
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -142,6 +144,8 @@ static const char * DIAG_MSGS[] = {
     "Expecting 'case' or 'default'",
     "Case value or values have to be followed by a colon (':')",
     "Multiple default cases found in a switch — at most 1 default case can be present",
+    "Expecting a list of parent classes",
+    "Class has to have a name",
 };
 
 /**
