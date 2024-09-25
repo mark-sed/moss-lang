@@ -829,9 +829,13 @@ try {} catch(b) {} finally (a) {}
 try {} catch(a) ""; catch(a:) {}
 try { ""; } catch (e:[Int, F.a]) {} finally {}
 try { ""; } catch (e:3) {}
+catch(e) {}
+finally {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -978,9 +982,13 @@ switch {}
 switch (if(a) {42}) {}
 switch (a) { case "a": 2; 43; }
 switch (a) { case "a": 2; default: 0; case "c": 4; default: 0}
+case 1: "1"
+default: true
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

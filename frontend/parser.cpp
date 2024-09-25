@@ -449,7 +449,6 @@ IR *Parser::declaration() {
         no_end_needed = true;
     }
     else if (match(TokenType::ELSE)) {
-        // TODO: Match this else to prev
         parser_error(create_diag(diags::ELSE_WITHOUT_IF));
     }
 
@@ -500,6 +499,12 @@ IR *Parser::declaration() {
         --multi_line_parsing;
         decl = new Switch(val, sw_cases);
     }
+    else if (match(TokenType::CASE)) {
+        parser_error(create_diag(diags::CASE_OUTSIDE_SWITCH));
+    }
+    else if (match(TokenType::DEFAULT)) {
+        parser_error(create_diag(diags::DEFAULT_OUTSIDE_SWITCH));
+    }
 
     // try
     // TODO: Should we allow try ... finally without catch as Python does?
@@ -534,6 +539,12 @@ IR *Parser::declaration() {
         }
         decl = new Try(catches, trbody, finallyStmt);
         no_end_needed = true;
+    }
+    else if (match(TokenType::CATCH)) {
+        parser_error(create_diag(diags::CATCH_WITHOUT_TRY));
+    }
+    else if (match(TokenType::FINALLY)) {
+        parser_error(create_diag(diags::FINALLY_WITHOUT_TRY));
     }
     
     // assert / raise / return

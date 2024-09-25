@@ -65,6 +65,10 @@ enum DiagID {
     CATCH_REQUIRES_PARENTH, ///< Catch has to be followed by parenthesis
     SWITCH_REQUIRES_PARENTH,///< Switch has to be followed by parenthesis
     ELSE_WITHOUT_IF,        ///< Standalone else
+    CASE_OUTSIDE_SWITCH,    ///< Standalone case
+    DEFAULT_OUTSIDE_SWITCH, ///< Standalone default
+    CATCH_WITHOUT_TRY,      ///< Standalone catch
+    FINALLY_WITHOUT_TRY,    ///< Standalone finally
     UNEXPECTED_EOF,         ///< Found EOF but some construct was not fully parsed
     NO_WHILE_AFTER_DO,      ///< Do but then no while
     FOR_MISSING_COLON,      ///< No : after iterator in for
@@ -122,6 +126,10 @@ static const char * DIAG_MSGS[] = {
     "Catch has to have its argument in parenthesis",
     "Switch has to have its argument in parenthesis",
     "'else' without a previous 'if'",
+    "'case' outside of a switch",
+    "'default' outside of a switch",
+    "'catch' without a previous 'try'",
+    "'finally' without a previous 'try'",
     "Unexpected end of file",
     "Keyword 'do' has to be followed by 'while' and a condition",
     "Iterator in for loop has to be followed by a colon (':')",
