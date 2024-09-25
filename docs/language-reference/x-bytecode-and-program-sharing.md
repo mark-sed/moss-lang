@@ -408,8 +408,9 @@ x       LIST_PUSH_ADDR  add1
 x       LIST_PUSH_ADDR  add1
 x       LIST_PUSH_ADDR  add2
 x       BUILD_LIST      %1
+x       LOAD_NAME       %3, "a"
 
-x       SWITCH %0, %1, addr3
+x       SWITCH %3, %0, %1, addr3
 add1    RETURN_CONST #4
 add2    RETURN_CONST #0
 add3    RETURN_CONST #200

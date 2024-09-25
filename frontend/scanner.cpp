@@ -540,6 +540,7 @@ const std::unordered_map<ustring, TokenType> Scanner::KEYWORDS = {
     {"for", TokenType::FOR},
     {"switch", TokenType::SWITCH},
     {"case", TokenType::CASE},
+    {"default", TokenType::DEFAULT},
     {"try", TokenType::TRY},
     {"catch", TokenType::CATCH},
     {"finally", TokenType::FINALLY},

@@ -177,7 +177,7 @@ enum OpCodes : opcode_t {
     CREATE_RANGE7, //     %dst, %start, #step, #end
     CREATE_RANGE8, //     %dst, #start, #step, #end
 
-    SWITCH, //    %listvals, %listaddr, addr_def
+    SWITCH, //    %src, %listvals, %listaddr, addr_def
     FOR, //       %i, %iterator
 
     OPCODES_AMOUNT
@@ -1939,25 +1939,27 @@ public:
 
 class Switch : public OpCode {
 public:
+    Register src;
     Register vals;
     Register addrs;
     Register default_addr;
 
     static const OpCodes ClassType = OpCodes::SWITCH;
 
-    Switch(Register vals, Register addrs, Register default_addr) :
-        OpCode(ClassType, "SWITCH"), vals(vals), addrs(addrs), default_addr(default_addr) {}
+    Switch(Register src, Register vals, Register addrs, Register default_addr) :
+        OpCode(ClassType, "SWITCH"), src(src), vals(vals), addrs(addrs), default_addr(default_addr) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << vals << ", %" << addrs << ", %" << default_addr;
+        os << mnem << "\t%" << src << ", %" << vals << ", %" << addrs << ", %" << default_addr;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Switch>(other);
         if (!casted) return false;
-        return casted->vals == vals && casted->addrs == addrs && casted->default_addr == default_addr;
+        return casted->src == src && casted->vals == vals 
+            && casted->addrs == addrs && casted->default_addr == default_addr;
     }
 };
 

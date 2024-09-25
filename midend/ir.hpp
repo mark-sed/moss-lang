@@ -34,13 +34,15 @@ enum IRType {
     MODULE,
     SPACE,
     IF,
+    ELSE,
+    SWITCH,
+    CASE,
     TRY,
     CATCH,
     FINALLY,
     WHILE,
     DO_WHILE,
     FOR_LOOP,
-    ELSE,
     ENUM,
 
     IMPORT,
@@ -254,6 +256,74 @@ public:
         if (elseBranch) {
             os << *elseBranch;
         }
+        return os;
+    }
+};
+
+class Case : public Construct {
+private:
+    std::vector<Expression *> values;
+    bool default_case;
+
+public:
+    static const IRType ClassType = IRType::CASE;
+
+    Case(std::vector<Expression *> values, std::list<IR *> csbody, bool default_case=false) 
+           : Construct(ClassType, "case"), values(values), default_case(default_case) {
+        this->body = csbody;
+    }
+    ~Case() {
+        for (auto v: values) {
+            delete v;
+        }
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        if (!default_case) {
+            os << "case ";
+            bool first = true;
+            for (auto v: values) {
+                if (first) {
+                    os << *v;
+                    first = false;
+                }
+                else
+                    os << ", " << *v;
+            }
+        }
+        else {
+            os << "default";
+        }
+        os << ": {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class Switch : public Construct {
+private:
+    Expression *val;
+
+public:
+    static const IRType ClassType = IRType::SWITCH;
+
+    Switch(Expression *val, std::list<IR *> cases) 
+           : Construct(ClassType, "switch"), val(val) {
+        this->body = cases;
+    }
+    ~Switch() {
+        delete val;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "switch (" << *val << ") {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
         return os;
     }
 };

@@ -283,6 +283,7 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::Switch>(op_gen)){
+            write_register(o->src);
             write_register(o->vals);
             write_register(o->addrs);
             write_register(o->default_addr);

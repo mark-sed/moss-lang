@@ -274,6 +274,8 @@ ustring Parser::get_last_id(Expression *e) {
         return v->get_name();
     }
     if (auto be = dyn_cast<BinaryExpr>(e)) {
+        if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()))
+            parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
         if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
             return get_last_id(be->get_right());
         }
@@ -290,6 +292,8 @@ bool Parser::is_id_or_scope(Expression *e) {
         return true;
     }
     if (auto be = dyn_cast<BinaryExpr>(e)) {
+        if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()))
+            return false;
         if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
             return is_id_or_scope(be->get_right());
         }
@@ -485,6 +489,17 @@ IR *Parser::declaration() {
     }
 
     // switch
+    else if (match(TokenType::SWITCH)) {
+        expect(TokenType::LEFT_PAREN, create_diag(diags::SWITCH_REQUIRES_PARENTH));
+        auto val = expression();
+        parser_assert(val, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        ++multi_line_parsing;
+        auto sw_cases = cases();
+        no_end_needed = true;
+        --multi_line_parsing;
+        decl = new Switch(val, sw_cases);
+    }
 
     // try
     // TODO: Should we allow try ... finally without catch as Python does?
@@ -664,6 +679,36 @@ std::list<ir::IR *> Parser::body() {
     if (isa<EndOfFile>(decl))
         parser_error(create_diag(diags::UNEXPECTED_EOF));
     std::list<ir::IR *> decls{decl};
+    return decls;
+}
+
+std::list<ir::IR *> Parser::cases() {
+    skip_nls();
+    expect(TokenType::LEFT_CURLY, create_diag(diags::SWITCH_BODY_EXPECTED));
+    skip_nls();
+    std::list<ir::IR *> decls;
+
+    bool found_default = false;
+    while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
+        bool default_case = false;
+        if (match(TokenType::DEFAULT)) {
+            parser_assert(!found_default, create_diag(diags::MULTIPLE_DEFAULTS));
+            found_default = default_case = true;
+        }
+        else {
+            expect(TokenType::CASE, create_diag(diags::SWITCH_CASE_EXPECTED));
+        }
+        auto vals = arg_list();
+        expect(TokenType::COLON, create_diag(diags::CASE_MISSING_COLON));
+        auto swbody = body();
+        decls.push_back(new Case(vals, swbody, default_case));
+        skip_ends(); // Skip here so that we can check for } or eof
+    }
+
+    if (!match(TokenType::RIGHT_CURLY)) {
+        parser_error(create_diag(diags::MISSING_RIGHT_CURLY));
+    }
+
     return decls;
 }
 

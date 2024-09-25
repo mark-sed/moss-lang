@@ -98,6 +98,7 @@ enum class TokenType {
     FOR,        ///< for
     SWITCH,     ///< switch
     CASE,       ///< case
+    DEFAULT,    ///< default
     TRY,        ///< try
     CATCH,      ///< catch
     FINALLY,    ///< finally

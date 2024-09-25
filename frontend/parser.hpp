@@ -68,6 +68,7 @@ private:
     ir::Expression *constant();
     std::vector<ir::Expression *> arg_list();
     ir::Argument *argument();
+    std::list<ir::IR *> cases();
 
     ir::Expression *unpack();
     ir::Expression *silent();

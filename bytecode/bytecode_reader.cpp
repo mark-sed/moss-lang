@@ -694,8 +694,9 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::SWITCH: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
+                auto reg3 = read_register();
                 auto addr = read_address();
-                bc->push_back(new Switch(reg1, reg2, addr));
+                bc->push_back(new Switch(reg1, reg2, reg3, addr));
             } break;
             case opcode::OpCodes::FOR: {
                 auto reg1 = read_register();

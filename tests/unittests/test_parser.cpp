@@ -930,4 +930,67 @@ import G::A.a::C::d
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Switches){
+    ustring code = R"(
+switch(val) {}
+
+switch(val) {
+    case 1, 0, 4: t = true
+    case 8: t = false
+    case 10: { 
+        x += 1
+        t = nil
+    }
+    case 11: t = nil
+    default: error()
+}
+
+switch(x+1) {case 1: "aaa"; default: "cc"; case 2: "bb";}
+
+switch(x) {
+default: 1+1
+}
+
+switch  (some_value)
+
+{
+
+
+case 23: y=3; }
+)";
+
+    IRType expected[] = {
+        IRType::SWITCH,
+        IRType::SWITCH,
+        IRType::SWITCH,
+        IRType::SWITCH,
+        IRType::SWITCH,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+switch() { case 1: "a"; }
+switch {}
+switch (if(a) {42}) {}
+switch (a) { case "a": 2; 43; }
+switch (a) { case "a": 2; default: 0; case "c": 4; default: 0}
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

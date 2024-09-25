@@ -44,7 +44,7 @@ enum DiagID {
     CHAINED_COMPOUND_ASSIGN,    ///< Chained compound assignment operators
     CANNOT_CHAIN_SILENT,        ///< Chained ~
     TERNARY_IF_MISSING_FALSE,   ///< Missing false branch in ternary if
-    TERNARY_IF_MISSING_COND,   ///< Missing condition in ternary if
+    TERNARY_IF_MISSING_COND,    ///< Missing condition in ternary if
     RANGE_EXPECTED,         ///< Range without ..
     MISSING_SPACE_BODY,     ///< Incorrect space construction
     MISSING_BLOCK,          ///< Expected {
@@ -63,6 +63,7 @@ enum DiagID {
     WHILE_REQUIRES_PARENTH, ///< While has to be followed by parenthesis
     FOR_REQUIRES_PARENTH,   ///< For loop has to be followed by parenthesis
     CATCH_REQUIRES_PARENTH, ///< Catch has to be followed by parenthesis
+    SWITCH_REQUIRES_PARENTH,///< Switch has to be followed by parenthesis
     ELSE_WITHOUT_IF,        ///< Standalone else
     UNEXPECTED_EOF,         ///< Found EOF but some construct was not fully parsed
     NO_WHILE_AFTER_DO,      ///< Do but then no while
@@ -72,6 +73,10 @@ enum DiagID {
     TYPE_EXPECTED,          ///< Expecting type name
     SCOPE_OR_ID_EXPECTED,   ///< Expecting name or scope
     ID_EXPECTED,            ///< Name expected
+    SWITCH_BODY_EXPECTED,   ///< Missing body after switch
+    SWITCH_CASE_EXPECTED,   ///< Expecting case or default
+    CASE_MISSING_COLON,     ///< No : after case values
+    MULTIPLE_DEFAULTS,      ///< More than 1 default in a switch
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -115,6 +120,7 @@ static const char * DIAG_MSGS[] = {
     "While statement has to have its condition in parenthesis",
     "For loop has to have its iterator and collection in parenthesis",
     "Catch has to have its argument in parenthesis",
+    "Switch has to have its argument in parenthesis",
     "'else' without a previous 'if'",
     "Unexpected end of file",
     "Keyword 'do' has to be followed by 'while' and a condition",
@@ -123,7 +129,11 @@ static const char * DIAG_MSGS[] = {
     "Incorrect argument",
     "Type expected",
     "Expecting an identificator or a scope",
-    "Expecting an identificator"
+    "Expecting an identificator",
+    "Expecting a switch body with cases",
+    "Expecting 'case' or 'default'",
+    "Case value or values have to be followed by a colon (':')",
+    "Multiple default cases found in a switch — at most 1 default case can be present",
 };
 
 /**
