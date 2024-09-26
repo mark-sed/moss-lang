@@ -398,8 +398,12 @@ Token *Scanner::next_token() {
             case ',': return tokenize(c, TokenType::COMMA);
             case '.': {
                 // ".." or  "."
-                if (check_and_advance('.'))
+                if (check_and_advance('.')) {
+                    if (check_and_advance('.')) {
+                        return tokenize("...", TokenType::THREE_DOTS);
+                    }
                     return tokenize("..", TokenType::RANGE);
+                }
                 return tokenize(c, TokenType::DOT);
             }
             case ':': {

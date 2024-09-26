@@ -87,6 +87,8 @@ enum DiagID {
     MISSING_CONSTR_NAME,    ///< No name after new
     DEFAULT_NOT_ALLOWED,    ///< Default value assigned where it cannot be
     MISSING_FUN_BODY,       ///< No = or {} after function declaration
+    MULTIPLE_VARARGS,       ///< Multiple variable arguments in single function
+    NOT_PURE_VARARG,        ///< Setting type or value to vararg
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -154,6 +156,8 @@ static const char * DIAG_MSGS[] = {
     "Constructor requires a name",
     "Default value cannot be assigned",
     "Function has to have a body ('{}') or lambda has to return a value ('=')",
+    "Function can have only 1 variable argument ('...')",
+    "Variable argument cannot be typed nor have a default value",
 };
 
 /**

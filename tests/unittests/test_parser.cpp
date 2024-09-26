@@ -1071,9 +1071,14 @@ fun bar(x=true,
 
 new Foo (t:Bool)
 {}
+
+fun baz(a, b, ... others, more=true) {}
+fun bar(...o) {}
 )";
 
     IRType expected[] = {
+        IRType::FUNCTION,
+        IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
@@ -1093,9 +1098,15 @@ new fun foo() {}
 fun bar(1) {}
 fun bar() : Bool {}
 fun baz(a, b:) {}
+fun baz(a, b,) {}
+fun zoo(... other:Bool) {}
+fun goo(... o=4) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

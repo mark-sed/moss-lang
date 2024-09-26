@@ -249,12 +249,14 @@ class Argument : public Expression {
 private:
     std::vector<Expression *> types;
     Expression *default_value;
+    bool vararg;
 
 public:
     static const IRType ClassType = IRType::ARGUMENT;
 
     Argument(ustring name, std::vector<Expression *> types, Expression *default_value=nullptr)
-        : Expression(ClassType, name), types(types), default_value(default_value) {}
+        : Expression(ClassType, name), types(types), default_value(default_value), vararg(false) {}
+    Argument(ustring name) : Expression(ClassType, name), vararg(true) {}
     ~Argument() {
         for (auto t: types) {
             delete t;
@@ -272,22 +274,28 @@ public:
     bool is_typed() { return !types.empty(); }
     Expression *get_default_value() { return this->default_value; }
     bool has_default_value() { return this->default_value != nullptr; }
+    bool is_vararg() { return this->vararg; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << name;
-        bool first = true;
-        for (auto t: types) {
-            if (first) {
-                os << ":[" << *t;
-                first = false;
-            }
-            else
-                os << ", " << *t;
+        if (vararg) {
+            os << "... " << name;
         }
-        if (!first)
-            os << "]";
-        if (default_value)
-            os << "=" << *default_value;
+        else {
+            os << name;
+            bool first = true;
+            for (auto t: types) {
+                if (first) {
+                    os << ":[" << *t;
+                    first = false;
+                }
+                else
+                    os << ", " << *t;
+            }
+            if (!first)
+                os << "]";
+            if (default_value)
+                os << "=" << *default_value;
+        }
         return os;
     }
 };

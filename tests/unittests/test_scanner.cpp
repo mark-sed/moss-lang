@@ -11,8 +11,8 @@ using namespace moss;
 
 /** Test correct tokenization */
 TEST(Scanner, CharacterTokens){
-    ustring code = "( )  {}[];\n,$ ?\\~.. . : :: @ @!";
-    ustring expected = "LEFT_PAREN WS RIGHT_PAREN WS LEFT_CURLY RIGHT_CURLY LEFT_SQUARE RIGHT_SQUARE END END_NL COMMA NON_LOCAL WS QUESTION_M BACK_SLASH SILENT RANGE WS DOT WS COLON WS SCOPE WS OUT_ANNOTATION WS IN_ANNOTATION ";
+    ustring code = "( )  {}[];\n,$ ?\\~.. ... . : :: @ @!";
+    ustring expected = "LEFT_PAREN WS RIGHT_PAREN WS LEFT_CURLY RIGHT_CURLY LEFT_SQUARE RIGHT_SQUARE END END_NL COMMA NON_LOCAL WS QUESTION_M BACK_SLASH SILENT RANGE WS THREE_DOTS WS DOT WS COLON WS SCOPE WS OUT_ANNOTATION WS IN_ANNOTATION ";
 
     SourceFile sf(code, SourceFile::SourceType::STRING);
     Scanner scanner(sf);

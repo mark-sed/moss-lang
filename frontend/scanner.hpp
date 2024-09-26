@@ -43,6 +43,7 @@ enum class TokenType {
     COMMA,          ///< ,
     DOT,            ///< `.`
     RANGE,          ///< ..
+    THREE_DOTS,     ///< ...
     COLON,          ///< :
     SCOPE,          ///< ::
     IN_ANNOTATION,  ///< @!
@@ -148,6 +149,7 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::COMMA: os << "COMMA"; break;
         case TokenType::DOT: os << "DOT"; break;
         case TokenType::RANGE: os << "RANGE"; break;
+        case TokenType::THREE_DOTS: os << "THREE_DOTS"; break;
         case TokenType::COLON: os << "COLON"; break;
         case TokenType::SCOPE: os << "SCOPE"; break;
         case TokenType::IN_ANNOTATION: os << "IN_ANNOTATION"; break;

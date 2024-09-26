@@ -1117,9 +1117,19 @@ std::vector<ir::Argument *> Parser::arg_list() {
     lower_range_prec = true;
 
     Argument *arg = nullptr;
+    bool vararg = false;
     do {
         skip_nls();
-        arg = argument(true);
+        if (match(TokenType::THREE_DOTS)) {
+            parser_assert(!vararg, create_diag(diags::MULTIPLE_VARARGS));
+            auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
+            parser_assert(!check({TokenType::COLON, TokenType::SET}), create_diag(diags::NOT_PURE_VARARG));
+            arg = new Argument(id->get_value());
+            vararg = true;
+        }
+        else {
+            arg = argument(true);
+        }
         assert(arg && "Argument not returned");
         args.push_back(arg);
     } while (match(TokenType::COMMA));
