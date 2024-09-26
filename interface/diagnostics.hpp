@@ -64,6 +64,7 @@ enum DiagID {
     FOR_REQUIRES_PARENTH,   ///< For loop has to be followed by parenthesis
     CATCH_REQUIRES_PARENTH, ///< Catch has to be followed by parenthesis
     SWITCH_REQUIRES_PARENTH,///< Switch has to be followed by parenthesis
+    FUN_REQUIRES_PARENTH,   ///< Fun has to have arg list
     ELSE_WITHOUT_IF,        ///< Standalone else
     CASE_OUTSIDE_SWITCH,    ///< Standalone case
     DEFAULT_OUTSIDE_SWITCH, ///< Standalone default
@@ -83,6 +84,9 @@ enum DiagID {
     MULTIPLE_DEFAULTS,      ///< More than 1 default in a switch
     PARENT_LIST_EXPECTED,   ///< No parents after a colon
     MISSING_CLASS_NAME,     ///< Class without name
+    MISSING_CONSTR_NAME,    ///< No name after new
+    DEFAULT_NOT_ALLOWED,    ///< Default value assigned where it cannot be
+    MISSING_FUN_BODY,       ///< No = or {} after function declaration
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -127,6 +131,7 @@ static const char * DIAG_MSGS[] = {
     "For loop has to have its iterator and collection in parenthesis",
     "Catch has to have its argument in parenthesis",
     "Switch has to have its argument in parenthesis",
+    "Function declaration requires arguments in parenthesis or empty parenthesis ('()')",
     "'else' without a previous 'if'",
     "'case' outside of a switch",
     "'default' outside of a switch",
@@ -146,6 +151,9 @@ static const char * DIAG_MSGS[] = {
     "Multiple default cases found in a switch — at most 1 default case can be present",
     "Expecting a list of parent classes",
     "Class has to have a name",
+    "Constructor requires a name",
+    "Default value cannot be assigned",
+    "Function has to have a body ('{}') or lambda has to return a value ('=')",
 };
 
 /**

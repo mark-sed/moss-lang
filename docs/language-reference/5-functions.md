@@ -20,7 +20,7 @@ symbol followed by a value/expression that will be returned.
 
 There can be also anonymous functions (lambdas).
 
-```
+```cpp
 fun foo(arg1) = arg1 * 2
 
 fun(arg1) = arg1 * 2

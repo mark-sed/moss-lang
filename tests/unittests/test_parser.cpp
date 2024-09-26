@@ -1046,4 +1046,66 @@ default: true
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Functions){
+    ustring code = R"(
+fun getID(x:MyClass) {
+    return -1
+}
+
+fun getID(x:[Int, Bool]=4) {
+    return 0
+}
+
+fun getID(x)
+{
+    return 42
+}
+
+fun foo() {}
+
+fun bar(x=true,
+        y:Int=4,
+        z){
+    return z
+}
+
+new Foo (t:Bool)
+{}
+)";
+
+    IRType expected[] = {
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+fun foo {}
+new fun foo() {}
+fun bar(1) {}
+fun bar() : Bool {}
+fun baz(a, b:) {}
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

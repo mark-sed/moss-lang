@@ -552,7 +552,7 @@ IR *Parser::declaration() {
     // assert / raise / return
     else if (match(TokenType::ASSERT)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::ASSERT_MISSING_PARENTH));
-        std::vector<Expression *> args = arg_list();
+        std::vector<Expression *> args = expr_list();
         parser_assert((args.size() == 1 || args.size() == 2), create_diag(diags::ASSERT_EXPECTS_ARG));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         decl = new Assert(args[0], args.size() == 2 ? args[1] : nullptr);
@@ -619,7 +619,7 @@ IR *Parser::declaration() {
             auto name = advance();
             std::vector<Expression *> parents;
             if (match(TokenType::COLON)) {
-                parents = arg_list(true);
+                parents = expr_list(true);
                 parser_assert(!parents.empty(), create_diag(diags::PARENT_LIST_EXPECTED));
             }
             auto clbody = block();
@@ -652,9 +652,40 @@ IR *Parser::declaration() {
         --multi_line_parsing;
     }
 
-    // fun
-
-    // constructor
+    // fun / constructor / lambdas
+    // TODO: Lambda - Probably a new IR that will be Expression?
+    else if (check({TokenType::FUN, TokenType::NEW})) {
+        auto funt = advance();
+        bool constructor = funt->get_type() == TokenType::NEW;
+        if (check(TokenType::ID)) {
+            auto id = advance();
+            expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+            std::vector<Argument *> args;
+            if (!match(TokenType::RIGHT_PAREN)) {
+                args = arg_list();
+                expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+            }
+            skip_nls();
+            if (check(TokenType::LEFT_CURLY)) {
+                auto fnbody = block();
+                decl = new Function(id->get_value(), args, fnbody, constructor);
+            }
+            else if (check(TokenType::SET)) {
+                assert(false && "TODO: lambdas");
+            }
+            else {
+                parser_error(create_diag(diags::MISSING_FUN_BODY));
+            }
+        }
+        else if (match(TokenType::LEFT_PAREN)) {
+            parser_assert(!constructor, create_diag(diags::MISSING_CONSTR_NAME));
+            assert(false && "TODO: anon lambdas");
+        }
+        else {
+            // TODO: If not constructor then fun args
+            parser_error(create_diag(diags::ID_EXPECTED));
+        }
+    }
 
     // expression
     else if (auto expr = expression()) {
@@ -729,7 +760,7 @@ std::list<ir::IR *> Parser::cases() {
         else {
             expect(TokenType::CASE, create_diag(diags::SWITCH_CASE_EXPECTED));
         }
-        auto vals = arg_list();
+        auto vals = expr_list();
         expect(TokenType::COLON, create_diag(diags::CASE_MISSING_COLON));
         auto swbody = body();
         decls.push_back(new Case(vals, swbody, default_case));
@@ -1059,7 +1090,7 @@ Expression *Parser::subscript() {
     return expr;
 }
 
-std::vector<ir::Expression *> Parser::arg_list(bool only_scope_or_id) {
+std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id) {
     std::vector<ir::Expression *> args;
     // Setting this to true will indicate to not give precedence to range over
     // another argument
@@ -1081,13 +1112,29 @@ std::vector<ir::Expression *> Parser::arg_list(bool only_scope_or_id) {
     return args;
 }
 
+std::vector<ir::Argument *> Parser::arg_list() {
+    std::vector<ir::Argument *> args;
+    lower_range_prec = true;
+
+    Argument *arg = nullptr;
+    do {
+        skip_nls();
+        arg = argument(true);
+        assert(arg && "Argument not returned");
+        args.push_back(arg);
+    } while (match(TokenType::COMMA));
+
+    lower_range_prec = false;
+    return args;
+}
+
 Expression *Parser::call() {
     Expression *expr = note();
 
     while (match(TokenType::LEFT_PAREN)) {
         // This assert should never be raised as ( would be matched in constant
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
-        auto args = arg_list();
+        auto args = expr_list();
         skip_nls();
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         expr = new Call(expr, args);
@@ -1169,9 +1216,10 @@ Expression *Parser::constant() {
     return nullptr;
 }
 
-Argument *Parser::argument() {
+Argument *Parser::argument(bool allow_default_value) {
     if (check(TokenType::ID)) {
         auto id = advance();
+        Expression *default_value = nullptr;
         std::vector<Expression *> types;
         if (match(TokenType::COLON)) {
             if (match(TokenType::LEFT_SQUARE)) {
@@ -1190,13 +1238,18 @@ Argument *Parser::argument() {
                 lower_range_prec = false;
             }
             else {
-                auto type = expression();
+                auto type = scope();
                 parser_assert(type, create_diag(diags::TYPE_EXPECTED));
                 parser_assert(is_id_or_scope(type), create_diag(diags::SCOPE_OR_ID_EXPECTED));
                 types.push_back(type);
             }
         }
-        return new Argument(id->get_value(), types);
+        if (match(TokenType::SET)) {
+            parser_assert(allow_default_value, create_diag(diags::DEFAULT_NOT_ALLOWED));
+            default_value = expression();
+            parser_assert(default_value, create_diag(diags::EXPR_EXPECTED));
+        }
+        return new Argument(id->get_value(), types, default_value);
     }
     else {
         parser_error(create_diag(diags::INCORRECT_ARGUMENT));

@@ -34,6 +34,7 @@ enum IRType {
     MODULE,
     SPACE,
     CLASS,
+    FUNCTION,
     IF,
     ELSE,
     SWITCH,
@@ -244,6 +245,111 @@ public:
     }
 };
 
+class Argument : public Expression {
+private:
+    std::vector<Expression *> types;
+    Expression *default_value;
+
+public:
+    static const IRType ClassType = IRType::ARGUMENT;
+
+    Argument(ustring name, std::vector<Expression *> types, Expression *default_value=nullptr)
+        : Expression(ClassType, name), types(types), default_value(default_value) {}
+    ~Argument() {
+        for (auto t: types) {
+            delete t;
+        }
+        if (default_value)
+            delete default_value;
+    }
+
+    std::vector<Expression *> get_types() { return this->types; }
+    Expression *get_type(unsigned index) { 
+        assert(index < types.size() && "Out of bounds access");
+        return types[index];
+    }
+    size_t types_size() { return types.size(); }
+    bool is_typed() { return !types.empty(); }
+    Expression *get_default_value() { return this->default_value; }
+    bool has_default_value() { return this->default_value != nullptr; }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << name;
+        bool first = true;
+        for (auto t: types) {
+            if (first) {
+                os << ":[" << *t;
+                first = false;
+            }
+            else
+                os << ", " << *t;
+        }
+        if (!first)
+            os << "]";
+        if (default_value)
+            os << "=" << *default_value;
+        return os;
+    }
+};
+
+/* TODO: return a vector of names based on the typed args
+ustring encode_fun(ustring name, std::vector<Argument *> args) {
+    std::stringstream encoded;
+    encoded << name << "("
+
+    bool first = true;
+    for (auto a : args) {
+        assert(a->types_size() <= 1 && "Function has to be specialized to 1 type");
+        if (!first) {
+            encoded << ",";
+        }
+        if (a->is_typed()) {
+            encoded << a->get_type(0)->get_name();
+        }
+        else {
+            encoded << "_";
+        } 
+        first = false;
+    }
+
+    encoded << ")";
+    return encoded.str();
+}*/
+
+class Function : public Construct {
+private:
+    std::vector<Argument *> args;
+    bool constructor;
+
+public:
+    static const IRType ClassType = IRType::FUNCTION;
+
+    Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, bool constructor=false) 
+        : Construct(ClassType, name), args(args), constructor(constructor) {
+        this->body = fnbody;
+    }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << (constructor ? "new " : "fun ") << name << "(";
+        bool first = true;
+        for (auto a: args) {
+            if (first) {
+                os << *a;
+                first = false;
+            }
+            else {
+                os << ", " << *a;
+            }
+        }
+        os << ") {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
 class Else : public Construct {
 public:
     static const IRType ClassType = IRType::ELSE;
@@ -357,32 +463,6 @@ public:
             os << *d << "\n";
         }
         os << "}";
-        return os;
-    }
-};
-
-class Argument : public Expression {
-private:
-    std::vector<Expression *> types;
-
-public:
-    static const IRType ClassType = IRType::ARGUMENT;
-
-    Argument(ustring name, std::vector<Expression *> types) : Expression(ClassType, name), types(types) {}
-
-    virtual inline std::ostream& debug(std::ostream& os) const {
-        os << name;
-        bool first = true;
-        for (auto t: types) {
-            if (first) {
-                os << ":[" << *t;
-                first = false;
-            }
-            else
-                os << ", " << *t;
-        }
-        if (!first)
-            os << "]";
         return os;
     }
 };

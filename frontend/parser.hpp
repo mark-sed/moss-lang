@@ -66,8 +66,9 @@ private:
     std::list<ir::IR *> body();
 
     ir::Expression *constant();
-    std::vector<ir::Expression *> arg_list(bool only_scope_or_id=false);
-    ir::Argument *argument();
+    std::vector<ir::Expression *> expr_list(bool only_scope_or_id=false);
+    std::vector<ir::Argument *> arg_list();
+    ir::Argument *argument(bool allow_default_value=false);
     std::list<ir::IR *> cases();
 
     ir::Expression *unpack();
