@@ -810,6 +810,7 @@ public:
 
 /**
  * Types of operators
+ * @note Beware that the order is used for checks
  */
 enum OperatorKind {
     OP_UNKNOWN,
@@ -902,6 +903,10 @@ public:
         return os;
     }
 };
+
+inline bool is_set_op(Operator op) {
+    return op.get_kind() >= OperatorKind::OP_SET && op.get_kind() <= OperatorKind::OP_SET_MOD;
+}
 
 inline std::ostream& operator<< (std::ostream& os, const Operator &op) {
     return op.debug(os);

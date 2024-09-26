@@ -93,6 +93,7 @@ enum DiagID {
     SET_EXPECTED,           ///< Expecting '='
     LAMBDA_CONSTRUCTOR,     ///< new with =
     LAMBDA_WITH_BODY,       ///< {} after a lambda
+    SET_NOT_ALLOWED,        ///< Assignment is not allowed here
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -166,6 +167,7 @@ static const char * DIAG_MSGS[] = {
     "Expecting '='",
     "Constructor cannot be a lambda",
     "Lambda cannot have a body",
+    "Assignment is not allowed here — perhaps you meant to use '=='?"
 };
 
 /**

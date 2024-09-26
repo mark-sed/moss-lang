@@ -55,7 +55,7 @@ private:
      * @return Parsed input into an Expression class or nullptr if there is
      *         not an expression on the input
     */
-    ir::Expression *expression();
+    ir::Expression *expression(bool allow_set=false);
 
     /** Tries to parse a block of code */
     std::list<ir::IR *> block();
@@ -66,7 +66,7 @@ private:
     std::list<ir::IR *> body();
 
     ir::Expression *constant();
-    std::vector<ir::Expression *> expr_list(bool only_scope_or_id=false);
+    std::vector<ir::Expression *> expr_list(bool only_scope_or_id=false, bool allow_set=false);
     std::vector<ir::Argument *> arg_list();
     ir::Argument *argument(bool allow_default_value=false);
     std::list<ir::IR *> cases();

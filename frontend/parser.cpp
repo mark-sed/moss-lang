@@ -390,12 +390,12 @@ IR *Parser::declaration() {
     // outer / inner annotation
     // TODO: Tie annotation to proper IR
     if (match(TokenType::OUT_ANNOTATION)) {
-        auto expr = expression();
+        auto expr = expression(true);
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         decl = new Annotation(expr, false);
     }
     else if (match(TokenType::IN_ANNOTATION)) {
-        auto expr = expression();
+        auto expr = expression(true);
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         decl = new Annotation(expr, true);
     }
@@ -653,7 +653,6 @@ IR *Parser::declaration() {
     }
 
     // fun / constructor / lambdas
-    // TODO: Lambda - Probably a new IR that will be Expression?
     else if (check({TokenType::FUN, TokenType::NEW})) {
         auto funt = advance();
         bool constructor = funt->get_type() == TokenType::NEW;
@@ -691,7 +690,7 @@ IR *Parser::declaration() {
     }
 
     // expression
-    else if (auto expr = expression()) {
+    else if (auto expr = expression(true)) {
         decl = expr;
     }
 
@@ -812,8 +811,13 @@ std::list<ir::IR *> Parser::cases() {
  *          | ArgList , Expression
  * ```
  */
-Expression *Parser::expression() {
+Expression *Parser::expression(bool allow_set) {
     Expression *expr = silent();
+    if (!allow_set && expr) {
+        if (auto be = dyn_cast<BinaryExpr>(expr)) {
+            parser_assert(!ir::is_set_op(be->get_op()), create_diag(diags::SET_NOT_ALLOWED));
+        }
+    }
     return expr;
 }
 
@@ -1093,7 +1097,7 @@ Expression *Parser::subscript() {
     return expr;
 }
 
-std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id) {
+std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allow_set) {
     std::vector<ir::Expression *> args;
     // Setting this to true will indicate to not give precedence to range over
     // another argument
@@ -1102,7 +1106,7 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id) {
     Expression *expr = nullptr;
     do {
         skip_nls();
-        expr = expression();
+        expr = expression(allow_set);
         if (expr) {
             if (only_scope_or_id)
                 parser_assert(is_id_or_scope(expr), create_diag(diags::SCOPE_OR_ID_EXPECTED));
@@ -1147,7 +1151,8 @@ Expression *Parser::call() {
     while (match(TokenType::LEFT_PAREN)) {
         // This assert should never be raised as ( would be matched in constant
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
-        auto args = expr_list();
+        // All exprs and allow set for named function params
+        auto args = expr_list(false, true);
         skip_nls();
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         expr = new Call(expr, args);
@@ -1258,7 +1263,7 @@ Argument *Parser::argument(bool allow_default_value) {
                 lower_range_prec = true;
                 Expression *expr = nullptr;
                 do {
-                    skip_nls(); // TODO: Keep this?
+                    skip_nls();
                     expr = expression();
                     if (expr) {
                         parser_assert(is_id_or_scope(expr), create_diag(diags::SCOPE_OR_ID_EXPECTED));

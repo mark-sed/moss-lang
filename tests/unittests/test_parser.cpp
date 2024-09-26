@@ -809,9 +809,11 @@ for a { "hi" }
 for {}
 for (a) {}
 for (j :) {}
+for (c : a += 4)
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -1029,9 +1031,11 @@ switch (a) { case "a": 2; 43; }
 switch (a) { case "a": 2; default: 0; case "c": 4; default: 0}
 case 1: "1"
 default: true
+switch(c = 4) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -1101,9 +1105,11 @@ fun baz(a, b:) {}
 fun baz(a, b,) {}
 fun zoo(... other:Bool) {}
 fun goo(... o=4) {}
+fun baz(a, b=c=4) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -1155,9 +1161,11 @@ ustring incorrect = R"(
 new foo() = 4
 fun foo1() = return 1
 fun(a) {}
+fun() = a = 3
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
