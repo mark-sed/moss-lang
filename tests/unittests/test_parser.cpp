@@ -149,6 +149,20 @@ some[2]
 some[1,2..60]
 std::math::pi
 ::NAME
+
+[]
+[1,2,3,4]
+[
+    "Some",
+    """
+    String
+    on
+    3 lines
+    """,
+    "yes"
+]
+[true, nil, false, 2, "323", (fun(a)=3*a), (1, 3..55)]
+[1, (1, 3..55), true]
 )";
 
     IRType expected[] = {
@@ -204,6 +218,12 @@ std::math::pi
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
         IRType::UNARY_EXPR,
+
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
         
         IRType::END_OF_FILE
     };

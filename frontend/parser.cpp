@@ -1250,6 +1250,12 @@ Expression *Parser::constant() {
         parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
         return new Lambda(name, args, lmbody);
     }
+    else if (match(TokenType::LEFT_SQUARE)) {
+        auto vals = expr_list();
+        skip_nls();
+        expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+        return new List(vals);
+    }
     return nullptr;
 }
 

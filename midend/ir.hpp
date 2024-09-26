@@ -61,6 +61,7 @@ enum IRType {
     ARGUMENT,
     LAMBDA,
     NOTE,
+    LIST,
     TERNARY_IF,
     RANGE,
     CALL,
@@ -1151,6 +1152,17 @@ public:
     opcode::StringConst get_value() { return this->value; }
 };
 
+class NilLiteral : public Expression {
+public:
+    static const IRType ClassType = IRType::NIL_LITERAL;
+
+    NilLiteral() : Expression(ClassType, "<nil-literal>") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "nil";
+        return os;
+    }
+};
 
 class Note : public Expression {
 private:
@@ -1171,17 +1183,32 @@ public:
     }
 };
 
-class NilLiteral : public Expression {
+class List : public Expression {
+private:
+    std::vector<Expression *> value;
 public:
-    static const IRType ClassType = IRType::NIL_LITERAL;
+    static const IRType ClassType = IRType::LIST;
 
-    NilLiteral() : Expression(ClassType, "<nil-literal>") {}
+    List(std::vector<Expression *> value) : Expression(ClassType, "<list>"), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "nil";
+        os << "[";
+        bool first = true;
+        for (auto v: value) {
+            if (first) {
+                os << *v;
+                first = false;
+            }
+            else {
+                os << ", " << *v;
+            }
+        }
+        os << "]";
         return os;
     }
-}; 
+
+    std::vector<Expression *> get_value() { return this->value; }
+};
 
 }
 
@@ -1215,6 +1242,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         else if (auto e = dyn_cast<ir::Argument>(i)) return e;
         else if (auto e = dyn_cast<ir::Lambda>(i)) return e;
         else if (auto e = dyn_cast<ir::Note>(i)) return e;
+        else if (auto e = dyn_cast<ir::List>(i)) return e;
         else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
         else if (auto e = dyn_cast<ir::Range>(i)) return e;
         else if (auto e = dyn_cast<ir::Call>(i)) return e;
