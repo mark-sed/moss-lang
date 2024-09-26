@@ -59,6 +59,7 @@ enum IRType {
     UNARY_EXPR,
     VARIABLE,
     ARGUMENT,
+    LAMBDA,
     NOTE,
     TERNARY_IF,
     RANGE,
@@ -992,6 +993,34 @@ public:
     }
 };
 
+class Lambda : public Expression {
+private:
+    std::vector<Argument *> args;
+    Expression *body;
+
+public:
+    static const IRType ClassType = IRType::LAMBDA;
+
+    Lambda(ustring name, std::vector<Argument *> args, Expression *body) 
+        : Expression(ClassType, name), args(args), body(body) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "(fun " << name << "(";
+        bool first = true;
+        for (auto a: args) {
+            if (first) {
+                os << *a;
+                first = false;
+            }
+            else {
+                os << ", " << *a;
+            }
+        }
+        os << ") = " << *body << ")";
+        return os;
+    }
+};
+
 class Range : public Expression {
 private:
     Expression *start;
@@ -1179,6 +1208,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         else if (auto e = dyn_cast<ir::UnaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::Variable>(i)) return e;
         else if (auto e = dyn_cast<ir::Argument>(i)) return e;
+        else if (auto e = dyn_cast<ir::Lambda>(i)) return e;
         else if (auto e = dyn_cast<ir::Note>(i)) return e;
         else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
         else if (auto e = dyn_cast<ir::Range>(i)) return e;

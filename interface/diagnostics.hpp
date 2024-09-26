@@ -89,6 +89,10 @@ enum DiagID {
     MISSING_FUN_BODY,       ///< No = or {} after function declaration
     MULTIPLE_VARARGS,       ///< Multiple variable arguments in single function
     NOT_PURE_VARARG,        ///< Setting type or value to vararg
+    ANONYMOUS_FUN,          ///< Function without a name
+    SET_EXPECTED,           ///< Expecting '='
+    LAMBDA_CONSTRUCTOR,     ///< new with =
+    LAMBDA_WITH_BODY,       ///< {} after a lambda
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -158,6 +162,10 @@ static const char * DIAG_MSGS[] = {
     "Function has to have a body ('{}') or lambda has to return a value ('=')",
     "Function can have only 1 variable argument ('...')",
     "Variable argument cannot be typed nor have a default value",
+    "Function has to have a name, only lambdas can be anonymous",
+    "Expecting '='",
+    "Constructor cannot be a lambda",
+    "Lambda cannot have a body",
 };
 
 /**

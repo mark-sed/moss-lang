@@ -1119,4 +1119,53 @@ fun goo(... o=4) {}
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Lambdas){
+    ustring code = R"(
+fun foo(arg1) = arg1 * 2
+
+fun(arg1:Int) = arg1 * 2
+
+fun foo2 ()
+    = true
+
+fun some_some (...other, a=".") = other[1] ++ a
+
+fun() = 3
+
+filter = fun() = 3
+filter = (fun() = 3)() + 3
+)";
+
+    IRType expected[] = {
+        IRType::LAMBDA,
+        IRType::LAMBDA,
+        IRType::LAMBDA,
+        IRType::LAMBDA,
+        IRType::LAMBDA,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+new foo() = 4
+fun foo1() = return 1
+fun(a) {}
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

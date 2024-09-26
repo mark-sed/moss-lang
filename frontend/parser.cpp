@@ -657,33 +657,36 @@ IR *Parser::declaration() {
     else if (check({TokenType::FUN, TokenType::NEW})) {
         auto funt = advance();
         bool constructor = funt->get_type() == TokenType::NEW;
+        ustring name = "";
         if (check(TokenType::ID)) {
             auto id = advance();
-            expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
-            std::vector<Argument *> args;
-            if (!match(TokenType::RIGHT_PAREN)) {
-                args = arg_list();
-                expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-            }
-            skip_nls();
-            if (check(TokenType::LEFT_CURLY)) {
-                auto fnbody = block();
-                decl = new Function(id->get_value(), args, fnbody, constructor);
-            }
-            else if (check(TokenType::SET)) {
-                assert(false && "TODO: lambdas");
-            }
-            else {
-                parser_error(create_diag(diags::MISSING_FUN_BODY));
-            }
+            name = id->get_value();
         }
-        else if (match(TokenType::LEFT_PAREN)) {
-            parser_assert(!constructor, create_diag(diags::MISSING_CONSTR_NAME));
-            assert(false && "TODO: anon lambdas");
+        expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+        std::vector<Argument *> args;
+        if (!match(TokenType::RIGHT_PAREN)) {
+            args = arg_list();
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        }
+        skip_nls();
+        if (check(TokenType::LEFT_CURLY)) {
+            auto fnbody = block();
+            if (name.empty()) {
+                if(constructor)
+                    parser_error(create_diag(diags::MISSING_CONSTR_NAME));
+                else
+                    parser_error(create_diag(diags::ANONYMOUS_FUN));
+            }
+            decl = new Function(name, args, fnbody, constructor);
+        }
+        else if (match(TokenType::SET)) {
+            parser_assert(!constructor, create_diag(diags::LAMBDA_CONSTRUCTOR));
+            auto lmbody = expression();
+            parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
+            decl = new Lambda(name, args, lmbody);
         }
         else {
-            // TODO: If not constructor then fun args
-            parser_error(create_diag(diags::ID_EXPECTED));
+            parser_error(create_diag(diags::MISSING_FUN_BODY));
         }
     }
 
@@ -1222,6 +1225,25 @@ Expression *Parser::constant() {
     }
     else if (match(TokenType::NIL)) {
         return new NilLiteral();
+    }
+    else if (match(TokenType::FUN)) {
+        ustring name = "";
+        if (check(TokenType::ID)) {
+            auto id = advance();
+            name = id->get_value();
+        }
+        expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+        std::vector<Argument *> args;
+        if (!match(TokenType::RIGHT_PAREN)) {
+            args = arg_list();
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        }
+        skip_nls();
+        parser_assert(!check(TokenType::LEFT_CURLY), create_diag(diags::LAMBDA_WITH_BODY));
+        expect(TokenType::SET, create_diag(diags::SET_EXPECTED));
+        auto lmbody = expression();
+        parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
+        return new Lambda(name, args, lmbody);
     }
     return nullptr;
 }
