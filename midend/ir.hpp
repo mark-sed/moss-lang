@@ -62,6 +62,7 @@ enum IRType {
     LAMBDA,
     NOTE,
     LIST,
+    DICT,
     TERNARY_IF,
     RANGE,
     CALL,
@@ -1210,6 +1211,36 @@ public:
     std::vector<Expression *> get_value() { return this->value; }
 };
 
+class Dict : public Expression {
+private:
+    std::vector<Expression *> keys;
+    std::vector<Expression *> values;
+public:
+    static const IRType ClassType = IRType::DICT;
+
+    Dict(std::vector<Expression *> keys, std::vector<Expression *> values)
+        : Expression(ClassType, "<dict>"), keys(keys), values(values) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "{";
+        if (keys.empty())
+            os << ":";
+        for (unsigned i = 0; i < keys.size(); ++i) {
+            if (i == 0) {
+                os << *keys[i] << ": " << *values[i];
+            }
+            else {
+                os << ", " << *keys[i] << ": " << *values[i];
+            }
+        }
+        os << "}";
+        return os;
+    }
+
+    std::vector<Expression *> get_keys() { return this->keys; }
+    std::vector<Expression *> get_values() { return this->values; }
+};
+
 }
 
 // Helper functions
@@ -1243,6 +1274,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         else if (auto e = dyn_cast<ir::Lambda>(i)) return e;
         else if (auto e = dyn_cast<ir::Note>(i)) return e;
         else if (auto e = dyn_cast<ir::List>(i)) return e;
+        else if (auto e = dyn_cast<ir::Dict>(i)) return e;
         else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
         else if (auto e = dyn_cast<ir::Range>(i)) return e;
         else if (auto e = dyn_cast<ir::Call>(i)) return e;

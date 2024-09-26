@@ -163,6 +163,16 @@ std::math::pi
 ]
 [true, nil, false, 2, "323", (fun(a)=3*a), (1, 3..55)]
 [1, (1, 3..55), true]
+
+{:}
+{1:"some", "some":1}
+{
+    "color": "blue",
+    "rarity": Rarity::COMMON,
+    "hidden": false
+}
+{"filter": (fun(a)=a%2==0),
+ "value": val}
 )";
 
     IRType expected[] = {
@@ -224,6 +234,11 @@ std::math::pi
         IRType::LIST,
         IRType::LIST,
         IRType::LIST,
+
+        IRType::DICT,
+        IRType::DICT,
+        IRType::DICT,
+        IRType::DICT,
         
         IRType::END_OF_FILE
     };
@@ -671,10 +686,15 @@ if (42 > 2 > 1) {
     if (9 < 4) 42
 }
 
+if (a) {{:};}
+if (a > c) ({:})
+
 if ( not (true) ) "no"
 )";
 
     IRType expected[] = {
+        IRType::IF,
+        IRType::IF,
         IRType::IF,
         IRType::IF,
         IRType::IF,
@@ -829,10 +849,12 @@ for a { "hi" }
 for {}
 for (a) {}
 for (j :) {}
-for (c : a += 4)
+for (c : a += 4) {}
+for(1 : [1,2,3]) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

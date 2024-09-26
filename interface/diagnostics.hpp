@@ -94,6 +94,8 @@ enum DiagID {
     LAMBDA_CONSTRUCTOR,     ///< new with =
     LAMBDA_WITH_BODY,       ///< {} after a lambda
     SET_NOT_ALLOWED,        ///< Assignment is not allowed here
+    DICT_NO_COLON,          ///< No : after a key
+    EMPTY_DICT_WITHOUT_COLON, ///< {} is not an empty dict
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -167,7 +169,9 @@ static const char * DIAG_MSGS[] = {
     "Expecting '='",
     "Constructor cannot be a lambda",
     "Lambda cannot have a body",
-    "Assignment is not allowed here — perhaps you meant to use '=='?"
+    "Assignment is not allowed here — perhaps you meant to use '=='?",
+    "Dictionary key has to be followed by a colon (':')",
+    "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
 };
 
 /**

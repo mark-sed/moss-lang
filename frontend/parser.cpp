@@ -479,6 +479,7 @@ IR *Parser::declaration() {
     else if (match(TokenType::FOR)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::FOR_REQUIRES_PARENTH));
         auto iterator = expression();
+        parser_assert(is_id_or_scope(iterator), create_diag(diags::SCOPE_OR_ID_EXPECTED));
         parser_assert(iterator, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::COLON, create_diag(diags::FOR_MISSING_COLON));
         auto collection = expression();
@@ -1255,6 +1256,34 @@ Expression *Parser::constant() {
         skip_nls();
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
         return new List(vals);
+    }
+    else if (match(TokenType::LEFT_CURLY)) {
+        std::vector<ir::Expression *> keys;
+        std::vector<ir::Expression *> vals;
+        if (match(TokenType::COLON)) {
+            expect(TokenType::RIGHT_CURLY, create_diag(diags::MISSING_RIGHT_CURLY));
+            return new Dict(keys, vals);
+        }
+        lower_range_prec = true;
+
+        Expression *expr = nullptr;
+        do {
+            skip_nls();
+            expr = expression();
+            if (expr) {
+                keys.push_back(expr);
+                expect(TokenType::COLON, create_diag(diags::DICT_NO_COLON));
+                auto val = expression();
+                parser_assert(val, create_diag(diags::EXPR_EXPECTED));
+                vals.push_back(val);
+            }
+        } while (match(TokenType::COMMA) && expr);
+
+        lower_range_prec = false;
+        skip_nls();
+        expect(TokenType::RIGHT_CURLY, create_diag(diags::MISSING_RIGHT_CURLY));
+        parser_assert(!keys.empty(), create_diag(diags::EMPTY_DICT_WITHOUT_COLON));
+        return new Dict(keys, vals);
     }
     return nullptr;
 }
