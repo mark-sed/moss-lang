@@ -440,6 +440,7 @@ IR *Parser::declaration() {
             skip_nls(1);
         }
         if (match(TokenType::ELSE)) {
+            LOGMAX("AAAA");
             auto elsebody = body();
             decl = new If(cond, ifbody, new Else(elsebody));
         }
@@ -1203,6 +1204,10 @@ Expression *Parser::constant() {
         lower_range_prec = prev_fun_args_state;
         return expr;
     }
+    else if (match(TokenType::NON_LOCAL)) {
+        auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
+        return new Variable(id->get_value(), true);
+    }
     else if (check(TokenType::ID)) {
         auto id = advance();
         return new Variable(id->get_value());
@@ -1232,6 +1237,7 @@ Expression *Parser::constant() {
     else if (match(TokenType::NIL)) {
         return new NilLiteral();
     }
+    // lambda
     else if (match(TokenType::FUN)) {
         ustring name = "";
         if (check(TokenType::ID)) {
@@ -1251,12 +1257,14 @@ Expression *Parser::constant() {
         parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
         return new Lambda(name, args, lmbody);
     }
+    // list
     else if (match(TokenType::LEFT_SQUARE)) {
         auto vals = expr_list();
         skip_nls();
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
         return new List(vals);
     }
+    // dict
     else if (match(TokenType::LEFT_CURLY)) {
         std::vector<ir::Expression *> keys;
         std::vector<ir::Expression *> vals;

@@ -107,6 +107,7 @@ not true
 not not not false
 (nil)
 hello
+$non_local_variable
 a ? true : nil
 1,4..someval
 foo(1, 2)
@@ -187,6 +188,7 @@ std::math::pi
         IRType::UNARY_EXPR,
         IRType::UNARY_EXPR,
         IRType::NIL_LITERAL,
+        IRType::VARIABLE,
         IRType::VARIABLE,
         IRType::TERNARY_IF,
         IRType::RANGE,

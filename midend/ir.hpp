@@ -964,13 +964,17 @@ public:
 };
 
 class Variable : public Expression {
+private:
+    bool non_local;
 public:
     static const IRType ClassType = IRType::VARIABLE;
 
-    Variable(ustring name) : Expression(ClassType, name) {}
+    Variable(ustring name, bool non_local=false) : Expression(ClassType, name), non_local(non_local) {}
+
+    bool is_non_local() { return this->non_local; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << name;
+        os << (non_local ? "$" : "") << name;
         return os;
     }
 };
