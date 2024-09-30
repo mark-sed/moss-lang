@@ -58,6 +58,7 @@ enum IRType {
     BINARY_EXPR, // Start of Expresion IDs -- Add any new to dyn_cast bellow!
     UNARY_EXPR,
     VARIABLE,
+    ALL_SYMBOLS,
     ARGUMENT,
     LAMBDA,
     NOTE,
@@ -979,6 +980,21 @@ public:
     }
 };
 
+/** 
+ * IR for denoting * in import of all symbols
+ */
+class AllSymbols : public Expression {
+public:
+    static const IRType ClassType = IRType::ALL_SYMBOLS;
+
+    AllSymbols() : Expression(ClassType, "*") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "*";
+        return os;
+    }
+};
+
 class TernaryIf : public Expression {
 private:
     Expression *condition;
@@ -1274,6 +1290,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         if (auto e = dyn_cast<ir::BinaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::UnaryExpr>(i)) return e;
         else if (auto e = dyn_cast<ir::Variable>(i)) return e;
+        else if (auto e = dyn_cast<ir::AllSymbols>(i)) return e;
         else if (auto e = dyn_cast<ir::Argument>(i)) return e;
         else if (auto e = dyn_cast<ir::Lambda>(i)) return e;
         else if (auto e = dyn_cast<ir::Note>(i)) return e;

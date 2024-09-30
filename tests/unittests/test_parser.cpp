@@ -500,18 +500,15 @@ space toto {
 
     // Errors
 ustring incorrect = R"(
-
 space
-
 space Foo
-
 space Goo::Foo {}
-
 space Foo+1
-
+A::B::*
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -952,9 +949,21 @@ import A,
        B::b,
        C as C1,
        D
+
+import A::c::*
+import SomeValue::*
+
+import ::A::C as c
+import ::SomeSpace::*
+import ::SomeSpace::Space2::baz
 )";
 
     IRType expected[] = {
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
         IRType::IMPORT,
         IRType::IMPORT,
         IRType::IMPORT,
@@ -972,6 +981,8 @@ import A,
         "Value",
         "Goo", "f1",
         "A", "b", "C1", "D",
+        "*", "*",
+        "c", "*", "baz",
     };
 
     SourceFile sf(code, SourceFile::SourceType::STRING);
@@ -1006,9 +1017,15 @@ import Goo as Goo::Goo
 import O1 as "o1"
 import F::A[1]
 import G::A.a::C::d
+import ::*
+import *
+import ::A // This is import of the same name as the same name
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

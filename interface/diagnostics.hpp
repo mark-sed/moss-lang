@@ -96,6 +96,8 @@ enum DiagID {
     SET_NOT_ALLOWED,        ///< Assignment is not allowed here
     DICT_NO_COLON,          ///< No : after a key
     EMPTY_DICT_WITHOUT_COLON, ///< {} is not an empty dict
+    STAR_IMPORT_GLOBAL,     ///< ::*
+    STAR_SCOPE_OUTSIDE_IMPORT, ///< x::* not in import
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -172,6 +174,8 @@ static const char * DIAG_MSGS[] = {
     "Assignment is not allowed here — perhaps you meant to use '=='?",
     "Dictionary key has to be followed by a colon (':')",
     "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
+    "Cannot star import from global scope",
+    "Star scope can appear only in import",
 };
 
 /**

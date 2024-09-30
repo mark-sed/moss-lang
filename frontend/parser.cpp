@@ -271,11 +271,11 @@ void Parser::skip_nls(unsigned max) {
 
 ustring Parser::get_last_id(Expression *e) {
     assert(e && "nullptr passed for check");
-    if (auto v = dyn_cast<Variable>(e)) {
-        return v->get_name();
+    if (isa<Variable>(e) || isa<AllSymbols>(e)) {
+        return e->get_name();
     }
     if (auto be = dyn_cast<BinaryExpr>(e)) {
-        if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()))
+        if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()) && !isa<UnaryExpr>(be->get_left())) 
             parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
         if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
             return get_last_id(be->get_right());
@@ -410,7 +410,7 @@ IR *Parser::declaration() {
         do {
             if (name)
                 skip_nls();
-            name = expression();
+            name = scope(true);
             parser_assert(name, create_diag(diags::SCOPE_OR_ID_EXPECTED));
             names.push_back(name);
             // We always call get_last_id as it checks that the name is ID or Scope
@@ -440,7 +440,6 @@ IR *Parser::declaration() {
             skip_nls(1);
         }
         if (match(TokenType::ELSE)) {
-            LOGMAX("AAAA");
             auto elsebody = body();
             decl = new If(cond, ifbody, new Else(elsebody));
         }
@@ -1176,18 +1175,26 @@ ir::Expression *Parser::note() {
     return expr;
 }
 
-Expression *Parser::scope() {
+Expression *Parser::scope(bool allow_star) {
     Expression *expr = constant();
 
     while (match(TokenType::SCOPE)) {
-        auto elem = constant();
-        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-        // Expr may be nullptr as that is the global scope
-        if (!expr) {
-            expr = new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE));
+        if (match(TokenType::MUL)) {
+            parser_assert(allow_star, create_diag(diags::STAR_SCOPE_OUTSIDE_IMPORT)); 
+            parser_assert(expr, create_diag(diags::STAR_IMPORT_GLOBAL));
+            // Return since there cannot be anything else after this
+            return new BinaryExpr(expr, new AllSymbols(), Operator(OperatorKind::OP_SCOPE));
         }
         else {
-            expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_SCOPE));
+            auto elem = constant();
+            parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+            // Expr may be nullptr as that is the global scope
+            if (!expr) {
+                expr = new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE));
+            }
+            else {
+                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_SCOPE));
+            }
         }
     }
 

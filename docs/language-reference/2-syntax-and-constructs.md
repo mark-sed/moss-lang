@@ -142,7 +142,7 @@ do {
 ```
 
 ```c
-do expr while (condition)
+do expr; while (condition)
 ```
 
 ## For statement

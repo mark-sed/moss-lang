@@ -91,7 +91,7 @@ private:
     ir::Expression *subscript();
     ir::Expression *call();
     ir::Expression *note();
-    ir::Expression *scope();
+    ir::Expression *scope(bool allow_star=false);
 
     bool check(TokenType type);
     bool check(std::initializer_list<TokenType> types);
