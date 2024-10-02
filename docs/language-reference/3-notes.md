@@ -352,7 +352,7 @@ The script above if outputted as Markdown will look as following: "
 
 This text will be in the output file.
 
-```
+```cpp
 fun foo() = 42
 
 print("Hello, " ++ foo() ++ "!")

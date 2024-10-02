@@ -350,4 +350,284 @@ Prague is the capital of Czech Republic.
     delete mod;
 }
 
+/** Code/snippets from types-values-and-operators.md */
+TEST(ParserExamples, TypesAndValues){
+    ustring code = R"(
+"moss".upper() // "MOSS"
+[1,2,3].len()  // 3
+// TODO: Uncomment
+//1.(+)(2)       // "3"
+
+dec_i = 42       // Decimal
+hex_i = 0x2a     // Hexadecimal
+oct_i = 0q52     // Octal
+bin_i = 0b101010 // Binary
+
+// x q or b can be also capitalized
+bin_j = 0B0101
+
+x = -3.1415925
+y = 0.5e-2      // 0.005
+z = 5e3         // 500.0
+j = 0.e+3       // 0.0
+
+not_a_number = Float("nan")
+infinity_value = Float("inf")
+
+a = Complex(1.2, 3) // 1.2+3i
+b = Complex(1)      // 1+0i
+c = Complex("2-1i") // 2-1i
+
+b1 = true
+b2 = false
+
+b3 = b1 or b2
+b4 = b1 == true
+
+nl = r"New line is written as \n"
+
+name = "Jon"
+lang = "Moss"
+msg = f"{name} loves coding in {lang}"
+msg // "Jon loves coding in Moss"
+
+help = """Program usage:
+\tmoss [interpret options] <input file> [program args]
+"""
+help // "Program usage:\n\tmoss [interpret options] <input file> [program args]\n"
+
+a       // nil
+b = nil // nil
+a == b  // true
+
+enum COLORS {
+    PURPLE,
+    YELLOW,
+    GREEN
+}
+
+flower = COLORS::PURPLE
+moss = COLORS::GREEN
+
+names = ["luke", "leia", "han"]
+mix = ["pirate", 42, true, nil, nil, "ok"]
+
+
+l1 = [1, 2, 3]
+l2 = [4, 5, 6]
+/* TODO: Uncomment
+ziped = [[x, y] : x = l1, y = l2] 
+// [[1, 4],[2, 5],[3, 6]]
+
+[a : a = 1,3..100] // odd numbers from 1 to 99
+
+[p if(all([p % x != 0 : x = 2..p/2])) : p = 2..1000] // primes
+
+greet = "Hello there programmer!"
+[c if(c != " ") else "_" : c = greet].join() // "Hello_there_programmer!"
+// Alternatively one can use ternary operator for this case as well
+[(c != " ") ? c : "_" : c = greet].join() // "Hello_there_programmer!"
+*/
+
+empty = {:}
+mappings = {"name": "Marek", "id": 42}
+
+foo(1,2..5) // this is equivalent to foo(1, (2..5))
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    IR *mod = nullptr;
+
+    ASSERT_EXIT( {mod = parser.parse(); exit(0); },
+            testing::ExitedWithCode(0),
+            "");
+
+    delete mod;
+}
+
+/** 
+ * Code/snippets from:
+ *   functions.md and
+ *   classes-and-spaces.md and
+ *   annotations.md 
+ */
+TEST(ParserExamples, Functions_ClassesAndSpaces_Annotations){
+    ustring code = R"(
+fun foo(arg1, arg2) {
+    return arg1 * arg2
+}
+
+fun foo(arg1) = arg1 * 2
+
+fun(arg1) = arg1 * 2
+
+fun getID(x:MyClass) {
+    return -1
+}
+
+fun getID(x:[Int, Bool]) {
+    return 0
+}
+
+fun getID(x) {
+    return 42
+}
+
+fun bar(a:Int=4) {
+    // Code
+}
+
+fun baz(a, b:Int, ... other, name="") {
+    // Code
+}
+
+class MyClass {
+
+    /* TODO: Uncomment
+    fun (+)(x:[Int,Float]) = this.x + x
+    fun (+)(x) {
+        error("Cannot add to MyClass type " ++ type(x))
+    }
+
+    fun (and)(x) = this.x > 0*/
+
+}
+
+// Classes and Spaces
+
+space Math {
+    fun abs(x:Int) {
+        return x 
+    }
+}
+
+space {
+    a = someCall()
+    a // A is printed and unaccessible
+}
+
+class Range : Iterable, BaseClass {
+    new Range(start, end, step=1) {
+        this.start = start
+        this.end = end
+        this.step = step
+        this.i = start
+    }
+
+    fun __next() {
+        if(this.step >= 0 and this.i >= this.end) return StopIteration
+        if(this.step < 0 and this.i <= this.end) return StopIteration
+        r = this.i
+        this.i += this.step
+        return r
+    }
+}
+
+Range::__next(range)
+
+@!min_version("1.1") // Module annotation
+
+@equation // Tied to `f`
+@hidden   // Tied fo `f`
+fun f(x) {
+    return x ^ 2 * x
+}
+
+fun g(x) {
+    @!equation // Tied to `g`
+    @!hidden   // Tied fo `g`
+    return x * x
+}
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    IR *mod = nullptr;
+
+    ASSERT_EXIT( {mod = parser.parse(); exit(0); },
+            testing::ExitedWithCode(0),
+            "");
+
+    delete mod;
+}
+
+/** Code/snippets from bytecode-and-program-sharing.md */
+TEST(ParserExamples, BytecodeAndProgramSharing){
+    ustring code = R"(
+import systemx as sx
+
+a = sx.a + 430
+b = 8
+
+fun foo(a: [Int, Float]) {
+    print(a)
+}
+
+fun foo(a: SpecialString, b) {
+    print(a)
+    return b
+}
+
+~foo(11)
+a = foo("hi")
+
+class MyClass : XClass {
+
+    NAME = "My Class"
+
+    new MyClass(a) {
+        this.a = a
+    }
+
+    fun get_a() = this.a
+}
+
+myc = MyClass(42)
+print(myc.get_a())
+
+md"""
+# Project Moss
+Very cool stuff!
+"""
+
+@requires(1)
+fun foo() {
+    d"""
+    Does nothing
+    """
+}
+
+a = 6
+if(a < 2) {
+    a = 2
+}
+else a = 0
+
+switch(a) {
+case 1, 2: return 4
+case 3: return 0
+default: return -1
+}
+
+enum Colors {
+    BLACK
+    WHITE
+}
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    IR *mod = nullptr;
+
+    ASSERT_EXIT( {mod = parser.parse(); exit(0); },
+            testing::ExitedWithCode(0),
+            "");
+
+    delete mod;
+}
+
 }

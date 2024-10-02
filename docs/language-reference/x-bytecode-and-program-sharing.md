@@ -370,7 +370,7 @@ x   RETURN          #105
 
 ### If
 
-```
+```cpp
 a = 6
 if(a < 2) {
     a = 2
@@ -391,7 +391,7 @@ x   STORE_CONST     %0, #0
 
 ### Switch
 
-```
+```go
 switch(a) {
 case 1, 2: return 4
 case 3: return 0

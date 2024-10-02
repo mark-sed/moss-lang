@@ -121,7 +121,7 @@ Boolean value.
 
 Bool can be either `true` or `false`.
 
-```py
+```cpp
 b1 = true
 b2 = false
 
@@ -301,7 +301,7 @@ greet = "Hello there programmer!"
 Dictionary - an associative array - collection of keys and values.
 
 ```py
-empty = {,}
+empty = {:}
 mappings = {"name": "Marek", "id": 42}
 ```
 
