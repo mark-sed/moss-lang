@@ -90,13 +90,13 @@ TEST(Scanner, IDsAndUnicodeTokens) {
 
 /** Tokenization of numbers */
 TEST(Scanner, NumbersTokens) {
-    ustring floats_code = "0.0 0000.1 223.2 1e5 2e-32 45e+4 2.15e10 33.00011e-8 0.e+3 12.e-1";
+    ustring floats_code = "0.0 0000.1 223.2 1e5 2e-32 45e+4 2.15e10 33.00011e-8 0.e+3 12.e-1 1_200.300_001e+1_0 1.000_000_001 3e+1_0 4.e-1_0";
     run_tokenizer_check_type(floats_code, TokenType::FLOAT);
 
-    ustring ints_code = "00 123 0xAe12 0b011001 0q170 5 98984645421215444 0x10";
+    ustring ints_code = "00 123 0xAe12 0b011001 0q170 5 98984645421215444 0x10 0x1a_2b 0b0101_1001";
     run_tokenizer_check_type(ints_code, TokenType::INT);
 
-    ustring incorrect_nums = "1a 0x 0x12gA 0t1 0q 0b 0b112 1a 0xa.2";
+    ustring incorrect_nums = "1a 0x 0x12gA 0t1 0q 0b 0b112 1a 0xa.2 42e-12_";
     run_tokenizer_check_type(incorrect_nums, TokenType::ERROR_TOKEN);
 }
 

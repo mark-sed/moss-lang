@@ -554,8 +554,8 @@ fun g(x) {
     delete mod;
 }
 
-/** Code/snippets from bytecode-and-program-sharing.md */
-TEST(ParserExamples, BytecodeAndProgramSharing){
+/** Code/snippets from bytecode-and-program-sharing.md and interoperability-with-python.md*/
+TEST(ParserExamples, BytecodeAndProgramSharing_PyInterop){
     ustring code = R"(
 import systemx as sx
 
@@ -616,6 +616,13 @@ enum Colors {
     BLACK
     WHITE
 }
+
+import python
+
+datetime = python.module("datetime")
+now = datetime::datetime.now()
+
+print(now)
 )";
 
     SourceFile sf(code, SourceFile::SourceType::STRING);

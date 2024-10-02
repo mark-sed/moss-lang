@@ -161,38 +161,57 @@ static bool is_digit(int c, int base) {
     return false;
 }
 
-// Returns float or int 
-// int is always converted to base 10
-// float might be in scientific notation
+/** 
+ * Returns float or int 
+ * int is always converted to base 10
+ * float might be in scientific notation
+ * A digit separator might be used, it cannot be 
+ */
 Token *Scanner::parse_number(int start) {
+    static const char DIGIT_SEPARATOR = '_'; ///< Separator that is allowed in numbers
     ustring number_str(1, start);
     int next_c = peek_nonutf();
     int base = 10;
+    bool was_number = true;
+    bool is_last_dig_base = false;
     // Check if the number is specific base 
     if (start == '0') {
         if (next_c == 'x' || next_c == 'X') {
             base = 16;
             number_str += advance().to_str();
             next_c = peek_nonutf();
+            was_number = false;
+            is_last_dig_base = true;
         }
         else if (next_c == 'q' || next_c == 'Q') {
             base = 8;
             number_str += advance().to_str();
             next_c = peek_nonutf();
+            was_number = false;
+            is_last_dig_base = true;
         }
         else if (next_c == 'b' || next_c == 'B') {
             base = 2;
             number_str += advance().to_str();
             next_c = peek_nonutf();
+            was_number = false;
+            is_last_dig_base = true;
         }
     }
-    while (is_digit(next_c, base)) {
-        number_str += ustring(1, next_c);
+    while (is_digit(next_c, base) || next_c == DIGIT_SEPARATOR) {
         advance();
+        if (next_c != DIGIT_SEPARATOR) {
+            number_str += ustring(1, next_c);
+            was_number = true;
+            is_last_dig_base = false;
+        } else {
+            if (!was_number) {
+                return err_tokenize(number_str, "", error::msgs::MULTIPLE_SEPARATORS);
+            }
+            was_number = false;
+        }
         next_c = peek_nonutf();
     }
-    char last_dig = number_str[number_str.size()-1];
-    bool is_last_dig_base = last_dig == 'x' || last_dig == 'X' || last_dig == 'q' || last_dig == 'Q' || last_dig == 'b' || last_dig == 'B'; 
     if ((is_part_of_id(next_c) || is_last_dig_base) && next_c != 'e' && next_c != 'E') {
         // number followed by character or number that is outside of its base or base was set, but no digits were set
         number_str = read_incorrect(number_str);
@@ -203,6 +222,11 @@ Token *Scanner::parse_number(int start) {
         if (base == 16)
             return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "hexadecimal");
         return err_tokenize(number_str, "", error::msgs::INCORRECT_INT_LITERAL, "decimal");
+    }
+
+    // Check after string length check
+    if (!was_number) {
+        return err_tokenize(number_str, "", error::msgs::TRAILING_SEPARATOR);
     }
 
     if (next_c == '.') {
@@ -216,15 +240,28 @@ Token *Scanner::parse_number(int start) {
             unput();
         }
         else {
+            was_number = false;
             // Float
             if (base != 10) {
                 number_str = read_incorrect(number_str);
                 return err_tokenize(number_str, "If you want to access object member use parenthesis", error::msgs::FLOAT_NON_DEC_BASE, "");
             }
-            while (std::isdigit(next_c)) {
-                number_str += ustring(1, next_c);
+            while (std::isdigit(next_c) || next_c == DIGIT_SEPARATOR) {
                 advance();
+                if (next_c != DIGIT_SEPARATOR) {
+                    number_str += ustring(1, next_c);
+                    was_number = true;
+                } else {
+                    if (!was_number) {
+                        return err_tokenize(number_str, "", error::msgs::MULTIPLE_SEPARATORS);
+                    }
+                    was_number = false;
+                }
                 next_c = peek_nonutf();
+            }
+
+            if (!was_number && number_str.back() != '.') {
+                return err_tokenize(number_str, "", error::msgs::TRAILING_SEPARATOR);
             }
             if (next_c != 'e' && next_c != 'E')
                 return tokenize(number_str, TokenType::FLOAT);
@@ -233,6 +270,7 @@ Token *Scanner::parse_number(int start) {
     
     if (next_c == 'e' || next_c == 'E') {
         // Float in scientific notation
+        was_number = false;
         number_str += advance().to_str();
         next_c = peek_nonutf();
         bool sign_without_digit = false;
@@ -241,10 +279,18 @@ Token *Scanner::parse_number(int start) {
             next_c = peek_nonutf();
             sign_without_digit = true;
         }
-        while (std::isdigit(next_c)) {
-            sign_without_digit = false;
-            number_str += ustring(1, next_c);
+        while (std::isdigit(next_c) || next_c == DIGIT_SEPARATOR) {
             advance();
+            if (next_c != DIGIT_SEPARATOR) {
+                number_str += ustring(1, next_c);
+                was_number = true;
+                sign_without_digit = false;
+            } else {
+                if (!was_number) {
+                    return err_tokenize(number_str, "", error::msgs::MULTIPLE_SEPARATORS);
+                }
+                was_number = false;
+            }
             next_c = peek_nonutf();
         }
         if (sign_without_digit) {
@@ -258,6 +304,9 @@ Token *Scanner::parse_number(int start) {
         // Check if exponent has a value after it
         if (number_str[number_str.size()-1] == 'e' || number_str[number_str.size()-1] == 'E') {
             return err_tokenize(number_str, "Missing exponent value", error::msgs::INCORRECT_FLOAT_LITERAL, "");
+        }
+        if (!was_number) {
+            return err_tokenize(number_str, "", error::msgs::TRAILING_SEPARATOR);
         }
         // No need to check base since e is hexdigit
         assert(base == 10 && "somehow scientific double is not base 10");

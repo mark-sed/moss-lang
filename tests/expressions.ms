@@ -26,3 +26,4 @@ true and true
 "\n"
 12 xor 12
 "\n"
+0x1a_2b ++ "\n"

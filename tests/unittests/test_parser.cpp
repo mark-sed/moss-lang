@@ -11,6 +11,49 @@ namespace{
 using namespace moss;
 using namespace ir;
 
+static void run_parser(ustring code, IRType *expected, unsigned expected_size) {
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    unsigned index = 0;
+    ASSERT_EQ(expected_size, mod->size());
+    for (auto decl: mod->get_body()) {
+        EXPECT_TRUE(decl->get_type() == expected[index++]) << "Incorrect IR at index: " << index-1
+            << "\nExpected: " << static_cast<unsigned>(expected[index-1]) << "\nBut got: " 
+            << static_cast<unsigned>(decl->get_type()) << " - " << decl->get_name();
+    }
+
+    delete mod;
+}
+
+static void run_parser_by_line(ustring code, IRType *expected, unsigned expected_size) {
+    ASSERT_TRUE(expected_size > 0) << "By line parsing expects more than 0 IRs";
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    bool eof_reached = false;
+    unsigned index = 0;
+    while (!eof_reached) {
+        ASSERT_TRUE(index < expected_size) << " index: " << index << ", expected_size: " << expected_size;
+        std::vector<ir::IR *> line_irs = parser.parse_line();
+        ASSERT_TRUE(line_irs.size() <= 1);
+        if (!line_irs.empty()) {
+            EXPECT_TRUE(line_irs[0]->get_type() == expected[index++]) << "Incorrect IR at index: " << index-1
+                << "\nExpected: " << static_cast<unsigned>(expected[index-1]) << "\nBut got: " 
+                << static_cast<unsigned>(line_irs[0]->get_type()) << " - " << line_irs[0]->get_name();
+            if (isa<ir::EndOfFile>(line_irs[0])) {
+                eof_reached = true;
+            }
+        }
+
+        for (auto i : line_irs) {
+            delete i;
+        }
+    }
+}
+
 /** Test correct parsing regardless of the new line */
 TEST(Parsing, WhiteSpace){
     ustring code = R"(
@@ -366,6 +409,9 @@ foo(1,3..4) // 1 has precedence as an argument
 
 std::math::pi + 4
 foo::goo
+
+0x1a_2b
+1_000_234
 )";
 
     ustring expected = R"(((- a) > 4)
@@ -401,6 +447,8 @@ foo((a + 2), (a ++ 4), (1 + (1 * 2)))
 foo(1, (3..4))
 (((std :: math) :: pi) + 4)
 (foo :: goo)
+6699
+1000234
 <IR: <end-of-file>>
 )";
 
@@ -417,49 +465,45 @@ foo(1, (3..4))
     EXPECT_EQ(ss.str(), expected);
 
     delete mod;
-}
 
-static void run_parser(ustring code, IRType *expected, unsigned expected_size) {
-    SourceFile sf(code, SourceFile::SourceType::STRING);
-    Parser parser(sf);
+// Errors
+ustring incorrect = R"(
+1.000_000_001_
+0x_
+1_000_
+3__000_____0
+0._12
+1.0_
+22e-_1
+0.23e+1__0
+10.66e1_
+0b_10
+0q1__7
+0_x2a
+0_.e2
+12_.2_2
+)";
 
-    auto mod = dyn_cast<Module>(parser.parse());
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        
+        IRType::END_OF_FILE
+    };
 
-    unsigned index = 0;
-    ASSERT_EQ(expected_size, mod->size());
-    for (auto decl: mod->get_body()) {
-        EXPECT_TRUE(decl->get_type() == expected[index++]) << "Incorrect IR at index: " << index-1
-            << "\nExpected: " << static_cast<unsigned>(expected[index-1]) << "\nBut got: " 
-            << static_cast<unsigned>(decl->get_type()) << " - " << decl->get_name();
-    }
-
-    delete mod;
-}
-
-static void run_parser_by_line(ustring code, IRType *expected, unsigned expected_size) {
-    ASSERT_TRUE(expected_size > 0) << "By line parsing expects more than 0 IRs";
-    SourceFile sf(code, SourceFile::SourceType::STRING);
-    Parser parser(sf);
-
-    bool eof_reached = false;
-    unsigned index = 0;
-    while (!eof_reached) {
-        ASSERT_TRUE(index < expected_size) << " index: " << index << ", expected_size: " << expected_size;
-        std::vector<ir::IR *> line_irs = parser.parse_line();
-        ASSERT_TRUE(line_irs.size() <= 1);
-        if (!line_irs.empty()) {
-            EXPECT_TRUE(line_irs[0]->get_type() == expected[index++]) << "Incorrect IR at index: " << index-1
-                << "\nExpected: " << static_cast<unsigned>(expected[index-1]) << "\nBut got: " 
-                << static_cast<unsigned>(line_irs[0]->get_type()) << " - " << line_irs[0]->get_name();
-            if (isa<ir::EndOfFile>(line_irs[0])) {
-                eof_reached = true;
-            }
-        }
-
-        for (auto i : line_irs) {
-            delete i;
-        }
-    }
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
 TEST(Parsing, Spaces){

@@ -121,7 +121,7 @@ function test_output {
 function test_expressions {
     expect_pass "expressions.ms" "expressions"
     expect_out_eq "27\n13\n261\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue
-true\nfalse\n9\n255\n0\n" "expressions"
+true\nfalse\n9\n255\n0\n6699\n" "expressions"
 }
 
 function test_variables {

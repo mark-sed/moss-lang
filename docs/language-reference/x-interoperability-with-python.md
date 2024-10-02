@@ -8,7 +8,7 @@ Module `python` provides all needed resources.
 ```cpp
 import python
 
-datetime = python.import("datetime")
+datetime = python.module("datetime")
 now = datetime::datetime.now()
 
 print(now)

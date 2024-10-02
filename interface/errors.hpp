@@ -42,6 +42,8 @@ namespace error {
         inline msgtype INCORRECT_FLOAT_LITERAL = "Invalid float literal";
         inline msgtype UNTERMINATED_STRING_LITERAL = "Unterminated string literal";
         inline msgtype UNTERMINATED_COMMENT = "Unterminated comment";
+        inline msgtype TRAILING_SEPARATOR = "Trailing digit separators";
+        inline msgtype MULTIPLE_SEPARATORS = "Multiple connected digit separators";
     }
 
     /**
