@@ -1169,7 +1169,9 @@ ir::Expression *Parser::note() {
         // expr should never be nullptr as string would be parsed in constant
         assert(expr && "Somehow string was trying to be parsed as a note without prefix");
         auto val = advance();
-        return new Note(expr, new StringLiteral(unescapeString(val->get_value())));
+        // We don't unescape the string as the note might use its own escape
+        // sequences and unescape has to be called by the formatter in that case
+        return new Note(expr, new StringLiteral(val->get_value()));
     }
 
     return expr;

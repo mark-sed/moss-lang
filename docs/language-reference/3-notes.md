@@ -315,7 +315,7 @@ fun tex2pdf(s) {
 @generator(out::Formats::PDF, "pdfa")
 @platform(sys::Platform::Linux)
 fun pdf2pdfa(path) {
-    # Here out_path will be the actual one chosen by the user
+    // Here out_path will be the actual one chosen by the user
     sys.system(f"bash pdf2pdfa.sh {path} {out::out_path()}")
 }
 ```
