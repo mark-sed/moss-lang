@@ -67,6 +67,8 @@ enum IRType {
     TERNARY_IF,
     RANGE,
     CALL,
+    THIS_LITERAL,
+    SUPER_LITERAL,
     INT_LITERAL,
     FLOAT_LITERAL,
     BOOL_LITERAL,
@@ -1185,6 +1187,30 @@ public:
     }
 };
 
+class ThisLiteral : public Expression {
+public:
+    static const IRType ClassType = IRType::THIS_LITERAL;
+
+    ThisLiteral() : Expression(ClassType, "<this-literal>") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "this";
+        return os;
+    }
+};
+
+class SuperLiteral : public Expression {
+public:
+    static const IRType ClassType = IRType::SUPER_LITERAL;
+
+    SuperLiteral() : Expression(ClassType, "<super-literal>") {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "super";
+        return os;
+    }
+};
+
 class Note : public Expression {
 private:
     Expression *prefix;
@@ -1299,6 +1325,8 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         else if (auto e = dyn_cast<ir::TernaryIf>(i)) return e;
         else if (auto e = dyn_cast<ir::Range>(i)) return e;
         else if (auto e = dyn_cast<ir::Call>(i)) return e;
+        else if (auto e = dyn_cast<ir::ThisLiteral>(i)) return e;
+        else if (auto e = dyn_cast<ir::SuperLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::IntLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::FloatLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::BoolLiteral>(i)) return e;

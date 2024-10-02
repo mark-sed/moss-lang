@@ -1244,6 +1244,12 @@ Expression *Parser::constant() {
     else if (match(TokenType::NIL)) {
         return new NilLiteral();
     }
+    else if (match(TokenType::THIS)) {
+        return new ThisLiteral();
+    }
+    else if (match(TokenType::SUPER)) {
+        return new SuperLiteral();
+    }
     // lambda
     else if (match(TokenType::FUN)) {
         ustring name = "";

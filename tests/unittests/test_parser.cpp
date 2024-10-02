@@ -116,6 +116,10 @@ note"Some value"
 md"""
 # Title
 """
+this
+super
+this.foo
+super()
 
 a ++ b ++ "\n"
 2 ^ b ^ 2
@@ -196,6 +200,10 @@ std::math::pi
         IRType::CALL,
         IRType::NOTE,
         IRType::NOTE,
+        IRType::THIS_LITERAL,
+        IRType::SUPER_LITERAL,
+        IRType::BINARY_EXPR,
+        IRType::CALL,
 
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
@@ -251,7 +259,7 @@ std::math::pi
         OperatorKind::OP_NOT,
         OperatorKind::OP_MINUS,
         OperatorKind::OP_NOT,
-
+        OperatorKind::OP_ACCESS,
         
         OperatorKind::OP_CONCAT,
         OperatorKind::OP_EXP,
