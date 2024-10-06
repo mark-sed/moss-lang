@@ -229,6 +229,10 @@ public:
         : Construct(ClassType, name), parents(parents) {
         this->body = clbody;
     }
+    ~Class() {
+        for (auto p : parents)
+            delete p;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "class " << name;
@@ -262,7 +266,7 @@ public:
 
     Argument(ustring name, std::vector<Expression *> types, Expression *default_value=nullptr)
         : Expression(ClassType, name), types(types), default_value(default_value), vararg(false) {}
-    Argument(ustring name) : Expression(ClassType, name), vararg(true) {}
+    Argument(ustring name) : Expression(ClassType, name), default_value(nullptr), vararg(true) {}
     ~Argument() {
         for (auto t: types) {
             delete t;
@@ -341,6 +345,10 @@ public:
     Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, bool constructor=false) 
         : Construct(ClassType, name), args(args), constructor(constructor) {
         this->body = fnbody;
+    }
+    ~Function() {
+        for (auto a : args)
+            delete a;
     }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
@@ -1032,6 +1040,11 @@ public:
 
     Lambda(ustring name, std::vector<Argument *> args, Expression *body) 
         : Expression(ClassType, name), args(args), body(body) {}
+    ~Lambda() {
+        for (auto a : this->args)
+            delete a;
+        delete body;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "(fun " << name << "(";
@@ -1315,7 +1328,15 @@ public:
     static const IRType ClassType = IRType::DICT;
 
     Dict(std::vector<Expression *> keys, std::vector<Expression *> values)
-        : Expression(ClassType, "<dict>"), keys(keys), values(values) {}
+        : Expression(ClassType, "<dict>"), keys(keys), values(values) {
+        assert((keys.size() == values.size()) && "mismatched amount of keys to values");
+    }
+    ~Dict() {
+        for (auto i : keys)
+            delete i;
+        for (auto i : values)
+            delete i;
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "{";
