@@ -98,6 +98,8 @@ enum DiagID {
     EMPTY_DICT_WITHOUT_COLON, ///< {} is not an empty dict
     STAR_IMPORT_GLOBAL,     ///< ::*
     STAR_SCOPE_OUTSIDE_IMPORT, ///< x::* not in import
+    COLON_EXPECTED,         ///< Expecting :
+    LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -176,6 +178,8 @@ static const char * DIAG_MSGS[] = {
     "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
     "Cannot star import from global scope",
     "Star scope can appear only in import",
+    "Expecting ':'",
+    "Only assignments are allowed in assignment section of list comprehension",
 };
 
 /**

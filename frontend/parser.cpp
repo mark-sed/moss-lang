@@ -810,6 +810,9 @@ std::list<ir::IR *> Parser::cases() {
  * ArgList -> 
  *          | Expression
  *          | ArgList , Expression
+ * 
+ * List ->
+ * Dict ->
  * ```
  */
 Expression *Parser::expression(bool allow_set) {
@@ -1274,9 +1277,50 @@ Expression *Parser::constant() {
     }
     // list
     else if (match(TokenType::LEFT_SQUARE)) {
-        auto vals = expr_list();
+        lower_range_prec = true;
+        std::vector<ir::Expression *> vals;
+        skip_nls();
+        // Lets extract first expr and then check if this is a list comprehension
+        auto first = expression();
+        if (first) {
+            if (check({TokenType::COLON, TokenType::IF})) {
+                skip_nls();
+                Expression *condition = nullptr;
+                Expression *else_result = nullptr;
+                if (check(TokenType::IF)) {
+                    advance();
+                    expect(TokenType::LEFT_PAREN, create_diag(diags::IF_REQUIRES_PARENTH));
+                    condition = expression();
+                    parser_assert(condition, create_diag(diags::EXPR_EXPECTED));
+                    expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+                    if (match(TokenType::ELSE)) {
+                        else_result = expression();
+                        parser_assert(else_result, create_diag(diags::EXPR_EXPECTED));
+                    }
+                }
+                expect(TokenType::COLON, create_diag(diags::COLON_EXPECTED));
+                skip_nls();
+                auto assignments = expr_list(false, true);
+                // Check if all values are assignments
+                for (auto a : assignments) {
+                    auto be = dyn_cast<BinaryExpr>(a);
+                    // TODO: Emit error recommending putting range in parenthesis if 
+                    parser_assert(be && be->get_op().get_kind() == OperatorKind::OP_SET, create_diag(diags::LIST_COMP_NOT_ASSIGN));
+                }
+                skip_nls();
+                expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+                lower_range_prec = false;
+                return new List(first, assignments, condition, else_result);
+            }
+            else if (match(TokenType::COMMA)){
+                skip_nls();
+                vals = expr_list();
+                vals.insert(vals.begin(), first);
+            }
+        }
         skip_nls();
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+        lower_range_prec = false;
         return new List(vals);
     }
     // dict

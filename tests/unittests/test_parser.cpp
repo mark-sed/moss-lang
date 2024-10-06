@@ -1289,4 +1289,64 @@ fun() = a = 3
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, ListComprehension){
+    ustring code = R"(
+[]
+[1]
+[1,2]
+[1,2,3*2,4]
+[[x, y] : x = l1, y = l2] 
+[[a,b,c] : a = x, b = (1,3..10), c = (10..0)]
+[a : a = (1,3..100)]
+[c if(c != " ") else "_" : c = greet]
+[(c != " ") ? c : "_" : c = greet]
+[p if(all([p % x != 0 : x = 2..p/2])) : p = (2..1000)]
+[x*3-1 if (x > 0) : x = some_list]
+[[x,y,z] : 
+    x = (1..10),
+    y = (2..20),
+    z = (0..-10)]
+)";
+
+    IRType expected[] = {
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        IRType::LIST,
+        
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+[x : "some"]
+[x if (x > 0)]
+[if(x > 0) x; else "" : x = (1..100)]
+[x : x=(1..100), 31]
+[x, 2 : x = a]
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

@@ -1233,21 +1233,71 @@ public:
 class List : public Expression {
 private:
     std::vector<Expression *> value;
+    bool comprehension;
+    Expression *result;
+    Expression *else_result;
+    Expression *condition;
+    std::vector<Expression *> assignments;
 public:
     static const IRType ClassType = IRType::LIST;
 
-    List(std::vector<Expression *> value) : Expression(ClassType, "<list>"), value(value) {}
+    List(std::vector<Expression *> value) 
+        : Expression(ClassType, "<list>"), value(value), comprehension(false),
+          result(nullptr), else_result(nullptr), condition(nullptr) {}
+    List(Expression *result, std::vector<Expression *> assignments,
+         Expression *condition, Expression *else_result)
+        : Expression(ClassType, "<list>"), comprehension(true), result(result),
+          else_result(else_result), condition(condition), assignments(assignments) {
+        assert((!else_result || (else_result && condition)) && "else without condition in list comprehension");
+        assert(result && "comprehension without result");
+    }
+    ~List() {
+        for (auto v: value)
+            delete v;
+        if (comprehension) {
+            if (result)
+                delete result;
+            if (else_result)
+                delete else_result;
+            if (condition)
+                delete condition;
+            for (auto a: assignments)
+                delete a;
+        }
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "[";
-        bool first = true;
-        for (auto v: value) {
-            if (first) {
-                os << *v;
-                first = false;
+        if (!comprehension) {
+            bool first = true;
+            for (auto v: value) {
+                if (first) {
+                    os << *v;
+                    first = false;
+                }
+                else {
+                    os << ", " << *v;
+                }
             }
-            else {
-                os << ", " << *v;
+        }
+        else {
+            os << *result;
+            if (condition) {
+                os << " if(" << *condition << ")";
+                if (else_result) {
+                    os << " else " << *else_result;
+                }
+            }
+            os << " : ";
+            bool first = true;
+            for (auto a: assignments) {
+                if (first) {
+                    os << *a;
+                    first = false;
+                }
+                else {
+                    os << ", " << *a;
+                }
             }
         }
         os << "]";

@@ -286,9 +286,9 @@ l2 = [4, 5, 6]
 ziped = [[x, y] : x = l1, y = l2] 
 // [[1, 4],[2, 5],[3, 6]]
 
-[a : a = 1,3..100] // odd numbers from 1 to 99
+[a : a = (1,3..100)] // odd numbers from 1 to 99
 
-[p if(all([p % x != 0 : x = 2..p/2])) : p = 2..1000] // primes
+[p if(all([p % x != 0 : x = (2..p/2)])) : p = (2..1000)] // primes
 
 greet = "Hello there programmer!"
 [c if(c != " ") else "_" : c = greet].join() // "Hello_there_programmer!"
