@@ -42,7 +42,11 @@ protected:
     Value(TypeKind kind, ustring name) : references(1), kind(kind), name(name), attrs() {}
 public:
     virtual Value *clone() = 0;
-    virtual ~Value() {}
+    virtual ~Value() {
+        for (auto [_, v] : attrs) {
+            delete v;
+        }
+    }
 
     virtual opcode::StringConst as_string() = 0;
     virtual opcode::FloatConst as_float() {

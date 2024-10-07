@@ -8,6 +8,7 @@ using namespace ir;
 using namespace bcgen;
 using namespace opcode;
 
+// TODO: Consider rewriting this without using RegValue *, but using just RegValue
 RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     // Dont emit for left if set and its variable
     RegValue *left = nullptr;
@@ -19,120 +20,120 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     switch (expr->get_op().get_kind()) {
         case OperatorKind::OP_CONCAT: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Concat2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Concat2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Concat2(next_reg(), left->reg(), right->reg()));
+                append(new Concat2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Concat3(next_reg(), left->reg(), right->reg()));
+                append(new Concat3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Concat(next_reg(), left->reg(), right->reg()));
+                append(new Concat(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_EXP: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Exp2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Exp2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Exp2(next_reg(), left->reg(), right->reg()));
+                append(new Exp2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Exp3(next_reg(), left->reg(), right->reg()));
+                append(new Exp3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Exp(next_reg(), left->reg(), right->reg()));
+                append(new Exp(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_PLUS: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Add2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Add2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Add2(next_reg(), left->reg(), right->reg()));
+                append(new Add2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Add3(next_reg(), left->reg(), right->reg()));
+                append(new Add3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Add(next_reg(), left->reg(), right->reg()));
+                append(new Add(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_MINUS: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Sub2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Sub2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Sub2(next_reg(), left->reg(), right->reg()));
+                append(new Sub2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Sub3(next_reg(), left->reg(), right->reg()));
+                append(new Sub3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Sub(next_reg(), left->reg(), right->reg()));
+                append(new Sub(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_DIV: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Div2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Div2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Div2(next_reg(), left->reg(), right->reg()));
+                append(new Div2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Div3(next_reg(), left->reg(), right->reg()));
+                append(new Div3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Div(next_reg(), left->reg(), right->reg()));
+                append(new Div(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_MUL: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Mul2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Mul2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Mul2(next_reg(), left->reg(), right->reg()));
+                append(new Mul2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Mul3(next_reg(), left->reg(), right->reg()));
+                append(new Mul3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Mul(next_reg(), left->reg(), right->reg()));
+                append(new Mul(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_MOD: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Mod2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Mod2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Mod2(next_reg(), left->reg(), right->reg()));
+                append(new Mod2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Mod3(next_reg(), left->reg(), right->reg()));
+                append(new Mod3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Mod(next_reg(), left->reg(), right->reg()));
+                append(new Mod(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
@@ -140,14 +141,14 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
                 auto reg = last_reg();
                 reg->set_silent(true);
                 append(new StoreName(reg->reg(), irvar->get_name()));
                 return reg;
             }
             else {
-                append(new Store(next_reg(), right->reg()));
+                append(new Store(next_reg(), free_reg(right)));
                 auto reg = last_reg();
                 reg->set_silent(true);
                 append(new StoreName(reg->reg(), irvar->get_name()));
@@ -158,10 +159,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Concat3(left->reg(), left->reg(), right->reg()));
+                append(new Concat3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Concat(left->reg(), left->reg(), right->reg()));
+                append(new Concat(left->reg(), left->reg(), free_reg(right)));
             }
             // TODO: We need to store the name as the value was copied into a
             // new register and that was modified. If we don't generate load,
@@ -174,10 +175,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Exp3(left->reg(), left->reg(), right->reg()));
+                append(new Exp3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Exp(left->reg(), left->reg(), right->reg()));
+                append(new Exp(left->reg(), left->reg(), free_reg(right)));
             }
             append(new StoreName(left->reg(), irvar->get_name()));
             left->set_silent(true);
@@ -187,10 +188,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Add3(left->reg(), left->reg(), right->reg()));
+                append(new Add3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Add(left->reg(), left->reg(), right->reg()));
+                append(new Add(left->reg(), left->reg(), free_reg(right)));
             }
             append(new StoreName(left->reg(), irvar->get_name()));
             left->set_silent(true);
@@ -200,10 +201,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Sub3(left->reg(), left->reg(), right->reg()));
+                append(new Sub3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Sub(left->reg(), left->reg(), right->reg()));
+                append(new Sub(left->reg(), left->reg(), free_reg(right)));
             }
             append(new StoreName(left->reg(), irvar->get_name()));
             left->set_silent(true);
@@ -213,10 +214,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Div3(left->reg(), left->reg(), right->reg()));
+                append(new Div3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Div(left->reg(), left->reg(), right->reg()));
+                append(new Div(left->reg(), left->reg(), free_reg(right)));
             }
             append(new StoreName(left->reg(), irvar->get_name()));
             left->set_silent(true);
@@ -226,10 +227,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Mul3(left->reg(), left->reg(), right->reg()));
+                append(new Mul3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Mul(left->reg(), left->reg(), right->reg()));
+                append(new Mul(left->reg(), left->reg(), free_reg(right)));
             }
             append(new StoreName(left->reg(), irvar->get_name()));
             left->set_silent(true);
@@ -239,10 +240,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
             if (right->is_const()) {
-                append(new Mod3(left->reg(), left->reg(), right->reg()));
+                append(new Mod3(left->reg(), left->reg(), free_reg(right)));
             }
             else {
-                append(new Mod(left->reg(), left->reg(), right->reg()));
+                append(new Mod(left->reg(), left->reg(), free_reg(right)));
             }
             append(new StoreName(left->reg(), irvar->get_name()));
             left->set_silent(true);
@@ -250,103 +251,103 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         }
         case OperatorKind::OP_EQ: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Eq2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Eq2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Eq2(next_reg(), left->reg(), right->reg()));
+                append(new Eq2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Eq3(next_reg(), left->reg(), right->reg()));
+                append(new Eq3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Eq(next_reg(), left->reg(), right->reg()));
+                append(new Eq(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_NEQ: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Neq2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Neq2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Neq2(next_reg(), left->reg(), right->reg()));
+                append(new Neq2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Neq3(next_reg(), left->reg(), right->reg()));
+                append(new Neq3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Neq(next_reg(), left->reg(), right->reg()));
+                append(new Neq(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_BT: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Bt2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Bt2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Bt2(next_reg(), left->reg(), right->reg()));
+                append(new Bt2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Bt3(next_reg(), left->reg(), right->reg()));
+                append(new Bt3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Bt(next_reg(), left->reg(), right->reg()));
+                append(new Bt(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_LT: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Lt2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Lt2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Lt2(next_reg(), left->reg(), right->reg()));
+                append(new Lt2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Lt3(next_reg(), left->reg(), right->reg()));
+                append(new Lt3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Lt(next_reg(), left->reg(), right->reg()));
+                append(new Lt(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_BEQ: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Beq2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Beq2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Beq2(next_reg(), left->reg(), right->reg()));
+                append(new Beq2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Beq3(next_reg(), left->reg(), right->reg()));
+                append(new Beq3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Beq(next_reg(), left->reg(), right->reg()));
+                append(new Beq(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_LEQ: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Leq2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Leq2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Leq2(next_reg(), left->reg(), right->reg()));
+                append(new Leq2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Leq3(next_reg(), left->reg(), right->reg()));
+                append(new Leq3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Leq(next_reg(), left->reg(), right->reg()));
+                append(new Leq(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
@@ -355,69 +356,69 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             assert(false && "TODO: Unimplemented operator");
         case OperatorKind::OP_AND: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new And2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new And2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new And2(next_reg(), left->reg(), right->reg()));
+                append(new And2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new And3(next_reg(), left->reg(), right->reg()));
+                append(new And3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new And(next_reg(), left->reg(), right->reg()));
+                append(new And(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_OR: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Or2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Or2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Or2(next_reg(), left->reg(), right->reg()));
+                append(new Or2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Or3(next_reg(), left->reg(), right->reg()));
+                append(new Or3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Or(next_reg(), left->reg(), right->reg()));
+                append(new Or(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_XOR: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Xor2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Xor2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Xor2(next_reg(), left->reg(), right->reg()));
+                append(new Xor2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Xor3(next_reg(), left->reg(), right->reg()));
+                append(new Xor3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Xor(next_reg(), left->reg(), right->reg()));
+                append(new Xor(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
         case OperatorKind::OP_IN: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new In2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new In2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new In2(next_reg(), left->reg(), right->reg()));
+                append(new In2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new In3(next_reg(), left->reg(), right->reg()));
+                append(new In3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new In(next_reg(), left->reg(), right->reg()));
+                append(new In(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }
@@ -425,18 +426,18 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             assert(false && "TODO: Unimplemented operator");
         case OperatorKind::OP_SUBSC: {
             if (left->is_const() && right->is_const()) {
-                append(new StoreConst(next_reg(), right->reg()));
-                auto rightR = last_reg();
-                append(new Subsc2(next_reg(), left->reg(), rightR->reg()));
+                append(new StoreConst(next_reg(), free_reg(right)));
+                auto rightR = val_last_reg();
+                append(new Subsc2(next_reg(), free_reg(left), rightR));
             }
             else if (left->is_const()) {
-                append(new Subsc2(next_reg(), left->reg(), right->reg()));
+                append(new Subsc2(next_reg(), free_reg(left), free_reg(right)));
             }
             else if (right->is_const()) {
-                append(new Subsc3(next_reg(), left->reg(), right->reg()));
+                append(new Subsc3(next_reg(), free_reg(left), free_reg(right)));
             }
             else {
-                append(new Subsc(next_reg(), left->reg(), right->reg()));
+                append(new Subsc(next_reg(), free_reg(left), free_reg(right)));
             }
             return last_reg();
         }

@@ -76,6 +76,9 @@ private:
     inline RegValue *last_creg() { return new RegValue(this->curr_creg-1, true); }
     inline RegValue *last_reg() { return new RegValue(this->curr_reg-1, false); }
 
+    inline opcode::Register val_last_creg() { return this->curr_creg-1; }
+    inline opcode::Register val_last_reg() { return this->curr_reg-1; }
+
     inline RegValue *get_ncreg(RegValue *val) {
         assert(val && "sanity check");
         if (val->is_const()) {
@@ -95,6 +98,9 @@ private:
 public:
     BytecodeGen(Bytecode *code) : code(code), curr_creg(0), curr_reg(0) {
         assert(code && "Generator requires a non-null Bytecode");
+    }
+    ~BytecodeGen() {
+        // Code is to be deleted by the creator of it
     }
 
     /**

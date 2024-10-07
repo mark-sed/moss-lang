@@ -3,7 +3,7 @@
 
 using namespace moss;
 
-Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0) {
+Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0), bci_modified(false) {
     this->const_pool = new MemoryPool();
     // Global frame
     this->frames.push_back(new MemoryPool());
@@ -14,6 +14,7 @@ Interpreter::~Interpreter() {
     for(auto p: frames) {
         delete p;
     }
+    // Code is to be deleted by the creator of it
 }
 
 /*std::ostream& Interpreter::debug_pool(std::ostream &os) const {

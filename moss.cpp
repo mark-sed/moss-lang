@@ -91,6 +91,7 @@ int main(int argc, const char *argv[]) {
     int exit_code = interpreter->get_exit_code();
 
     delete interpreter;
+    delete bc;
     delete main_mod;
 
     return exit_code;

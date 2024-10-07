@@ -73,5 +73,8 @@ void Repl::run() {
         }
     }
 
+    delete interpreter;
+    delete bc;
+
     LOGMAX("REPL finished");
 }

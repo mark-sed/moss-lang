@@ -4,7 +4,7 @@ using namespace moss;
 
 Bytecode::~Bytecode() {
     for (auto *op: code) {
-            delete op;
+        delete op;
     }
 }
 
