@@ -69,12 +69,12 @@ int main(int argc, const char *argv[]) {
     auto main_mod = parser.parse(true);
 
 #ifndef NDEBUG
+    // When --parse-only is set, then let's not interpret this
     if (clopts::parse_only) {
         delete main_mod;
         return 0;
     }
 #endif
-
     //LOGMAX("Parsed: " << *main_mod);
 
     Bytecode *bc = new Bytecode();

@@ -7,8 +7,6 @@ bool can_be_annotated(IR *decl) {
     return isa<Construct>(decl);
 }
 
-// TODO: Create something to replace "get_name" so that scope returns "A::C" not
-// the current value
 std::vector<ustring> ir::encode_fun(ustring name, std::vector<Argument *> args) {
     std::vector<ustring> names;
 
@@ -22,7 +20,7 @@ std::vector<ustring> ir::encode_fun(ustring name, std::vector<Argument *> args) 
         auto a = args[i];
         if (a->is_typed()) {
             for (auto t: a->get_types()) {
-                types.push_back(t->get_name());
+                types.push_back(t->as_string());
             }
         }
         else {

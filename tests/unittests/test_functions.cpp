@@ -34,6 +34,20 @@ static void check_names(ustring name,
     }
 }
 
+static void check_names(Function *fun,
+                        std::initializer_list<ustring> expected) {
+    auto name = fun->get_name();
+    auto names = encode_fun(fun);
+    ASSERT_EQ(names.size(), expected.size()) << "Mismatched generated and expected names";
+    for (auto e: expected) {
+        auto exp = name + "(" + e + ")";
+        EXPECT_TRUE(std::find(names.begin(), names.end(), exp) != names.end()) << "Expected name: '"
+            << exp << "' was not generated\nAll generated names: " << list_all(names);
+    }
+
+    delete fun;
+}
+
 std::vector<Argument *> create_args(std::initializer_list<std::initializer_list<ustring>> types) {
     unsigned var_i = 0;
     std::vector<Argument *> args;
@@ -100,6 +114,54 @@ TEST(Functions, NameEncoding) {
         {"Foo::Goo,Bool",
          "Foo::Roo,Bool"}
     );
+
+    {
+        // (arg1:[SomeSpace::SomeValue, MyBool])
+        std::vector<Argument *> args {
+            new Argument("arg1", std::vector<Expression *> {
+                new BinaryExpr(
+                    new Variable("SomeSpace"),
+                    new Variable("SomeValue"),
+                    Operator(OperatorKind::OP_SCOPE)
+                ),
+                new Variable("MyBool")}
+            )
+        };
+        Function *fun = new Function("some_function123", args, std::list<IR *>{});
+        check_names(
+            fun,
+            {"SomeSpace::SomeValue",
+             "MyBool"}
+        );
+    }
+
+    {
+        // (arg1, arg2:SomeSpace::SomeOtherSpace::SomeValue, arg3:[String,String2])
+        std::vector<Argument *> args {
+            new Argument("arg1"),
+            new Argument("arg2", std::vector<Expression *> {
+                new BinaryExpr(
+                    new Variable("SomeSpace"),
+                    new BinaryExpr(
+                        new Variable("SomeOtherSpace"),
+                        new Variable("SomeValue"),
+                        Operator(OperatorKind::OP_SCOPE)
+                    ),
+                    Operator(OperatorKind::OP_SCOPE)
+                )
+            }),
+            new Argument("arg3", std::vector<Expression *>{
+                new Variable("String"),
+                new Variable("String2")}
+            )
+        };
+        Function *fun = new Function("fun2", args, std::list<IR *>{});
+        check_names(
+            fun,
+            {"_,SomeSpace::SomeOtherSpace::SomeValue,String",
+             "_,SomeSpace::SomeOtherSpace::SomeValue,String2"}
+        );
+    }
 }
 
 }

@@ -93,6 +93,9 @@ public:
 
     IRType get_type() { return ir_type; }
     ustring get_name() { return name; }
+    virtual ustring as_string() {
+        return name;
+    }
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "<IR: " << name << ">";
         return os;
@@ -856,46 +859,50 @@ public:
 
     OperatorKind get_kind() const { return kind; }
 
-    inline std::ostream& debug(std::ostream& os) const { 
+    ustring as_string() const {
         switch(kind) {
-        case OP_CONCAT: os << "++"; break;
-        case OP_EXP: os << "^"; break;
-        case OP_PLUS: os << "+"; break;
-        case OP_MINUS: os << "-"; break;
-        case OP_DIV: os << "/"; break;
-        case OP_MUL: os << "*"; break;
-        case OP_MOD: os << "%"; break;
-        case OP_SET: os << "="; break;
-        case OP_SET_CONCAT: os << "++="; break;
-        case OP_SET_EXP: os << "^="; break;
-        case OP_SET_PLUS: os << "+="; break;
-        case OP_SET_MINUS: os << "-="; break;
-        case OP_SET_DIV: os << "/="; break;
-        case OP_SET_MUL: os << "+="; break;
-        case OP_SET_MOD: os << "%="; break;
-        case OP_SILENT: os << "~"; break;
-        case OP_EQ: os << "=="; break;
-        case OP_NEQ: os << "!="; break;
-        case OP_BT: os << ">"; break;
-        case OP_LT: os << "<"; break;
-        case OP_BEQ: os << ">="; break;
-        case OP_LEQ: os << "<="; break;
-        case OP_SHORT_C_AND: os << "&&"; break;
-        case OP_SHORT_C_OR: os << "||"; break;
-        case OP_AND: os << "and"; break;
-        case OP_OR: os << "or"; break;
-        case OP_NOT: os << "not"; break;
-        case OP_XOR: os << "xor"; break;
-        case OP_IN: os << "in"; break;
-        case OP_ACCESS: os << "."; break;
-        case OP_SUBSC: os << "[]"; break;
-        case OP_SCOPE: os << "::"; break;
-        case OP_UNPACK: os << "<<"; break;
-        case OP_UNKNOWN: os << "unknown"; break;
-        default:
-            assert(false && "Missing operator in debug for Operator class"); 
-            os << "unknown operator"; break;
+            case OP_CONCAT: return "++"; 
+            case OP_EXP: return "^"; 
+            case OP_PLUS: return "+"; 
+            case OP_MINUS: return "-"; 
+            case OP_DIV: return "/"; 
+            case OP_MUL: return "*"; 
+            case OP_MOD: return "%"; 
+            case OP_SET: return "="; 
+            case OP_SET_CONCAT: return "++="; 
+            case OP_SET_EXP: return "^="; 
+            case OP_SET_PLUS: return "+="; 
+            case OP_SET_MINUS: return "-="; 
+            case OP_SET_DIV: return "/="; 
+            case OP_SET_MUL: return "+="; 
+            case OP_SET_MOD: return "%="; 
+            case OP_SILENT: return "~"; 
+            case OP_EQ: return "=="; 
+            case OP_NEQ: return "!="; 
+            case OP_BT: return ">"; 
+            case OP_LT: return "<"; 
+            case OP_BEQ: return ">="; 
+            case OP_LEQ: return "<="; 
+            case OP_SHORT_C_AND: return "&&"; 
+            case OP_SHORT_C_OR: return "||"; 
+            case OP_AND: return "and"; 
+            case OP_OR: return "or"; 
+            case OP_NOT: return "not"; 
+            case OP_XOR: return "xor"; 
+            case OP_IN: return "in"; 
+            case OP_ACCESS: return "."; 
+            case OP_SUBSC: return "[]"; 
+            case OP_SCOPE: return "::"; 
+            case OP_UNPACK: return "<<"; 
+            case OP_UNKNOWN: return "unknown"; 
+            default:
+                assert(false && "Missing operator in debug for Operator class"); 
+                return "unknown operator"; 
         }
+    }
+
+    inline std::ostream& debug(std::ostream& os) const { 
+        os << as_string();
         return os;
     }
 };
@@ -928,6 +935,10 @@ public:
     Expression *get_right() { return this->right; }
     Operator get_op() { return this->op; }
 
+    virtual ustring as_string() override {
+        return left->as_string() + op.as_string() + right->as_string();
+    }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "(" << *left << " " << op << " " << *right << ")";
         return os;
@@ -946,6 +957,10 @@ public:
                expr(expr), op(op) {}
     ~UnaryExpr() {
         delete expr;
+    }
+
+    virtual ustring as_string() override {
+        return op.as_string() + expr->as_string();
     }
 
     Expression *get_expr() { return this->expr; }
