@@ -62,8 +62,9 @@ private:
     RegValue *emit(ir::BinaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
-    void emit(ir::Raise *mod);
+    void emit(ir::Raise *r);
     void emit(ir::Module *mod);
+    void emit(ir::Function *fun);
     void emit(ir::IR *decl);
 
     void output(RegValue *val);

@@ -310,30 +310,6 @@ public:
     }
 };
 
-/* TODO: return a vector of names based on the typed args
-ustring encode_fun(ustring name, std::vector<Argument *> args) {
-    std::stringstream encoded;
-    encoded << name << "("
-
-    bool first = true;
-    for (auto a : args) {
-        assert(a->types_size() <= 1 && "Function has to be specialized to 1 type");
-        if (!first) {
-            encoded << ",";
-        }
-        if (a->is_typed()) {
-            encoded << a->get_type(0)->get_name();
-        }
-        else {
-            encoded << "_";
-        } 
-        first = false;
-    }
-
-    encoded << ")";
-    return encoded.str();
-}*/
-
 class Function : public Construct {
 private:
     std::vector<Argument *> args;
@@ -350,6 +326,8 @@ public:
         for (auto a : args)
             delete a;
     }
+
+    std::vector<Argument *> get_args() { return this->args; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << (constructor ? "new " : "fun ") << name << "(";
@@ -371,6 +349,11 @@ public:
         return os;
     }
 };
+
+std::vector<ustring> encode_fun(ustring name, std::vector<Argument *> args);
+inline std::vector<ustring> encode_fun(Function *f) {
+    return encode_fun(f->get_name(), f->get_args());
+}
 
 class Else : public Construct {
 public:

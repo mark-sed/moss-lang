@@ -504,6 +504,10 @@ void BytecodeGen::emit(ir::Module *mod) {
     }
 }
 
+void BytecodeGen::emit(ir::Function *fun) {
+    assert(false && "TODO Functions");
+}
+
 void BytecodeGen::emit(ir::IR *decl) {
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
@@ -513,6 +517,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto r = dyn_cast<ir::Raise>(decl)) {
         emit(r);
+    }
+    else if (auto f = dyn_cast<ir::Function>(decl)) {
+        emit(f);
     }
     else if (isa<EndOfFile>(decl)) {
         append(new End());

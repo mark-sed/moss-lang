@@ -23,8 +23,14 @@ Interpreter::~Interpreter() {
 
 std::ostream& Interpreter::debug(std::ostream& os) const {
     os << "Interpreter {\n";
-    // TODO: Debug all pools
-    os << "\tRegister pool:\n" << *frames.back() << "\n";
+    unsigned index = 0;
+    for (auto f: frames) {
+        if (index == 0)
+            os << "\t[" << index << "] Global frame:\n" << *f << "\n";
+        else
+            os << "\t[" << index << "] Local frame:\n" << *f << "\n";
+        ++index;
+    }
     os << "\tConstant pool:\n" << *const_pool << "\n";
     os << "\tExit code: " << exit_code << "\n";
     os << "}\n";
