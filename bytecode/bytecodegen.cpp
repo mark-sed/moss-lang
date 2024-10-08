@@ -505,7 +505,31 @@ void BytecodeGen::emit(ir::Module *mod) {
 }
 
 void BytecodeGen::emit(ir::Function *fun) {
-    assert(false && "TODO Functions");
+    auto fun_reg = next_reg();
+    auto names = ir::encode_fun(fun);
+    assert(!names.empty() && "No names generated for a function");
+    // Assert names to the function
+    for (auto n: names) {
+        append(new StoreName(fun_reg, n));
+    }
+    // Store into the function register the address of push_frame opcode
+    // The curr_address is store name, next is store addr (+1), then
+    // jmp (+2) and after that push frame (+3)
+    append(new StoreAddr(fun_reg, get_curr_address()+3));
+    // Place jump which will be later on modified to contain the actual
+    // function end - this skips beyond the function body
+    auto fn_end_jmp = new Jmp(0);
+    append(fn_end_jmp);
+    append(new PushFrame());
+    // Generate function body
+    for (auto decl : fun->get_body()) {
+        emit(decl);
+    }
+    // TODO: Generate return in function IR body if needed, not here
+    append(new StoreNilConst(next_creg()));
+    append(new StoreConst(next_reg(), val_last_creg()));
+    append(new opcode::Return(val_last_reg()));
+    fn_end_jmp->addr = get_curr_address() + 1;
 }
 
 void BytecodeGen::emit(ir::IR *decl) {

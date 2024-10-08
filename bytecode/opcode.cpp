@@ -90,7 +90,7 @@ void StoreConst::exec(Interpreter *vm) {
 }
 
 void StoreAddr::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    vm->store(dst, new AddrValue(addr));
 }
 
 void StoreAttr::exec(Interpreter *vm) {

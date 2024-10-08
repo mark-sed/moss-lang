@@ -71,6 +71,8 @@ private:
 
     inline void append(opcode::OpCode *opc) { code->push_back(opc); }
 
+    inline opcode::Address get_curr_address() { return code->size()-1; }
+
     inline opcode::Register next_creg() { return this->curr_creg++; }
     inline opcode::Register next_reg() { return this->curr_reg++; }
 

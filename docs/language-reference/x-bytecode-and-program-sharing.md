@@ -246,8 +246,8 @@ a = foo("hi")
 x   STORE_NAME  %4, "foo(Int)"
 x   ALIAS       %4, "foo(Float)"
 
+x   STORE_ADDR  %4, <address of push frame>
 x   JMP         <byte at which main (call to foo) starts>
-x   STORE_ADDR  %4, <address of next bytecode>
 x   PUSH_FRAME
 x   LOAD        %1, "print"
 x   CALL        %42, %1
