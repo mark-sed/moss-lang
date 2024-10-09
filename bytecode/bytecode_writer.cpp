@@ -150,6 +150,10 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::PushAddrArg>(op_gen)){
             write_address(o->addr);
         }
+        else if (auto o = dyn_cast<opcode::PushNamedArg>(op_gen)){
+            write_register(o->src);
+            write_string(o->name);
+        }
         else if (auto o = dyn_cast<opcode::Import>(op_gen)){
             write_register(o->dst);
             write_string(o->name);

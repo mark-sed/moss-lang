@@ -86,12 +86,15 @@ xxh - JMP_IF_FALSE      %src, addr
 xxh - CALL              %dst, %src
 xxh - PUSH_FRAME
 xxh - POP_FRAME
+xxh - PUSH_CALL_FRAME
+xxh - POP_CALL_FRAME
 xxh - RETURN            %val
 xxh - RETURN_CONST      #val
 xxh - RETURN_ADDR       addr
 xxh - PUSH_ARG          %val
 xxh - PUSH_CONST_ARG    #val
 xxh - PUSH_ADDR_ARG     addr
+xxh - PUSH_NAMED_ARG    %val, "name"
 
 xxh - IMPORT        %dst, "name"
 xxh - IMPORT_ALL    "name"
@@ -225,6 +228,41 @@ When interpreted, STORE_CONST will be skipped as the vm will load
 these values during parsing.
 
 ### Function
+
+```cpp
+fun foo(a, b:Int=3) {
+
+}
+
+foo(4, 5)
+```
+
+```
+x       STORE_NAME      %0, "foo"
+x       STORE_NAME      %0, "foo(_,Int)"
+x       STORE_ADDR      %0, <address of function start>
+x       JMP     <after function return>
+        <frame will be pushed by call and %0, %1 set>
+x       STORE_NAME      %0, "a"
+x       STORE_NAME      %1, "b"
+x       STORE_INT_CONST #0, 1
+x       STORE_CONST     %1, #0
+x       POP_CALL_FRAME  ; This overrides b value
+x       STORE_NIL_CONST #0
+x       STORE_CONST     %1,  #0
+x       RETURN  %1
+
+x       LOAD            %2, "foo"
+x       PUSH_CALL_FRAME
+x       STORE_INT_CONST #1, 4
+x       PUSH_CONST_ARG  %1
+x       STORE_INT_CONST #2, 5
+x       PUSH_CONST_ARG  %2
+x       CALL    %3, %2
+x       OUTPUT  %3
+x       END 
+```
+
 
 ```cpp
 fun foo(a: [Int, Float]) {

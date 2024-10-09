@@ -63,6 +63,7 @@ private:
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
     void emit(ir::Raise *r);
+    void emit(ir::Return *r);
     void emit(ir::Module *mod);
     void emit(ir::Function *fun);
     void emit(ir::IR *decl);
@@ -81,6 +82,11 @@ private:
 
     inline opcode::Register val_last_creg() { return this->curr_creg-1; }
     inline opcode::Register val_last_reg() { return this->curr_reg-1; }
+
+    void reset_regs() {
+        curr_reg = 0;
+        curr_creg = 0;
+    }
 
     inline RegValue *get_ncreg(RegValue *val) {
         assert(val && "sanity check");

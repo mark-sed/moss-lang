@@ -1,5 +1,6 @@
 #include "opcode.hpp"
 #include "errors.hpp"
+#include "logging.hpp"
 #include <sstream>
 #include <cmath>
 
@@ -51,6 +52,7 @@ void Load::exec(Interpreter *vm) {
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();
     vm->store(this->dst, v);
+    vm->store_name(dst, name);
 }
 
 void LoadAttr::exec(Interpreter *vm) {
@@ -160,10 +162,35 @@ void JmpIfFalse::exec(Interpreter *vm) {
 }
 
 void Call::exec(Interpreter *vm) {
+    vm->get_call_frame()->set_return_reg(dst);
+    vm->get_call_frame()->set_caller_addr(vm->get_bci()+1);
     auto fun_name = vm->get_reg_name(src);
-    assert(!fun_name.empty() && "Source does not have a name to call");
-
-    assert(false && "TODO: Unimplemented opcode");
+    assert(!fun_name.empty() && "TODO: Raise such function does not exists");
+    fun_name += "(";
+    bool first = true;
+    // Encode function
+    for (auto a: vm->get_call_frame()->get_args()) {
+        if (first) {
+            fun_name += a->get_name();
+            first = false;
+        }
+        else {
+            fun_name += "," + a->get_name();
+        }
+    }
+    fun_name += ")";
+    // Load address of encoded function
+    auto fun_val = vm->load_name(fun_name);
+    if (!fun_val) {
+        // TODO: Handle inheritance
+        assert(false && "TODO: Raise function not found");
+    }
+    auto fun_addr = dyn_cast<AddrValue>(fun_val);
+    if (!fun_addr) {
+        assert(false && "TODO: Raise cannot be called");
+    }
+    vm->push_frame();
+    vm->set_bci(fun_addr->get_value());
 }
 
 void PushFrame::exec(Interpreter *vm) {
@@ -179,11 +206,24 @@ void PushCallFrame::exec(Interpreter *vm) {
 }
 
 void PopCallFrame::exec(Interpreter *vm) {
-    vm->pop_call_frame();
+    // This pops values from call frame into current frame
+    // The acutal call frame is removed in return (when return value is set)
+    Register r_i = 0;
+    for (auto v: vm->get_call_frame()->get_args()) {
+        vm->store(r_i, v);
+        ++r_i;
+    }
 }
 
 void Return::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto return_reg = vm->get_call_frame()->get_return_reg();
+    auto caller_addr = vm->get_call_frame()->get_caller_addr();
+    auto ret_v = vm->load(src);
+    vm->pop_call_frame();
+    vm->pop_frame();
+    assert(ret_v && "Return register does not contain any value??");
+    vm->store(return_reg, ret_v);
+    vm->set_bci(caller_addr);
 }
 
 void ReturnConst::exec(Interpreter *vm) {
@@ -199,10 +239,16 @@ void PushArg::exec(Interpreter *vm) {
 }
 
 void PushConstArg::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load_const(csrc);
+    assert(v && "Const does not exist??");
+    vm->get_call_frame()->push_back(v);
 }
 
 void PushAddrArg::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void PushNamedArg::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 

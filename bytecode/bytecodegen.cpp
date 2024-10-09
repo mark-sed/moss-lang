@@ -488,6 +488,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         bcv = last_reg();
     }
     else if (auto val = dyn_cast<ir::Call>(expr)) {
+        append(new PushCallFrame());
         auto fun = emit(val->get_fun());
         for (auto a: val->get_args()) {
             auto a_val = emit(a);
@@ -519,6 +520,15 @@ void BytecodeGen::emit(ir::Raise *r) {
     append(new opcode::Raise(free_reg(exc)));
 }
 
+void BytecodeGen::emit(ir::Return *r) {
+    auto ex = emit(r->get_expr());
+    if (ex->is_const())
+        append(new opcode::ReturnConst(free_reg(ex)));
+    else
+        append(new opcode::Return(free_reg(ex)));
+    // TODO: Handle address return
+}
+
 void BytecodeGen::emit(ir::Module *mod) {
     for (auto decl : mod->get_body()) {
         emit(decl);
@@ -544,6 +554,29 @@ void BytecodeGen::emit(ir::Function *fun) {
     auto fn_end_jmp = new Jmp(0);
     append(fn_end_jmp);
     comment("fun "+names[0]+" body start");
+    // Registers need to be reset, store them and restore after whole
+    // function is generated
+    auto pre_function_reg = curr_reg;
+    auto pre_function_creg = curr_creg;
+    reset_regs();
+    // Store names for arguments (these will be set by the caller)
+    for (auto a: fun->get_args()) {
+        append(new StoreName(next_reg(), a->get_name()));
+    }
+    // Set argument default values, this has to be done after naming so
+    // that temp registers don't take index of arguments
+    opcode::Register reg_i = 0;
+    for (auto a: fun->get_args()) {
+        if (a->has_default_value()) {
+            auto def_val = emit(a->get_default_value());
+            if (def_val->is_const())
+                append(new StoreConst(reg_i, free_reg(def_val)));
+            else
+                append(new Store(reg_i, free_reg(def_val)));
+        }
+        ++reg_i;
+    }
+    append(new PopCallFrame());
     // Generate function body
     for (auto decl : fun->get_body()) {
         emit(decl);
@@ -553,6 +586,9 @@ void BytecodeGen::emit(ir::Function *fun) {
     append(new StoreConst(next_reg(), val_last_creg()));
     append(new opcode::Return(val_last_reg()));
     fn_end_jmp->addr = get_curr_address() + 1;
+
+    this->curr_reg = pre_function_reg;
+    this->curr_creg = pre_function_creg;
 }
 
 void BytecodeGen::emit(ir::IR *decl) {
@@ -563,6 +599,9 @@ void BytecodeGen::emit(ir::IR *decl) {
         output(emit(e));
     }
     else if (auto r = dyn_cast<ir::Raise>(decl)) {
+        emit(r);
+    }
+    else if (auto r = dyn_cast<ir::Return>(decl)) {
         emit(r);
     }
     else if (auto f = dyn_cast<ir::Function>(decl)) {

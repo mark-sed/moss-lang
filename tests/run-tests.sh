@@ -132,7 +132,7 @@ function test_variables {
 
 function test_functions {
     expect_pass "functions.ms" "functions"
-    expect_out_eq "hi there\n" "functions"
+    expect_out_eq "hi there\nnot here\nnil\n9\n" "functions"
 }
 
 ###--- Running tests ---###

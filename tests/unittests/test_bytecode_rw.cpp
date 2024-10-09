@@ -84,6 +84,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::PushArg(11));
     bc->push_back(new opcode::PushConstArg(200));
     bc->push_back(new opcode::PushAddrArg(50));
+    bc->push_back(new opcode::PushNamedArg(5, "name12"));
     
     bc->push_back(new opcode::Import(18, "module1"));
     bc->push_back(new opcode::ImportAll("modules"));

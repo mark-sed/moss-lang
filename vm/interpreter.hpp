@@ -32,13 +32,17 @@ class CallFrame {
 private:
     std::vector<Value *> args;
     opcode::Register return_reg;
+    opcode::Address caller_addr;
 public:
     CallFrame() : return_reg(0) {}
 
     void push_back(Value *v) { args.push_back(v); }
     void set_return_reg(opcode::Register r) { this->return_reg = r; }
+    void set_caller_addr(opcode::Address addr) { this->caller_addr = addr; }
+    
     std::vector<Value *> get_args() { return this->args; }
     opcode::Register get_return_reg() { return this->return_reg; }
+    opcode::Address get_caller_addr() { return this->caller_addr; }
 };
 
 /**
@@ -103,8 +107,16 @@ public:
     void push_frame();
     void pop_frame();
 
+    CallFrame *get_call_frame() { 
+        assert(!this->call_frames.empty() && "no call frame was pushed");
+        return this->call_frames.back();
+    }
+
     void push_call_frame() { call_frames.push_back(new CallFrame()); }
-    void pop_call_frame() { call_frames.pop_back(); }
+    void pop_call_frame() { 
+        assert(!this->call_frames.empty() && "no call frame to pop");
+        call_frames.pop_back(); 
+    }
 
     int get_exit_code() { return exit_code; }
 

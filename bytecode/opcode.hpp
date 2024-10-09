@@ -71,6 +71,7 @@ enum OpCodes : opcode_t {
     PUSH_ARG, //          %val
     PUSH_CONST_ARG, //    #val
     PUSH_ADDR_ARG, //     addr
+    PUSH_NAMED_ARG, //    %val, "name"
 
     IMPORT, //        %dst, "name"
     IMPORT_ALL, //    "name"
@@ -856,7 +857,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << csrc;
+        os << mnem << "\t#" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -884,6 +885,28 @@ public:
         auto casted = dyn_cast<PushAddrArg>(other);
         if (!casted) return false;
         return casted->addr == addr;
+    }
+};
+
+class PushNamedArg : public OpCode {
+public:
+    Register src;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::PUSH_NAMED_ARG;
+
+    PushNamedArg(Register src, StringConst name) : OpCode(ClassType, "PUSH_NAMED_ARG"), src(src), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << src << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PushNamedArg>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->name == name;
     }
 };
 
