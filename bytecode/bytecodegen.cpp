@@ -8,6 +8,12 @@ using namespace ir;
 using namespace bcgen;
 using namespace opcode;
 
+#ifndef NDEBUG
+    #define comment(c) code->push_comment((c))
+#else
+    #define comment(c)
+#endif
+
 // TODO: Consider rewriting this without using RegValue *, but using just RegValue
 RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     // Dont emit for left if set and its variable
@@ -537,6 +543,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     // function end - this skips beyond the function body
     auto fn_end_jmp = new Jmp(0);
     append(fn_end_jmp);
+    comment("fun "+names[0]+" body start");
     // Generate function body
     for (auto decl : fun->get_body()) {
         emit(decl);

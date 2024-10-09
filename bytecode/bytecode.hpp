@@ -27,15 +27,22 @@ namespace opcode {
 class Bytecode {
 private:
     std::vector<opcode::OpCode *> code;
+#ifndef NDEBUG
+    std::map<unsigned, ustring> comments;
+#endif
 public:
     Bytecode() {}
     ~Bytecode();
 
-    std::ostream& debug(std::ostream& os) const;
+    std::ostream& debug(std::ostream& os);
 
     void push_back(opcode::OpCode *op) {
         code.push_back(op);
     }
+
+#ifndef NDEBUG
+    void push_comment(ustring comm) { comments[code.size()-1] = comm; }
+#endif
 
     /** How many opcodes are in this bytecode program */
     size_t size() { return code.size(); }

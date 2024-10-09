@@ -101,7 +101,6 @@ public:
     ustring get_reg_name(opcode::Register reg);
 
     void push_frame();
-
     void pop_frame();
 
     void push_call_frame() { call_frames.push_back(new CallFrame()); }
