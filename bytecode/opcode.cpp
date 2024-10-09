@@ -235,7 +235,9 @@ void ReturnAddr::exec(Interpreter *vm) {
 }
 
 void PushArg::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load(src);
+    assert(v && "Non existent push reg");
+    vm->get_call_frame()->push_back(v);
 }
 
 void PushConstArg::exec(Interpreter *vm) {

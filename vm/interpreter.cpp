@@ -38,39 +38,32 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
 }
 
 void Interpreter::store(opcode::Register reg, Value *v) {
-    // TODO: Go through frames
-    // FIXME: Incorrect
     get_local_frame()->store(reg, v);
 }
 
 void Interpreter::store_const(opcode::Register reg, Value *v) {
-    // TODO: Go through frames
-    // FIXME: Incorrect
     get_const_pool()->store(reg, v);
 }
 
 Value *Interpreter::load(opcode::Register reg) {
-    // TODO: Go through frames
-    // FIXME: Incorrect
     return get_local_frame()->load(reg);
 }
 
 Value *Interpreter::load_const(opcode::Register reg) {
-    // TODO: Go through frames
-    // FIXME: Incorrect
     return get_const_pool()->load(reg);
 }
 
 void Interpreter::store_name(opcode::Register reg, ustring name) {
-    // TODO: Go through frames
-    // FIXME: Incorrect
     get_local_frame()->store_name(reg, name);
 }
 
 Value *Interpreter::load_name(ustring name) {
-    // TODO: Go through frames
-    // FIXME: Incorrect
-    return get_local_frame()->load_name(name);
+    for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
+        auto val = (*riter)->load_name(name);
+        if (val)
+            return val;
+    }
+    return nullptr;
 }
 
 Value *Interpreter::load_global_name(ustring name) {
@@ -78,7 +71,6 @@ Value *Interpreter::load_global_name(ustring name) {
 }
 
 ustring Interpreter::get_reg_name(opcode::Register reg) {
-    // TODO: Go through frames???
     return get_local_frame()->get_reg_name(reg);
 }
 
@@ -96,7 +88,6 @@ void Interpreter::pop_frame() {
 void Interpreter::run() {
     LOG1("Running interpreter\n----- OUTPUT: -----");
 
-    // TODO: Change for repl
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
         opc->exec(this);

@@ -66,10 +66,7 @@ public:
 
     /** Sets a name for specific register */
     void store_name(opcode::Register reg, ustring name);
-    /** 
-     * Looks up a name and returns value corresponding to it in symbol table
-     * If there is no such name, then exception is raised with name error 
-     */
+
     Value *load_name(ustring name);
 
     ustring get_reg_name(opcode::Register reg);

@@ -146,6 +146,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new StoreConst(next_reg(), free_reg(right)));
                 auto reg = last_reg();
@@ -164,6 +168,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_CONCAT: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Concat3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -180,6 +188,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_EXP: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Exp3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -193,6 +205,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_PLUS: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Add3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -206,6 +222,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_MINUS: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Sub3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -219,6 +239,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_DIV: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Div3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -232,6 +256,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_MUL: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Mul3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -245,6 +273,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_SET_MOD: {
             auto irvar = dyn_cast<Variable>(expr->get_left());
             assert(irvar && "Assigning to non-variable");
+            if (irvar->is_non_local()) {
+                // TODO:
+                assert(false && "TODO: Storing to a non-local variable");
+            }
             if (right->is_const()) {
                 append(new Mod3(left->reg(), left->reg(), free_reg(right)));
             }
@@ -484,7 +516,12 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         bcv = emit(be);
     }
     else if (auto val = dyn_cast<Variable>(expr)) {
-        append(new Load(next_reg(), val->get_name()));
+        if (val->is_non_local()) {
+            append(new LoadNonLoc(next_reg(), val->get_name()));
+        }
+        else {
+            append(new Load(next_reg(), val->get_name()));
+        }
         bcv = last_reg();
     }
     else if (auto val = dyn_cast<ir::Call>(expr)) {
