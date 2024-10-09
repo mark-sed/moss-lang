@@ -37,6 +37,15 @@ Value *MemoryPool::load_name(ustring name) {
     return nullptr;
 }
 
+ustring MemoryPool::get_reg_name(opcode::Register reg) {
+    for (auto [k, v]: sym_table) {
+        // Return only pure name, not function name
+        if (v == reg && k.find('(') == std::string::npos)
+            return k;
+    }
+    return "";
+}
+
 std::ostream& MemoryPool::debug(std::ostream& os) const {
     os << "> Symbol table:\n";
     for (auto [k, v] : this->sym_table) {

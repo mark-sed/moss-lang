@@ -76,6 +76,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Call(11, 7));
     bc->push_back(new opcode::PushFrame());
     bc->push_back(new opcode::PopFrame());
+    bc->push_back(new opcode::PushCallFrame());
+    bc->push_back(new opcode::PopCallFrame());
     bc->push_back(new opcode::Return(12));
     bc->push_back(new opcode::ReturnConst(13));
     bc->push_back(new opcode::ReturnAddr(14));

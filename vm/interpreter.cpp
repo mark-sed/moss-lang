@@ -77,6 +77,11 @@ Value *Interpreter::load_global_name(ustring name) {
     return get_global_frame()->load_name(name);
 }
 
+ustring Interpreter::get_reg_name(opcode::Register reg) {
+    // TODO: Go through frames???
+    return get_local_frame()->get_reg_name(reg);
+}
+
 void Interpreter::push_frame() {
     this->frames.push_back(new MemoryPool());
 }

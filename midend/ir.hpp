@@ -1106,6 +1106,9 @@ public:
         }
     }
 
+    Expression *get_fun() { return this->fun; }
+    std::vector<Expression *> get_args() { return this->args; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << *fun << "(";
         bool first = true;

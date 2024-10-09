@@ -130,6 +130,11 @@ function test_variables {
 82\n:herb:🌿❗\n" "variables"
 }
 
+function test_functions {
+    expect_pass "functions.ms" "functions"
+    expect_out_eq "hi there\n" "functions"
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -137,6 +142,7 @@ function run_all_tests {
     run_test output
     run_test expressions
     run_test variables
+    run_test functions
 }
 
 # Count all functions starting with test_ 

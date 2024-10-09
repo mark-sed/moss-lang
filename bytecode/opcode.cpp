@@ -160,6 +160,9 @@ void JmpIfFalse::exec(Interpreter *vm) {
 }
 
 void Call::exec(Interpreter *vm) {
+    auto fun_name = vm->get_reg_name(src);
+    assert(!fun_name.empty() && "Source does not have a name to call");
+
     assert(false && "TODO: Unimplemented opcode");
 }
 
@@ -169,6 +172,14 @@ void PushFrame::exec(Interpreter *vm) {
 
 void PopFrame::exec(Interpreter *vm) {
     vm->pop_frame();
+}
+
+void PushCallFrame::exec(Interpreter *vm) {
+    vm->push_call_frame();
+}
+
+void PopCallFrame::exec(Interpreter *vm) {
+    vm->pop_call_frame();
 }
 
 void Return::exec(Interpreter *vm) {

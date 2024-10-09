@@ -175,15 +175,21 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new JmpIfFalse(reg, addr));
             } break;
             case opcode::OpCodes::CALL: {
-                auto reg = read_register();
-                auto addr = read_address();
-                bc->push_back(new Call(reg, addr));
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                bc->push_back(new Call(reg1, reg2));
             } break;
             case opcode::OpCodes::PUSH_FRAME: {
                 bc->push_back(new PushFrame());
             } break;
             case opcode::OpCodes::POP_FRAME: {
                 bc->push_back(new PopFrame());
+            } break;
+            case opcode::OpCodes::PUSH_CALL_FRAME: {
+                bc->push_back(new PushCallFrame());
+            } break;
+            case opcode::OpCodes::POP_CALL_FRAME: {
+                bc->push_back(new PopCallFrame());
             } break;
             case opcode::OpCodes::RETURN: {
                 bc->push_back(new Return(read_register()));

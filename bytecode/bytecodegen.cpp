@@ -481,6 +481,21 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new Load(next_reg(), val->get_name()));
         bcv = last_reg();
     }
+    else if (auto val = dyn_cast<ir::Call>(expr)) {
+        auto fun = emit(val->get_fun());
+        for (auto a: val->get_args()) {
+            auto a_val = emit(a);
+            if (a_val->is_const()) {
+                append(new PushConstArg(free_reg(a_val)));
+            }
+            else {
+                // TODO: PushAddrArg for address value
+                append(new PushArg(free_reg(a_val)));
+            }
+        }
+        append(new opcode::Call(next_reg(), free_reg(fun)));
+        bcv = last_reg();
+    }
     else {
         assert(false && "Missing Expression generation");
         return nullptr;
@@ -508,19 +523,20 @@ void BytecodeGen::emit(ir::Function *fun) {
     auto fun_reg = next_reg();
     auto names = ir::encode_fun(fun);
     assert(!names.empty() && "No names generated for a function");
-    // Assert names to the function
+    // Store the name without arguments
+    append(new StoreName(fun_reg, fun->get_name()));
+    // Assign names to the function
     for (auto n: names) {
         append(new StoreName(fun_reg, n));
     }
-    // Store into the function register the address of push_frame opcode
+    // Store into the function register the address of body opcode
     // The curr_address is store name, next is store addr (+1), then
-    // jmp (+2) and after that push frame (+3)
+    // jmp (+2) and after that body (+3)
     append(new StoreAddr(fun_reg, get_curr_address()+3));
     // Place jump which will be later on modified to contain the actual
     // function end - this skips beyond the function body
     auto fn_end_jmp = new Jmp(0);
     append(fn_end_jmp);
-    append(new PushFrame());
     // Generate function body
     for (auto decl : fun->get_body()) {
         emit(decl);

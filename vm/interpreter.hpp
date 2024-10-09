@@ -25,6 +25,23 @@ class MemoryPool;
 class Bytecode;
 
 /**
+ * Frame that holds all call related information
+ * The arguments, return register and argument type (const, addr, val)
+ */
+class CallFrame {
+private:
+    std::vector<Value *> args;
+    opcode::Register return_reg;
+public:
+    CallFrame() : return_reg(0) {}
+
+    void push_back(Value *v) { args.push_back(v); }
+    void set_return_reg(opcode::Register r) { this->return_reg = r; }
+    std::vector<Value *> get_args() { return this->args; }
+    opcode::Register get_return_reg() { return this->return_reg; }
+};
+
+/**
  * @brief Interpreter for moss bytecode
  * Interpreter holds memory pools (stack frames) and runs bytecode provided
  */
@@ -34,6 +51,7 @@ private:
     File *src_file;
     MemoryPool *const_pool;
     std::list<MemoryPool *> frames;
+    std::list<CallFrame *> call_frames;
 
     opcode::Address bci;
 
@@ -80,9 +98,14 @@ public:
      */
     Value *load_global_name(ustring name);
 
+    ustring get_reg_name(opcode::Register reg);
+
     void push_frame();
 
     void pop_frame();
+
+    void push_call_frame() { call_frames.push_back(new CallFrame()); }
+    void pop_call_frame() { call_frames.pop_back(); }
 
     int get_exit_code() { return exit_code; }
 

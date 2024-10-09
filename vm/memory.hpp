@@ -72,6 +72,8 @@ public:
      */
     Value *load_name(ustring name);
 
+    ustring get_reg_name(opcode::Register reg);
+
     std::ostream& debug(std::ostream& os) const;
 };
 

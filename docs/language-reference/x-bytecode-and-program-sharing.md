@@ -83,7 +83,7 @@ xxh - STORE_STR_CONST   #dst, "string"
 xxh - JMP               addr
 xxh - JMP_IF_TRUE       %src, addr
 xxh - JMP_IF_FALSE      %src, addr
-xxh - CALL              %dst, addr
+xxh - CALL              %dst, %src
 xxh - PUSH_FRAME
 xxh - POP_FRAME
 xxh - RETURN            %val

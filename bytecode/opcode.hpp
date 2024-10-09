@@ -63,6 +63,8 @@ enum OpCodes : opcode_t {
     CALL, //              %dst, addr
     PUSH_FRAME, //
     POP_FRAME,  //
+    PUSH_CALL_FRAME, //
+    POP_CALL_FRAME,  //
     RETURN, //            %src
     RETURN_CONST, //      #val
     RETURN_ADDR, //       addr
@@ -672,22 +674,22 @@ public:
 class Call : public OpCode {
 public:
     Register dst;
-    Address addr;
+    Register src;
 
     static const OpCodes ClassType = OpCodes::CALL;
 
-    Call(Register dst, Address addr) : OpCode(ClassType, "CALL"), dst(dst), addr(addr) {}
+    Call(Register dst, Register src) : OpCode(ClassType, "CALL"), dst(dst), src(src) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", " << addr;
+        os << mnem << "\t%" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Call>(other);
         if (!casted) return false;
-        return casted->addr == addr && casted->dst == dst;
+        return casted->src == src && casted->dst == dst;
     }
 };
 
@@ -722,6 +724,40 @@ public:
     }
     bool equals(OpCode *other) override {
         return isa<PopFrame>(other);
+    }
+};
+
+class PushCallFrame : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::PUSH_CALL_FRAME;
+
+    PushCallFrame() : OpCode(ClassType, "PUSH_CALL_FRAME") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<PushCallFrame>(other);
+    }
+};
+
+class PopCallFrame : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::POP_CALL_FRAME;
+
+    PopCallFrame() : OpCode(ClassType, "POP_CALL_FRAME") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<PopCallFrame>(other);
     }
 };
 

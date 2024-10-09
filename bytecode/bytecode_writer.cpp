@@ -118,12 +118,18 @@ void BytecodeWriter::write(Bytecode *code) {
         }
         else if (auto o = dyn_cast<opcode::Call>(op_gen)){
             write_register(o->dst);
-            write_address(o->addr);
+            write_register(o->src);
         }
         else if (isa<opcode::PushFrame>(op_gen)){
             // Nothing to do
         }
         else if (isa<opcode::PopFrame>(op_gen)){
+            // Nothing to do
+        }
+        else if (isa<opcode::PushCallFrame>(op_gen)){
+            // Nothing to do
+        }
+        else if (isa<opcode::PopCallFrame>(op_gen)){
             // Nothing to do
         }
         else if (auto o = dyn_cast<opcode::Return>(op_gen)){
