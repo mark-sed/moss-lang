@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Script for running moss tests and checking the results
+# example run: bash tests/run-tests.sh -moss build/moss -test-dir tests/
 
 MOSS="moss"
 OUTP_ERR=/tmp/.moss_test_err.txt
@@ -132,7 +133,8 @@ function test_variables {
 
 function test_functions {
     expect_pass "functions.ms" "functions"
-    expect_out_eq "hi there\nnot here\nnil\n9\n" "functions"
+    expect_out_eq "hi there\nnot here\nnil\n9\n11\n1false\ntest2
+<function sum>\n<function sum><function overloading>\n42\n" "functions"
 }
 
 ###--- Running tests ---###

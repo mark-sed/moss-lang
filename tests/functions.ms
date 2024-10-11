@@ -12,3 +12,22 @@ fun sum(a:Int, b:Int=3) {
 }
 
 sum(4, 5)++"\n"
+
+fun overloading(a:Int, b:[Bool, Int]) {
+    return a ++ b ++ "\n"
+}
+
+fun overloading(a:String, b:[Int]) {
+    return a ++ b ++ "\n"
+}
+
+overloading(1, 1)
+overloading(1, false)
+overloading("test", 2)
+
+sum
+"\n"
+sum ++ overloading ++ "\n" // Making sure that concat also converts correctly
+// Let's override the function definition with variable
+sum = 42
+sum ++ "\n"
