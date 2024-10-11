@@ -210,7 +210,9 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new PushAddrArg(read_address()));
             } break;
             case opcode::OpCodes::PUSH_NAMED_ARG: {
-                bc->push_back(new PushNamedArg(read_register(), read_string()));
+                auto reg = read_register();
+                auto str = read_string();
+                bc->push_back(new PushNamedArg(reg, str));
             } break;
             case opcode::OpCodes::IMPORT: {
                 auto reg = read_register();
