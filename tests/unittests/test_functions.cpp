@@ -69,7 +69,7 @@ TEST(Functions, NameEncoding) {
     check_names(
         "foo", 
         std::vector<Argument *> {
-            new Argument("a")
+            new Argument("a", std::vector<Expression *>{})
         },
         {"_"}
     );
@@ -77,10 +77,10 @@ TEST(Functions, NameEncoding) {
     check_names(
         "baz", 
         std::vector<Argument *> {
-            new Argument("a"),
-            new Argument("b"),
-            new Argument("c"),
-            new Argument("d"),
+            new Argument("a", std::vector<Expression *>{}),
+            new Argument("b", std::vector<Expression *>{}),
+            new Argument("c", std::vector<Expression *>{}),
+            new Argument("d", std::vector<Expression *>{}),
         },
         {"_,_,_,_"}
     );
@@ -138,7 +138,7 @@ TEST(Functions, NameEncoding) {
     {
         // (arg1, arg2:SomeSpace::SomeOtherSpace::SomeValue, arg3:[String,String2])
         std::vector<Argument *> args {
-            new Argument("arg1"),
+            new Argument("arg1", std::vector<Expression *>{}),
             new Argument("arg2", std::vector<Expression *> {
                 new BinaryExpr(
                     new Variable("SomeSpace"),

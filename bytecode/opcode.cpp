@@ -3,6 +3,7 @@
 #include "logging.hpp"
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 #include <iostream>
 
@@ -17,7 +18,7 @@ std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
 
 inline ustring as_string(Value *v, Register src, Interpreter *vm) {
     if (auto addr = dyn_cast<AddrValue>(v)) {
-        return "<function " + vm->get_reg_name(src) + ">";
+        return "<function " + vm->get_reg_pure_name(src) + ">";
     }
     return v->as_string();
 }
@@ -54,12 +55,14 @@ void End::exec(Interpreter *vm) {
 }
 
 void Load::exec(Interpreter *vm) {
-    auto *v = vm->load_name(this->name);
+    auto vr = vm->load_name_reg(this->name);
+    auto v = vr.first;
+    auto reg = vr.second;
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();
     vm->store(this->dst, v);
-    vm->store_name(dst, name);
+    vm->copy_names(reg, dst);
 }
 
 void LoadAttr::exec(Interpreter *vm) {
@@ -171,12 +174,34 @@ void JmpIfFalse::exec(Interpreter *vm) {
 void Call::exec(Interpreter *vm) {
     vm->get_call_frame()->set_return_reg(dst);
     vm->get_call_frame()->set_caller_addr(vm->get_bci()+1);
-    auto fun_name = vm->get_reg_name(src);
-    assert(!fun_name.empty() && "TODO: Raise such function does not exists");
+    auto fun_names = vm->get_reg_names(src);
+    assert(!fun_names.empty() && "TODO: Raise such function does not exists");
+    // First one is the pure name
+    auto fun_name = fun_names[0];
+    // Lets check if there is a varargs function
+    int varargs_cutoff = -1;
+    for (auto f: fun_names) {
+        if (f.find('.') != std::string::npos) {
+            // number of commas + 1 = num args
+            // We need to allow generation of names only with n-1 args and then
+            // append `...`
+            varargs_cutoff = std::count_if(f.begin(), f.end(), [](char c){return c ==',';});
+            // There can be only 1 varargs function
+            break;
+        }
+    }
     fun_name += "(";
     bool first = true;
     // Encode function
+    int index = 0;
     for (auto a: vm->get_call_frame()->get_args()) {
+        if (index == varargs_cutoff) {
+            if (first)
+                fun_name += "...";
+            else
+                fun_name += ",...";
+            break;
+        }
         if (first) {
             fun_name += a->get_name();
             first = false;
@@ -184,6 +209,7 @@ void Call::exec(Interpreter *vm) {
         else {
             fun_name += "," + a->get_name();
         }
+        index++;
     }
     fun_name += ")";
     // Load address of encoded function

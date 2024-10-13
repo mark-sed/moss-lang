@@ -102,7 +102,10 @@ public:
      */
     Value *load_global_name(ustring name);
 
-    ustring get_reg_name(opcode::Register reg);
+    std::vector<ustring> get_reg_names(opcode::Register reg);
+    ustring get_reg_pure_name(opcode::Register reg);
+    std::pair<Value *, opcode::Register> load_name_reg(ustring name); 
+    void copy_names(opcode::Register from, opcode::Register to);
 
     void push_frame();
     void pop_frame();

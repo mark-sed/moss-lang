@@ -31,3 +31,14 @@ sum ++ overloading ++ "\n" // Making sure that concat also converts correctly
 // Let's override the function definition with variable
 sum = 42
 sum ++ "\n"
+
+fun varargsf(a:[Int,Bool], ... b) {
+    a // TODO: Output also b
+}
+
+c = varargsf(1, 2)
+c = varargsf(1, 2, 3, 4)
+c = varargsf(0, 1, "ok", false, nil)
+c = varargsf(true, 1)
+
+"\n"

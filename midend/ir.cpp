@@ -18,7 +18,10 @@ std::vector<ustring> ir::encode_fun(ustring name, std::vector<Argument *> args) 
     for (unsigned i = 0; i < args.size(); ++i) {
         std::vector<ustring> types;
         auto a = args[i];
-        if (a->is_typed()) {
+        if (a->is_vararg()) {
+            types.push_back("...");
+        }
+        else if (a->is_typed()) {
             for (auto t: a->get_types()) {
                 types.push_back(t->as_string());
             }

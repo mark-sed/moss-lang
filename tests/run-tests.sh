@@ -134,7 +134,7 @@ function test_variables {
 function test_functions {
     expect_pass "functions.ms" "functions"
     expect_out_eq "hi there\nnot here\nnil\n9\n11\n1false\ntest2
-<function sum>\n<function sum><function overloading>\n42\n" "functions"
+<function sum>\n<function sum><function overloading>\n42\n110true\n" "functions"
 }
 
 ###--- Running tests ---###
