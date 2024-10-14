@@ -220,6 +220,10 @@ Bytecode *BytecodeReader::read() {
                 auto str2 = read_string();
                 bc->push_back(new CreateFun(reg, str1, str2));
             } break;
+            case opcode::OpCodes::FUN_BEGIN: {
+                auto reg = read_register();
+                bc->push_back(new FunBegin(reg));
+            } break;
             case opcode::OpCodes::SET_DEFAULT: {
                 auto reg1 = read_register();
                 auto index = read_const_int();

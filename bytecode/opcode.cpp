@@ -291,6 +291,10 @@ void CreateFun::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void FunBegin::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 void SetDefault::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }

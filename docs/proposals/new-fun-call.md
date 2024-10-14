@@ -34,6 +34,10 @@ SET_DEFAULT     %2, 1, %0
 SET_TYPE        %2, 1, "Int"
 SET_VARARG      %2, 2
 SET_DEFAULT     %2, 3, %1
+FUN_BEGIN       %2
+; Body
+STORE_CONST_NIL #2
+RETURN_CONST    #2
 
 CREATE_FUN      %3, "foo(a)"
 

@@ -357,6 +357,20 @@ std::vector<ustring> encode_fun(ustring name, std::vector<Argument *> args);
 inline std::vector<ustring> encode_fun(Function *f) {
     return encode_fun(f->get_name(), f->get_args());
 }
+inline ustring encode_fun_args(std::vector<Argument *> args) {
+    ustring txt = "";
+    bool first = true;
+    for (auto a: args) {
+        if (first) {
+            txt += a->get_name();
+            first = false;
+        }
+        else {
+            txt += ","+a->get_name();
+        }
+    }
+    return txt;
+}
 
 class Else : public Construct {
 public:

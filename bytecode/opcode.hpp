@@ -73,6 +73,7 @@ enum OpCodes : opcode_t {
     PUSH_ADDR_ARG, //     addr
     PUSH_NAMED_ARG, //    %val, "name"
     CREATE_FUN, //        %fun, "name", "arg csv"
+    FUN_BEGIN,  //        %fun
     SET_DEFAULT, //       %fun, int, %src
     SET_TYPE, //          %fun, int, "name"
     SET_VARARG, //        %fun, int
@@ -935,6 +936,27 @@ public:
         auto casted = dyn_cast<CreateFun>(other);
         if (!casted) return false;
         return casted->fun == fun && casted->name == name && casted->arg_names == arg_names;
+    }
+};
+
+class FunBegin : public OpCode {
+public:
+    Register fun;
+
+    static const OpCodes ClassType = OpCodes::FUN_BEGIN;
+
+    FunBegin(Register fun) : OpCode(ClassType, "FUN_BEGIN"), fun(fun) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << fun;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<FunBegin>(other);
+        if (!casted) return false;
+        return casted->fun == fun;
     }
 };
 

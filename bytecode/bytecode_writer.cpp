@@ -162,6 +162,9 @@ void BytecodeWriter::write(Bytecode *code) {
             write_string(o->name);
             write_string(o->arg_names);
         }
+        else if (auto o = dyn_cast<opcode::FunBegin>(op_gen)){
+            write_register(o->fun);
+        }
         else if (auto o = dyn_cast<opcode::SetDefault>(op_gen)){
             write_register(o->fun);
             write_int(o->index);
