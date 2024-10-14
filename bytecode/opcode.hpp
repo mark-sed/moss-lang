@@ -72,6 +72,10 @@ enum OpCodes : opcode_t {
     PUSH_CONST_ARG, //    #val
     PUSH_ADDR_ARG, //     addr
     PUSH_NAMED_ARG, //    %val, "name"
+    CREATE_FUN, //        %fun, "name", "arg csv"
+    SET_DEFAULT, //       %fun, int, %src
+    SET_TYPE, //          %fun, int, "name"
+    SET_VARARG, //        %fun, int
 
     IMPORT, //        %dst, "name"
     IMPORT_ALL, //    "name"
@@ -907,6 +911,100 @@ public:
         auto casted = dyn_cast<PushNamedArg>(other);
         if (!casted) return false;
         return casted->src == src && casted->name == name;
+    }
+};
+
+class CreateFun : public OpCode {
+public:
+    Register fun;
+    StringConst name;
+    StringConst arg_names;
+
+    static const OpCodes ClassType = OpCodes::CREATE_FUN;
+
+    CreateFun(Register fun, StringConst name, StringConst arg_names) 
+                : OpCode(ClassType, "CREATE_FUN"), fun(fun), name(name), arg_names(arg_names) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << fun << ", \"" << name << "\"" << ", \"" << arg_names << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<CreateFun>(other);
+        if (!casted) return false;
+        return casted->fun == fun && casted->name == name && casted->arg_names == arg_names;
+    }
+};
+
+class SetDefault : public OpCode {
+public:
+    Register fun;
+    IntConst index;
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::SET_DEFAULT;
+
+    SetDefault(Register fun, IntConst index, Register src) 
+                : OpCode(ClassType, "SET_DEFAULT"), fun(fun), index(index), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << fun << ", " << index << ", %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<SetDefault>(other);
+        if (!casted) return false;
+        return casted->fun == fun && casted->src == src && casted->index == index;
+    }
+};
+
+class SetType : public OpCode {
+public:
+    Register fun;
+    IntConst index;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::SET_TYPE;
+
+    SetType(Register fun, IntConst index, StringConst name) 
+                : OpCode(ClassType, "SET_TYPE"), fun(fun), index(index), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << fun << ", " << index << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<SetType>(other);
+        if (!casted) return false;
+        return casted->fun == fun && casted->name == name && casted->index == index;
+    }
+};
+
+class SetVararg : public OpCode {
+public:
+    Register fun;
+    IntConst index;
+
+    static const OpCodes ClassType = OpCodes::SET_VARARG;
+
+    SetVararg(Register fun, IntConst index) : OpCode(ClassType, "SET_VARARG"), fun(fun), index(index) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << fun << ", " << index;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<SetVararg>(other);
+        if (!casted) return false;
+        return casted->fun == fun && casted->index == index;
     }
 };
 

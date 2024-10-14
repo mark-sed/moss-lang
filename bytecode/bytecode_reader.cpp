@@ -214,6 +214,29 @@ Bytecode *BytecodeReader::read() {
                 auto str = read_string();
                 bc->push_back(new PushNamedArg(reg, str));
             } break;
+            case opcode::OpCodes::CREATE_FUN: {
+                auto reg = read_register();
+                auto str1 = read_string();
+                auto str2 = read_string();
+                bc->push_back(new CreateFun(reg, str1, str2));
+            } break;
+            case opcode::OpCodes::SET_DEFAULT: {
+                auto reg1 = read_register();
+                auto index = read_const_int();
+                auto reg2 = read_register();
+                bc->push_back(new SetDefault(reg1, index, reg2));
+            } break;
+            case opcode::OpCodes::SET_TYPE: {
+                auto reg = read_register();
+                auto index = read_const_int();
+                auto str = read_string();
+                bc->push_back(new SetType(reg, index, str));
+            } break;
+            case opcode::OpCodes::SET_VARARG: {
+                auto reg = read_register();
+                auto index = read_const_int();
+                bc->push_back(new SetVararg(reg, index));
+            } break;
             case opcode::OpCodes::IMPORT: {
                 auto reg = read_register();
                 auto str = read_string();

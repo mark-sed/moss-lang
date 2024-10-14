@@ -18,6 +18,10 @@ void BytecodeWriter::write_address(Address addr) {
     this->stream->write(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
 }
 
+void BytecodeWriter::write_int(IntConst v) {
+    this->stream->write(reinterpret_cast<char *>(&v), BC_INT_SIZE);
+}
+
 void BytecodeWriter::write_string(StringConst val) {
     const char *txt = val.c_str();
     strlen_t len = val.size();
@@ -85,8 +89,7 @@ void BytecodeWriter::write(Bytecode *code) {
         }
         else if (auto o = dyn_cast<opcode::StoreIntConst>(op_gen)){
             write_register(o->dst);
-            auto val = o->val;
-            this->stream->write(reinterpret_cast<char *>(&val), BC_INT_SIZE);
+            write_int(o->val);
         }
         else if (auto o = dyn_cast<opcode::StoreFloatConst>(op_gen)){
             write_register(o->dst);
@@ -153,6 +156,25 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::PushNamedArg>(op_gen)){
             write_register(o->src);
             write_string(o->name);
+        }
+        else if (auto o = dyn_cast<opcode::CreateFun>(op_gen)){
+            write_register(o->fun);
+            write_string(o->name);
+            write_string(o->arg_names);
+        }
+        else if (auto o = dyn_cast<opcode::SetDefault>(op_gen)){
+            write_register(o->fun);
+            write_int(o->index);
+            write_register(o->src);
+        }
+        else if (auto o = dyn_cast<opcode::SetType>(op_gen)){
+            write_register(o->fun);
+            write_int(o->index);
+            write_string(o->name);
+        }
+        else if (auto o = dyn_cast<opcode::SetVararg>(op_gen)){
+            write_register(o->fun);
+            write_int(o->index);
         }
         else if (auto o = dyn_cast<opcode::Import>(op_gen)){
             write_register(o->dst);

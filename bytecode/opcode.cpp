@@ -287,6 +287,22 @@ void PushNamedArg::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+void CreateFun::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void SetDefault::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void SetType::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void SetVararg::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
 void Import::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
