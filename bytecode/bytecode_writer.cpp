@@ -170,6 +170,11 @@ void BytecodeWriter::write(Bytecode *code) {
             write_int(o->index);
             write_register(o->src);
         }
+        else if (auto o = dyn_cast<opcode::SetDefaultConst>(op_gen)){
+            write_register(o->fun);
+            write_int(o->index);
+            write_register(o->csrc);
+        }
         else if (auto o = dyn_cast<opcode::SetType>(op_gen)){
             write_register(o->fun);
             write_int(o->index);

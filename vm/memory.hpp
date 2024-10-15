@@ -30,7 +30,7 @@ class MemoryPool {
 private:
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
-    std::map<opcode::Register, std::vector<ustring>> reg_names;
+    //std::map<opcode::Register, std::vector<ustring>> reg_names;
 public:
     MemoryPool() : pool(256, nullptr) {}
     virtual ~MemoryPool() {
@@ -69,12 +69,12 @@ public:
     void store_name(opcode::Register reg, ustring name);
 
     Value *load_name(ustring name);
-    std::pair<Value *, opcode::Register> load_name_reg(ustring name);
+    /*std::pair<Value *, opcode::Register> load_name_reg(ustring name);
     void copy_names(opcode::Register from, opcode::Register to);
 
-    std::vector<ustring> get_reg_names(opcode::Register reg);
+    //std::vector<ustring> get_reg_names(opcode::Register reg);
 
-    ustring get_reg_pure_name(opcode::Register reg);
+    ustring get_reg_pure_name(opcode::Register reg);*/
 
     std::ostream& debug(std::ostream& os) const;
 };

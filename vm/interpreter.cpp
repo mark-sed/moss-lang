@@ -70,7 +70,7 @@ Value *Interpreter::load_global_name(ustring name) {
     return get_global_frame()->load_name(name);
 }
 
-ustring Interpreter::get_reg_pure_name(opcode::Register reg) {
+/*ustring Interpreter::get_reg_pure_name(opcode::Register reg) {
     return get_local_frame()->get_reg_pure_name(reg);
 }
 
@@ -86,7 +86,7 @@ std::pair<Value *, opcode::Register> Interpreter::load_name_reg(ustring name) {
 void Interpreter::copy_names(opcode::Register from, opcode::Register to) {
     // TODO: Walk frames??
     return get_local_frame()->copy_names(from, to);
-}
+}*/
 
 void Interpreter::push_frame() {
     this->frames.push_back(new MemoryPool());

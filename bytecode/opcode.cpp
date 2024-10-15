@@ -17,9 +17,6 @@ std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
 }
 
 inline ustring as_string(Value *v, Register src, Interpreter *vm) {
-    if (auto addr = dyn_cast<AddrValue>(v)) {
-        return "<function " + vm->get_reg_pure_name(src) + ">";
-    }
     return v->as_string();
 }
 
@@ -55,14 +52,11 @@ void End::exec(Interpreter *vm) {
 }
 
 void Load::exec(Interpreter *vm) {
-    auto vr = vm->load_name_reg(this->name);
-    auto v = vr.first;
-    auto reg = vr.second;
+    auto v = vm->load_name(this->name);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();
     vm->store(this->dst, v);
-    vm->copy_names(reg, dst);
 }
 
 void LoadAttr::exec(Interpreter *vm) {
@@ -174,7 +168,22 @@ void JmpIfFalse::exec(Interpreter *vm) {
 void Call::exec(Interpreter *vm) {
     vm->get_call_frame()->set_return_reg(dst);
     vm->get_call_frame()->set_caller_addr(vm->get_bci()+1);
-    auto fun_names = vm->get_reg_names(src);
+
+    auto *funV = vm->load(src);
+    assert(funV && "TODO: Raise function not found");
+
+    FunValue *fun = dyn_cast<FunValue>(funV);
+    if (!fun) {
+        auto fvl = dyn_cast<FunValueList>(funV);
+        if (!fvl) {
+            assert(false && "TODO: Raise value not callable");
+        }
+        
+        // TODO:
+        assert(false && "TODO: Filter functions to call the correct one");
+    }
+
+    /*auto fun_names = vm->get_reg_names(src);
     assert(!fun_names.empty() && "TODO: Raise such function does not exists");
     // First one is the pure name
     auto fun_name = fun_names[0];
@@ -221,9 +230,9 @@ void Call::exec(Interpreter *vm) {
     auto fun_addr = dyn_cast<AddrValue>(fun_val);
     if (!fun_addr) {
         assert(false && "TODO: Raise cannot be called");
-    }
+    }*/
     vm->push_frame();
-    vm->set_bci(fun_addr->get_value());
+    vm->set_bci(fun->get_body_addr());
 }
 
 void PushFrame::exec(Interpreter *vm) {
@@ -241,6 +250,7 @@ void PushCallFrame::exec(Interpreter *vm) {
 void PopCallFrame::exec(Interpreter *vm) {
     // This pops values from call frame into current frame
     // The acutal call frame is removed in return (when return value is set)
+    assert(false && "TODO: populate args");
     Register r_i = 0;
     for (auto v: vm->get_call_frame()->get_args()) {
         vm->store(r_i, v);
@@ -288,23 +298,66 @@ void PushNamedArg::exec(Interpreter *vm) {
 }
 
 void CreateFun::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    FunValue *funval = new FunValue(name, arg_names);
+    auto f = vm->load_name(name);
+    if (f && (isa<FunValue>(f) || isa<FunValueList>(f))) {
+        if (auto fv = dyn_cast<FunValue>(f)) {
+            vm->store(this->fun, new FunValueList(std::vector<FunValue *>{fv, funval}));
+            vm->store_name(this->fun, name);
+        }
+        else {
+            vm->store(this->fun, funval);
+            auto fvl = dyn_cast<FunValueList>(f);
+            fvl->push_back(funval);
+        }
+    }
+    else {
+        vm->store(this->fun, funval);
+        vm->store_name(this->fun, name);
+    }
+}
+
+static FunValue *load_last_fun(Register fun, Interpreter *vm) {
+    auto v = vm->load(fun);
+    assert(v && "Fun not bound?");
+    auto fv = dyn_cast<FunValue>(v);
+    if (fv)
+        return fv;
+    auto fvl = dyn_cast<FunValueList>(v);
+    assert(fvl && "FunBegin bound to non-function value");
+    fv = fvl->back();
+    assert(fv && "nullptr returned from funvaluelist");
+    return fv;
 }
 
 void FunBegin::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto fv = load_last_fun(fun, vm);
+    // Set address to the opcode after jump which is after this
+    fv->set_body_addr(vm->get_bci()+2);
 }
 
 void SetDefault::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto fv = load_last_fun(fun, vm);
+    auto defv = vm->load(src);
+    assert(defv && "Value does not exist anymore?");
+    fv->set_default(index, defv);
+}
+
+void SetDefaultConst::exec(Interpreter *vm) {
+    auto fv = load_last_fun(fun, vm);
+    auto defv = vm->load_const(csrc);
+    assert(defv && "Value does not exist anymore?");
+    fv->set_default(index, defv);
 }
 
 void SetType::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto fv = load_last_fun(fun, vm);
+    fv->set_type(index, name);
 }
 
 void SetVararg::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto fv = load_last_fun(fun, vm);
+    fv->set_vararg(index);
 }
 
 void Import::exec(Interpreter *vm) {

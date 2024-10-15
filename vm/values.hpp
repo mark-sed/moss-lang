@@ -11,6 +11,7 @@
 #define _VALUES_HPP_
 
 #include "os_interface.hpp"
+#include "utils.hpp"
 #include <cstdint>
 #include <map>
 
@@ -25,6 +26,8 @@ enum class TypeKind {
     LIST,
     DICT,
     ADDRESS,
+    FUN,
+    FUN_LIST,
     USER_DEF
 };
 
@@ -229,6 +232,122 @@ public:
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Addr(" << value << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class FunValueArg {
+public:
+    opcode::StringConst name;
+    std::vector<opcode::StringConst> types;
+    Value *default_value;
+    bool vararg;
+
+    FunValueArg(opcode::StringConst name,
+                std::vector<opcode::StringConst> types,
+                Value *default_value=nullptr,
+                bool vararg=false) 
+               : name(name), types(types), default_value(default_value), vararg(vararg) {}
+
+    // TODO: Debug
+};
+
+class FunValue : public Value {
+private:
+    opcode::StringConst name;
+    std::vector<FunValueArg *> args;
+    opcode::Address body_addr;
+public:
+    static const TypeKind ClassType = TypeKind::FUN;
+
+    FunValue(opcode::StringConst name, opcode::StringConst arg_names) 
+            : Value(ClassType, "Function"), name(name), args(), body_addr(0) {
+        auto names = utils::split_csv(arg_names, ',');
+        for (auto n: names) {
+            args.push_back(new FunValueArg(n, std::vector<opcode::StringConst>{}));
+        }
+    }
+
+    FunValue(opcode::StringConst name,
+             std::vector<FunValueArg *> args,
+             opcode::Address body_addr) 
+            : Value(ClassType, "Function"), name(name), args(args), body_addr(body_addr) {}
+
+    virtual Value *clone() {
+        return new FunValue(this->name, this->args, this->body_addr);
+    }
+
+    void set_vararg(opcode::IntConst index) {
+        assert(index < static_cast<int>(args.size()) && "out of bounds argument");
+        args[index]->vararg = true;
+    }
+
+    void set_type(opcode::IntConst index, opcode::StringConst type) {
+        assert(index < static_cast<int>(args.size()) && "out of bounds argument");
+        args[index]->types.push_back(type);
+    }
+
+    void set_default(opcode::IntConst index, Value *v) {
+        assert(index < static_cast<int>(args.size()) && "out of bounds argument");
+        args[index]->default_value = v;
+    }
+
+    void set_body_addr(opcode::Address body_addr) {
+        this->body_addr = body_addr;
+    }
+
+    opcode::Address get_body_addr() { return this->body_addr; }
+
+    virtual opcode::StringConst as_string() override {
+        return "<function " + name + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Fun(" << name << " @" << body_addr << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class FunValueList : public Value {
+private:
+    std::vector<FunValue *> funs;
+public:
+    static const TypeKind ClassType = TypeKind::FUN_LIST;
+
+    FunValueList(FunValue *f) : Value(ClassType, "FunctionList") {
+        funs.push_back(f);
+    }
+    FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList"), funs(funs) {}
+    
+    virtual Value *clone() {
+        return new FunValueList(this->funs);
+    }
+
+    std::vector<FunValue *> get_funs() { return this->funs; }
+    void push_back(FunValue *f) { this->funs.push_back(f); }
+    FunValue *back() {
+        assert(!funs.empty() && "no functions in funlist");
+        return funs.back();
+    }
+
+    virtual opcode::StringConst as_string() override {
+        assert(!funs.empty() && "sanity check");
+        return "<functions " + funs[0]->get_name() + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "FunValueList(";
+        bool first = true;
+        for (auto f: funs) {
+            if (first) {
+                os << *f;
+                first = false;
+            }
+            else {
+                os << ", " << *f;
+            }
+        }
+        os << ")[refs: " << references << "]";
         return os;
     }
 };

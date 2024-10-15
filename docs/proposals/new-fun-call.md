@@ -27,6 +27,7 @@ STORE_CONST     %0, #0
 STORE_INT_CONST #1, 4
 STORE_CONST     %1, #1
 
+JMP  <after fun foo>
 ; This will create FunValue %2 will store "foo"
 ; all the other stuff will be parsed into this value as well
 CREATE_FUN      %2, "foo" "a,b,c,d"  
@@ -36,10 +37,14 @@ SET_VARARG      %2, 2
 SET_DEFAULT     %2, 3, %1
 FUN_BEGIN       %2
 ; Body
+POP_CALL_FRAME  %2
 STORE_CONST_NIL #2
 RETURN_CONST    #2
 
+JMP <after this fun foo>
 CREATE_FUN      %3, "foo(a)"
+FUN_BEGIN       %3
+POP_CALL_FRAME  %3
 
 ...
 LOAD             %4, "foo" 

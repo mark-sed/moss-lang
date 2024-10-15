@@ -75,6 +75,7 @@ enum OpCodes : opcode_t {
     CREATE_FUN, //        %fun, "name", "arg csv"
     FUN_BEGIN,  //        %fun
     SET_DEFAULT, //       %fun, int, %src
+    SET_DEFAULT_CONST, // %fun, int, #src
     SET_TYPE, //          %fun, int, "name"
     SET_VARARG, //        %fun, int
 
@@ -981,6 +982,30 @@ public:
         auto casted = dyn_cast<SetDefault>(other);
         if (!casted) return false;
         return casted->fun == fun && casted->src == src && casted->index == index;
+    }
+};
+
+class SetDefaultConst : public OpCode {
+public:
+    Register fun;
+    IntConst index;
+    Register csrc;
+
+    static const OpCodes ClassType = OpCodes::SET_DEFAULT_CONST;
+
+    SetDefaultConst(Register fun, IntConst index, Register csrc) 
+                : OpCode(ClassType, "SET_DEFAULT_CONST"), fun(fun), index(index), csrc(csrc) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "\t%" << fun << ", " << index << ", #" << csrc;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<SetDefaultConst>(other);
+        if (!casted) return false;
+        return casted->fun == fun && casted->csrc == csrc && casted->index == index;
     }
 };
 

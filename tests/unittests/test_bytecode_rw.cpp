@@ -89,6 +89,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::CreateFun(50, "foo", "a,b,c"));
     bc->push_back(new opcode::FunBegin(50));
     bc->push_back(new opcode::SetDefault(50, 0, 2));
+    bc->push_back(new opcode::SetDefaultConst(50, 1, 3));
     bc->push_back(new opcode::SetType(50, 0, "Bool"));
     bc->push_back(new opcode::SetVararg(50, 2));
 
