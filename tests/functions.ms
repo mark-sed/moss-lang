@@ -32,7 +32,26 @@ sum ++ overloading ++ "\n" // Making sure that concat also converts correctly
 sum = 42
 sum ++ "\n"
 
-fun varargsf(a:[Int,Bool], ... b) {
+fun fooa(a, b, c=5) {
+    a ++ b ++ c
+}
+
+fun fooa(a=0) {
+    a
+}
+
+x = fooa()
+"\n"
+x = fooa(1)
+"\n"
+x = fooa(1, 2, 3)
+"\n"
+x = fooa(b=2, a=1)
+"\n"
+x = fooa(b=2, a=1, c=3)
+"\n"
+
+/*fun varargsf(a:[Int,Bool], ... b) {
     a // TODO: Output also b
 }
 
@@ -41,4 +60,4 @@ c = varargsf(1, 2, 3, 4)
 c = varargsf(0, 1, "ok", false, nil)
 c = varargsf(true, 1)
 
-"\n"
+"\n"*/

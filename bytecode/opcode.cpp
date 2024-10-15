@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+#include <cassert>
 
 #include <iostream>
 
@@ -44,7 +45,7 @@ static bool is_int_expr(Value *v1, Value *v2) {
 }
 
 static bool is_primitive_type(Value *v) {
-    return v->get_kind() != TypeKind::USER_DEF;
+    return v->get_kind() <= TypeKind::FUN;
 }
 
 void End::exec(Interpreter *vm) {
@@ -165,9 +166,110 @@ void JmpIfFalse::exec(Interpreter *vm) {
         vm->set_bci(this->addr);
 }
 
+// TODO: Return reason why it cannot be called
+static bool can_call(FunValue *f, CallFrame *cf) {
+    LOGMAX("Checking if can call " << *f);
+    auto og_call_args = cf->get_args();
+    auto fun_args = f->get_args();
+
+    std::vector<CallFrameArg> call_args;
+    call_args.assign(og_call_args.begin(), og_call_args.end());
+
+    bool named_args = false;
+    for (unsigned i = 0; i < call_args.size(); ++i) {
+        CallFrameArg &arg = call_args[i];
+        if (named_args || !arg.name.empty()) {
+            assert(!arg.name.empty() && "Non-named arg after a named one");
+            bool matched = false;
+            for (unsigned j = 0; j < fun_args.size(); ++j) {
+                if (fun_args[j]->name == arg.name) {
+                    // Check that also type matches
+                    matched = fun_args[j]->types.empty();
+                    for (auto type: fun_args[j]->types) {
+                        if (type == arg.value->get_type()) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    arg.dst = j;
+                    break;
+                }
+            }
+            if (!matched)
+                return false;
+            // Once first named argument is encountered then all have to be named
+            named_args = true;
+        }
+        else {
+            auto fa = fun_args[i];
+            if (fa->vararg) {
+                assert(false && "Vararg calling");
+            }
+            else {
+                // No types always matches otherwise it will be false and set in for
+                bool matched = fa->types.empty();
+                for (auto type: fa->types) {
+                    if (type == arg.value->get_type()) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched)
+                    return false;
+                arg.dst = i;
+                arg.name = fa->name;
+            }
+        }
+    }
+
+    // Find not set values and set them in call
+    // We have to go through all the fun_args, because there might be a case
+    // where some value in the middle is left our by dirrect assignment
+    // E.g.:
+    //      fun foo(a=1, b=2, c=3) {}
+    //      foo(c=0, a=2)
+    //
+    if (fun_args.size() > call_args.size()) {
+        LOGMAX("Call args are missing some values set -- try setting defaults");
+        for (unsigned i = 0; i < fun_args.size(); ++i) {
+            auto fa = fun_args[i];
+            bool found = false;
+            for (auto &ca: call_args) {
+                if (ca.name == fa->name) {
+                    found = true;
+                    break;
+                }
+            }
+            // If not found then set it if it has default value or is vararg
+            if (!found) {
+                if (fa->vararg) {
+                    assert(false && "TODO: vararg, assign []");
+                }
+                else if (fa->default_value) {
+                    LOGMAX("Setting default value for argument " << fa->name << " %" << i << " as " << *fa->default_value);
+                    call_args.push_back(CallFrameArg(fa->name, fa->default_value, i));
+                }
+                else {
+                    LOGMAX("Argument does not have a default value and is not set: " << fa->name);
+                    return false;
+                }
+            }
+        }
+    }
+
+    // The function can be called only if call arguments are 1:1 to function args
+    if (call_args.size() == fun_args.size()) {
+        cf->set_args(call_args);
+        LOGMAX("Call frame set -- function callable: " << *f << " with:\n" << *cf);
+        return true;
+    }
+    return false;
+}
+
 void Call::exec(Interpreter *vm) {
-    vm->get_call_frame()->set_return_reg(dst);
-    vm->get_call_frame()->set_caller_addr(vm->get_bci()+1);
+    auto cf = vm->get_call_frame();
+    cf->set_return_reg(dst);
+    cf->set_caller_addr(vm->get_bci()+1);
 
     auto *funV = vm->load(src);
     assert(funV && "TODO: Raise function not found");
@@ -178,59 +280,23 @@ void Call::exec(Interpreter *vm) {
         if (!fvl) {
             assert(false && "TODO: Raise value not callable");
         }
-        
-        // TODO:
-        assert(false && "TODO: Filter functions to call the correct one");
+        // Walk functions and check if it can be called
+        for (auto f: fvl->get_funs()) {
+            if (can_call(f, cf)) {
+                fun = f;
+                break;
+            }
+        }
+        if (!fun) {
+            assert(false && "TODO: Raise incorrect function call");
+        }
+    }
+    else {
+        if (!can_call(fun, cf)) {
+            assert(false && "TODO: Raise incorrect function call");
+        }
     }
 
-    /*auto fun_names = vm->get_reg_names(src);
-    assert(!fun_names.empty() && "TODO: Raise such function does not exists");
-    // First one is the pure name
-    auto fun_name = fun_names[0];
-    // Lets check if there is a varargs function
-    int varargs_cutoff = -1;
-    for (auto f: fun_names) {
-        if (f.find('.') != std::string::npos) {
-            // number of commas + 1 = num args
-            // We need to allow generation of names only with n-1 args and then
-            // append `...`
-            varargs_cutoff = std::count_if(f.begin(), f.end(), [](char c){return c ==',';});
-            // There can be only 1 varargs function
-            break;
-        }
-    }
-    fun_name += "(";
-    bool first = true;
-    // Encode function
-    int index = 0;
-    for (auto a: vm->get_call_frame()->get_args()) {
-        if (index == varargs_cutoff) {
-            if (first)
-                fun_name += "...";
-            else
-                fun_name += ",...";
-            break;
-        }
-        if (first) {
-            fun_name += a->get_name();
-            first = false;
-        }
-        else {
-            fun_name += "," + a->get_name();
-        }
-        index++;
-    }
-    fun_name += ")";
-    // Load address of encoded function
-    auto fun_val = vm->load_name(fun_name);
-    if (!fun_val) {
-        // TODO: Handle inheritance
-        assert(false && "TODO: Raise function not found");
-    }
-    auto fun_addr = dyn_cast<AddrValue>(fun_val);
-    if (!fun_addr) {
-        assert(false && "TODO: Raise cannot be called");
-    }*/
     vm->push_frame();
     vm->set_bci(fun->get_body_addr());
 }
@@ -250,11 +316,10 @@ void PushCallFrame::exec(Interpreter *vm) {
 void PopCallFrame::exec(Interpreter *vm) {
     // This pops values from call frame into current frame
     // The acutal call frame is removed in return (when return value is set)
-    assert(false && "TODO: populate args");
-    Register r_i = 0;
-    for (auto v: vm->get_call_frame()->get_args()) {
-        vm->store(r_i, v);
-        ++r_i;
+    for (auto a: vm->get_call_frame()->get_args()) {
+        vm->store(a.dst, a.value);
+        assert(!a.name.empty() && "argument name in call frame was not set");
+        vm->store_name(a.dst, a.name);
     }
 }
 
@@ -294,7 +359,9 @@ void PushAddrArg::exec(Interpreter *vm) {
 }
 
 void PushNamedArg::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load(src);
+    assert(v && "Const does not exist??");
+    vm->get_call_frame()->push_back(name, v);
 }
 
 void CreateFun::exec(Interpreter *vm) {
@@ -352,7 +419,10 @@ void SetDefaultConst::exec(Interpreter *vm) {
 
 void SetType::exec(Interpreter *vm) {
     auto fv = load_last_fun(fun, vm);
-    fv->set_type(index, name);
+    auto type = vm->load_name(name);
+    assert(type && "TODO: Raise unknown name exception for type");
+    // TODO: Check that type is really a type
+    fv->set_type(index, type);
 }
 
 void SetVararg::exec(Interpreter *vm) {

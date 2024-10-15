@@ -528,13 +528,23 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new PushCallFrame());
         auto fun = emit(val->get_fun());
         for (auto a: val->get_args()) {
-            auto a_val = emit(a);
-            if (a_val->is_const()) {
-                append(new PushConstArg(free_reg(a_val)));
+            RegValue *a_val = nullptr;
+            auto be = dyn_cast<BinaryExpr>(a);
+            if (be && be->get_op().get_kind() == OperatorKind::OP_SET) {
+                // Named arg
+                a_val = emit(be->get_right(), true);
+                ustring name = be->get_left()->get_name();
+                append(new PushNamedArg(free_reg(a_val), name));
             }
             else {
-                // TODO: PushAddrArg for address value
-                append(new PushArg(free_reg(a_val)));
+                a_val = emit(a);
+                if (a_val->is_const()) {
+                    append(new PushConstArg(free_reg(a_val)));
+                }
+                else {
+                    // TODO: PushAddrArg for address value
+                    append(new PushArg(free_reg(a_val)));
+                }
             }
         }
         append(new opcode::Call(next_reg(), free_reg(fun)));
@@ -611,7 +621,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     // function is generated
     auto pre_function_reg = curr_reg;
     auto pre_function_creg = curr_creg;
-    reset_regs();
+    reset_regs(fun->get_args().size());
     // Generate function body
     for (auto decl : fun->get_body()) {
         emit(decl);

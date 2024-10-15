@@ -91,4 +91,13 @@ fun test4(c) {
 }
 
 test4(a=4)
+
+// Cannot determine which to call with 1 arg
+fun foo(a, b:Int=3, ...c, d=4) {
+    "hello"
+}
+
+fun foo(a) {
+    a
+}
 ```
