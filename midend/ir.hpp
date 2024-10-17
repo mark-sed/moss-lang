@@ -607,6 +607,8 @@ public:
         delete cond;
     }
 
+    Expression *get_cond() { return this->cond; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "do {\n";
         for (auto d: body) {

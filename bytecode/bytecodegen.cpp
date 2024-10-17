@@ -608,6 +608,13 @@ void BytecodeGen::emit(ir::While *whstmt) {
     jmp_end->addr = get_curr_address() + 1;
 }
 
+void BytecodeGen::emit(ir::DoWhile *whstmt) {
+    auto pre_while_bc = get_curr_address() + 1;
+    emit(whstmt->get_body());
+    auto cond = emit(whstmt->get_cond(), true);
+    append(new JmpIfTrue(free_reg(cond), pre_while_bc));
+}
+
 void BytecodeGen::emit(ir::Module *mod) {
     emit(mod->get_body());
 }
@@ -684,6 +691,9 @@ void BytecodeGen::emit(ir::IR *decl) {
         emit(i);
     }
     else if (auto w = dyn_cast<ir::While>(decl)) {
+        emit(w);
+    }
+    else if (auto w = dyn_cast<ir::DoWhile>(decl)) {
         emit(w);
     }
     else if (isa<EndOfFile>(decl)) {

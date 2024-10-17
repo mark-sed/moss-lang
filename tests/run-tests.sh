@@ -148,7 +148,8 @@ very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n" "ifs"
 
 function test_whiles {
     expect_pass "whiles.ms" "whiles"
-    expect_out_eq "done\n.done\n.....done\n,,,done\n" "whiles"
+    expect_out_eq "done\n.done\n.....done\n,,,done
+-\n1\n2\n3\n3\n" "whiles"
 }
 
 function test_fibonacci {
@@ -159,6 +160,13 @@ function test_fibonacci {
 function test_factorial {
     expect_pass "factorial.ms" "factorial"
     expect_out_eq "2432902008176640000" "factorial"
+}
+
+function test_collatz {
+    expect_pass "collatz.ms" "collatz"
+    expect_out_eq "21 64 32 16 8 4 2 1 
+2097152 1048576 524288 262144 131072 65536 32768 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1 
+22 11 34 17 52 26 13 40 20 10 5 16 8 4 2 1 " "collatz"
 }
 
 ###--- Running tests ---###
@@ -173,6 +181,7 @@ function run_all_tests {
     run_test whiles
     run_test fibonacci
     run_test factorial
+    run_test collatz
 }
 
 # Count all functions starting with test_ 

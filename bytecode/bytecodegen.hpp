@@ -67,6 +67,7 @@ private:
     void emit(ir::Module *mod);
     void emit(ir::If *ifstmt);
     void emit(ir::While *whstmt);
+    void emit(ir::DoWhile *whstmt);
     void emit(ir::Function *fun);
     void emit(ir::IR *decl);
     void emit(std::list<ir::IR *> block);
