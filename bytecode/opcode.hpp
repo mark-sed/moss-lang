@@ -46,9 +46,7 @@ enum OpCodes : opcode_t {
     STORE, //             %dst, %src
     STORE_NAME, //        %dst, "name"
     STORE_CONST, //       %dst, #val
-    STORE_ADDR, //        %dst, addr
     STORE_ATTR, //        %src, %obj, "name"
-    STORE_ADDR_ATTR, //   addr, %obj, "name"
     STORE_CONST_ATTR, //  #val, %obj, "name"
 
     STORE_INT_CONST, //   #dst, int
@@ -67,10 +65,8 @@ enum OpCodes : opcode_t {
     POP_CALL_FRAME,  //
     RETURN, //            %src
     RETURN_CONST, //      #val
-    RETURN_ADDR, //       addr
     PUSH_ARG, //          %val
     PUSH_CONST_ARG, //    #val
-    PUSH_ADDR_ARG, //     addr
     PUSH_NAMED_ARG, //    %val, "name"
     CREATE_FUN, //        %fun, "name", "arg csv"
     FUN_BEGIN,  //        %fun
@@ -171,7 +167,6 @@ enum OpCodes : opcode_t {
 
     LIST_PUSH, //         %val
     LIST_PUSH_CONST, //   #val
-    LIST_PUSH_ADDR, //    addr
     BUILD_LIST, //        %dst
 
     BUILD_DICT, //        %dst, %keys, %vals
@@ -411,28 +406,6 @@ public:
     }
 };
 
-class StoreAddr : public OpCode {
-public:
-    Register dst;
-    Address addr;
-
-    static const OpCodes ClassType = OpCodes::STORE_ADDR;
-
-    StoreAddr(Register dst, Address addr) : OpCode(ClassType, "STORE_ADDR"), dst(dst), addr(addr) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", " << addr;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<StoreAddr>(other);
-        if (!casted) return false;
-        return casted->dst == dst && casted->addr == addr;
-    }
-};
-
 class StoreAttr : public OpCode {
 public:
     Register src;
@@ -453,29 +426,6 @@ public:
         auto casted = dyn_cast<StoreAttr>(other);
         if (!casted) return false;
         return casted->src == src && casted->obj == obj && casted->name == name;
-    }
-};
-
-class StoreAddrAttr : public OpCode {
-public:
-    Address addr;
-    Register obj;
-    StringConst name;
-
-    static const OpCodes ClassType = OpCodes::STORE_ADDR_ATTR;
-
-    StoreAddrAttr(Address addr, Register obj, StringConst name) : OpCode(ClassType, "STORE_ADDR_ATTR"), addr(addr), obj(obj), name(name) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << addr << ", %" << obj << ", \"" << name << "\"";
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<StoreAddrAttr>(other);
-        if (!casted) return false;
-        return casted->addr == addr && casted->obj == obj && casted->name == name;
     }
 };
 
@@ -810,27 +760,6 @@ public:
     }
 };
 
-class ReturnAddr : public OpCode {
-public:
-    Address addr;
-
-    static const OpCodes ClassType = OpCodes::RETURN_ADDR;
-
-    ReturnAddr(Address addr) : OpCode(ClassType, "RETURN_ADDR"), addr(addr) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t" << addr;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<ReturnAddr>(other);
-        if (!casted) return false;
-        return casted->addr == addr;
-    }
-};
-
 class PushArg : public OpCode {
 public:
     Register src;
@@ -870,27 +799,6 @@ public:
         auto casted = dyn_cast<PushConstArg>(other);
         if (!casted) return false;
         return casted->csrc == csrc;
-    }
-};
-
-class PushAddrArg : public OpCode {
-public:
-    Address addr;
-
-    static const OpCodes ClassType = OpCodes::PUSH_ADDR_ARG;
-
-    PushAddrArg(Address addr) : OpCode(ClassType, "PUSH_ADDR_ARG"), addr(addr) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t" << addr;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<PushAddrArg>(other);
-        if (!casted) return false;
-        return casted->addr == addr;
     }
 };
 
@@ -1853,27 +1761,6 @@ public:
     }
 };
 
-class ListPushAddr : public OpCode {
-public:
-    Address addr;
-
-    static const OpCodes ClassType = OpCodes::LIST_PUSH_ADDR;
-
-    ListPushAddr(Address addr) : OpCode(ClassType, "LIST_PUSH_ADDR"), addr(addr) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t" << addr;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<ListPushAddr>(other);
-        if (!casted) return false;
-        return casted->addr == addr;
-    }
-};
-
 class BuildList : public OpCode {
 public:
     Register dst;
@@ -2188,32 +2075,6 @@ public:
         return casted->index == index && casted->iterator == iterator;
     }
 };
-
-/*
-class Name : public OpCode {
-public:
-    static const OpCodes ClassType = OpCodes::NAME;
-
-    Name() : OpCode(ClassType, "NAME") {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        assert(false && "TODO: equals")
-    }
-};
-
-class Name : public BinExprOpCode {
-public:
-    static const OpCodes ClassType = OpCodes::NAME;
-    Name(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "NAME", dst, src1, src2) {}
-    void exec(Interpreter *vm) override;
-};
-*/
 
 }
 

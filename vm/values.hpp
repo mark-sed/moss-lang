@@ -236,30 +236,6 @@ public:
     }
 };
 
-class AddrValue : public Value {
-private:
-    opcode::Address value;
-public:
-    static const TypeKind ClassType = TypeKind::ADDRESS;
-
-    AddrValue(opcode::Address value) : Value(ClassType, "<address>", BuiltIns::Address), value(value) {}
-    virtual Value *clone() {
-        return new AddrValue(this->value);
-    }
-
-    opcode::Address get_value() { return this->value; }
-
-    virtual opcode::StringConst as_string() override {
-        assert(false && "Getting address value as a string");
-        return name;
-    }
-
-    virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Addr(" << value << ")[refs: " << references << "]";
-        return os;
-    }
-};
-
 class ListValue : public Value {
 private:
     std::vector<Value *> vals;

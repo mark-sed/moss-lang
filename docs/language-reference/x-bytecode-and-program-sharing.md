@@ -70,9 +70,7 @@ xxh - LOAD_NONLOC   %dst, "name"
 xxh - STORE             %dst, %src
 xxh - STORE_NAME        %dst, "name"
 xxh - STORE_CONST       %dst, #val
-xxh - STORE_ADDR        %dst, addr
 xxh - STORE_ATTR        %src, %obj, "name"
-xxh - STORE_ADDR_ATTR   addr, %obj, "name"
 xxh - STORE_CONST_ATTR  #val, %obj, "name"
 
 xxh - STORE_INT_CONST   #dst, int
@@ -90,10 +88,8 @@ xxh - PUSH_CALL_FRAME
 xxh - POP_CALL_FRAME
 xxh - RETURN            %val
 xxh - RETURN_CONST      #val
-xxh - RETURN_ADDR       addr
 xxh - PUSH_ARG          %val
 xxh - PUSH_CONST_ARG    #val
-xxh - PUSH_ADDR_ARG     addr
 xxh - PUSH_NAMED_ARG    %val, "name"
 xxh - CREATE_FUN        %fun, "name" "arg csv" // eg: "foo" "a,b,c,d"  
 xxh - FUN_BEGIN         %fun
@@ -193,7 +189,6 @@ xxh - CHECK_CATCH   %dst, %class
 
 xxh - LIST_PUSH         %val
 xxh - LIST_PUSH_CONST   #val
-xxh - LIST_PUSH_ADDR    addr
 xxh - BUILD_LIST        %dst
 
 xxh - BUILD_DICT        %keys, %vals
@@ -236,83 +231,61 @@ these values during parsing.
 ### Function
 
 ```cpp
-fun foo(a, b:Int=3) {
+fun foo(a, b:Int=3, ...c, d=4) {
+    d"Does foo"
+}
+
+fun foo(a) {
 
 }
 
-foo(4, 5)
+foo(2, 4)
+foo(true, 2, 1, 2, 3, d=8)
+foo(false)
 ```
 
 ```
-x       STORE_NAME      %0, "foo"
-x       STORE_NAME      %0, "foo(_,Int)"
-x       STORE_ADDR      %0, <address of function start>
-x       JMP     <after function return>
-        <frame will be pushed by call and %0, %1 set>
-x       STORE_NAME      %0, "a"
-x       STORE_NAME      %1, "b"
-x       STORE_INT_CONST #0, 1
-x       STORE_CONST     %1, #0
-x       POP_CALL_FRAME  ; This overrides b value
-x       STORE_NIL_CONST #0
-x       STORE_CONST     %1,  #0
-x       RETURN  %1
+STORE_INT_CONST #0, 3
+STORE_CONST     %0, #0
+STORE_INT_CONST #1, 4
+STORE_CONST     %1, #1
 
-x       LOAD            %2, "foo"
-x       PUSH_CALL_FRAME
-x       STORE_INT_CONST #1, 4
-x       PUSH_CONST_ARG  %1
-x       STORE_INT_CONST #2, 5
-x       PUSH_CONST_ARG  %2
-x       CALL    %3, %2
-x       OUTPUT  %3
-x       END 
-```
+JMP  <after fun foo>
+; This will create FunValue %2 will store "foo"
+; all the other stuff will be parsed into this value as well
+CREATE_FUN      %2, "foo" "a,b,c,d"  
+SET_DEFAULT     %2, 1, %0
+SET_TYPE        %2, 1, "Int"
+SET_VARARG      %2, 2
+SET_DEFAULT     %2, 3, %1
+FUN_BEGIN       %2
+; Body
+POP_CALL_FRAME  %2
+STORE_CONST_NIL #2
+RETURN_CONST    #2
 
+JMP <after this fun foo>
+CREATE_FUN      %3, "foo(a)"
+FUN_BEGIN       %3
+POP_CALL_FRAME  %3
 
-```cpp
-fun foo(a: [Int, Float]) {
-    print(a)
-}
+...
+LOAD             %4, "foo" 
+PUSH_CONST_ARG   #200 ;2
+; Type will be checked on pointer/value bases
+PUSH_CONST_ARG   #1   ;4
+CALL             %5, %4
+OUTPUT           %5
 
-fun foo(a: SpecialString, b) {
-    print(a)
-    return b
-}
-
-~foo(11)
-a = foo("hi")
-```
-
-```
-0   STORE_STR_CONST #200, "hi"
-
-x   STORE_NAME  %4, "foo(Int)"
-x   ALIAS       %4, "foo(Float)"
-
-x   STORE_ADDR  %4, <address of push frame>
-x   JMP         <byte at which main (call to foo) starts>
-x   PUSH_FRAME
-x   LOAD        %1, "print"
-x   CALL        %42, %1
-x   RETURN      #105 (nil)
-
-x   STORE_NAME  %5, "foo(SpecialString,_)" ; We don't generate all children
-
-x   JMP         <byte at which main (call to foo) starts>
-x   STORE_ADDR  %5, <address of next bytecode>
-x   PUSH_FRAME
-x   LOAD        %2, "print"
-x   CALL        %42, %2
-x   RETURN      %1
-
-x   LOAD            %0, "foo"   ; Stores "fun list"[%4, %5] into %0
-x   PUSH_ARG        #11
-x   CALL            %1, %0      ; Goes through fun list and tries to match names pushed arg type names to stored names in fun list, will match to foo(Int) = %4
-x   LOAD            %2, "foo"
-x   PUSH_ARG        #200
-x   CALL            %3, %2
-x   STORE_NAME      %3, "a"     ; Global value, the name has to be stored
+LOAD             %6, "foo"
+PUSH_CONST_ARG   #201; true
+PUSH_CONST_ARG   #202 
+PUSH_CONST_ARG   #203 
+PUSH_CONST_ARG   #204
+PUSH_CONST_ARG   #205
+STORE_CONST      %7, #206
+PUSH_NAMED_ARG   %7, "d"
+CALL             %6
 ```
 
 ### Classes

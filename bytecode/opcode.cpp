@@ -96,19 +96,11 @@ void StoreConst::exec(Interpreter *vm) {
     vm->store(dst, c);
 }
 
-void StoreAddr::exec(Interpreter *vm) {
-    vm->store(dst, new AddrValue(addr));
-}
-
 void StoreAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
     auto *v = vm->load(this->src);
     v->inc_refs();
     dstobj->set_attr(this->name, v);
-}
-
-void StoreAddrAttr::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
 }
 
 void StoreConstAttr::exec(Interpreter *vm) {
@@ -361,10 +353,6 @@ void ReturnConst::exec(Interpreter *vm) {
     vm->set_bci(caller_addr);
 }
 
-void ReturnAddr::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
-}
-
 void PushArg::exec(Interpreter *vm) {
     auto v = vm->load(src);
     assert(v && "Non existent push reg");
@@ -375,10 +363,6 @@ void PushConstArg::exec(Interpreter *vm) {
     auto v = vm->load_const(csrc);
     assert(v && "Const does not exist??");
     vm->get_call_frame()->push_back(v);
-}
-
-void PushAddrArg::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
 }
 
 void PushNamedArg::exec(Interpreter *vm) {
@@ -1272,10 +1256,6 @@ void ListPush::exec(Interpreter *vm) {
 }
 
 void ListPushConst::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
-}
-
-void ListPushAddr::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 

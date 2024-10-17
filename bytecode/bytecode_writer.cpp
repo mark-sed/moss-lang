@@ -68,17 +68,8 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_register(o->csrc);
         }
-        else if (auto o = dyn_cast<opcode::StoreAddr>(op_gen)){
-            write_register(o->dst);
-            write_address(o->addr);
-        }
         else if (auto o = dyn_cast<opcode::StoreAttr>(op_gen)){
             write_register(o->src);
-            write_register(o->obj);
-            write_string(o->name);
-        }
-        else if (auto o = dyn_cast<opcode::StoreAddrAttr>(op_gen)){
-            write_address(o->addr);
             write_register(o->obj);
             write_string(o->name);
         }
@@ -141,17 +132,11 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::ReturnConst>(op_gen)){
             write_register(o->csrc);
         }
-        else if (auto o = dyn_cast<opcode::ReturnAddr>(op_gen)){
-            write_address(o->addr);
-        }
         else if (auto o = dyn_cast<opcode::PushArg>(op_gen)){
             write_register(o->src);
         }
         else if (auto o = dyn_cast<opcode::PushConstArg>(op_gen)){
             write_register(o->csrc);
-        }
-        else if (auto o = dyn_cast<opcode::PushAddrArg>(op_gen)){
-            write_address(o->addr);
         }
         else if (auto o = dyn_cast<opcode::PushNamedArg>(op_gen)){
             write_register(o->src);
@@ -258,9 +243,6 @@ void BytecodeWriter::write(Bytecode *code) {
         }
         else if (auto o = dyn_cast<opcode::ListPushConst>(op_gen)){
             write_register(o->csrc);
-        }
-        else if (auto o = dyn_cast<opcode::ListPushAddr>(op_gen)){
-            write_address(o->addr);
         }
         else if (auto o = dyn_cast<opcode::BuildList>(op_gen)){
             write_register(o->dst);

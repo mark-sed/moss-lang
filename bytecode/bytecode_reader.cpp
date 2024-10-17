@@ -115,22 +115,11 @@ Bytecode *BytecodeReader::read() {
                 auto reg2 = read_register();
                 bc->push_back(new StoreConst(reg1, reg2));
             } break;
-            case opcode::OpCodes::STORE_ADDR: {
-                auto reg = read_register();
-                auto addr = read_address();
-                bc->push_back(new StoreAddr(reg, addr));
-            } break;
             case opcode::OpCodes::STORE_ATTR: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
                 auto str = read_string();
                 bc->push_back(new StoreAttr(reg1, reg2, str));
-            } break;
-            case opcode::OpCodes::STORE_ADDR_ATTR: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                auto str = read_string();
-                bc->push_back(new StoreAddrAttr(reg1, reg2, str));
             } break;
             case opcode::OpCodes::STORE_CONST_ATTR: {
                 auto reg1 = read_register();
@@ -197,17 +186,11 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::RETURN_CONST: {
                 bc->push_back(new ReturnConst(read_register()));
             } break;
-            case opcode::OpCodes::RETURN_ADDR: {
-                bc->push_back(new ReturnAddr(read_address()));
-            } break;
             case opcode::OpCodes::PUSH_ARG: {
                 bc->push_back(new PushArg(read_register()));
             } break;
             case opcode::OpCodes::PUSH_CONST_ARG: {
                 bc->push_back(new PushConstArg(read_register()));
-            } break;
-            case opcode::OpCodes::PUSH_ADDR_ARG: {
-                bc->push_back(new PushAddrArg(read_address()));
             } break;
             case opcode::OpCodes::PUSH_NAMED_ARG: {
                 auto reg = read_register();
@@ -661,9 +644,6 @@ Bytecode *BytecodeReader::read() {
             } break;
             case opcode::OpCodes::LIST_PUSH_CONST: {
                 bc->push_back(new ListPushConst(read_register()));
-            } break;
-            case opcode::OpCodes::LIST_PUSH_ADDR: {
-                bc->push_back(new ListPushAddr(read_address()));
             } break;
             case opcode::OpCodes::BUILD_LIST: {
                 bc->push_back(new BuildList(read_register()));

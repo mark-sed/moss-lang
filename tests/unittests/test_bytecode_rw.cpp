@@ -59,9 +59,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Store(2, 0));
     bc->push_back(new opcode::StoreName(2, "some_name2"));
     bc->push_back(new opcode::StoreConst(3, 200));
-    bc->push_back(new opcode::StoreAddr(4, 42));
     bc->push_back(new opcode::StoreAttr(0, 1, "aname"));
-    bc->push_back(new opcode::StoreAddrAttr(-5, 2, "att"));
     bc->push_back(new opcode::StoreConstAttr(1, 2, "aaa"));
 
     bc->push_back(new opcode::StoreIntConst(4, 0xFFFFFFFF));
@@ -80,10 +78,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::PopCallFrame());
     bc->push_back(new opcode::Return(12));
     bc->push_back(new opcode::ReturnConst(13));
-    bc->push_back(new opcode::ReturnAddr(14));
     bc->push_back(new opcode::PushArg(11));
     bc->push_back(new opcode::PushConstArg(200));
-    bc->push_back(new opcode::PushAddrArg(50));
     bc->push_back(new opcode::PushNamedArg(5, "name12"));
 
     bc->push_back(new opcode::CreateFun(50, "foo", "a,b,c"));
@@ -179,7 +175,6 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
 
     bc->push_back(new opcode::ListPush(5));
     bc->push_back(new opcode::ListPushConst(6));
-    bc->push_back(new opcode::ListPushAddr(7));
 
     bc->push_back(new opcode::BuildList(8));
 
