@@ -146,6 +146,11 @@ function test_ifs {
 very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n" "ifs"
 }
 
+function test_whiles {
+    expect_pass "whiles.ms" "whiles"
+    expect_out_eq "done\n.done\n.....done\n,,,done\n" "whiles"
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" "fibonacci"
     expect_out_eq "1\n55\n233\n2584\n" "fibonacci"
@@ -165,6 +170,7 @@ function run_all_tests {
     run_test variables
     run_test functions
     run_test ifs
+    run_test whiles
     run_test fibonacci
     run_test factorial
 }

@@ -66,6 +66,7 @@ private:
     void emit(ir::Return *r);
     void emit(ir::Module *mod);
     void emit(ir::If *ifstmt);
+    void emit(ir::While *whstmt);
     void emit(ir::Function *fun);
     void emit(ir::IR *decl);
     void emit(std::list<ir::IR *> block);
@@ -74,7 +75,7 @@ private:
 
     inline void append(opcode::OpCode *opc) { code->push_back(opc); }
 
-    inline opcode::Address get_curr_address() { return code->size()-1; }
+    inline opcode::Address get_curr_address() { return (code->empty() ? 0 : code->size()-1); }
 
     inline opcode::Register next_creg() { return this->curr_creg++; }
     inline opcode::Register next_reg() { return this->curr_reg++; }

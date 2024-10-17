@@ -40,6 +40,8 @@ public:
         code.push_back(op);
     }
 
+    bool empty() { return code.empty(); }
+
 #ifndef NDEBUG
     void push_comment(ustring comm) { comments[code.size()-1] = comm; }
 #endif

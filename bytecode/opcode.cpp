@@ -17,10 +17,6 @@ std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
     return ss.str();
 }
 
-inline ustring as_string(Value *v, Register src, Interpreter *vm) {
-    return v->as_string();
-}
-
 /*
 When loading unknown value it will be nil, so it cannot be nullptr
 void OpCode::check_load(Value *v, Interpreter *vm) {
@@ -482,15 +478,15 @@ void Output::exec(Interpreter *vm) {
     auto *v = vm->load(src);
     assert(v && "Cannot load src");
 
-    std::cout << as_string(v, src, vm);
+    std::cout << v->as_string();
 }
 
 static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpreter *vm) {
     assert(s1 && "Value or nil should have been loaded");
     assert(s2 && "Value or nil should have been loaded");
 
-    ustring s1_str = as_string(s1, src1, vm);
-    ustring s2_str = as_string(s2, src2, vm);
+    ustring s1_str = s1->as_string();
+    ustring s2_str = s2->as_string();
 
     return new StringValue(s1_str + s2_str);
 }
