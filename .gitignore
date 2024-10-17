@@ -33,6 +33,7 @@
 
 # Build
 build/
+rel_build/
 docs/html
 examples/
 .vscode/

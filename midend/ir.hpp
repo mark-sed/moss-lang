@@ -389,20 +389,23 @@ public:
 class If : public Construct {
 private:
     Expression *cond;
-    Else *elseBranch;
+    Else *else_branch;
 
 public:
     static const IRType ClassType = IRType::IF;
 
-    If(Expression *cond, std::list<IR *> ifbody, Else *elseBranch=nullptr) 
-           : Construct(ClassType, "if"), cond(cond), elseBranch(elseBranch) {
+    If(Expression *cond, std::list<IR *> ifbody, Else *else_branch=nullptr) 
+           : Construct(ClassType, "if"), cond(cond), else_branch(else_branch) {
         this->body = ifbody;
     }
     ~If() {
         delete cond;
-        if (elseBranch)
-            delete elseBranch;
+        if (else_branch)
+            delete else_branch;
     }
+
+    Expression *get_cond() { return this->cond; }
+    Else *get_else() { return this->else_branch; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "if (" << *cond << ") {\n";
@@ -410,8 +413,8 @@ public:
             os << *d << "\n";
         }
         os << "}";
-        if (elseBranch) {
-            os << *elseBranch;
+        if (else_branch) {
+            os << *else_branch;
         }
         return os;
     }

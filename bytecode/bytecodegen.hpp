@@ -65,8 +65,10 @@ private:
     void emit(ir::Raise *r);
     void emit(ir::Return *r);
     void emit(ir::Module *mod);
+    void emit(ir::If *ifstmt);
     void emit(ir::Function *fun);
     void emit(ir::IR *decl);
+    void emit(std::list<ir::IR *> block);
 
     void output(RegValue *val);
 

@@ -579,10 +579,27 @@ void BytecodeGen::emit(ir::Return *r) {
         append(new opcode::Return(free_reg(ex)));
 }
 
-void BytecodeGen::emit(ir::Module *mod) {
-    for (auto decl : mod->get_body()) {
-        emit(decl);
+void BytecodeGen::emit(ir::If *ifstmt) {
+    auto cond = emit(ifstmt->get_cond(), true);
+    auto jmp_false = new JmpIfFalse(free_reg(cond), 0);
+    append(jmp_false);
+    emit(ifstmt->get_body());
+    auto else_stmt = ifstmt->get_else();
+    if (else_stmt) {
+        auto jmp_done = new Jmp(0);
+        // In case of else we have to jump after true jmp
+        append(jmp_done);
+        jmp_false->addr = get_curr_address() + 1;
+        emit(else_stmt->get_body());
+        jmp_done->addr = get_curr_address() + 1;
     }
+    else {
+        jmp_false->addr = get_curr_address() + 1;
+    }
+}
+
+void BytecodeGen::emit(ir::Module *mod) {
+    emit(mod->get_body());
 }
 
 void BytecodeGen::emit(ir::Function *fun) {
@@ -626,9 +643,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     auto pre_function_creg = curr_creg;
     reset_regs(fun->get_args().size());
     // Generate function body
-    for (auto decl : fun->get_body()) {
-        emit(decl);
-    }
+    emit(fun->get_body());
     // TODO: Generate return in function IR body if needed, not here
     append(new StoreNilConst(next_creg()));
     append(new StoreConst(next_reg(), val_last_creg()));
@@ -655,12 +670,21 @@ void BytecodeGen::emit(ir::IR *decl) {
     else if (auto f = dyn_cast<ir::Function>(decl)) {
         emit(f);
     }
+    else if (auto i = dyn_cast<ir::If>(decl)) {
+        emit(i);
+    }
     else if (isa<EndOfFile>(decl)) {
         append(new End());
     }
     else {
         LOGMAX("Unimplemented IR generation for: " << *decl);
         assert(false && "Unimplemented IR generation");
+    }
+}
+
+void BytecodeGen::emit(std::list<ir::IR *> block) {
+    for (auto i: block) {
+        emit(i);
     }
 }
 

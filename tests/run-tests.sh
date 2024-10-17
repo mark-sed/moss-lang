@@ -140,6 +140,22 @@ function test_functions {
 1\n0\n0\n42\nhello from greet\n" "functions"
 }
 
+function test_ifs {
+    expect_pass "ifs.ms" "ifs"
+    expect_out_eq "0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
+very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n" "ifs"
+}
+
+function test_fibonacci {
+    expect_pass "fibonacci.ms" "fibonacci"
+    expect_out_eq "1\n55\n233\n2584\n" "fibonacci"
+}
+
+function test_factorial {
+    expect_pass "factorial.ms" "factorial"
+    expect_out_eq "2432902008176640000" "factorial"
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -148,6 +164,9 @@ function run_all_tests {
     run_test expressions
     run_test variables
     run_test functions
+    run_test ifs
+    run_test fibonacci
+    run_test factorial
 }
 
 # Count all functions starting with test_ 
