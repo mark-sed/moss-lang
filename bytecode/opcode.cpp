@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+#include <cassert>
 
 #include <iostream>
 
@@ -17,9 +18,6 @@ std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
 }
 
 inline ustring as_string(Value *v, Register src, Interpreter *vm) {
-    if (auto addr = dyn_cast<AddrValue>(v)) {
-        return "<function " + vm->get_reg_pure_name(src) + ">";
-    }
     return v->as_string();
 }
 
@@ -47,7 +45,7 @@ static bool is_int_expr(Value *v1, Value *v2) {
 }
 
 static bool is_primitive_type(Value *v) {
-    return v->get_kind() != TypeKind::USER_DEF;
+    return v->get_kind() <= TypeKind::FUN;
 }
 
 void End::exec(Interpreter *vm) {
@@ -55,14 +53,11 @@ void End::exec(Interpreter *vm) {
 }
 
 void Load::exec(Interpreter *vm) {
-    auto vr = vm->load_name_reg(this->name);
-    auto v = vr.first;
-    auto reg = vr.second;
+    auto v = vm->load_name(this->name);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     v->inc_refs();
     vm->store(this->dst, v);
-    vm->copy_names(reg, dst);
 }
 
 void LoadAttr::exec(Interpreter *vm) {
@@ -171,59 +166,155 @@ void JmpIfFalse::exec(Interpreter *vm) {
         vm->set_bci(this->addr);
 }
 
-void Call::exec(Interpreter *vm) {
-    vm->get_call_frame()->set_return_reg(dst);
-    vm->get_call_frame()->set_caller_addr(vm->get_bci()+1);
-    auto fun_names = vm->get_reg_names(src);
-    assert(!fun_names.empty() && "TODO: Raise such function does not exists");
-    // First one is the pure name
-    auto fun_name = fun_names[0];
-    // Lets check if there is a varargs function
-    int varargs_cutoff = -1;
-    for (auto f: fun_names) {
-        if (f.find('.') != std::string::npos) {
-            // number of commas + 1 = num args
-            // We need to allow generation of names only with n-1 args and then
-            // append `...`
-            varargs_cutoff = std::count_if(f.begin(), f.end(), [](char c){return c ==',';});
-            // There can be only 1 varargs function
-            break;
-        }
-    }
-    fun_name += "(";
-    bool first = true;
-    // Encode function
-    int index = 0;
-    for (auto a: vm->get_call_frame()->get_args()) {
-        if (index == varargs_cutoff) {
-            if (first)
-                fun_name += "...";
-            else
-                fun_name += ",...";
-            break;
-        }
-        if (first) {
-            fun_name += a->get_name();
-            first = false;
+// TODO: Return reason why it cannot be called
+static bool can_call(FunValue *f, CallFrame *cf) {
+    LOGMAX("Checking if can call " << *f);
+    const auto &og_call_args = cf->get_args();
+    const auto fun_args = f->get_args();
+
+    std::vector<CallFrameArg> call_args;
+    call_args.assign(og_call_args.begin(), og_call_args.end());
+
+    bool named_args = false;
+    for (unsigned i = 0; i < call_args.size(); ++i) {
+        CallFrameArg &arg = call_args[i];
+        if (named_args || !arg.name.empty()) {
+            // Argument with name specified (e.g. a=3)
+            assert(!arg.name.empty() && "Non-named arg after a named one");
+            bool matched = false;
+            for (unsigned j = 0; j < fun_args.size(); ++j) {
+                if (fun_args[j]->name == arg.name) {
+                    // Check that also type matches
+                    matched = fun_args[j]->types.empty();
+                    for (auto type: fun_args[j]->types) {
+                        if (type == arg.value->get_type()) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    arg.dst = j;
+                    break;
+                }
+            }
+            if (!matched)
+                return false;
+            // Once first named argument is encountered then all have to be named
+            named_args = true;
         }
         else {
-            fun_name += "," + a->get_name();
+            // Unnamed arg
+            auto fa = fun_args[i];
+            if (fa->vararg) {
+                std::vector<Value *> vararg_vals;
+                // Eat all arguments that is possible
+                unsigned j = i;
+                for (; j < call_args.size(); ++j) {
+                    CallFrameArg &varg = call_args[j];
+                    if (varg.name.empty()) {
+                        vararg_vals.push_back(varg.value);
+                    }
+                }
+                LOGMAX("Setting call argument " << i << " to " << j << " as vararg list");
+                // Erase arguments since they will be 1 list
+                call_args.erase(call_args.begin() + i, call_args.begin() + j);
+                call_args.insert(call_args.begin() + i, CallFrameArg(fa->name, new ListValue(vararg_vals), i));
+            }
+            else {
+                // No types always matches otherwise it will be false and set in for
+                bool matched = fa->types.empty();
+                for (auto type: fa->types) {
+                    if (type == arg.value->get_type()) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched)
+                    return false;
+                arg.dst = i;
+                arg.name = fa->name;
+            }
         }
-        index++;
     }
-    fun_name += ")";
-    // Load address of encoded function
-    auto fun_val = vm->load_name(fun_name);
-    if (!fun_val) {
-        // TODO: Handle inheritance
-        assert(false && "TODO: Raise function not found");
+
+    // Find not set values and set them in call
+    // We have to go through all the fun_args, because there might be a case
+    // where some value in the middle is left our by dirrect assignment
+    // E.g.:
+    //      fun foo(a=1, b=2, c=3) {}
+    //      foo(c=0, a=2)
+    //
+    if (fun_args.size() > call_args.size()) {
+        LOGMAX("Call args are missing some values set -- try setting defaults");
+        for (unsigned i = 0; i < fun_args.size(); ++i) {
+            auto fa = fun_args[i];
+            LOGMAX("Analyzing arg " << fa->name);
+            bool found = false;
+            for (auto &ca: call_args) {
+                if (ca.name == fa->name) {
+                    found = true;
+                    break;
+                }
+            }
+            // If not found then set it if it has default value or is vararg
+            if (!found) {
+                if (fa->vararg) {
+                    LOGMAX("Setting empty list for vararg argument " << fa->name << " %" << i);
+                    call_args.push_back(CallFrameArg(fa->name, new ListValue(), i));
+                }
+                else if (fa->default_value) {
+                    LOGMAX("Setting default value for argument " << fa->name << " %" << i << " as " << *fa->default_value);
+                    call_args.push_back(CallFrameArg(fa->name, fa->default_value->clone(), i));
+                }
+                else {
+                    LOGMAX("Argument does not have a default value and is not set: " << fa->name);
+                    return false;
+                }
+            }
+        }
     }
-    auto fun_addr = dyn_cast<AddrValue>(fun_val);
-    if (!fun_addr) {
-        assert(false && "TODO: Raise cannot be called");
+
+    // The function can be called only if call arguments are 1:1 to function args
+    if (call_args.size() == fun_args.size()) {
+        cf->set_args(call_args);
+        LOGMAX("Call frame set -- function callable: " << *f << " with:\n" << *cf);
+        return true;
     }
+    return false;
+}
+
+void Call::exec(Interpreter *vm) {
+    auto cf = vm->get_call_frame();
+    cf->set_return_reg(dst);
+    cf->set_caller_addr(vm->get_bci()+1);
+
+    auto *funV = vm->load(src);
+    assert(funV && "TODO: Raise function not found");
+
+    FunValue *fun = dyn_cast<FunValue>(funV);
+    if (!fun) {
+        auto fvl = dyn_cast<FunValueList>(funV);
+        if (!fvl) {
+            assert(false && "TODO: Raise value not callable");
+        }
+        // Walk functions and check if it can be called
+        for (auto f: fvl->get_funs()) {
+            if (can_call(f, cf)) {
+                fun = f;
+                break;
+            }
+        }
+        if (!fun) {
+            assert(false && "TODO: Raise incorrect function call");
+        }
+    }
+    else {
+        if (!can_call(fun, cf)) {
+            assert(false && "TODO: Raise incorrect function call");
+        }
+    }
+
     vm->push_frame();
-    vm->set_bci(fun_addr->get_value());
+    vm->set_bci(fun->get_body_addr());
 }
 
 void PushFrame::exec(Interpreter *vm) {
@@ -241,10 +332,10 @@ void PushCallFrame::exec(Interpreter *vm) {
 void PopCallFrame::exec(Interpreter *vm) {
     // This pops values from call frame into current frame
     // The acutal call frame is removed in return (when return value is set)
-    Register r_i = 0;
-    for (auto v: vm->get_call_frame()->get_args()) {
-        vm->store(r_i, v);
-        ++r_i;
+    for (auto a: vm->get_call_frame()->get_args()) {
+        vm->store(a.dst, a.value);
+        assert(!a.name.empty() && "argument name in call frame was not set");
+        vm->store_name(a.dst, a.name);
     }
 }
 
@@ -260,7 +351,14 @@ void Return::exec(Interpreter *vm) {
 }
 
 void ReturnConst::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto return_reg = vm->get_call_frame()->get_return_reg();
+    auto caller_addr = vm->get_call_frame()->get_caller_addr();
+    auto ret_v = vm->load_const(csrc);
+    vm->pop_call_frame();
+    vm->pop_frame();
+    assert(ret_v && "Return register does not contain any value??");
+    vm->store(return_reg, ret_v);
+    vm->set_bci(caller_addr);
 }
 
 void ReturnAddr::exec(Interpreter *vm) {
@@ -284,7 +382,75 @@ void PushAddrArg::exec(Interpreter *vm) {
 }
 
 void PushNamedArg::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load(src);
+    assert(v && "Const does not exist??");
+    vm->get_call_frame()->push_back(name, v);
+}
+
+void CreateFun::exec(Interpreter *vm) {
+    FunValue *funval = new FunValue(name, arg_names);
+    auto f = vm->load_name(name);
+    if (f && (isa<FunValue>(f) || isa<FunValueList>(f))) {
+        if (auto fv = dyn_cast<FunValue>(f)) {
+            vm->store(this->fun, new FunValueList(std::vector<FunValue *>{fv, funval}));
+            vm->store_name(this->fun, name);
+        }
+        else {
+            vm->store(this->fun, funval);
+            auto fvl = dyn_cast<FunValueList>(f);
+            fvl->push_back(funval);
+        }
+    }
+    else {
+        vm->store(this->fun, funval);
+        vm->store_name(this->fun, name);
+    }
+}
+
+static FunValue *load_last_fun(Register fun, Interpreter *vm) {
+    auto v = vm->load(fun);
+    assert(v && "Fun not bound?");
+    auto fv = dyn_cast<FunValue>(v);
+    if (fv)
+        return fv;
+    auto fvl = dyn_cast<FunValueList>(v);
+    assert(fvl && "FunBegin bound to non-function value");
+    fv = fvl->back();
+    assert(fv && "nullptr returned from funvaluelist");
+    return fv;
+}
+
+void FunBegin::exec(Interpreter *vm) {
+    auto fv = load_last_fun(fun, vm);
+    // Set address to the opcode after jump which is after this
+    fv->set_body_addr(vm->get_bci()+2);
+}
+
+void SetDefault::exec(Interpreter *vm) {
+    auto fv = load_last_fun(fun, vm);
+    auto defv = vm->load(src);
+    assert(defv && "Value does not exist anymore?");
+    fv->set_default(index, defv);
+}
+
+void SetDefaultConst::exec(Interpreter *vm) {
+    auto fv = load_last_fun(fun, vm);
+    auto defv = vm->load_const(csrc);
+    assert(defv && "Value does not exist anymore?");
+    fv->set_default(index, defv);
+}
+
+void SetType::exec(Interpreter *vm) {
+    auto fv = load_last_fun(fun, vm);
+    auto type = vm->load_name(name);
+    assert(type && "TODO: Raise unknown name exception for type");
+    // TODO: Check that type is really a type
+    fv->set_type(index, type);
+}
+
+void SetVararg::exec(Interpreter *vm) {
+    auto fv = load_last_fun(fun, vm);
+    fv->set_vararg(index);
 }
 
 void Import::exec(Interpreter *vm) {

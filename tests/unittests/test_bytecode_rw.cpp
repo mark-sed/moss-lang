@@ -85,7 +85,14 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::PushConstArg(200));
     bc->push_back(new opcode::PushAddrArg(50));
     bc->push_back(new opcode::PushNamedArg(5, "name12"));
-    
+
+    bc->push_back(new opcode::CreateFun(50, "foo", "a,b,c"));
+    bc->push_back(new opcode::FunBegin(50));
+    bc->push_back(new opcode::SetDefault(50, 0, 2));
+    bc->push_back(new opcode::SetDefaultConst(50, 1, 3));
+    bc->push_back(new opcode::SetType(50, 0, "Bool"));
+    bc->push_back(new opcode::SetVararg(50, 2));
+
     bc->push_back(new opcode::Import(18, "module1"));
     bc->push_back(new opcode::ImportAll("modules"));
 
@@ -206,7 +213,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     BytecodeReader *bcreader = new BytecodeReader(bf);
     Bytecode *bc_read = bcreader->read();
 
-    EXPECT_EQ(bc->size(), static_cast<unsigned>(opcode::OpCodes::OPCODES_AMOUNT)) << "Not all opcodes are being tested";
+    ASSERT_EQ(bc->size(), static_cast<unsigned>(opcode::OpCodes::OPCODES_AMOUNT)) << "Not all opcodes are being tested";
     ASSERT_EQ(bc->size(), bc_read->size());
     for (unsigned int i = 0; i < bc->size(); ++i) {
         EXPECT_TRUE(*bc->get_code()[i] == *bc_read->get_code()[i]) << "Written: \'" << *(bc->get_code()[i]) << "'\n   Read: '" << *(bc_read->get_code()[i]) << "'";

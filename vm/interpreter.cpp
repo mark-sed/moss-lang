@@ -1,5 +1,6 @@
 #include "interpreter.hpp"
 #include "logging.hpp"
+#include "values.hpp"
 
 using namespace moss;
 
@@ -7,6 +8,7 @@ Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(
     this->const_pool = new MemoryPool();
     // Global frame
     this->frames.push_back(new MemoryPool());
+    init_global_frame();
 }
 
 Interpreter::~Interpreter() {
@@ -15,6 +17,28 @@ Interpreter::~Interpreter() {
         delete p;
     }
     // Code is to be deleted by the creator of it
+}
+
+static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, MemoryPool *gf) {
+    gf->store(reg, v);
+    gf->store_name(reg, name);
+}
+
+void Interpreter::init_global_frame() {
+    auto gf = get_global_frame();
+
+    opcode::Register reg = 0;
+    store_glob_val(reg++, "Type", BuiltIns::Type, gf);
+    store_glob_val(reg++, "Int", BuiltIns::Int, gf);
+    store_glob_val(reg++, "Float", BuiltIns::Float, gf);
+    store_glob_val(reg++, "Bool", BuiltIns::Bool, gf);
+    store_glob_val(reg++, "NilType", BuiltIns::NilType, gf);
+    store_glob_val(reg++, "String", BuiltIns::String, gf);
+    store_glob_val(reg++, "Address", BuiltIns::Address, gf);
+    store_glob_val(reg++, "Function", BuiltIns::Function, gf);
+    store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
+
+    assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }
 
 /*std::ostream& Interpreter::debug_pool(std::ostream &os) const {
@@ -70,7 +94,7 @@ Value *Interpreter::load_global_name(ustring name) {
     return get_global_frame()->load_name(name);
 }
 
-ustring Interpreter::get_reg_pure_name(opcode::Register reg) {
+/*ustring Interpreter::get_reg_pure_name(opcode::Register reg) {
     return get_local_frame()->get_reg_pure_name(reg);
 }
 
@@ -86,7 +110,7 @@ std::pair<Value *, opcode::Register> Interpreter::load_name_reg(ustring name) {
 void Interpreter::copy_names(opcode::Register from, opcode::Register to) {
     // TODO: Walk frames??
     return get_local_frame()->copy_names(from, to);
-}
+}*/
 
 void Interpreter::push_frame() {
     this->frames.push_back(new MemoryPool());

@@ -30,6 +30,7 @@ private:
     void write_register(opcode::Register reg);
     void write_address(opcode::Address addr);
     void write_string(opcode::StringConst val);
+    void write_int(opcode::IntConst v);
 public:
     BytecodeWriter(BytecodeFile &file) : file(file) {
         this->stream = file.create_out_stream();

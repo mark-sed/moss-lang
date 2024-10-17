@@ -25,25 +25,71 @@ class MemoryPool;
 class Bytecode;
 
 /**
+ * Structure that holds information about argument in a function call
+ */
+struct CallFrameArg {
+    ustring name;
+    Value *value;
+    opcode::Register dst;
+
+    CallFrameArg(ustring name, Value *value, opcode::Register dst)
+                : name(name), value(value), dst(dst) {}
+    CallFrameArg(ustring name, Value *value) : name(name), value(value), dst(0) {}
+    CallFrameArg(Value *value) : name(""), value(value), dst(0) {}
+
+    std::ostream& debug(std::ostream& os) const {
+        os << "\"" << name << "\": " << *value << " dst = %" << dst;
+        return os;
+    }
+};
+
+inline std::ostream& operator<< (std::ostream& os, CallFrameArg &cf) {
+    return cf.debug(os);
+}
+
+/**
  * Frame that holds all call related information
  * The arguments, return register and argument type (const, addr, val)
  */
 class CallFrame {
 private:
-    std::vector<Value *> args;
+    std::vector<CallFrameArg> args;
     opcode::Register return_reg;
     opcode::Address caller_addr;
 public:
     CallFrame() : return_reg(0) {}
 
-    void push_back(Value *v) { args.push_back(v); }
+    void push_back(Value *v) { args.push_back(CallFrameArg(v)); }
+    void push_back(ustring name, Value *v) { args.push_back(CallFrameArg(name, v)); }
+    void push_back(ustring name, Value *v, opcode::Register dst) {
+        args.push_back(CallFrameArg(name, v, dst)); 
+    }
     void set_return_reg(opcode::Register r) { this->return_reg = r; }
     void set_caller_addr(opcode::Address addr) { this->caller_addr = addr; }
-    
-    std::vector<Value *> get_args() { return this->args; }
+    void set_args(std::vector<CallFrameArg> args) { this->args = args; }
+
+    std::vector<CallFrameArg> &get_args() { return this->args; }
     opcode::Register get_return_reg() { return this->return_reg; }
     opcode::Address get_caller_addr() { return this->caller_addr; }
+
+    std::ostream& debug(std::ostream& os) const {
+        os << "CallFrame:\n"
+           << "\treturn_reg: " << return_reg << "\n"
+           << "\tcaller_addr: " << caller_addr << "\n"
+           << "\targs:\n";
+        unsigned index = 0;
+        for(auto a: args) {
+            os << "\t\t" << index << ": " << a << "\n";
+            ++index;
+        }
+           
+        return os;
+    }
 };
+
+inline std::ostream& operator<< (std::ostream& os, CallFrame &cf) {
+    return cf.debug(os);
+}
 
 /**
  * @brief Interpreter for moss bytecode
@@ -54,8 +100,8 @@ private:
     Bytecode *code;
     File *src_file;
     MemoryPool *const_pool;
-    std::list<MemoryPool *> frames;
-    std::list<CallFrame *> call_frames;
+    std::list<MemoryPool *> frames; ///< Frame stack
+    std::list<CallFrame *> call_frames; ///< Call frame stack
 
     opcode::Address bci;
 
@@ -66,6 +112,8 @@ private:
     MemoryPool *get_const_pool() { return this->const_pool; }
     MemoryPool *get_local_frame() { return this->frames.back(); }
     MemoryPool *get_global_frame() { return this->frames.front(); }
+
+    void init_global_frame();
 public:
     Interpreter(Bytecode *code, File *src_file=nullptr);
     ~Interpreter();
@@ -102,36 +150,50 @@ public:
      */
     Value *load_global_name(ustring name);
 
-    std::vector<ustring> get_reg_names(opcode::Register reg);
-    ustring get_reg_pure_name(opcode::Register reg);
-    std::pair<Value *, opcode::Register> load_name_reg(ustring name); 
-    void copy_names(opcode::Register from, opcode::Register to);
-
+    /**
+     * Pushes a new frame (memory pool) into a frame stack
+     */
     void push_frame();
+    /**
+     * Pops a frame (memory pool) from a frame stack
+     */
     void pop_frame();
 
+    /**
+     * Returns top call frame
+     */
     CallFrame *get_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame was pushed");
         return this->call_frames.back();
     }
 
+    /**
+     * Pushes a new empty call frame into call frame stack
+     */
     void push_call_frame() { call_frames.push_back(new CallFrame()); }
+    /**
+     * Pops top (most recent) frame from call frame stack
+     */
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
         call_frames.pop_back(); 
     }
 
+    /** @return Interpreter exit code */
     int get_exit_code() { return exit_code; }
 
-    std::ostream& debug(std::ostream& os) const;
 
+    /** @return Current bytecode index */
     opcode::Address get_bci() { return this->bci; }
+    /** Sets current bytecode index to passed in value */
     void set_bci(opcode::Address v) { 
         this->bci = v;
         this->bci_modified = true; 
     }
 
     File *get_src_file() { return this->src_file; }
+    
+    std::ostream& debug(std::ostream& os) const;
 };
 
 inline std::ostream& operator<< (std::ostream& os, Interpreter &i) {

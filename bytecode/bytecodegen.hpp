@@ -83,9 +83,9 @@ private:
     inline opcode::Register val_last_creg() { return this->curr_creg-1; }
     inline opcode::Register val_last_reg() { return this->curr_reg-1; }
 
-    void reset_regs() {
-        curr_reg = 0;
-        curr_creg = 0;
+    void reset_regs(opcode::Register cr=0, opcode::Register ccr=0) {
+        curr_reg = cr;
+        curr_creg = ccr;
     }
 
     inline RegValue *get_ncreg(RegValue *val) {
@@ -105,7 +105,7 @@ private:
         return regval;
     }
 public:
-    BytecodeGen(Bytecode *code) : code(code), curr_creg(0), curr_reg(0) {
+    BytecodeGen(Bytecode *code) : code(code), curr_creg(BC_RESERVED_CREGS), curr_reg(BC_RESERVED_REGS) {
         assert(code && "Generator requires a non-null Bytecode");
     }
     ~BytecodeGen() {

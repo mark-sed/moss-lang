@@ -512,6 +512,10 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new StoreNilConst(next_creg()));
         bcv = last_creg();
     }
+    else if (auto val = dyn_cast<List>(expr)) {
+        assert("TODO: list generation");
+        // List might be a comprehension
+    }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);
     }
@@ -528,19 +532,30 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new PushCallFrame());
         auto fun = emit(val->get_fun());
         for (auto a: val->get_args()) {
-            auto a_val = emit(a);
-            if (a_val->is_const()) {
-                append(new PushConstArg(free_reg(a_val)));
+            RegValue *a_val = nullptr;
+            auto be = dyn_cast<BinaryExpr>(a);
+            if (be && be->get_op().get_kind() == OperatorKind::OP_SET) {
+                // Named arg
+                a_val = emit(be->get_right(), true);
+                ustring name = be->get_left()->get_name();
+                append(new PushNamedArg(free_reg(a_val), name));
             }
             else {
-                // TODO: PushAddrArg for address value
-                append(new PushArg(free_reg(a_val)));
+                a_val = emit(a);
+                if (a_val->is_const()) {
+                    append(new PushConstArg(free_reg(a_val)));
+                }
+                else {
+                    // TODO: PushAddrArg for address value
+                    append(new PushArg(free_reg(a_val)));
+                }
             }
         }
         append(new opcode::Call(next_reg(), free_reg(fun)));
         bcv = last_reg();
     }
     else {
+        LOGMAX("MISSING EXPR ENUM: " << static_cast<int>(expr->get_type()));
         assert(false && "Missing Expression generation");
         return nullptr;
     }
@@ -574,46 +589,44 @@ void BytecodeGen::emit(ir::Module *mod) {
 
 void BytecodeGen::emit(ir::Function *fun) {
     auto fun_reg = next_reg();
-    auto names = ir::encode_fun(fun);
-    assert(!names.empty() && "No names generated for a function");
+    auto arg_names = ir::encode_fun_args(fun->get_args());
     // Store the name without arguments
-    append(new StoreName(fun_reg, fun->get_name()));
-    // Assign names to the function
-    for (auto n: names) {
-        append(new StoreName(fun_reg, n));
+    append(new CreateFun(fun_reg, fun->get_name(), arg_names));
+    comment("fun "+fun->get_name()+"(" + arg_names + ") declaration");
+    // Set argument default values and types
+    opcode::IntConst arg_i = 0;
+    for (auto a: fun->get_args()) {
+        if (a->is_vararg()) {
+            append(new SetVararg(fun_reg, arg_i));
+        }
+        else {
+            if (a->has_default_value()) {
+                auto def_val = emit(a->get_default_value());
+                if (def_val->is_const()) {
+                    append(new SetDefaultConst(fun_reg, arg_i, free_reg(def_val)));
+                }
+                else {
+                    append(new SetDefault(fun_reg, arg_i, free_reg(def_val)));
+                }
+            }
+            for (auto t: a->get_types()) {
+                append(new SetType(fun_reg, arg_i, t->get_name()));    
+            }
+        }
+        ++arg_i;
     }
-    // Store into the function register the address of body opcode
-    // The curr_address is store name, next is store addr (+1), then
-    // jmp (+2) and after that body (+3)
-    append(new StoreAddr(fun_reg, get_curr_address()+3));
+    append(new FunBegin(fun_reg));
     // Place jump which will be later on modified to contain the actual
     // function end - this skips beyond the function body
     auto fn_end_jmp = new Jmp(0);
     append(fn_end_jmp);
-    comment("fun "+names[0]+" body start");
+    comment("fun "+fun->get_name()+"(" + arg_names + ") body start");
+    append(new PopCallFrame());
     // Registers need to be reset, store them and restore after whole
     // function is generated
     auto pre_function_reg = curr_reg;
     auto pre_function_creg = curr_creg;
-    reset_regs();
-    // Store names for arguments (these will be set by the caller)
-    for (auto a: fun->get_args()) {
-        append(new StoreName(next_reg(), a->get_name()));
-    }
-    // Set argument default values, this has to be done after naming so
-    // that temp registers don't take index of arguments
-    opcode::Register reg_i = 0;
-    for (auto a: fun->get_args()) {
-        if (a->has_default_value()) {
-            auto def_val = emit(a->get_default_value());
-            if (def_val->is_const())
-                append(new StoreConst(reg_i, free_reg(def_val)));
-            else
-                append(new Store(reg_i, free_reg(def_val)));
-        }
-        ++reg_i;
-    }
-    append(new PopCallFrame());
+    reset_regs(fun->get_args().size());
     // Generate function body
     for (auto decl : fun->get_body()) {
         emit(decl);

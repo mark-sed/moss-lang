@@ -11,12 +11,15 @@
 #define _VALUES_HPP_
 
 #include "os_interface.hpp"
+#include "utils.hpp"
 #include <cstdint>
 #include <map>
+#include <sstream>
 
 namespace moss {
 
 enum class TypeKind {
+    // Primitive types
     INT,
     FLOAT,
     BOOL,
@@ -25,7 +28,11 @@ enum class TypeKind {
     LIST,
     DICT,
     ADDRESS,
-    USER_DEF
+    FUN,    // Used as a stopper for primitive types in opcode
+    // Non-primitive types
+    FUN_LIST,
+    OBJECT,
+    CLASS
 };
 
 
@@ -35,11 +42,12 @@ protected:
     int references;
     
     TypeKind kind;
+    Value *type;
     ustring name;
     
     std::map<ustring, Value *> attrs;
 
-    Value(TypeKind kind, ustring name) : references(1), kind(kind), name(name), attrs() {}
+    Value(TypeKind kind, ustring name, Value *type) : references(1), kind(kind), type(type), name(name), attrs() {}
 public:
     virtual Value *clone() = 0;
     virtual ~Value() {
@@ -56,6 +64,7 @@ public:
     }
 
     TypeKind get_kind() { return this->kind; }
+    Value *get_type() { return this->type; }
     ustring get_name() { return this->name; }
 
     virtual std::ostream& debug(std::ostream& os) const {
@@ -86,6 +95,24 @@ inline std::ostream& operator<< (std::ostream& os, Value &v) {
     return v.debug(os);
 }
 
+/**
+ * This namespace contains values (pointers) for all the built-in types
+ * 
+ * NOTE: When adding a new value also add it to Interpreter::init_global_frame
+ */
+namespace BuiltIns {
+    extern Value *Type;// = new ClassValue("Type");
+    extern Value *Int;// = new ClassValue("Int");
+    extern Value *Float;// = new ClassValue("Float");
+    extern Value *Bool;// = new ClassValue("Bool");
+    extern Value *NilType;// = new ClassValue("NilType");
+    extern Value *String;// = new ClassValue("String");
+    extern Value *List;
+    extern Value *Address;// = new ClassValue("Address");
+    extern Value *Function;// = new ClassValue("Function");
+    extern Value *FunctionList;// = new ClassValue("FunctionList");
+}
+
 /** Moss integer value */
 class IntValue : public Value {
 private:
@@ -93,7 +120,7 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::INT;
 
-    IntValue(opcode::IntConst value) : Value(ClassType, "Int"), value(value) {}
+    IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::Int), value(value) {}
     virtual Value *clone() {
         return new IntValue(this->value);
     }
@@ -121,7 +148,7 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::FLOAT;
 
-    FloatValue(opcode::FloatConst value) : Value(ClassType, "Float"), value(value) {}
+    FloatValue(opcode::FloatConst value) : Value(ClassType, "Float", BuiltIns::Float), value(value) {}
     virtual Value *clone() {
         return new FloatValue(this->value);
     }
@@ -148,7 +175,7 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::BOOL;
 
-    BoolValue(opcode::BoolConst value) : Value(ClassType, "Bool"), value(value) {}
+    BoolValue(opcode::BoolConst value) : Value(ClassType, "Bool", BuiltIns::Bool), value(value) {}
     virtual Value *clone() {
         return new BoolValue(this->value);
     }
@@ -172,7 +199,7 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::STRING;
 
-    StringValue(opcode::StringConst value) : Value(ClassType, "String"), value(value) {}
+    StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {}
     virtual Value *clone() {
         return new StringValue(this->value);
     }
@@ -194,7 +221,7 @@ class NilValue : public Value {
 public:
     static const TypeKind ClassType = TypeKind::NIL;
 
-    NilValue() : Value(ClassType, "Nil") {}
+    NilValue() : Value(ClassType, "Nil", BuiltIns::NilType) {}
     virtual Value *clone() {
         return new NilValue();
     }
@@ -215,7 +242,7 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::ADDRESS;
 
-    AddrValue(opcode::Address value) : Value(ClassType, "<address>"), value(value) {}
+    AddrValue(opcode::Address value) : Value(ClassType, "<address>", BuiltIns::Address), value(value) {}
     virtual Value *clone() {
         return new AddrValue(this->value);
     }
@@ -229,6 +256,183 @@ public:
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Addr(" << value << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class ListValue : public Value {
+private:
+    std::vector<Value *> vals;
+public:
+    static const TypeKind ClassType = TypeKind::LIST;
+
+    ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals) {}
+    ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {}
+
+    virtual Value *clone() {
+        return new ListValue(this->vals);
+    }
+
+    std::vector<Value *> get_vals() { return this->vals; }
+
+    virtual opcode::StringConst as_string() override {
+        if (vals.empty()) return "[]";
+        std::stringstream ss;
+        ss << "[";
+        bool first = true;
+        for (auto v: vals) {
+            if (first) {
+                ss << v->as_string();
+                first = false;
+            }
+            else {
+                ss << ", " << v->as_string();
+            }
+        }
+        ss << "]";
+
+        return ss.str();
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "List(size:" << vals.size() << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class ClassValue : public Value {
+public:
+    static const TypeKind ClassType = TypeKind::CLASS;
+
+    ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
+
+    virtual Value *clone() {
+        return new ClassValue(this->name);
+    }
+
+    virtual opcode::StringConst as_string() override {
+        return "<Class " + name + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Class(" << name << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class FunValueArg {
+public:
+    opcode::StringConst name;
+    std::vector<Value *> types;
+    Value *default_value;
+    bool vararg;
+
+    FunValueArg(opcode::StringConst name,
+                std::vector<Value *> types,
+                Value *default_value=nullptr,
+                bool vararg=false) 
+               : name(name), types(types), default_value(default_value), vararg(vararg) {}
+
+    // TODO: Debug
+};
+
+class FunValue : public Value {
+private:
+    std::vector<FunValueArg *> args;
+    opcode::Address body_addr;
+public:
+    static const TypeKind ClassType = TypeKind::FUN;
+
+    FunValue(opcode::StringConst name, opcode::StringConst arg_names) 
+            : Value(ClassType, name, BuiltIns::Function), args(), body_addr(0) {
+        auto names = utils::split_csv(arg_names, ',');
+        for (auto n: names) {
+            args.push_back(new FunValueArg(n, std::vector<Value *>{}));
+        }
+    }
+
+    FunValue(opcode::StringConst name,
+             std::vector<FunValueArg *> args,
+             opcode::Address body_addr) 
+            : Value(ClassType, name, BuiltIns::Function), args(args), body_addr(body_addr) {}
+
+    virtual Value *clone() {
+        return new FunValue(this->name, this->args, this->body_addr);
+    }
+
+    void set_vararg(opcode::IntConst index) {
+        assert(index < static_cast<int>(args.size()) && "out of bounds argument");
+        args[index]->vararg = true;
+    }
+
+    void set_type(opcode::IntConst index, Value *type) {
+        assert(index < static_cast<int>(args.size()) && "out of bounds argument");
+        args[index]->types.push_back(type);
+    }
+
+    void set_default(opcode::IntConst index, Value *v) {
+        assert(index < static_cast<int>(args.size()) && "out of bounds argument");
+        args[index]->default_value = v;
+    }
+
+    void set_body_addr(opcode::Address body_addr) {
+        this->body_addr = body_addr;
+    }
+
+    opcode::Address get_body_addr() { return this->body_addr; }
+
+    std::vector<FunValueArg *> get_args() { return this->args; }
+
+    virtual opcode::StringConst as_string() override {
+        return "<function " + name + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Fun(" << name << " @" << body_addr << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class FunValueList : public Value {
+private:
+    std::vector<FunValue *> funs;
+public:
+    static const TypeKind ClassType = TypeKind::FUN_LIST;
+
+    FunValueList(FunValue *f) : Value(ClassType, "FunctionList", BuiltIns::FunctionList) {
+        funs.push_back(f);
+    }
+    FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs) {}
+    
+    virtual Value *clone() {
+        return new FunValueList(this->funs);
+    }
+
+    std::vector<FunValue *> get_funs() { return this->funs; }
+    void push_back(FunValue *f) { this->funs.push_back(f); }
+    FunValue *back() {
+        assert(!funs.empty() && "no functions in funlist");
+        return funs.back();
+    }
+
+    virtual opcode::StringConst as_string() override {
+        assert(!funs.empty() && "sanity check");
+        return "<functions " + funs[0]->get_name() + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "FunValueList(";
+        bool first = true;
+        for (auto f: funs) {
+            if (first) {
+                os << *f;
+                first = false;
+            }
+            else {
+                os << ", " << *f;
+            }
+        }
+        os << ")[refs: " << references << "]";
         return os;
     }
 };
