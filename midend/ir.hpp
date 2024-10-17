@@ -353,10 +353,6 @@ public:
     }
 };
 
-std::vector<ustring> encode_fun(ustring name, std::vector<Argument *> args);
-inline std::vector<ustring> encode_fun(Function *f) {
-    return encode_fun(f->get_name(), f->get_args());
-}
 inline ustring encode_fun_args(std::vector<Argument *> args) {
     ustring txt = "";
     bool first = true;

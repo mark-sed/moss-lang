@@ -360,7 +360,9 @@ public:
     std::vector<FunValueArg *> get_args() { return this->args; }
 
     virtual opcode::StringConst as_string() override {
-        return "<function " + name + ">";
+        std::stringstream ss;
+        ss << "<function " << name << " at " << std::hex << static_cast<const void*>(this) << ">";
+        return ss.str();
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
@@ -393,7 +395,7 @@ public:
 
     virtual opcode::StringConst as_string() override {
         assert(!funs.empty() && "sanity check");
-        return "<functions " + funs[0]->get_name() + ">";
+        return "<function " + funs[0]->get_name() + " with " + std::to_string(funs.size()) + " overloads>";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {

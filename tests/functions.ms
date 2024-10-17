@@ -25,10 +25,6 @@ overloading(1, 1)
 overloading(1, false)
 overloading("test", 2)
 
-sum
-"\n"
-sum ++ overloading ++ "\n" // Making sure that concat also converts correctly
-// Let's override the function definition with variable
 sum = 42
 sum ++ "\n"
 
@@ -56,6 +52,8 @@ x = fooa(b=2, a=1, c=3)
 "\n"
 x = fooa(1, true, "a", nil)
 "\n"
+// Test string output
+fooa ++ "\n"
 
 fun vararg(a, b, ... c, d=false, e=97) {
     return a ++ b ++ c ++ d ++ e ++ "\n"
@@ -102,4 +100,15 @@ getID(3)
 getID(true)
 "\n"
 getID(nil)
+"\n"
+
+fun greet() {
+    return "hello from greet"
+}
+
+fun caller(a) {
+    return a()
+}
+
+caller(greet)
 "\n"

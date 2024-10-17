@@ -546,7 +546,6 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
                     append(new PushConstArg(free_reg(a_val)));
                 }
                 else {
-                    // TODO: PushAddrArg for address value
                     append(new PushArg(free_reg(a_val)));
                 }
             }
@@ -578,7 +577,6 @@ void BytecodeGen::emit(ir::Return *r) {
         append(new opcode::ReturnConst(free_reg(ex)));
     else
         append(new opcode::Return(free_reg(ex)));
-    // TODO: Handle address return
 }
 
 void BytecodeGen::emit(ir::Module *mod) {
