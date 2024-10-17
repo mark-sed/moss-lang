@@ -512,6 +512,10 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new StoreNilConst(next_creg()));
         bcv = last_creg();
     }
+    else if (auto val = dyn_cast<List>(expr)) {
+        assert("TODO: list generation");
+        // List might be a comprehension
+    }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);
     }
@@ -551,6 +555,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         bcv = last_reg();
     }
     else {
+        LOGMAX("MISSING EXPR ENUM: " << static_cast<int>(expr->get_type()));
         assert(false && "Missing Expression generation");
         return nullptr;
     }

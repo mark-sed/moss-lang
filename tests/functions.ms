@@ -32,6 +32,10 @@ sum ++ overloading ++ "\n" // Making sure that concat also converts correctly
 sum = 42
 sum ++ "\n"
 
+fun fooa(x, y:Bool, z, q, ...c, d=1) {
+    x ++ y ++ z ++ q ++ c ++ d
+}
+
 fun fooa(a, b, c=5) {
     a ++ b ++ c
 }
@@ -50,9 +54,28 @@ x = fooa(b=2, a=1)
 "\n"
 x = fooa(b=2, a=1, c=3)
 "\n"
+x = fooa(1, true, "a", nil)
+"\n"
 
-/*fun varargsf(a:[Int,Bool], ... b) {
-    a // TODO: Output also b
+fun vararg(a, b, ... c, d=false, e=97) {
+    return a ++ b ++ c ++ d ++ e ++ "\n"
+}
+
+vararg(1, 2, 3, 4, 5, d=6, e=7)
+vararg(1, 2)
+vararg(1, 2, 3, 4, 5)
+
+fun vararg2(... a) {
+    return a
+}
+
+vararg2()
+"\n"
+vararg2(1, 2, 3, 4)
+"\n"
+
+fun varargsf(a:[Int,Bool], ... b) {
+    a ++ b ++ "\n"
 }
 
 c = varargsf(1, 2)
@@ -60,4 +83,23 @@ c = varargsf(1, 2, 3, 4)
 c = varargsf(0, 1, "ok", false, nil)
 c = varargsf(true, 1)
 
-"\n"*/
+fun getID(x:String) {
+    return 1
+}
+
+fun getID(x:[Int, Bool]) {
+    return 0
+}
+
+fun getID(x) {
+    return 42
+}
+
+getID("hi")
+"\n"
+getID(3)
+"\n"
+getID(true)
+"\n"
+getID(nil)
+"\n"

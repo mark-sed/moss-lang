@@ -169,8 +169,8 @@ void JmpIfFalse::exec(Interpreter *vm) {
 // TODO: Return reason why it cannot be called
 static bool can_call(FunValue *f, CallFrame *cf) {
     LOGMAX("Checking if can call " << *f);
-    auto og_call_args = cf->get_args();
-    auto fun_args = f->get_args();
+    const auto &og_call_args = cf->get_args();
+    const auto fun_args = f->get_args();
 
     std::vector<CallFrameArg> call_args;
     call_args.assign(og_call_args.begin(), og_call_args.end());
@@ -179,6 +179,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
     for (unsigned i = 0; i < call_args.size(); ++i) {
         CallFrameArg &arg = call_args[i];
         if (named_args || !arg.name.empty()) {
+            // Argument with name specified (e.g. a=3)
             assert(!arg.name.empty() && "Non-named arg after a named one");
             bool matched = false;
             for (unsigned j = 0; j < fun_args.size(); ++j) {
@@ -201,9 +202,22 @@ static bool can_call(FunValue *f, CallFrame *cf) {
             named_args = true;
         }
         else {
+            // Unnamed arg
             auto fa = fun_args[i];
             if (fa->vararg) {
-                assert(false && "Vararg calling");
+                std::vector<Value *> vararg_vals;
+                // Eat all arguments that is possible
+                unsigned j = i;
+                for (; j < call_args.size(); ++j) {
+                    CallFrameArg &varg = call_args[j];
+                    if (varg.name.empty()) {
+                        vararg_vals.push_back(varg.value);
+                    }
+                }
+                LOGMAX("Setting call argument " << i << " to " << j << " as vararg list");
+                // Erase arguments since they will be 1 list
+                call_args.erase(call_args.begin() + i, call_args.begin() + j);
+                call_args.insert(call_args.begin() + i, CallFrameArg(fa->name, new ListValue(vararg_vals), i));
             }
             else {
                 // No types always matches otherwise it will be false and set in for
@@ -233,6 +247,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
         LOGMAX("Call args are missing some values set -- try setting defaults");
         for (unsigned i = 0; i < fun_args.size(); ++i) {
             auto fa = fun_args[i];
+            LOGMAX("Analyzing arg " << fa->name);
             bool found = false;
             for (auto &ca: call_args) {
                 if (ca.name == fa->name) {
@@ -243,11 +258,12 @@ static bool can_call(FunValue *f, CallFrame *cf) {
             // If not found then set it if it has default value or is vararg
             if (!found) {
                 if (fa->vararg) {
-                    assert(false && "TODO: vararg, assign []");
+                    LOGMAX("Setting empty list for vararg argument " << fa->name << " %" << i);
+                    call_args.push_back(CallFrameArg(fa->name, new ListValue(), i));
                 }
                 else if (fa->default_value) {
                     LOGMAX("Setting default value for argument " << fa->name << " %" << i << " as " << *fa->default_value);
-                    call_args.push_back(CallFrameArg(fa->name, fa->default_value, i));
+                    call_args.push_back(CallFrameArg(fa->name, fa->default_value->clone(), i));
                 }
                 else {
                     LOGMAX("Argument does not have a default value and is not set: " << fa->name);
@@ -335,7 +351,14 @@ void Return::exec(Interpreter *vm) {
 }
 
 void ReturnConst::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto return_reg = vm->get_call_frame()->get_return_reg();
+    auto caller_addr = vm->get_call_frame()->get_caller_addr();
+    auto ret_v = vm->load_const(csrc);
+    vm->pop_call_frame();
+    vm->pop_frame();
+    assert(ret_v && "Return register does not contain any value??");
+    vm->store(return_reg, ret_v);
+    vm->set_bci(caller_addr);
 }
 
 void ReturnAddr::exec(Interpreter *vm) {

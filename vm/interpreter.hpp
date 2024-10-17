@@ -100,8 +100,8 @@ private:
     Bytecode *code;
     File *src_file;
     MemoryPool *const_pool;
-    std::list<MemoryPool *> frames;
-    std::list<CallFrame *> call_frames;
+    std::list<MemoryPool *> frames; ///< Frame stack
+    std::list<CallFrame *> call_frames; ///< Call frame stack
 
     opcode::Address bci;
 
@@ -150,36 +150,50 @@ public:
      */
     Value *load_global_name(ustring name);
 
-    /*std::vector<ustring> get_reg_names(opcode::Register reg);
-    ustring get_reg_pure_name(opcode::Register reg);
-    std::pair<Value *, opcode::Register> load_name_reg(ustring name); 
-    void copy_names(opcode::Register from, opcode::Register to);*/
-
+    /**
+     * Pushes a new frame (memory pool) into a frame stack
+     */
     void push_frame();
+    /**
+     * Pops a frame (memory pool) from a frame stack
+     */
     void pop_frame();
 
+    /**
+     * Returns top call frame
+     */
     CallFrame *get_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame was pushed");
         return this->call_frames.back();
     }
 
+    /**
+     * Pushes a new empty call frame into call frame stack
+     */
     void push_call_frame() { call_frames.push_back(new CallFrame()); }
+    /**
+     * Pops top (most recent) frame from call frame stack
+     */
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
         call_frames.pop_back(); 
     }
 
+    /** @return Interpreter exit code */
     int get_exit_code() { return exit_code; }
 
-    std::ostream& debug(std::ostream& os) const;
 
+    /** @return Current bytecode index */
     opcode::Address get_bci() { return this->bci; }
+    /** Sets current bytecode index to passed in value */
     void set_bci(opcode::Address v) { 
         this->bci = v;
         this->bci_modified = true; 
     }
 
     File *get_src_file() { return this->src_file; }
+    
+    std::ostream& debug(std::ostream& os) const;
 };
 
 inline std::ostream& operator<< (std::ostream& os, Interpreter &i) {

@@ -100,4 +100,13 @@ fun foo(a, b:Int=3, ...c, d=4) {
 fun foo(a) {
     a
 }
+
+// Wrong type
+fun test5(a:Int33) {
+
+}
+
+fun test5(a:[Bool,String,String1123]) {
+    
+}
 ```

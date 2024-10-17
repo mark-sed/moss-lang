@@ -14,6 +14,7 @@
 #include "utils.hpp"
 #include <cstdint>
 #include <map>
+#include <sstream>
 
 namespace moss {
 
@@ -106,6 +107,7 @@ namespace BuiltIns {
     extern Value *Bool;// = new ClassValue("Bool");
     extern Value *NilType;// = new ClassValue("NilType");
     extern Value *String;// = new ClassValue("String");
+    extern Value *List;
     extern Value *Address;// = new ClassValue("Address");
     extern Value *Function;// = new ClassValue("Function");
     extern Value *FunctionList;// = new ClassValue("FunctionList");
@@ -254,6 +256,46 @@ public:
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Addr(" << value << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class ListValue : public Value {
+private:
+    std::vector<Value *> vals;
+public:
+    static const TypeKind ClassType = TypeKind::LIST;
+
+    ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals) {}
+    ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {}
+
+    virtual Value *clone() {
+        return new ListValue(this->vals);
+    }
+
+    std::vector<Value *> get_vals() { return this->vals; }
+
+    virtual opcode::StringConst as_string() override {
+        if (vals.empty()) return "[]";
+        std::stringstream ss;
+        ss << "[";
+        bool first = true;
+        for (auto v: vals) {
+            if (first) {
+                ss << v->as_string();
+                first = false;
+            }
+            else {
+                ss << ", " << v->as_string();
+            }
+        }
+        ss << "]";
+
+        return ss.str();
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "List(size:" << vals.size() << ")[refs: " << references << "]";
         return os;
     }
 };

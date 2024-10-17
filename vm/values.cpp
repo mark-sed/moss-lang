@@ -22,6 +22,7 @@ Value *BuiltIns::Float = new ClassValue("Float");
 Value *BuiltIns::Bool = new ClassValue("Bool");
 Value *BuiltIns::NilType = new ClassValue("NilType");
 Value *BuiltIns::String = new ClassValue("String");
+Value *BuiltIns::List = new ClassValue("List");
 
 Value *BuiltIns::Address = new ClassValue("Address");
 
