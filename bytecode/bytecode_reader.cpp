@@ -264,15 +264,11 @@ Bytecode *BytecodeReader::read() {
                 auto reg2 = read_register();
                 bc->push_back(new DeepCopy(reg1, reg2));
             } break;
-            case opcode::OpCodes::CREATE_ANNT: {
-                auto reg = read_register();
-                auto str = read_string();
-                bc->push_back(new CreateAnnt(reg, str));
-            } break;
             case opcode::OpCodes::ANNOTATE: {
                 auto reg1 = read_register();
+                auto str = read_string();
                 auto reg2 = read_register();
-                bc->push_back(new Annotate(reg1, reg2));
+                bc->push_back(new Annotate(reg1, str, reg2));
             } break;
             case opcode::OpCodes::OUTPUT: {
                 bc->push_back(new Output(read_register()));

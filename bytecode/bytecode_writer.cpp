@@ -198,13 +198,10 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::CreateAnnt>(op_gen)){
-            write_register(o->dst);
-            write_string(o->name);
-        }
         else if (auto o = dyn_cast<opcode::Annotate>(op_gen)){
             write_register(o->dst);
-            write_register(o->src);
+            write_string(o->name);
+            write_register(o->val);
         }
         else if (auto o = dyn_cast<opcode::Output>(op_gen)){
             write_register(o->src);

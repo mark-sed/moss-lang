@@ -99,8 +99,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Copy(1, 0));
     bc->push_back(new opcode::DeepCopy(2, 3));
     
-    bc->push_back(new opcode::CreateAnnt(5, "text=2"));
-    bc->push_back(new opcode::Annotate(12, 5));
+    bc->push_back(new opcode::Annotate(12, "annt", 5));
 
     bc->push_back(new opcode::Output(3));
     

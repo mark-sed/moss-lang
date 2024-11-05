@@ -108,8 +108,7 @@ xxh - BUILD_CLASS   %src
 xxh - COPY          %dst, %src
 xxh - DEEP_COPY     %dst, %src
 
-xxh - CREATE_ANNT   %dst, "name"
-xxh - ANNOTATE      %dst, %annot
+xxh - ANNOTATE      %dst, "name", %val
 
 xxh - OUTPUT    %src
 

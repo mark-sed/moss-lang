@@ -18,6 +18,11 @@
 
 namespace moss {
 
+/*class Annotation {
+public:
+    Annotation()
+}*/
+
 enum class TypeKind {
     // Primitive types
     INT,
@@ -34,7 +39,6 @@ enum class TypeKind {
     OBJECT,
     CLASS
 };
-
 
 /** Base class of all values */
 class Value {

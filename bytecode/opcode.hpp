@@ -85,8 +85,7 @@ enum OpCodes : opcode_t {
     COPY, //          %dst, %src
     DEEP_COPY, //     %dst, %src
 
-    CREATE_ANNT, //   %dst, "name"
-    ANNOTATE, //      %dst, %annot
+    ANNOTATE, //      %dst, "name", %val
 
     OUTPUT, //    %src
 
@@ -1136,47 +1135,26 @@ public:
     }
 };
 
-class CreateAnnt : public OpCode {
-public:
-    Register dst;
-    StringConst name;
-
-    static const OpCodes ClassType = OpCodes::CREATE_ANNT;
-
-    CreateAnnt(Register dst, StringConst name) : OpCode(ClassType, "CREATE_ANNT"), dst(dst), name(name) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<CreateAnnt>(other);
-        if (!casted) return false;
-        return casted->dst == dst && casted->name == name;
-    }
-};
-
 class Annotate : public OpCode {
 public:
     Register dst;
-    Register src;
+    StringConst name;
+    Register val;
 
     static const OpCodes ClassType = OpCodes::ANNOTATE;
 
-    Annotate(Register dst, Register src) : OpCode(ClassType, "ANNOTATE"), dst(dst), src(src) {}
+    Annotate(Register dst, StringConst name, Register val) : OpCode(ClassType, "ANNOTATE"), dst(dst), name(name), val(val) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "\t%" << dst << ", \"" << name << "\", %" << val;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Annotate>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->src == src;
+        return casted->dst == dst && casted->val == val && casted->name == name;
     }
 };
 

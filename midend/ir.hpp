@@ -805,14 +805,16 @@ private:
 public:
     static const IRType ClassType = IRType::ANNOTATION;
 
-    Annotation(Expression *value, bool inner) 
-        : Statement(ClassType, "annotation"), value(value), inner(inner) {}
+    Annotation(ustring name, Expression *value, bool inner) 
+        : Statement(ClassType, name), value(value), inner(inner) {}
     ~Annotation() {
         delete value;
     }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << (inner ? "@!" : "@") << *value;
+        os << (inner ? "@!" : "@") << name;
+        if (value)
+            os << "(" << *value << ")";
         return os;
     }
 };

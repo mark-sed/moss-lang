@@ -25,3 +25,10 @@ fun g(x) {
     return x * x
 }
 ```
+
+## Internal representation
+
+Annotation has a name and a value. Name is strictly an identificator (string)
+and value is a valid moss value or comma separated list of values, which
+will be converted into a list.
+Explicit value (for annotation without parenthesis) is `nil`.

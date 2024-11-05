@@ -388,16 +388,17 @@ IR *Parser::declaration() {
     }
 
     // outer / inner annotation
-    // TODO: Tie annotation to proper IR
-    if (match(TokenType::OUT_ANNOTATION)) {
-        auto expr = expression(true);
-        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        decl = new Annotation(expr, false);
-    }
-    else if (match(TokenType::IN_ANNOTATION)) {
-        auto expr = expression(true);
-        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        decl = new Annotation(expr, true);
+    if (check({TokenType::OUT_ANNOTATION, TokenType::IN_ANNOTATION})) {
+        bool inner = advance()->get_type() == TokenType::IN_ANNOTATION;
+        auto name = expect(TokenType::ID, create_diag(diags::ANNOT_EXPECTS_ID_NAME));
+        Expression *value = nullptr;
+        if (match(TokenType::LEFT_PAREN)) {
+            auto mul_vals = expr_list();
+            parser_assert(!mul_vals.empty(), create_diag(diags::EXPR_EXPECTED));
+            value = new List(mul_vals);
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        }
+        decl = new Annotation(name->get_value(), value, inner);
     }
 
     // import

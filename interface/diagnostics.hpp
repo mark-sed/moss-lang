@@ -100,6 +100,7 @@ enum DiagID {
     STAR_SCOPE_OUTSIDE_IMPORT, ///< x::* not in import
     COLON_EXPECTED,         ///< Expecting :
     LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
+    ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -126,7 +127,7 @@ static const char * DIAG_MSGS[] = {
     "Missing ':' — ternary if requires false branch",
     "Ternary if requires a condition",
     "Expecting '..' in a range expression",
-    "Space has to have a body ('{}')",
+    "Space must have a body ('{}')",
     "Expecting code block ('{}')",
     "Missing '}'",
     "Unknown string escape sequence '\\%c'",
@@ -139,11 +140,11 @@ static const char * DIAG_MSGS[] = {
     "Incorrect enum value",
     "Enum values have to be separated by comma (','), semicolon (';') or a new line",
     "Value '%s' is already defined in enum '%s'",
-    "If statement has to have its condition in parenthesis",
-    "While statement has to have its condition in parenthesis",
-    "For loop has to have its iterator and collection in parenthesis",
-    "Catch has to have its argument in parenthesis",
-    "Switch has to have its argument in parenthesis",
+    "If statement must have its condition in parenthesis",
+    "While statement must have its condition in parenthesis",
+    "For loop must have its iterator and collection in parenthesis",
+    "Catch must have its argument in parenthesis",
+    "Switch must have its argument in parenthesis",
     "Function declaration requires arguments in parenthesis or empty parenthesis ('()')",
     "'else' without a previous 'if'",
     "'case' outside of a switch",
@@ -151,8 +152,8 @@ static const char * DIAG_MSGS[] = {
     "'catch' without a previous 'try'",
     "'finally' without a previous 'try'",
     "Unexpected end of file",
-    "Keyword 'do' has to be followed by 'while' and a condition",
-    "Iterator in for loop has to be followed by a colon (':')",
+    "Keyword 'do' must be followed by 'while' and a condition",
+    "Iterator in for loop must be followed by a colon (':')",
     "Expecting 'catch' after try",
     "Incorrect argument",
     "Type expected",
@@ -163,23 +164,24 @@ static const char * DIAG_MSGS[] = {
     "Case value or values have to be followed by a colon (':')",
     "Multiple default cases found in a switch — at most 1 default case can be present",
     "Expecting a list of parent classes",
-    "Class has to have a name",
+    "Class must have a name",
     "Constructor requires a name",
     "Default value cannot be assigned",
-    "Function has to have a body ('{}') or lambda has to return a value ('=')",
+    "Function must have a body ('{}') or lambda must return a value ('=')",
     "Function can have only 1 variable argument ('...')",
     "Variable argument cannot be typed nor have a default value",
-    "Function has to have a name, only lambdas can be anonymous",
+    "Function must have a name, only lambdas can be anonymous",
     "Expecting '='",
     "Constructor cannot be a lambda",
     "Lambda cannot have a body",
     "Assignment is not allowed here — perhaps you meant to use '=='?",
-    "Dictionary key has to be followed by a colon (':')",
+    "Dictionary key must be followed by a colon (':')",
     "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
     "Cannot star import from global scope",
     "Star scope can appear only in import",
     "Expecting ':'",
     "Only assignments are allowed in assignment section of list comprehension",
+    "Annotation must have an ID name",
 };
 
 /**
