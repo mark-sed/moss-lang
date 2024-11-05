@@ -99,10 +99,6 @@ continue
 
 // Break
 break
-
-// Annotations
-@!SomeIDAnnotation
-@!min_version("1.1")
 )";
 
     IRType expected[] = {
@@ -116,9 +112,6 @@ break
 
         IRType::CONTINUE,
         IRType::BREAK,
-
-        IRType::ANNOTATION,
-        IRType::ANNOTATION,
         
         IRType::END_OF_FILE
     };

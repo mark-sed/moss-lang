@@ -101,16 +101,18 @@ public:
         return os;
     }
 
-    virtual void add_annot(Annotation *ann) {
+    virtual void add_annotation(Annotation *ann) {
         annotations.push_back(ann);
+    }
+
+    virtual void set_annotations(std::list<Annotation *> a) {
+        annotations = a;
     }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
     return ir.debug(os);
 }
-
-bool can_be_annotated(IR *decl);
 
 /** 
  * @brief IRs that are constructs
@@ -160,7 +162,7 @@ protected:
 public:
     static const IRType ClassType = IRType::STATEMENT;
 
-    virtual void add_annot(Annotation *ann) override {
+    virtual void add_annotation(Annotation *ann) override {
         (void)ann;
         assert(false && "Adding annotation to a statement");
     }
@@ -175,7 +177,7 @@ protected:
 public:
     static const IRType ClassType = IRType::EXPRESSION;
 
-    virtual void add_annot(Annotation *ann) override {
+    virtual void add_annotation(Annotation *ann) override {
         (void)ann;
         assert(false && "Adding annotation to an expression");
     }
@@ -193,15 +195,7 @@ public:
     Module(ustring name, SourceFile &src_file, std::list<IR *> body, bool is_main) 
         : Construct(ClassType, name, body), src_file(src_file), is_main(is_main) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "<Module>" << name << "{\n";
-        for (auto d: body) {
-            if (!d) os << "nullptr";
-            else os << *d << "\n";
-        }
-        os << "}";
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const;
 };
 
 class Space : public Construct {
@@ -332,25 +326,7 @@ public:
 
     std::vector<Argument *> get_args() { return this->args; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
-        os << (constructor ? "new " : "fun ") << name << "(";
-        bool first = true;
-        for (auto a: args) {
-            if (first) {
-                os << *a;
-                first = false;
-            }
-            else {
-                os << ", " << *a;
-            }
-        }
-        os << ") {\n";
-        for (auto d: body) {
-            os << *d << "\n";
-        }
-        os << "}";
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const;
 };
 
 inline ustring encode_fun_args(std::vector<Argument *> args) {
@@ -817,6 +793,8 @@ public:
             os << "(" << *value << ")";
         return os;
     }
+
+    bool is_inner() { return this->inner; }
 };
 
 class EndOfFile : public Statement {
@@ -1436,6 +1414,14 @@ template<> inline ir::Statement *dyn_cast<>(ir::IR* i) {
     (void)i;
     assert(false && "TODO: Unimplemented dyn_cast to Statement");
     return nullptr;
+}
+
+namespace ir {
+
+inline bool can_be_annotated(IR *decl) {
+    return isa<Function>(decl) || isa<Module>(decl);
+}
+
 }
 
 }

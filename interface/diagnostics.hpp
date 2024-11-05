@@ -101,6 +101,7 @@ enum DiagID {
     COLON_EXPECTED,         ///< Expecting :
     LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
     ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
+    CANNOT_BE_ANNOTATED,    ///< Construct that cannot be annotated
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -182,6 +183,7 @@ static const char * DIAG_MSGS[] = {
     "Expecting ':'",
     "Only assignments are allowed in assignment section of list comprehension",
     "Annotation must have an ID name",
+    "'%s' cannot be annotated — perhaps you meant to use inner annotation ('!@')",
 };
 
 /**

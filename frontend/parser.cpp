@@ -59,6 +59,7 @@ IR *Parser::parse(bool is_main) {
     LOG1("Started parsing module");
     reading_by_lines = false;
     Module *m = new Module(this->src_file.get_module_name(), this->src_file, is_main);
+    parents.push_back(m);
 
     LOG2("Running scanner");
     Token *t = nullptr;
@@ -304,6 +305,24 @@ bool Parser::is_id_or_scope(Expression *e) {
     return false;
 }
 
+ir::Annotation *Parser::annotation() {
+    Annotation *decl = nullptr;
+    // outer / inner annotation
+    if (check({TokenType::OUT_ANNOTATION, TokenType::IN_ANNOTATION})) {
+        bool inner = advance()->get_type() == TokenType::IN_ANNOTATION;
+        auto name = expect(TokenType::ID, create_diag(diags::ANNOT_EXPECTS_ID_NAME));
+        Expression *value = nullptr;
+        if (match(TokenType::LEFT_PAREN)) {
+            auto mul_vals = expr_list();
+            parser_assert(!mul_vals.empty(), create_diag(diags::EXPR_EXPECTED));
+            value = new List(mul_vals);
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        }
+        decl = new Annotation(name->get_value(), value, inner);
+    }
+    return decl;
+}
+
 /**
  * ```
  * EndOfFile -> EOF
@@ -387,22 +406,28 @@ IR *Parser::declaration() {
         throw new Raise(new StringLiteral(str_msg));
     }
 
-    // outer / inner annotation
-    if (check({TokenType::OUT_ANNOTATION, TokenType::IN_ANNOTATION})) {
-        bool inner = advance()->get_type() == TokenType::IN_ANNOTATION;
-        auto name = expect(TokenType::ID, create_diag(diags::ANNOT_EXPECTS_ID_NAME));
-        Expression *value = nullptr;
-        if (match(TokenType::LEFT_PAREN)) {
-            auto mul_vals = expr_list();
-            parser_assert(!mul_vals.empty(), create_diag(diags::EXPR_EXPECTED));
-            value = new List(mul_vals);
-            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+    // TODO: FIX - we need to create function IR before adding the body so that
+    //       annotations can be appended to it, otherwise even outter annotation
+    //       will be an issue as the list will be still full during parsing of
+    //       body and will try to append to it
+    // Consume annotation and tie inner ones to parents and outter ones save
+    // for next IR
+    Annotation *annot = annotation();
+    while(annot) {
+        LOGMAX("Parsing annotation: " << *annot);
+        if (annot->is_inner()) {
+            assert(!parents.empty() && "No top level IR?");
+            //parents.back()->add_annotation(annot);
         }
-        decl = new Annotation(name->get_value(), value, inner);
+        else {
+            outter_annots.push_back(annot);
+        }
+        skip_ends();
+        annot = annotation();
     }
 
     // import
-    else if (match(TokenType::IMPORT)) {
+    if (match(TokenType::IMPORT)) {
         std::vector<ir::Expression *> names;
         std::vector<ustring> aliases;
         lower_range_prec = true;
@@ -706,8 +731,11 @@ IR *Parser::declaration() {
             parser_error(create_diag(diags::EXPECTED_END));
         }
     }
-    LOGMAX("Parsed declaration " << *decl);
     assert(decl && "Nothing parsed and no raise?");
+    LOGMAX("Parsed declaration " << *decl);
+
+    //parser_assert(outter_annots.empty(), create_diag(diags::CANNOT_BE_ANNOTATED, decl->get_name().c_str()));
+
     return decl;
 }
 

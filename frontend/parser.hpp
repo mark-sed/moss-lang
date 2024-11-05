@@ -36,6 +36,9 @@ private:
     bool reading_by_lines;
     int multi_line_parsing;
 
+    std::list<ir::IR *> parents;
+    std::list<ir::Annotation *> outter_annots;
+
     /** 
      * Parses an IR that is a declaration (if not throws an error)
      * Declaration is a statement that can be on its own, so like a line in REPL
@@ -56,6 +59,8 @@ private:
      *         not an expression on the input
     */
     ir::Expression *expression(bool allow_set=false);
+
+    ir::Annotation *annotation();
 
     /** Tries to parse a block of code */
     std::list<ir::IR *> block();

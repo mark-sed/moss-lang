@@ -75,7 +75,7 @@ int main(int argc, const char *argv[]) {
         return 0;
     }
 #endif
-    //LOGMAX("Parsed: " << *main_mod);
+    LOGMAX("Parsed: " << *main_mod);
 
     Bytecode *bc = new Bytecode();
     bcgen::BytecodeGen cgen(bc);

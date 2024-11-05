@@ -18,11 +18,6 @@
 
 namespace moss {
 
-/*class Annotation {
-public:
-    Annotation()
-}*/
-
 enum class TypeKind {
     // Primitive types
     INT,
@@ -50,14 +45,15 @@ protected:
     ustring name;
     
     std::map<ustring, Value *> attrs;
+    std::map<ustring, Value *> annotations;
 
-    Value(TypeKind kind, ustring name, Value *type) : references(1), kind(kind), type(type), name(name), attrs() {}
+    Value(TypeKind kind, ustring name, Value *type) 
+        : references(1), kind(kind), type(type), name(name), attrs(), annotations{} {}
 public:
     virtual Value *clone() = 0;
     virtual ~Value() {
-        for (auto [_, v] : attrs) {
-            delete v;
-        }
+        // We cannot just delete the value of annotation as it might be class name
+        // or used somewhere else, let gc handle it
     }
 
     virtual opcode::StringConst as_string() = 0;
@@ -82,6 +78,18 @@ public:
     void inc_refs() { this->references += 1; }
     /** Decrements reference counter */
     void dec_refs() { this->references -= 1; }
+
+    void annotate(ustring name, Value *val) {
+        annotations[name] = val;
+    }
+    std::map<ustring, Value *> get_annotations() { return this->annotations; }
+    bool has_annotation(ustring name) {
+        return annotations.find(name) != annotations.end();
+    }
+    Value *get_annotation(ustring name) {
+        assert(has_annotation(name) && "Did not check annotation existence");
+        return annotations[name];
+    }
 
     /** 
      * Returns register in which is attribute stored 
