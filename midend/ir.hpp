@@ -108,6 +108,8 @@ public:
     virtual void set_annotations(std::list<Annotation *> a) {
         annotations = a;
     }
+
+     std::list<Annotation *> get_annotations() { return this->annotations; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
@@ -149,6 +151,7 @@ public:
     }
 
     std::list<IR *> get_body() { return this->body; }
+    void set_body(std::list<IR *> b) { this->body = b; }
 };
 
 /**
@@ -318,6 +321,9 @@ public:
     Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, bool constructor=false) 
         : Construct(ClassType, name), args(args), constructor(constructor) {
         this->body = fnbody;
+    }
+    Function(ustring name, std::vector<Argument *> args, bool constructor=false) 
+        : Construct(ClassType, name), args(args), constructor(constructor) {
     }
     ~Function() {
         for (auto a : args)
@@ -794,6 +800,7 @@ public:
         return os;
     }
 
+    Expression *get_value() { return this->value; }
     bool is_inner() { return this->inner; }
 };
 

@@ -378,7 +378,18 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Fun(" << name << " @" << body_addr << ")[refs: " << references << "]";
+        os << "Fun(" << name << " @" << body_addr;
+        if (!annotations.empty()) {
+            os << " annots[";
+            bool first = true;
+            for (auto [k, v]: annotations) {
+                if (!first) os << ", ";
+                os << "\"" << k << "\": " << *v;
+                first = false;
+            }
+            os << "]";
+        }
+        os << ")[refs: " << references << "]";
         return os;
     }
 };

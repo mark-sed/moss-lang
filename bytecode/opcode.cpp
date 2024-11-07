@@ -466,7 +466,11 @@ void DeepCopy::exec(Interpreter *vm) {
 }
 
 void Annotate::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto *d = vm->load(dst);
+    assert(d && "Cannot load dst");
+    auto *v = vm->load(val);
+    assert(v && "Cannot load val");
+    d->annotate(name, v);
 }
 
 void Output::exec(Interpreter *vm) {

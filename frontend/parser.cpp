@@ -315,9 +315,14 @@ ir::Annotation *Parser::annotation() {
         if (match(TokenType::LEFT_PAREN)) {
             auto mul_vals = expr_list();
             parser_assert(!mul_vals.empty(), create_diag(diags::EXPR_EXPECTED));
-            value = new List(mul_vals);
+            if (mul_vals.size() == 1)
+                value = mul_vals[0];
+            else
+                value = new List(mul_vals);
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         }
+        if (!value)
+            value = new NilLiteral();
         decl = new Annotation(name->get_value(), value, inner);
     }
     return decl;
@@ -417,7 +422,7 @@ IR *Parser::declaration() {
         LOGMAX("Parsing annotation: " << *annot);
         if (annot->is_inner()) {
             assert(!parents.empty() && "No top level IR?");
-            //parents.back()->add_annotation(annot);
+            parents.back()->add_annotation(annot);
         }
         else {
             outter_annots.push_back(annot);
@@ -696,6 +701,13 @@ IR *Parser::declaration() {
         }
         skip_nls();
         if (check(TokenType::LEFT_CURLY)) {
+            decl = new Function(name, args, constructor);
+            // Assign outter annotations
+            for (auto ann : outter_annots) {
+                decl->add_annotation(ann);
+            }
+            outter_annots.clear();
+            parents.push_back(decl);
             auto fnbody = block();
             if (name.empty()) {
                 if(constructor)
@@ -703,7 +715,7 @@ IR *Parser::declaration() {
                 else
                     parser_error(create_diag(diags::ANONYMOUS_FUN));
             }
-            decl = new Function(name, args, fnbody, constructor);
+            dyn_cast<Function>(decl)->set_body(fnbody);
         }
         else if (match(TokenType::SET)) {
             parser_assert(!constructor, create_diag(diags::LAMBDA_CONSTRUCTOR));
@@ -731,10 +743,13 @@ IR *Parser::declaration() {
             parser_error(create_diag(diags::EXPECTED_END));
         }
     }
+    if (!decl && !outter_annots.empty())
+        parser_error(create_diag(diags::DANGLING_ANNOTATION));
+
     assert(decl && "Nothing parsed and no raise?");
     LOGMAX("Parsed declaration " << *decl);
-
-    //parser_assert(outter_annots.empty(), create_diag(diags::CANNOT_BE_ANNOTATED, decl->get_name().c_str()));
+    
+    parser_assert(outter_annots.empty(), create_diag(diags::CANNOT_BE_ANNOTATED, decl->get_name().c_str()));
 
     return decl;
 }

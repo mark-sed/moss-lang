@@ -1342,4 +1342,50 @@ ustring incorrect = R"(
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Annotations){
+    ustring code = R"(
+@hidden(true) @max fun foo() {}
+
+@graph([1, 2, true])
+@graph_title("bar graph")
+@graph_axis("a", "b")
+fun bar(a, b) {
+    @!bar
+    @baz
+    fun baz() {
+        @!baz2(true, nil, nil)
+        1 + 2
+    }
+}
+)";
+
+    IRType expected[] = {
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+@graph[12] fun foo() {}
+@2 fun goo(){}
+@non_fun "hello"
+@dangling
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

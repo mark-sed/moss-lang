@@ -625,6 +625,11 @@ void BytecodeGen::emit(ir::Function *fun) {
     // Store the name without arguments
     append(new CreateFun(fun_reg, fun->get_name(), arg_names));
     comment("fun "+fun->get_name()+"(" + arg_names + ") declaration");
+    // Add annotations
+    for (auto annt : fun->get_annotations()) {
+        auto annot_val = emit(annt->get_value(), true);
+        append(new Annotate(fun_reg, annt->get_name(), free_reg(annot_val)));
+    }
     // Set argument default values and types
     opcode::IntConst arg_i = 0;
     for (auto a: fun->get_args()) {

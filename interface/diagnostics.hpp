@@ -102,6 +102,7 @@ enum DiagID {
     LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
     ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
     CANNOT_BE_ANNOTATED,    ///< Construct that cannot be annotated
+    DANGLING_ANNOTATION,    ///< Annotation not followed by anything
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -184,6 +185,7 @@ static const char * DIAG_MSGS[] = {
     "Only assignments are allowed in assignment section of list comprehension",
     "Annotation must have an ID name",
     "'%s' cannot be annotated — perhaps you meant to use inner annotation ('!@')",
+    "Dangling outter annotation — to annotate the module use inner annotation ('!@')",
 };
 
 /**
