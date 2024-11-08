@@ -49,7 +49,8 @@ std::ostream& MemoryPool::debug(std::ostream& os) const {
         os << "\"" << k << "\": " << v << " (" << *(this->pool[v]) << ")\n";
     }
     os << "> Memory pool:\n";
-    for (size_t i = 0; i < this->pool.size(); ++i) {
+    os << "-- Reserved regs (" << (holds_consts ? BC_RESERVED_CREGS : BC_RESERVED_REGS) << ") skipped --\n";
+    for (size_t i = (holds_consts ? BC_RESERVED_CREGS : BC_RESERVED_REGS); i < this->pool.size(); ++i) {
         if (this->pool[i]) {
             os << i << ": " << *(this->pool[i]) << "\n";
         }

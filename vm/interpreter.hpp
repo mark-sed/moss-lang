@@ -113,6 +113,7 @@ private:
     MemoryPool *get_local_frame() { return this->frames.back(); }
     MemoryPool *get_global_frame() { return this->frames.front(); }
 
+    void init_const_frame();
     void init_global_frame();
 public:
     Interpreter(Bytecode *code, File *src_file=nullptr);
@@ -182,6 +183,7 @@ public:
     /** @return Interpreter exit code */
     int get_exit_code() { return exit_code; }
 
+    void set_exit_code(int c) { this->exit_code = c; }
 
     /** @return Current bytecode index */
     opcode::Address get_bci() { return this->bci; }
@@ -190,6 +192,10 @@ public:
         this->bci = v;
         this->bci_modified = true; 
     }
+
+    size_t get_code_size();
+
+    Bytecode *get_code() { return this->code; }
 
     File *get_src_file() { return this->src_file; }
     

@@ -32,6 +32,10 @@ bool isa(opcode::OpCode* o);
 template<class T>
 T *dyn_cast(opcode::OpCode* o);
 
+namespace annots {
+    inline constexpr char INTERNAL[] = "internal";
+};
+
 namespace opcode {
 
 /// Opcode names and their corresponding number
@@ -185,6 +189,8 @@ enum OpCodes : opcode_t {
 
     OPCODES_AMOUNT
 };
+
+void raise(Interpreter *vm, Value *exc);
 
 /** Base Opcode class */
 class OpCode {

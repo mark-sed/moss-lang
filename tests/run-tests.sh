@@ -98,7 +98,7 @@ function run_test {
     let "INDEX=INDEX+1"
     failed_am=${#FAILED_TESTS}
     printf "$(testnum) ${1}: Running\n"
-    test_"$1"
+    test_"$1" "$1"
     failed_now=${#FAILED_TESTS}
     if [[ $failed_now -eq $failed_am ]]; then
         printf "$(testnum) ${1}: ${C_GREEN}OK${C_OFF}\n"
@@ -110,63 +110,73 @@ function run_test {
 ###--- TESTS ---###
 
 function test_empty {
-    expect_pass "empty.ms" "empty"
-    expect_out_eq "" "empty"
+    expect_pass "empty.ms" $1
+    expect_out_eq "" $1
 }
 
 function test_output {
-    expect_pass "output.ms" "output"
-    expect_out_eq "42, true, false\nmoss language\n13\n9\n42\n" "output"
+    expect_pass "output.ms" $1
+    expect_out_eq "42, true, false\nmoss language\n13\n9\n42\n" $1
 }
 
 function test_expressions {
-    expect_pass "expressions.ms" "expressions"
+    expect_pass "expressions.ms" $1
     expect_out_eq "27\n13\n261\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue
-true\nfalse\n9\n255\n0\n6699\n" "expressions"
+true\nfalse\n9\n255\n0\n6699\n" $1
 }
 
 function test_variables {
-    expect_pass "variables.ms" "variables"
+    expect_pass "variables.ms" $1
     expect_out_eq "42\n42\n44\n44\n5\nMarek (me)\n25\n50\n20\n2\n8\n3
-82\n:herb:🌿❗\n" "variables"
+82\n:herb:🌿❗\n" $1
 }
 
 function test_functions {
-    expect_pass "functions.ms" "functions"
+    expect_pass "functions.ms" $1
     expect_out_eq "hi there\nnot here\nnil\n9\n11\n1false\ntest2\n42
 0\n1\n123\n125\n123\n1trueanil[]1\n<function fooa with 3 overloads>
 12[3, 4, 5]false97\n12[]false97\n12[3, 4, 5]false97
 []\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, ok, false, nil]\ntrue[1]
-1\n0\n0\n42\nhello from greet\n" "functions"
+1\n0\n0\n42\nhello from greet\n" $1
 }
 
 function test_ifs {
-    expect_pass "ifs.ms" "ifs"
+    expect_pass "ifs.ms" $1
     expect_out_eq "0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
-very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n" "ifs"
+very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n" $1
 }
 
 function test_whiles {
-    expect_pass "whiles.ms" "whiles"
+    expect_pass "whiles.ms" $1
     expect_out_eq "done\n.done\n.....done\n,,,done
--\n1\n2\n3\n3\n" "whiles"
+-\n1\n2\n3\n3\n" $1
 }
 
 function test_fibonacci {
-    expect_pass "fibonacci.ms" "fibonacci"
-    expect_out_eq "1\n55\n233\n2584\n" "fibonacci"
+    expect_pass "fibonacci.ms" $1
+    expect_out_eq "1\n55\n233\n2584\n" $1
 }
 
 function test_factorial {
-    expect_pass "factorial.ms" "factorial"
-    expect_out_eq "2432902008176640000" "factorial"
+    expect_pass "factorial.ms" $1
+    expect_out_eq "2432902008176640000" $1
 }
 
 function test_collatz {
-    expect_pass "collatz.ms" "collatz"
+    expect_pass "collatz.ms" $1
     expect_out_eq "21 64 32 16 8 4 2 1 
 2097152 1048576 524288 262144 131072 65536 32768 16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1 
-22 11 34 17 52 26 13 40 20 10 5 16 8 4 2 1 " "collatz"
+22 11 34 17 52 26 13 40 20 10 5 16 8 4 2 1 " $1
+}
+
+function test_factorial {
+    expect_pass "factorial.ms" $1
+    expect_out_eq "2432902008176640000" $1
+}
+
+function test_exit {
+    expect_pass "stdlib_tests/exit.ms" $1
+    expect_out_eq "hi\n" $1
 }
 
 ###--- Running tests ---###
@@ -182,6 +192,9 @@ function run_all_tests {
     run_test fibonacci
     run_test factorial
     run_test collatz
+
+    # stdlib tests
+    run_test exit
 }
 
 # Count all functions starting with test_ 

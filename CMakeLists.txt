@@ -21,6 +21,7 @@ endif()
 include_directories(.)
 include_directories(frontend)
 include_directories(midend)
+include_directories(stdlib)
 include_directories(bytecode)
 include_directories(vm)
 include_directories(interface)
@@ -31,6 +32,7 @@ set(SOURCES
     frontend/scanner.cpp
     frontend/source.cpp
     midend/ir.cpp
+    stdlib/mslib.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp
     interface/errors.cpp

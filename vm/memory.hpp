@@ -30,8 +30,16 @@ class MemoryPool {
 private:
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
+    bool holds_consts;
 public:
-    MemoryPool() : pool(256, nullptr) {}
+    MemoryPool(bool holds_consts=false) : holds_consts(holds_consts) {
+        if (holds_consts) {
+            pool = std::vector<Value *>(BC_RESERVED_CREGS+256, nullptr);
+        }
+        else {
+            pool = std::vector<Value *>(BC_RESERVED_REGS+256, nullptr);
+        }
+    }
     virtual ~MemoryPool() {
         for (unsigned i = 0; i < pool.size(); ++i) {
             if (pool[i]) {

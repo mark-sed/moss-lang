@@ -1,6 +1,7 @@
 #include "opcode.hpp"
 #include "errors.hpp"
 #include "logging.hpp"
+#include "mslib.hpp"
 #include <sstream>
 #include <cmath>
 #include <algorithm>
@@ -42,6 +43,10 @@ static bool is_int_expr(Value *v1, Value *v2) {
 
 static bool is_primitive_type(Value *v) {
     return v->get_kind() <= TypeKind::FUN;
+}
+
+void opcode::raise(Interpreter *vm, Value *exc) {
+    errs << exc->as_string();
 }
 
 void End::exec(Interpreter *vm) {
@@ -301,8 +306,18 @@ void Call::exec(Interpreter *vm) {
         }
     }
 
-    vm->push_frame();
-    vm->set_bci(fun->get_body_addr());
+    if (fun->has_annotation(annots::INTERNAL)) {
+        Value *err = nullptr;
+        mslib::dispatch(vm, fun->get_name(), err);
+        if (err) {
+            raise(vm, err);
+            return;
+        }
+    }
+    else {
+        vm->push_frame();
+        vm->set_bci(fun->get_body_addr());
+    }
 }
 
 void PushFrame::exec(Interpreter *vm) {
@@ -1238,9 +1253,8 @@ void CopyArgs::exec(Interpreter *vm) {
 
 void Raise::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
-    // TODO: Change
-    auto *str_msg = dyn_cast<StringValue>(s1);
-    errs << str_msg->get_value();
+    assert(s1 && "sanity check");
+    raise(vm, s1);
 }
 
 void CheckCatch::exec(Interpreter *vm) {

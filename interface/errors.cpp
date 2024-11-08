@@ -67,57 +67,67 @@ void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit
 
 ustring error::format_error(diags::Diagnostic msg) {
     std::stringstream ss;
-    const char *bar = "      | ";
-    
-    SourceInfo info = msg.token->get_src_info();
-
-    ss << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
-       << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
-       << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
-       << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
-
-    ss << bar << msg.msg << (msg.msg.back() != '?' ? "." : "") << error::colors::colorize(error::colors::GRAY) 
-       << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
-       << error::colors::reset() << std::endl;
-
-    const long LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
-    const long LINE_LEN_POST = 20;
-
-    assert(msg.scanner->get_src_text().size() > info.get_lines().first && "Getting out of bounds line");
-    std::string curr_line = msg.scanner->get_src_text()[info.get_lines().first];
-    unsigned col_start = info.get_cols().first;
-    unsigned col_end = info.get_cols().second;
-    // Append space to take place for a new line which was removed and is at
-    // fault here. This makes sure that the token error indicator (^) is
-    // pointing right after the token
-    if (col_end >= curr_line.size())
-        curr_line.push_back(' ');
-    if(curr_line.size() > LINE_LEN_PRE+LINE_LEN_POST) {
-        size_t start = 0;
-        if(info.get_cols().first > LINE_LEN_PRE) {
-            start = col_start - LINE_LEN_PRE;
-        }
-        size_t end = col_end + LINE_LEN_POST;
-        if(end > curr_line.size()-1)
-            end = curr_line.size()-1;
-        assert(end < curr_line.size() && "Snippet is bigger than source code");
-        curr_line = curr_line.substr(start, end-start);
-
-        col_end -= start;
-        if(col_end > end) {
-            col_end = end;
-        }
-        col_start -= start;
+    if (!msg.scanner) {
+        ss << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
+            << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
+            << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ": "
+            << msg.msg << (msg.msg.back() != '?' ? "." : "") << error::colors::colorize(error::colors::GRAY) 
+            << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
+            << error::colors::reset() << std::endl;
     }
+    else {
+        const char *bar = "      | ";
+        
+        SourceInfo info = msg.token->get_src_info();
 
-    assert(col_end <= curr_line.size() && "Highlight reset is out of bounds");
-    curr_line.insert(col_end, error::colors::colorize(error::colors::RESET));
-    assert(col_start <= curr_line.size() && "Highlight is out of bounds");
-    curr_line.insert(col_start, error::colors::colorize(error::colors::RED));
+        ss << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
+        << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
+        << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
+        << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
 
-    ss << bar << std::endl << std::setfill(' ') << std::setw(sizeof(bar)-3) << info.get_lines().first+1 << " | " << curr_line << std::endl;
-    ustring underline = ustring(col_end - col_start, '^');
-    ss << bar << std::setfill(' ') << std::setw(col_start + sizeof(bar) - 1) << error::colors::colorize(error::colors::RED) << underline << error::colors::reset() << std::endl;
+        ss << bar << msg.msg << (msg.msg.back() != '?' ? "." : "") << error::colors::colorize(error::colors::GRAY) 
+        << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
+        << error::colors::reset() << std::endl;
+
+        const long LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
+        const long LINE_LEN_POST = 20;
+
+        assert(msg.scanner->get_src_text().size() > info.get_lines().first && "Getting out of bounds line");
+        std::string curr_line = msg.scanner->get_src_text()[info.get_lines().first];
+        unsigned col_start = info.get_cols().first;
+        unsigned col_end = info.get_cols().second;
+        // Append space to take place for a new line which was removed and is at
+        // fault here. This makes sure that the token error indicator (^) is
+        // pointing right after the token
+        if (col_end >= curr_line.size())
+            curr_line.push_back(' ');
+        if(curr_line.size() > LINE_LEN_PRE+LINE_LEN_POST) {
+            size_t start = 0;
+            if(info.get_cols().first > LINE_LEN_PRE) {
+                start = col_start - LINE_LEN_PRE;
+            }
+            size_t end = col_end + LINE_LEN_POST;
+            if(end > curr_line.size()-1)
+                end = curr_line.size()-1;
+            assert(end < curr_line.size() && "Snippet is bigger than source code");
+            curr_line = curr_line.substr(start, end-start);
+
+            col_end -= start;
+            if(col_end > end) {
+                col_end = end;
+            }
+            col_start -= start;
+        }
+
+        assert(col_end <= curr_line.size() && "Highlight reset is out of bounds");
+        curr_line.insert(col_end, error::colors::colorize(error::colors::RESET));
+        assert(col_start <= curr_line.size() && "Highlight is out of bounds");
+        curr_line.insert(col_start, error::colors::colorize(error::colors::RED));
+
+        ss << bar << std::endl << std::setfill(' ') << std::setw(sizeof(bar)-3) << info.get_lines().first+1 << " | " << curr_line << std::endl;
+        ustring underline = ustring(col_end - col_start, '^');
+        ss << bar << std::setfill(' ') << std::setw(col_start + sizeof(bar) - 1) << error::colors::colorize(error::colors::RED) << underline << error::colors::reset() << std::endl;
+    }
 
     return ss.str();
 }

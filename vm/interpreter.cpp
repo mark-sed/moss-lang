@@ -1,13 +1,15 @@
 #include "interpreter.hpp"
 #include "logging.hpp"
 #include "values.hpp"
+#include "mslib.hpp"
 
 using namespace moss;
 
 Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0), bci_modified(false) {
-    this->const_pool = new MemoryPool();
+    this->const_pool = new MemoryPool(true);
     // Global frame
     this->frames.push_back(new MemoryPool());
+    init_const_frame();
     init_global_frame();
 }
 
@@ -17,6 +19,10 @@ Interpreter::~Interpreter() {
         delete p;
     }
     // Code is to be deleted by the creator of it
+}
+
+size_t Interpreter::get_code_size() { 
+    return this->code->size();
 }
 
 static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, MemoryPool *gf) {
@@ -38,7 +44,21 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Function", BuiltIns::Function, gf);
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
 
+    mslib::init(gf, reg);
+
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
+}
+
+void Interpreter::init_const_frame() {
+    auto cf = get_const_pool();
+
+    opcode::Register reg = 0;
+    cf->store(reg++, BuiltIns::Nil);
+    for (auto i: BuiltIns::IntConstants) {
+        cf->store(reg++, i);
+    }
+
+    assert(reg < BC_RESERVED_CREGS && "More c registers used that is reserved");
 }
 
 /*std::ostream& Interpreter::debug_pool(std::ostream &os) const {

@@ -103,6 +103,7 @@ enum DiagID {
     ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
     CANNOT_BE_ANNOTATED,    ///< Construct that cannot be annotated
     DANGLING_ANNOTATION,    ///< Annotation not followed by anything
+    INTERNAL_WITHOUT_BODY,  ///< Internally marked function is not internal or has not been implemented
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -186,6 +187,7 @@ static const char * DIAG_MSGS[] = {
     "Annotation must have an ID name",
     "'%s' cannot be annotated — perhaps you meant to use inner annotation ('!@')",
     "Dangling outter annotation — to annotate the module use inner annotation ('!@')",
+    "Function '%s' is marked as '@internal', but does not have an internal body",
 };
 
 /**
@@ -196,13 +198,13 @@ static const char * DIAG_MSGS[] = {
 class Diagnostic {
 public:
     DiagID id;
-    const SourceFile &src_f;
+    const File &src_f;
     Token *token;
     Scanner *scanner;
     ustring msg;
 
     template<typename ... Args>
-    Diagnostic(SourceFile &src_f, Token *token, Scanner *scanner, DiagID id, Args ... args) 
+    Diagnostic(File &src_f, Token *token, Scanner *scanner, DiagID id, Args ... args) 
                : id(id), src_f(src_f), token(token), scanner(scanner) {
         static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
         assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
@@ -213,6 +215,17 @@ public:
     }
 
     Diagnostic(ErrorToken *token, Scanner *scanner);
+
+    template<typename ... Args>
+    Diagnostic(File &src_f, DiagID id, Args ... args) 
+               : id(id), src_f(src_f), token(nullptr), scanner(nullptr) {
+        static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
+        assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
+        if (sizeof...(Args) > 0)
+            this->msg = utils::formatv(DIAG_MSGS[id], args ...);
+        else
+            this->msg = DIAG_MSGS[id];
+    }
 };
 
 }

@@ -123,6 +123,9 @@ namespace BuiltIns {
     extern Value *Address;// = new ClassValue("Address");
     extern Value *Function;// = new ClassValue("Function");
     extern Value *FunctionList;// = new ClassValue("FunctionList");
+
+    extern Value *Nil;
+    extern Value *IntConstants[262];
 }
 
 /** Moss integer value */
