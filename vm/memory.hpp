@@ -41,27 +41,7 @@ public:
         }
     }
     virtual ~MemoryPool() {
-        for (unsigned i = 0; i < pool.size(); ++i) {
-            if (pool[i]) {
-                if (pool[i]->get_references() == 0) {
-                    delete pool[i];
-                    pool[i] = nullptr;
-                }
-                else {
-                    // TODO: Is this correct?
-                    pool[i]->dec_refs();
-                }
-            }
-        }
-    }
-
-    void delete_all_values() {
-        for (unsigned i = 0; i < pool.size(); ++i) {
-            if (pool[i]) {
-                delete pool[i];
-                pool[i] = nullptr;
-            }
-        }
+        // TODO:
     }
 
     /** Stores a value into a register */

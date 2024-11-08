@@ -30,7 +30,7 @@ TEST(Memory, Attributes) {
     EXPECT_EQ(int_val(i->load_const(300)), 42);
     EXPECT_EQ(int_val(i->load_const(301)), 24);
 
-    //delete i;
+    delete i;
     delete bc;
 }
 
@@ -69,7 +69,7 @@ TEST(Memory, Constants) {
 
     EXPECT_TRUE(isa<NilValue>(i->load_const(reg_start++)));
 
-    //delete i;
+    delete i;
     delete bc;
 }
 
