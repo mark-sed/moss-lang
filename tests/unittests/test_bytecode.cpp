@@ -64,7 +64,7 @@ TEST(Bytecode, JmpIf) {
 }
 
 /** Tests Concat, Concat2 and Concat3 */
-/*TEST(Bytecode, Concat) {
+TEST(Bytecode, Concat) {
     Bytecode *bc = new Bytecode();
     bc->push_back(new opcode::StoreStringConst(304, "Moss"));
     bc->push_back(new opcode::StoreStringConst(301, " "));
@@ -82,7 +82,7 @@ TEST(Bytecode, JmpIf) {
     EXPECT_EQ(i->get_exit_code(), 0);
     EXPECT_EQ(string_val(i->load(104)), ustring("Moss Language!"));
 
-    delete i;
+    //delete i;
     delete bc;
 }
 
@@ -156,7 +156,7 @@ TEST(Bytecode, Arithmetics) {
     EXPECT_EQ(float_val(i->load(17)), -0.5);
     EXPECT_EQ(int_val(i->load(18)), 8);
 
-    delete i;
+    //delete i;
     delete bc;
 }
 
@@ -294,7 +294,7 @@ TEST(Bytecode, EqualsNotEquals) {
     EXPECT_EQ(bool_val(i->load(52)), false);
     EXPECT_EQ(bool_val(i->load(53)), true);
 
-    delete i;
+    //delete i;
     delete bc;
 }
 
@@ -344,7 +344,7 @@ TEST(Bytecode, Comparisons) {
 
     bc->push_back(new opcode::Bt(19, 4, 3));
     bc->push_back(new opcode::Bt(20, 3, 5));
-    bc->push_back(new opcode::Bt2(21, 3206, 6));
+    bc->push_back(new opcode::Bt2(21, 306, 6));
     bc->push_back(new opcode::Bt(22, 7, 6));
     bc->push_back(new opcode::Bt3(23, 7, 307));
     bc->push_back(new opcode::Bt(24, 7, 8));
@@ -423,7 +423,7 @@ TEST(Bytecode, Comparisons) {
     EXPECT_EQ(bool_val(i->load(45)), true);
     EXPECT_EQ(bool_val(i->load(46)), false);
 
-    delete i;
+    //delete i;
     delete bc;
 }
 
@@ -464,7 +464,7 @@ TEST(Bytecode, In) {
     EXPECT_EQ(bool_val(i->load(11)), true);
     EXPECT_EQ(bool_val(i->load(12)), true);
 
-    delete i;
+    //delete i;
     delete bc;
 }
 
@@ -549,7 +549,7 @@ TEST(Bytecode, BitWiseOperators) {
     EXPECT_EQ(bool_val(i->load(28)), false);
     EXPECT_EQ(bool_val(i->load(29)), true);
 
-    delete i;
+    //delete i;
     delete bc;
 }
 
@@ -588,8 +588,8 @@ TEST(Bytecode, Subscript) {
     EXPECT_EQ(string_val(i->load(10)), "n");
     EXPECT_EQ(string_val(i->load(11)), "e");
 
-    delete i;
+    //delete i;
     delete bc;
-}*/
+}
 
 }

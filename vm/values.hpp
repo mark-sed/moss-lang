@@ -125,7 +125,8 @@ namespace BuiltIns {
     extern Value *FunctionList;// = new ClassValue("FunctionList");
 
     extern Value *Nil;
-    extern Value *IntConstants[262];
+    #define BUILT_INS_INT_CONSTANTS_AM 262
+    extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
 }
 
 /** Moss integer value */

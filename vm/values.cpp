@@ -30,7 +30,7 @@ Value *BuiltIns::Function = new ClassValue("Function");
 Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 
 Value *BuiltIns::Nil = new NilValue();
-Value *BuiltIns::IntConstants[] = {
+Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {
     new IntValue(0), new IntValue(1), new IntValue(2), new IntValue(3),
     new IntValue(4), new IntValue(5), new IntValue(6), new IntValue(7),
     new IntValue(8), new IntValue(9), new IntValue(10), new IntValue(11),
