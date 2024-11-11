@@ -234,6 +234,8 @@ public:
             delete p;
     }
 
+    std::vector<Expression *> get_parents() { return this->parents; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "class " << name;
         bool first = true;

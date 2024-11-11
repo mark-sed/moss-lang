@@ -23,6 +23,8 @@ namespace moss {
 
 class MemoryPool;
 class Bytecode;
+class Value;
+class ClassValue;
 
 /**
  * Structure that holds information about argument in a function call
@@ -37,10 +39,7 @@ struct CallFrameArg {
     CallFrameArg(ustring name, Value *value) : name(name), value(value), dst(0) {}
     CallFrameArg(Value *value) : name(""), value(value), dst(0) {}
 
-    std::ostream& debug(std::ostream& os) const {
-        os << "\"" << name << "\": " << *value << " dst = %" << dst;
-        return os;
-    }
+    std::ostream& debug(std::ostream& os) const;
 };
 
 inline std::ostream& operator<< (std::ostream& os, CallFrameArg &cf) {
@@ -160,6 +159,7 @@ public:
      * Pops a frame (memory pool) from a frame stack
      */
     void pop_frame();
+    MemoryPool *get_top_frame() { return this->get_local_frame(); }
 
     /**
      * Returns top call frame

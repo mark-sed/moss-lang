@@ -2,17 +2,39 @@
 
 using namespace moss;
 
+Value::Value(TypeKind kind, ustring name, Value *type) 
+        : references(1), kind(kind), type(type), name(name), 
+          attrs(new MemoryPool()), annotations{} {
+}
+
+
 Value *Value::get_attr(ustring name) {
-    auto index = this->attrs.find(name);
-    if (index != this->attrs.end()) {
-        return index->second;
-    }
-    return nullptr;        
+    return attrs->load_name(name);
 }
 
 void Value::set_attr(ustring name, Value *v) {
-    assert(v && "Storing nullptr value");
-    this->attrs[name] = v;
+    auto reg = attrs->get_free_reg();
+    attrs->store(reg, v);
+    attrs->store_name(reg, name);
+}
+
+std::ostream& ClassValue::debug(std::ostream& os) const {
+    os << "Class(" << name; 
+    bool first = true;
+    for (auto s : supers) {
+        if (first) {
+            os << ", parents: {" << s->get_name();
+            first = false;
+        }
+        else {
+            os << ", " << s->get_name();
+        }
+    }
+    if (!first)
+        os << "}";
+    os << ")[refs: " << references << "]";
+    //os << *attrs;
+    return os;
 }
 
 Value *BuiltIns::Type = new ClassValue("Type");

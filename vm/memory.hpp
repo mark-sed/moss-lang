@@ -20,6 +20,8 @@
 
 namespace moss {
 
+class Value;
+
 /**
  * @brief Virtual memory representation
  * It holds pool of values with reference counting for their garbage collection
@@ -31,9 +33,14 @@ private:
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     bool holds_consts;
+    bool global;
 public:
-    MemoryPool(bool holds_consts=false) : holds_consts(holds_consts) {
-        if (holds_consts) {
+    MemoryPool(bool holds_consts=false, bool global=false) : holds_consts(holds_consts), global(global) {
+        if (!global) {
+            // TODO: Fine tune these values
+            pool = std::vector<Value *>(128, nullptr);
+        }
+        else if (holds_consts) {
             pool = std::vector<Value *>(BC_RESERVED_CREGS+256, nullptr);
         }
         else {
@@ -56,6 +63,14 @@ public:
     void store_name(opcode::Register reg, ustring name);
 
     Value *load_name(ustring name);
+
+    size_t get_free_reg() {
+        for (size_t i = 0; i < pool.size(); ++i) {
+            if (!pool[i]) return i;
+        }
+        pool.push_back(nullptr);
+        return pool.size()-1;
+    }
 
     std::ostream& debug(std::ostream& os) const;
 };

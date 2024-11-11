@@ -13,6 +13,7 @@
 #include "opcode.hpp"
 #include <cstdint>
 #include <vector>
+#include <map>
 
 namespace moss {
 

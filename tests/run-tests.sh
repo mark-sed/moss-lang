@@ -152,6 +152,11 @@ function test_whiles {
 -\n1\n2\n3\n3\n" $1
 }
 
+function test_classes {
+    expect_pass "classes.ms" $1
+    expect_out_eq "42\n<Class Cat>\n" $1
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -189,6 +194,7 @@ function run_all_tests {
     run_test functions
     run_test ifs
     run_test whiles
+    run_test classes
     run_test fibonacci
     run_test factorial
     run_test collatz

@@ -12,6 +12,7 @@
 
 #include "os_interface.hpp"
 #include "utils.hpp"
+#include "memory.hpp"
 #include <cstdint>
 #include <map>
 #include <sstream>
@@ -19,6 +20,8 @@
 #include <vector>
 
 namespace moss {
+
+class MemoryPool;
 
 enum class TypeKind {
     // Primitive types
@@ -34,7 +37,8 @@ enum class TypeKind {
     // Non-primitive types
     FUN_LIST,
     OBJECT,
-    CLASS
+    CLASS,
+    SPACE
 };
 
 /** Base class of all values */
@@ -46,11 +50,10 @@ protected:
     Value *type;
     ustring name;
     
-    std::map<ustring, Value *> attrs;
+    MemoryPool *attrs;
     std::map<ustring, Value *> annotations;
 
-    Value(TypeKind kind, ustring name, Value *type) 
-        : references(1), kind(kind), type(type), name(name), attrs(), annotations{} {}
+    Value(TypeKind kind, ustring name, Value *type);
 public:
     virtual Value *clone() = 0;
     virtual ~Value() {
@@ -103,6 +106,7 @@ public:
 
     /** Sets (new or overrides) attribute name to value v*/
     void set_attr(ustring name, Value *v);
+    void set_attrs(MemoryPool *attrs) { this->attrs = attrs; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
@@ -322,23 +326,7 @@ public:
         return "<Class " + name + ">";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Class(" << name; 
-        bool first = true;
-        for (auto s : supers) {
-            if (first) {
-                os << ", parents: {";
-                first = false;
-            }
-            else {
-                os << ", " << s->get_name();
-            }
-        }
-        if (!first)
-            os << "}";
-        os << ")[refs: " << references << "]";
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const override;
 };
 
 class ObjectValue : public Value {

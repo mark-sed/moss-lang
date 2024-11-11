@@ -6,9 +6,9 @@
 using namespace moss;
 
 Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0), bci_modified(false) {
-    this->const_pool = new MemoryPool(true);
+    this->const_pool = new MemoryPool(true, true);
     // Global frame
-    this->frames.push_back(new MemoryPool());
+    this->frames.push_back(new MemoryPool(false, true));
     init_const_frame();
     init_global_frame();
 }
@@ -81,6 +81,11 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
     return os;
 }
 
+std::ostream& CallFrameArg::debug(std::ostream& os) const {
+    os << "\"" << name << "\": " << *value << " dst = %" << dst;
+    return os;
+}
+
 void Interpreter::store(opcode::Register reg, Value *v) {
     get_local_frame()->store(reg, v);
 }
@@ -140,7 +145,10 @@ void Interpreter::pop_frame() {
     assert(frames.size() > 1 && "Trying to pop global frame");
     auto top = frames.back();
     frames.pop_back();
-    delete top;
+    // TODO: We cannot delete the frame as it might be used as attr and also
+    // it might hold values used in other places. This means that it probably
+    // needs to be stored and then values from it collected by the GC
+    //delete top;
 }
 
 void Interpreter::run() {

@@ -676,6 +676,27 @@ void BytecodeGen::emit(ir::Function *fun) {
     this->curr_creg = pre_function_creg;
 }
 
+void BytecodeGen::emit(ir::Class *cls) {
+    comment("class " + cls->get_name() + " start");
+    for (auto p: cls->get_parents()) {
+        auto p_reg = emit(p, true);
+        append(new PushParent(free_reg(p_reg)));
+    }
+    append(new BuildClass(next_reg(), cls->get_name()));
+    emit(cls->get_body());
+    /*for (auto d : cls->get_body()) {
+        if (auto be = dyn_cast<BinaryExpr>(d)) {
+            if (be->get_op().get_kind() == OperatorKind::OP_SET) {
+                assert(false && "TODO: Class attribute assignment");
+                continue;
+            }
+        }
+        emit(d);
+    }*/
+    append(new PopFrame());
+    comment("class " + cls->get_name() + " end");
+}
+
 void BytecodeGen::emit(ir::IR *decl) {
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
@@ -691,6 +712,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto f = dyn_cast<ir::Function>(decl)) {
         emit(f);
+    }
+    else if (auto c = dyn_cast<ir::Class>(decl)) {
+        emit(c);
     }
     else if (auto i = dyn_cast<ir::If>(decl)) {
         emit(i);
