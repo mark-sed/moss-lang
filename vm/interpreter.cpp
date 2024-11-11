@@ -54,8 +54,8 @@ void Interpreter::init_const_frame() {
 
     opcode::Register reg = 0;
     cf->store(reg++, BuiltIns::Nil);
-    for (unsigned i = 0; i < BUILT_INS_INT_CONSTANTS_AM; ++i) {
-        cf->store(reg++, BuiltIns::IntConstants[i]);
+    for (auto i : BuiltIns::IntConstants) {
+        cf->store(reg++, i);
     }
 
     assert(reg < BC_RESERVED_CREGS && "More c registers used that is reserved");

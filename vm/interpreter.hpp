@@ -102,6 +102,7 @@ private:
     MemoryPool *const_pool;
     std::list<MemoryPool *> frames; ///< Frame stack
     std::list<CallFrame *> call_frames; ///< Call frame stack
+    std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
 
     opcode::Address bci;
 
@@ -179,6 +180,16 @@ public:
         assert(!this->call_frames.empty() && "no call frame to pop");
         call_frames.pop_back(); 
     }
+
+    /**
+     * Pushes a new class into parent list
+     */
+    void push_parent(ClassValue *cls) { parent_list.push_back(cls); }
+    /**
+     * Clears parent list
+     */
+    void clear_parent_list() { parent_list.clear(); }
+    std::list<ClassValue *> get_parent_list() { return this->parent_list; }
 
     /** @return Interpreter exit code */
     int get_exit_code() { return exit_code; }

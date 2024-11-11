@@ -95,7 +95,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::PushParent(11));
     bc->push_back(new opcode::CreateObject(11, 18));
     bc->push_back(new opcode::PromoteObject(13, 4));
-    bc->push_back(new opcode::BuildClass(0));
+    bc->push_back(new opcode::BuildClass(0, "MyClass"));
     bc->push_back(new opcode::Copy(1, 0));
     bc->push_back(new opcode::DeepCopy(2, 3));
     

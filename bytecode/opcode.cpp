@@ -457,7 +457,11 @@ void ImportAll::exec(Interpreter *vm) {
 }
 
 void PushParent::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load(parent);
+    assert(v && "Non existent class");
+    auto cv = dyn_cast<ClassValue>(v);
+    assert(cv && "Pushed parent is not a class");
+    vm->push_parent(cv);
 }
 
 void CreateObject::exec(Interpreter *vm) {
@@ -469,7 +473,9 @@ void PromoteObject::exec(Interpreter *vm) {
 }
 
 void BuildClass::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    vm->store(dst, new ClassValue(name, vm->get_parent_list()));
+    vm->store_name(dst, name);
+    vm->clear_parent_list();
 }
 
 void Copy::exec(Interpreter *vm) {

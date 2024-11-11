@@ -1078,22 +1078,23 @@ public:
 
 class BuildClass : public OpCode {
 public:
-    Register src;
+    Register dst;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::BUILD_CLASS;
 
-    BuildClass(Register src) : OpCode(ClassType, "BUILD_CLASS"), src(src) {}
+    BuildClass(Register dst, StringConst name) : OpCode(ClassType, "BUILD_CLASS"), dst(dst), name(name) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src;
+        os << mnem << "\t%" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<BuildClass>(other);
         if (!casted) return false;
-        return casted->src == src;
+        return casted->dst == dst && casted->name == name;
     }
 };
 

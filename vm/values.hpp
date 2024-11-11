@@ -15,6 +15,8 @@
 #include <cstdint>
 #include <map>
 #include <sstream>
+#include <list>
+#include <vector>
 
 namespace moss {
 
@@ -106,6 +108,16 @@ public:
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
     return v.debug(os);
 }
+
+// Forward declarations
+template<class T>
+bool isa(Value& t);
+
+template<class T>
+bool isa(Value* t);
+
+template<class T>
+T *dyn_cast(Value* t);
 
 /**
  * This namespace contains values (pointers) for all the built-in types
@@ -293,13 +305,17 @@ public:
 };
 
 class ClassValue : public Value {
+private:
+    std::list<ClassValue *> supers;
 public:
     static const TypeKind ClassType = TypeKind::CLASS;
 
     ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
+    ClassValue(ustring name, std::list<ClassValue *> supers) 
+        : Value(ClassType, name, BuiltIns::Type), supers(supers) {}
 
     virtual Value *clone() {
-        return new ClassValue(this->name);
+        return new ClassValue(this->name, this->supers);
     }
 
     virtual opcode::StringConst as_string() override {
@@ -307,7 +323,41 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Class(" << name << ")[refs: " << references << "]";
+        os << "Class(" << name; 
+        bool first = true;
+        for (auto s : supers) {
+            if (first) {
+                os << ", parents: {";
+                first = false;
+            }
+            else {
+                os << ", " << s->get_name();
+            }
+        }
+        if (!first)
+            os << "}";
+        os << ")[refs: " << references << "]";
+        return os;
+    }
+};
+
+class ObjectValue : public Value {
+public:
+    static const TypeKind ClassType = TypeKind::OBJECT;
+
+    ObjectValue(ClassValue *cls) : Value(ClassType, "<object>", cls) {}
+
+    virtual Value *clone() {
+        assert(isa<ClassValue>(this->type) && "type was modified?");
+        return new ObjectValue(dyn_cast<ClassValue>(this->type));
+    }
+
+    virtual opcode::StringConst as_string() override {
+        return "<object of class " + this->type->get_name() + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "(" << this->type->get_name() << ")object[refs: " << references << "]";
         return os;
     }
 };

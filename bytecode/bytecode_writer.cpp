@@ -188,7 +188,8 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->cls);
         }
         else if (auto o = dyn_cast<opcode::BuildClass>(op_gen)){
-            write_register(o->src);
+            write_register(o->dst);
+            write_string(o->name);
         }
         else if (auto o = dyn_cast<opcode::Copy>(op_gen)){
             write_register(o->dst);

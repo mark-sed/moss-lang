@@ -23,14 +23,13 @@ OUTPUT      #0
 ```
 
 Commonly used constants are pushed into this pool by default:
-- 0 - Invalid value
+- 0 - nil
 - 1 - 99 - int values 
 - 100 - float 0.0
 - 101 - float 1.0
 - 102 - float +inf
 - 103 - float -inf
 - 104 - float nan
-- 105 - nil
 - 106 - true
 - 107 - false
 
@@ -104,7 +103,7 @@ xxh - IMPORT_ALL    "name"
 xxh - PUSH_PARENT   %class
 xxh - CREATE_OBJ    %dst, %class
 xxh - PROMOTE_OBJ   %src, %class
-xxh - BUILD_CLASS   %src
+xxh - BUILD_CLASS   %dst, "name"
 xxh - COPY          %dst, %src
 xxh - DEEP_COPY     %dst, %src
 
@@ -306,13 +305,10 @@ print(myc.get_a())
 ```
 
 ```
-x   STORE_STR_CONST #200, "My Class"
-x   STORE_NAME  %0, "MyClass"
-
 x   JMP         <byte at which MyClass ends>
 x   LOAD        %1, "XClass"
 x   PUSH_PARENT %1
-x   BUILD_CLASS %0
+x   BUILD_CLASS %0, "MyClass"
 
 x   STORE_CONST_ATTR  #200, %0, "NAME"
 

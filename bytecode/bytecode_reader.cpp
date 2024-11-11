@@ -252,7 +252,9 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new PromoteObject(reg1, reg2));
             } break;
             case opcode::OpCodes::BUILD_CLASS: {
-                bc->push_back(new BuildClass(read_register()));
+                auto reg = read_register();
+                auto str = read_string();
+                bc->push_back(new BuildClass(reg, str));
             } break;
             case opcode::OpCodes::COPY: {
                 auto reg1 = read_register();
