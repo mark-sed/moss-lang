@@ -168,8 +168,8 @@ enum OpCodes : opcode_t {
     RAISE, //         %src
     CHECK_CATCH, //   %dst, %class
 
-    LIST_PUSH, //         %val
-    LIST_PUSH_CONST, //   #val
+    LIST_PUSH, //         %dst, %val
+    LIST_PUSH_CONST, //   %dst, #val
     BUILD_LIST, //        %dst
 
     BUILD_DICT, //        %dst, %keys, %vals
@@ -1706,43 +1706,45 @@ public:
 
 class ListPush : public OpCode {
 public:
+    Register dst;
     Register src;
 
     static const OpCodes ClassType = OpCodes::LIST_PUSH;
 
-    ListPush(Register src) : OpCode(ClassType, "LIST_PUSH"), src(src) {}
+    ListPush(Register dst, Register src) : OpCode(ClassType, "LIST_PUSH"), dst(dst), src(src) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src;
+        os << mnem << "\t%" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<ListPush>(other);
         if (!casted) return false;
-        return casted->src == src;
+        return casted->src == src && casted->dst == dst;
     }
 };
 
 class ListPushConst : public OpCode {
 public:
+    Register dst;
     Register csrc;
 
     static const OpCodes ClassType = OpCodes::LIST_PUSH_CONST;
 
-    ListPushConst(Register csrc) : OpCode(ClassType, "LIST_PUSH_CONST"), csrc(csrc) {}
+    ListPushConst(Register dst, Register csrc) : OpCode(ClassType, "LIST_PUSH_CONST"), dst(dst), csrc(csrc) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << csrc;
+        os << mnem << "\t%" << dst << ", #" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<ListPushConst>(other);
         if (!casted) return false;
-        return casted->csrc == csrc;
+        return casted->csrc == csrc && casted->dst == dst;
     }
 };
 

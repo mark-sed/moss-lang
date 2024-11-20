@@ -185,8 +185,8 @@ xxh - COPY_ARGS
 xxh - RAISE         %val
 xxh - CHECK_CATCH   %dst, %class
 
-xxh - LIST_PUSH         %val
-xxh - LIST_PUSH_CONST   #val
+xxh - LIST_PUSH         %dst, %val
+xxh - LIST_PUSH_CONST   %dst, #val
 xxh - BUILD_LIST        %dst
 
 xxh - BUILD_DICT        %keys, %vals
@@ -305,7 +305,6 @@ print(myc.get_a())
 ```
 
 ```
-x   JMP         <byte at which MyClass ends>
 x   LOAD        %1, "XClass"
 x   PUSH_PARENT %1
 x   BUILD_CLASS %0, "MyClass"
@@ -412,14 +411,14 @@ default: return -1
 ```
 
 ```
-x       LIST_PUSH_CONST #1
-x       LIST_PUSH_CONST #2
-x       LIST_PUSH_CONST #3
-x       BUILD_LIST      %0
-x       LIST_PUSH_ADDR  add1
-x       LIST_PUSH_ADDR  add1
-x       LIST_PUSH_ADDR  add2
 x       BUILD_LIST      %1
+x       LIST_PUSH_CONST %1, #1
+x       LIST_PUSH_CONST %1, #2
+x       LIST_PUSH_CONST %1, #3
+x       BUILD_LIST      %0
+x       LIST_PUSH_ADDR  %1, add1
+x       LIST_PUSH_ADDR  %1, add1
+x       LIST_PUSH_ADDR  %1, add2
 x       LOAD_NAME       %3, "a"
 
 x       SWITCH %3, %0, %1, addr3
@@ -438,10 +437,10 @@ enum Colors {
 ```
 
 ```
-x       STORE_STR_CONST #1, "BLACK"
-x       STORE_STR_CONST #2, "WHITE"
-x       LIST_PUSH_CONST #1
-x       LIST_PUSH_CONST #2
 x       BUILD_LIST      %0
+x       STORE_STR_CONST %0, #1, "BLACK"
+x       STORE_STR_CONST %0, #2, "WHITE"
+x       LIST_PUSH_CONST %0, #1
+x       LIST_PUSH_CONST %0, #2
 x       BUILD_ENUM      %1, %0
 ```

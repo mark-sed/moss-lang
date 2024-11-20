@@ -513,8 +513,24 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         bcv = last_creg();
     }
     else if (auto val = dyn_cast<List>(expr)) {
-        assert("TODO: list generation");
-        // List might be a comprehension
+        if (!val->is_comprehension()) {
+            auto list_reg = next_reg();
+            append(new BuildList(list_reg));
+            for (auto v: val->get_value()) {
+                auto genv = emit(v);
+                if (genv->is_const()) {
+                    append(new ListPushConst(list_reg, free_reg(genv)));
+                }
+                else {
+                    append(new ListPush(list_reg, free_reg(genv)));
+                }
+            }
+            
+            bcv = last_reg();
+        }
+        else {
+            assert(false && "List comprehension generation");
+        } 
     }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);

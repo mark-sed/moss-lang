@@ -1361,6 +1361,9 @@ Expression *Parser::constant() {
                 vals = expr_list();
                 vals.insert(vals.begin(), first);
             }
+            else if (check(TokenType::RIGHT_SQUARE)) {
+                vals.push_back(first);
+            }
         }
         skip_nls();
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));

@@ -638,10 +638,14 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new CheckCatch(reg1, reg2));
             } break;
             case opcode::OpCodes::LIST_PUSH: {
-                bc->push_back(new ListPush(read_register()));
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                bc->push_back(new ListPush(reg1, reg2));
             } break;
             case opcode::OpCodes::LIST_PUSH_CONST: {
-                bc->push_back(new ListPushConst(read_register()));
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                bc->push_back(new ListPushConst(reg1, reg2));
             } break;
             case opcode::OpCodes::BUILD_LIST: {
                 bc->push_back(new BuildList(read_register()));

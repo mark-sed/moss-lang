@@ -1325,6 +1325,7 @@ public:
     }
 
     std::vector<Expression *> get_value() { return this->value; }
+    bool is_comprehension() { return this->comprehension; }
 };
 
 class Dict : public Expression {
