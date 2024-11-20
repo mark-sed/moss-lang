@@ -1271,15 +1271,27 @@ void CheckCatch::exec(Interpreter *vm) {
 }
 
 void ListPush::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load(src);
+    assert(v && "non existent source");
+    auto d = vm->load(dst);
+    assert(d && "non existent destination");
+    auto dlist = dyn_cast<ListValue>(d);
+    assert(dlist && "somehow list push is not into list");
+    dlist->push(v);
 }
 
 void ListPushConst::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto v = vm->load_const(csrc);
+    assert(v && "non existent source");
+    auto d = vm->load(dst);
+    assert(d && "non existent destination");
+    auto dlist = dyn_cast<ListValue>(d);
+    assert(dlist && "somehow list push is not into list");
+    dlist->push(v);
 }
 
 void BuildList::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    vm->store(dst, new ListValue());
 }
 
 void BuildDict::exec(Interpreter *vm) {

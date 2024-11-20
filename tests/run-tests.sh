@@ -157,6 +157,12 @@ function test_classes {
     expect_out_eq "42\n<Class Cat>\n" $1
 }
 
+function test_lists {
+    expect_pass "lists.ms" $1
+    expect_out_eq "[1, 2, 3, false]\n[[123], 4, [123]]
+[5, 8, [0, 1]]\n[5, 8, [0, 1]]\n" $1
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -195,6 +201,8 @@ function run_all_tests {
     run_test ifs
     run_test whiles
     run_test classes
+    run_test lists
+
     run_test fibonacci
     run_test factorial
     run_test collatz

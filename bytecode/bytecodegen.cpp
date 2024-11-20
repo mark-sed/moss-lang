@@ -515,6 +515,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
     else if (auto val = dyn_cast<List>(expr)) {
         if (!val->is_comprehension()) {
             auto list_reg = next_reg();
+            bcv = last_reg();
             append(new BuildList(list_reg));
             for (auto v: val->get_value()) {
                 auto genv = emit(v);
@@ -525,8 +526,6 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
                     append(new ListPush(list_reg, free_reg(genv)));
                 }
             }
-            
-            bcv = last_reg();
         }
         else {
             assert(false && "List comprehension generation");

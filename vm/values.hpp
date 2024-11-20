@@ -283,6 +283,8 @@ public:
 
     std::vector<Value *> get_vals() { return this->vals; }
 
+    void push(Value *v) { vals.push_back(v); }
+
     virtual opcode::StringConst as_string() override {
         if (vals.empty()) return "[]";
         std::stringstream ss;

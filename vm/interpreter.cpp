@@ -38,6 +38,7 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Int", BuiltIns::Int, gf);
     store_glob_val(reg++, "Float", BuiltIns::Float, gf);
     store_glob_val(reg++, "Bool", BuiltIns::Bool, gf);
+    store_glob_val(reg++, "List", BuiltIns::List, gf);
     store_glob_val(reg++, "NilType", BuiltIns::NilType, gf);
     store_glob_val(reg++, "String", BuiltIns::String, gf);
     store_glob_val(reg++, "Address", BuiltIns::Address, gf);
