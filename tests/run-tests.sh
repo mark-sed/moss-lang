@@ -136,7 +136,7 @@ function test_functions {
     expect_out_eq "hi there\nnot here\nnil\n9\n11\n1false\ntest2\n42
 0\n1\n123\n125\n123\n1trueanil[]1\n<function fooa with 3 overloads>
 12[3, 4, 5]false97\n12[]false97\n12[3, 4, 5]false97
-[]\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, ok, false, nil]\ntrue[1]
+[]\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, \"ok\", false, nil]\ntrue[1]
 1\n0\n0\n42\nhello from greet\n" $1
 }
 
@@ -159,7 +159,7 @@ function test_classes {
 
 function test_lists {
     expect_pass "lists.ms" $1
-    expect_out_eq "[1, 2, 3, false]\n[[123], 4, [123]]
+    expect_out_eq "[1, 2, 3, false, \"pět\"]\n[[123], 4, [123]]
 [5, 8, [0, 1]]\n[5, 8, [0, 1]]\n" $1
 }
 

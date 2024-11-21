@@ -62,6 +62,9 @@ public:
     }
 
     virtual opcode::StringConst as_string() = 0;
+    virtual opcode::StringConst dump() {
+        return as_string();
+    }
     virtual opcode::FloatConst as_float() {
         // FIXME: raise error
         assert(false && "as_float requested on non numerical value");
@@ -242,6 +245,10 @@ public:
         return value;
     }
 
+    virtual opcode::StringConst dump() override {
+        return "\"" + value + "\"";
+    }
+
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "String(\"" << value << "\")[refs: " << references << "]";
         return os;
@@ -292,11 +299,11 @@ public:
         bool first = true;
         for (auto v: vals) {
             if (first) {
-                ss << v->as_string();
+                ss << v->dump();
                 first = false;
             }
             else {
-                ss << ", " << v->as_string();
+                ss << ", " << v->dump();
             }
         }
         ss << "]";

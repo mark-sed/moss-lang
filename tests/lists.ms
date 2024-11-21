@@ -1,4 +1,4 @@
-[1, 2, 3, false]
+[1, 2, 3, false, "pět"]
 "\n"
 
 fun foo() {
