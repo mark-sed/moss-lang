@@ -190,6 +190,22 @@ function test_exit {
     expect_out_eq "hi\n" $1
 }
 
+function test_vardump {
+    expect_pass "stdlib_tests/vardump.ms" $1
+    expect_out_eq "Int(42)
+String(\"hello there\")\nString(\"\")\nBool(true)\nNilType(nil)
+List(4) [
+  Int(1),
+  String(\"two\"),
+  Bool(true),
+  List(2) [
+  Int(8),
+  Int(9)
+]
+]
+List(0) []\n" $1
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -209,6 +225,7 @@ function run_all_tests {
 
     # stdlib tests
     run_test exit
+    run_test vardump
 }
 
 # Count all functions starting with test_ 

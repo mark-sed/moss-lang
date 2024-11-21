@@ -19,6 +19,8 @@
 #include <list>
 #include <vector>
 
+#define TAB_DEBUG "  "
+
 namespace moss {
 
 class MemoryPool;
@@ -61,7 +63,7 @@ public:
         // or used somewhere else, let gc handle it
     }
 
-    virtual opcode::StringConst as_string() = 0;
+    virtual opcode::StringConst as_string() const = 0;
     virtual opcode::StringConst dump() {
         return as_string();
     }
@@ -75,10 +77,7 @@ public:
     Value *get_type() { return this->type; }
     ustring get_name() { return this->name; }
 
-    virtual std::ostream& debug(std::ostream& os) const {
-        os << "[Value]" << name;
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const = 0;
 
     /** Returns how many references are there for this value */
     int get_references() { return this->references; }
@@ -162,7 +161,7 @@ public:
 
     opcode::IntConst get_value() { return this->value; }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return std::to_string(value);
     }
 
@@ -171,7 +170,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Int(" << value << ")[refs: " << references << "]";
+        os << "Int(" << value << ")";
         return os;
     }
 };
@@ -193,12 +192,12 @@ public:
         return this->value;
     }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return std::to_string(value);
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Float(" << value << ")[refs: " << references << "]";
+        os << "Float(" << value << ")";
         return os;
     }
 };
@@ -217,12 +216,12 @@ public:
 
     opcode::BoolConst get_value() { return this->value; }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return value ? "true" : "false";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Bool(" << (value ? "true" : "false") << ")[refs: " << references << "]";
+        os << "Bool(" << (value ? "true" : "false") << ")";
         return os;
     }
 };
@@ -241,7 +240,7 @@ public:
 
     opcode::StringConst get_value() { return this->value; }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return value;
     }
 
@@ -250,7 +249,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "String(\"" << value << "\")[refs: " << references << "]";
+        os << "String(\"" << utils::sanitize(value) << "\")";
         return os;
     }
 };
@@ -265,12 +264,12 @@ public:
         return new NilValue();
     }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return "nil";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "nil" << "[refs: " << references << "]";
+        os << "NilType(nil)";
         return os;
     }
 };
@@ -292,7 +291,7 @@ public:
 
     void push(Value *v) { vals.push_back(v); }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         if (vals.empty()) return "[]";
         std::stringstream ss;
         ss << "[";
@@ -312,7 +311,21 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "List(size:" << vals.size() << ")[refs: " << references << "]";
+        os << "List(" << vals.size() << ") [";
+        if (vals.empty()) {
+            os << "]";
+            return os;
+        }
+
+        bool first = true;
+        for (auto v: vals) {
+            // TODO: tab has to increase with each use so that if
+            // list or some other structure is outputted it will also have
+            // correct tabs.
+            os << (first ? "" : ",") << "\n" << TAB_DEBUG << *v; 
+            first = false;
+        }
+        os << "\n]";
         return os;
     }
 };
@@ -331,7 +344,7 @@ public:
         return new ClassValue(this->name, this->supers);
     }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return "<Class " + name + ">";
     }
 
@@ -349,12 +362,13 @@ public:
         return new ObjectValue(dyn_cast<ClassValue>(this->type));
     }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         return "<object of class " + this->type->get_name() + ">";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "(" << this->type->get_name() << ")object[refs: " << references << "]";
+        // TODO: Output all attributes and so on
+        os << "(" << this->type->get_name() << ")object";
         return os;
     }
 };
@@ -422,7 +436,7 @@ public:
 
     std::vector<FunValueArg *> get_args() { return this->args; }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         std::stringstream ss;
         ss << "<function " << name << " at " << std::hex << static_cast<const void*>(this) << ">";
         return ss.str();
@@ -440,7 +454,7 @@ public:
             }
             os << "]";
         }
-        os << ")[refs: " << references << "]";
+        os << ")";
         return os;
     }
 };
@@ -467,7 +481,7 @@ public:
         return funs.back();
     }
 
-    virtual opcode::StringConst as_string() override {
+    virtual opcode::StringConst as_string() const override {
         assert(!funs.empty() && "sanity check");
         return "<function " + funs[0]->get_name() + " with " + std::to_string(funs.size()) + " overloads>";
     }
@@ -484,7 +498,7 @@ public:
                 os << ", " << *f;
             }
         }
-        os << ")[refs: " << references << "]";
+        os << ")";
         return os;
     }
 };

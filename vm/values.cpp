@@ -19,6 +19,7 @@ void Value::set_attr(ustring name, Value *v) {
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {
+    // TODO: Output all needed debug info
     os << "Class(" << name; 
     bool first = true;
     for (auto s : supers) {
@@ -32,7 +33,7 @@ std::ostream& ClassValue::debug(std::ostream& os) const {
     }
     if (!first)
         os << "}";
-    os << ")[refs: " << references << "]";
+    os << ")";
     //os << *attrs;
     return os;
 }

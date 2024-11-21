@@ -1,7 +1,7 @@
 /**
  * Programs showcasing how to implement custom
  * methods to cast an object to built-in type.
- * Built-in type constructors call `__X(self)` methods
+ * Built-in type constructors call `__X(this)` methods
  * on the given object, where the X stands for the type
  * name.
  *
@@ -14,24 +14,24 @@
 
 class MyClass {
 
-    new MyClass(self, v) {
-        self.v = v
+    new MyClass(v) {
+        this.v = v
     }
 
-    fun __String(self) {
-        return "MyClass("++String(self.v)++")"
+    fun __String() {
+        return "MyClass("++String(this.v)++")"
     }
 
-    fun __Int(self) {
-        return self.v
+    fun __Int() {
+        return this.v
     }
 
-    fun __Float(self) {
-        return Float(self.v)
+    fun __Float() {
+        return Float(this.v)
     }
 
-    fun __Bool(self) {
-        return self.v != 0
+    fun __Bool() {
+        return this.v != 0
     }
 }
 

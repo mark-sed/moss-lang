@@ -22,6 +22,7 @@ namespace moss {
 namespace mslib {
 
 void exit(Interpreter *vm, Value *code);
+void vardump(Interpreter *vm, Value *v);
 
 void dispatch(Interpreter *vm, ustring name, Value *&err);
 
