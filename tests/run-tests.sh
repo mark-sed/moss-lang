@@ -53,6 +53,11 @@ function run {
     RETCODE=$(echo $?)
 }
 
+function run_exec {
+    $MOSS -e "$1" 2>$OUTP_ERR 1>$OUTP_STD
+    RETCODE=$(echo $?)
+}
+
 function expect_pass {
     run "${@:1:$#-1}"
     if [[ $RETCODE -ne 0 ]]; then
@@ -65,8 +70,36 @@ function expect_pass {
     fi
 }
 
+function expect_pass_exec {
+    run_exec "${@:1:$#-1}"
+    if [[ $RETCODE -ne 0 ]]; then
+        failed "${@: -1}" "Program failed."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+        printf "Error output:\n-------------\n"
+        cat $OUTP_ERR
+    fi
+}
+
 function expect_fail {
     run $1
+    local errmsg=$(cat "$OUTP_ERR")
+    if [[ $RETCODE -eq 0 ]]; then
+        failed $3 "Test was supposed to fail, but passed."
+    elif ! [[ "$errmsg" =~ "$2" ]] ; then
+        failed $3 "Error message differs."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+        printf "Error output:\n-------------\n"
+        cat $OUTP_ERR
+        printf "Expected error regex:\n--------------\n${2}\n"
+    fi
+}
+
+function expect_fail_exec {
+    run_exec $1
     local errmsg=$(cat "$OUTP_ERR")
     if [[ $RETCODE -eq 0 ]]; then
         failed $3 "Test was supposed to fail, but passed."
@@ -198,6 +231,9 @@ function test_factorial {
 function test_exit {
     expect_pass "stdlib_tests/exit.ms" $1
     expect_out_eq "hi\n" $1
+
+    expect_fail_exec "exit(\"bye\")" "bye" $1
+    expect_fail_exec "exit(42)" "" $1
 }
 
 function test_vardump {
