@@ -190,7 +190,7 @@ xxh - LIST_PUSH_CONST   %dst, #val
 xxh - BUILD_LIST        %dst
 
 xxh - BUILD_DICT        %keys, %vals
-xxx - BUILD_ENUM        %names
+xxx - BUILD_ENUM        %dst, %vals, "name"
 
 xxh - CREATE_RANGE      %dst, %start, %step, %end
 xxh - CREATE_RANGE2     %dst, #start, %step, %end
@@ -438,9 +438,9 @@ enum Colors {
 
 ```
 x       BUILD_LIST      %0
-x       STORE_STR_CONST %0, #1, "BLACK"
-x       STORE_STR_CONST %0, #2, "WHITE"
+x       STORE_STR_CONST #1, "BLACK"
 x       LIST_PUSH_CONST %0, #1
+x       STORE_STR_CONST #2, "WHITE"
 x       LIST_PUSH_CONST %0, #2
-x       BUILD_ENUM      %1, %0
+x       BUILD_ENUM      %1, %0, "Colors"
 ```

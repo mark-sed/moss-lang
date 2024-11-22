@@ -712,6 +712,18 @@ void BytecodeGen::emit(ir::Class *cls) {
     comment("class " + cls->get_name() + " end");
 }
 
+void BytecodeGen::emit(ir::Enum *enm) {
+    comment("enum " + enm->get_name());
+    auto list_reg = next_reg();
+    append(new BuildList(list_reg));
+    for (auto v: enm->get_values()) {
+        auto v_reg = next_creg();
+        append(new StoreStringConst(v_reg, v));
+        append(new ListPushConst(list_reg, v_reg));
+    }
+    append(new BuildEnum(next_reg(), list_reg, enm->get_name()));
+}
+
 void BytecodeGen::emit(ir::IR *decl) {
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
@@ -730,6 +742,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto c = dyn_cast<ir::Class>(decl)) {
         emit(c);
+    }
+    else if (auto e = dyn_cast<ir::Enum>(decl)) {
+        emit(e);
     }
     else if (auto i = dyn_cast<ir::If>(decl)) {
         emit(i);

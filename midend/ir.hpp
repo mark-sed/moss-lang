@@ -632,6 +632,7 @@ public:
 
 class Enum : public IR {
 private:
+    // TODO: This could be List to simplify codegen as it needs to be converted anyway
     std::vector<ustring> values;
 public:
     static const IRType ClassType = IRType::ENUM;
@@ -645,6 +646,10 @@ public:
         }
         os << "}";
         return os;
+    }
+
+    std::vector<ustring> get_values() {
+        return this->values;
     }
 };
 

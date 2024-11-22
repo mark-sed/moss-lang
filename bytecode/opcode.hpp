@@ -173,7 +173,7 @@ enum OpCodes : opcode_t {
     BUILD_LIST, //        %dst
 
     BUILD_DICT, //        %dst, %keys, %vals
-    BUILD_ENUM, //        %dst, %names
+    BUILD_ENUM, //        %dst, %vals, %name
 
     CREATE_RANGE, //      %dst, %start, %step, %end
     CREATE_RANGE2, //     %dst, #start, %step, %end
@@ -1796,22 +1796,24 @@ public:
 class BuildEnum : public OpCode {
 public:
     Register dst;
-    Register names;
+    Register vals;
+    StringConst name;
 
     static const OpCodes ClassType = OpCodes::BUILD_ENUM;
 
-    BuildEnum(Register dst, Register names) : OpCode(ClassType, "BUILD_ENUM"), dst(dst), names(names) {}
+    BuildEnum(Register dst, Register vals, StringConst name)
+        : OpCode(ClassType, "BUILD_ENUM"), dst(dst), vals(vals), name(name) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << names;
+        os << mnem << "\t%" << dst << ", %" << vals << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<BuildEnum>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->names == names;
+        return casted->dst == dst && casted->name == name && casted->vals == vals;
     }
 };
 

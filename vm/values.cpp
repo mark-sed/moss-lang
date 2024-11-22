@@ -2,11 +2,12 @@
 
 using namespace moss;
 
+int Value::tab_depth = 0;
+
 Value::Value(TypeKind kind, ustring name, Value *type) 
         : references(1), kind(kind), type(type), name(name), 
           attrs(new MemoryPool()), annotations{} {
 }
-
 
 Value *Value::get_attr(ustring name) {
     return attrs->load_name(name);
@@ -36,6 +37,14 @@ std::ostream& ClassValue::debug(std::ostream& os) const {
     os << ")";
     //os << *attrs;
     return os;
+}
+
+EnumValue::EnumValue(EnumTypeValue *type, ustring name) : Value(ClassType, name, type) {
+}
+
+Value *EnumValue::clone() {
+    assert(isa<EnumTypeValue>(this->type) && "Incorrect type for enum value");
+    return new EnumValue(dyn_cast<EnumTypeValue>(this->type), this->name);
 }
 
 Value *BuiltIns::Type = new ClassValue("Type");

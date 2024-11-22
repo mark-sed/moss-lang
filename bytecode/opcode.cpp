@@ -1299,7 +1299,19 @@ void BuildDict::exec(Interpreter *vm) {
 }
 
 void BuildEnum::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto lvals = vm->load(vals);
+    assert(lvals && "sanity check");
+    auto vals_list = dyn_cast<ListValue>(lvals);
+    assert(vals_list && "Enum isn't constructed from list");
+    
+    auto enum_type = new EnumTypeValue(name);
+    std::vector<EnumValue *> evals;
+    for (auto name: vals_list->get_vals()) {
+        evals.push_back(new EnumValue(enum_type, name->as_string()));
+    }
+    enum_type->set_values(evals);
+    vm->store(dst, enum_type);
+    vm->store_name(dst, name);
 }
 
 static Value *range(Value *start, Value *step, Value *end, Interpreter *vm) {

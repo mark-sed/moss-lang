@@ -19,8 +19,6 @@
 #include <list>
 #include <vector>
 
-#define TAB_DEBUG "  "
-
 namespace moss {
 
 class MemoryPool;
@@ -40,7 +38,9 @@ enum class TypeKind {
     FUN_LIST,
     OBJECT,
     CLASS,
-    SPACE
+    SPACE,
+    ENUM,
+    ENUM_VALUE
 };
 
 /** Base class of all values */
@@ -56,6 +56,8 @@ protected:
     std::map<ustring, Value *> annotations;
 
     Value(TypeKind kind, ustring name, Value *type);
+
+    static int tab_depth;
 public:
     virtual Value *clone() = 0;
     virtual ~Value() {
@@ -318,14 +320,16 @@ public:
         }
 
         bool first = true;
+        ++tab_depth;
         for (auto v: vals) {
             // TODO: tab has to increase with each use so that if
             // list or some other structure is outputted it will also have
             // correct tabs.
-            os << (first ? "" : ",") << "\n" << TAB_DEBUG << *v; 
+            os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') << *v; 
             first = false;
         }
-        os << "\n]";
+        --tab_depth;
+        os << "\n" << std::string(tab_depth*2, ' ') << "]";
         return os;
     }
 };
@@ -499,6 +503,71 @@ public:
             }
         }
         os << ")";
+        return os;
+    }
+};
+
+class EnumTypeValue;
+
+class EnumValue : public Value {
+public:
+    static const TypeKind ClassType = TypeKind::ENUM_VALUE;
+
+    EnumValue(EnumTypeValue *type, ustring name);
+
+    virtual Value *clone();
+
+    virtual opcode::StringConst as_string() const override {
+        return name;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << type->get_name() << "(" << name << ")";
+        return os;
+    }
+};
+
+class EnumTypeValue : public Value {
+private:
+    std::vector<EnumValue *> vals;
+public:
+    static const TypeKind ClassType = TypeKind::ENUM;
+
+    EnumTypeValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
+    EnumTypeValue(ustring name, std::vector<EnumValue *> vals) 
+        : Value(ClassType, name, BuiltIns::Type), vals(vals) {}
+
+    virtual Value *clone() {
+        return new EnumTypeValue(this->name, this->vals);
+    }
+
+    void set_values(std::vector<EnumValue *> vals) {
+        this->vals = vals;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        return "<Enum " + name + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Enum {";
+        if (vals.empty()) {
+            os << "}";
+        }
+        else {
+            bool first = true;
+            ++tab_depth;
+            for (auto v: vals) {
+                if (!first) {
+                    os << ",";
+                }
+                first = false;
+                os << "\n";
+                os << std::string(tab_depth*2, ' ') << v->get_name();
+            }
+            --tab_depth;
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        }
         return os;
     }
 };

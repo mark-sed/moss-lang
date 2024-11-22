@@ -163,6 +163,16 @@ function test_lists {
 [5, 8, [0, 1]]\n[5, 8, [0, 1]]\n" $1
 }
 
+function test_enums {
+    expect_pass "enums.ms" $1
+    expect_out_eq "<Enum Colors>\nEnum {
+  Blue,
+  Red,
+  Green,
+  Purple
+}\n" $1
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -192,18 +202,28 @@ function test_exit {
 
 function test_vardump {
     expect_pass "stdlib_tests/vardump.ms" $1
-    expect_out_eq "Int(42)
-String(\"hello there\")\nString(\"\")\nBool(true)\nNilType(nil)
+    expect_out_eq 'Int(42)
+String(\"\\nhello\\n\\tthere\")
+String(\"\")\nBool(true)\nNilType(nil)
 List(4) [
   Int(1),
   String(\"two\"),
   Bool(true),
   List(2) [
-  Int(8),
-  Int(9)
+    Int(8),
+    Int(9)
+  ]
 ]
-]
-List(0) []\n" $1
+List(0) []
+List(1) [
+  List(1) [
+    Enum {
+      A,
+      B,
+      C
+    }
+  ]
+]\nEnum {}\n' $1
 }
 
 ###--- Running tests ---###
@@ -218,6 +238,7 @@ function run_all_tests {
     run_test whiles
     run_test classes
     run_test lists
+    run_test enums
 
     run_test fibonacci
     run_test factorial
