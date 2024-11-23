@@ -5,7 +5,9 @@
 
 using namespace moss;
 
-Interpreter::Interpreter(Bytecode *code, File *src_file) : code(code), src_file(src_file), bci(0), exit_code(0), bci_modified(false) {
+Interpreter::Interpreter(Bytecode *code, File *src_file) 
+        : code(code), src_file(src_file), gc(new gcs::TracingGC(this)), bci(0), exit_code(0),
+          bci_modified(false) {
     this->const_pool = new MemoryPool(true, true);
     // Global frame
     this->frames.push_back(new MemoryPool(false, true));
@@ -139,17 +141,14 @@ void Interpreter::copy_names(opcode::Register from, opcode::Register to) {
 }*/
 
 void Interpreter::push_frame() {
+    LOGMAX("Frame pushed");
     this->frames.push_back(new MemoryPool());
 }
 
 void Interpreter::pop_frame() {
+    LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
-    auto top = frames.back();
     frames.pop_back();
-    // TODO: We cannot delete the frame as it might be used as attr and also
-    // it might hold values used in other places. This means that it probably
-    // needs to be stored and then values from it collected by the GC
-    //delete top;
 }
 
 void Interpreter::run() {
@@ -164,6 +163,11 @@ void Interpreter::run() {
             bci_modified = false;
         else
             ++bci;
+
+        if (global_controls::trigger_gc) {
+            gc->collect_garbage();
+            global_controls::trigger_gc = false;
+        }
     }
 
     LOG1("Finished interpreter");

@@ -1,7 +1,7 @@
 #include "moss.hpp"
 #include "scanner.hpp"
 #include "source.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "clopts.hpp"
 #include "args.hpp"
 #include "parser.hpp"
@@ -93,6 +93,12 @@ int main(int argc, const char *argv[]) {
     delete interpreter;
     delete bc;
     delete main_mod;
+
+    if (clopts::delete_values_on_exit) {
+        for (auto v: Value::all_values) {
+            delete v;
+        }
+    }
 
     return exit_code;
 }

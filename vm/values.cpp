@@ -3,9 +3,10 @@
 using namespace moss;
 
 int Value::tab_depth = 0;
+std::list<Value *> Value::all_values{};
 
 Value::Value(TypeKind kind, ustring name, Value *type) 
-        : references(1), kind(kind), type(type), name(name), 
+        : marked(false), kind(kind), type(type), name(name), 
           attrs(new MemoryPool()), annotations{} {
 }
 

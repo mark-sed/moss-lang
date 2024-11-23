@@ -1,7 +1,7 @@
 #include "bytecode_writer.hpp"
 #include "logging.hpp"
 #include "bytecode.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "opcode.hpp"
 #include "errors.hpp"
 #include <cassert>

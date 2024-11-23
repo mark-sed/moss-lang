@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "ir.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include <sstream>
 #include <string>
 

@@ -13,7 +13,7 @@
 #define _MSLIB_HPP_
 
 #include "interpreter.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "memory.hpp"
 #include <cassert>
 

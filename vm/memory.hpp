@@ -11,7 +11,7 @@
 #define _MEMORY_HPP_
 
 #include "values.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "opcode.hpp"
 #include <vector>
 #include <map>
@@ -71,6 +71,8 @@ public:
         pool.push_back(nullptr);
         return pool.size()-1;
     }
+
+    std::vector<Value *> get_pool() { return this->pool; }
 
     std::ostream& debug(std::ostream& os) const;
 };

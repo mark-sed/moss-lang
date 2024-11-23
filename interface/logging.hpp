@@ -10,7 +10,7 @@
 #ifndef _LOGGING_HPP_
 #define _LOGGING_HPP_
 
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "utils.hpp"
 #include <sstream>
 #include <string>

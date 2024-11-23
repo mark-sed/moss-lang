@@ -1,5 +1,5 @@
 /**
- * @file os_interface.hpp
+ * @file commons.hpp
  * @author Marek Sedlacek
  * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
  *            See accompanied LICENSE file.
@@ -7,8 +7,8 @@
  * @brief Functions and macros related to the host operating system
  */
 
-#ifndef _OS_INTERFACE_HPP_
-#define _OS_INTERFACE_HPP_
+#ifndef _COMMONS_HPP_
+#define _COMMONS_HPP_
 
 #include <cassert>
 #include <iostream>
@@ -98,6 +98,13 @@ using BoolConst = bool;
 #define BC_RESERVED_CREGS 300 /// Number of const registers reserved for built-ins
 }
 
+/** Contains mainly flags for triggering global events, such as gc */
+namespace global_controls {
+
+extern bool trigger_gc;
+
 }
 
-#endif//_OS_INTERFACE_HPP_
+}
+
+#endif//_COMMONS_HPP_
