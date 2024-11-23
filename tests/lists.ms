@@ -1,4 +1,4 @@
-[1, 2, 3, false, "pět"]
+[1, 2, 3, not true, "pět"]
 "\n"
 
 fun foo() {
@@ -13,7 +13,8 @@ fun bar(a:[List]) {
     return a
 }
 
-a = bar([5, 8, [0, 1]])
+val = 7
+a = bar([5, 8, [0, -1, -val]])
 "\n"
 a
 "\n"

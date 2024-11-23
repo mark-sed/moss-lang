@@ -59,6 +59,7 @@ __Sizes__:
 
 Strings are stored with their size followed by their value.
 
+```
 00h - END - End of code
 
 01h - LOAD          %dst, "name"
@@ -202,7 +203,8 @@ xxh - CREATE_RANGE7     %dst, %start, #step, #end
 xxh - CREATE_RANGE8     %dst, #start, #step, #end
 
 xxh - SWITCH    %listvals, %listaddr, addr_def
-115 - FOR       %i, %iterator
+xxh - FOR       %i, %iterator
+```
 
 ## Examples
 

@@ -99,7 +99,7 @@ function expect_fail {
 }
 
 function expect_fail_exec {
-    run_exec $1
+    run_exec "$1"
     local errmsg=$(cat "$OUTP_ERR")
     if [[ $RETCODE -eq 0 ]]; then
         failed $3 "Test was supposed to fail, but passed."
@@ -155,7 +155,7 @@ function test_output {
 function test_expressions {
     expect_pass "expressions.ms" $1
     expect_out_eq "27\n13\n261\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue
-true\nfalse\n9\n255\n0\n6699\n" $1
+true\nfalse\n9\n255\n0\n6699\n-42\nfalse\n" $1
 }
 
 function test_variables {
@@ -193,7 +193,7 @@ function test_classes {
 function test_lists {
     expect_pass "lists.ms" $1
     expect_out_eq "[1, 2, 3, false, \"pět\"]\n[[123], 4, [123]]
-[5, 8, [0, 1]]\n[5, 8, [0, 1]]\n" $1
+[5, 8, [0, -1, -7]]\n[5, 8, [0, -1, -7]]\n" $1
 }
 
 function test_enums {
@@ -283,6 +283,8 @@ function run_all_tests {
     # stdlib tests
     run_test exit
     run_test vardump
+
+    # xfails
 }
 
 # Count all functions starting with test_ 

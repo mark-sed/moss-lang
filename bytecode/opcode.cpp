@@ -6,7 +6,6 @@
 #include <cmath>
 #include <algorithm>
 #include <cassert>
-
 #include <iostream>
 
 using namespace moss;
@@ -46,10 +45,12 @@ static bool is_primitive_type(Value *v) {
 }
 
 void opcode::raise(Interpreter *vm, Value *exc) {
+    (void) vm;
     errs << exc->as_string();
 }
 
 void End::exec(Interpreter *vm) {
+    (void) vm;
     // No op
 }
 
@@ -506,6 +507,7 @@ void Output::exec(Interpreter *vm) {
 }
 
 static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpreter *vm) {
+    (void)vm;
     assert(s1 && "Value or nil should have been loaded");
     assert(s2 && "Value or nil should have been loaded");
 
@@ -533,6 +535,7 @@ void Concat3::exec(Interpreter *vm) {
 // TODO: For most exprs is to check over/underflow when check is enabled
 // TODO: Call user defined method for non native type
 static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
+    (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -568,6 +571,7 @@ void Exp3::exec(Interpreter *vm) {
 }
 
 static Value *add(Value *s1, Value *s2, Interpreter *vm) {
+    (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -603,6 +607,7 @@ void Add3::exec(Interpreter *vm) {
 }
 
 static Value *sub(Value *s1, Value *s2, Interpreter *vm) {
+    (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -638,6 +643,7 @@ void Sub3::exec(Interpreter *vm) {
 }
 
 static Value *div(Value *s1, Value *s2, Interpreter *vm) {
+    (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -681,6 +687,7 @@ void Div3::exec(Interpreter *vm) {
 }
 
 static Value *mul(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -716,6 +723,7 @@ void Mul3::exec(Interpreter *vm) {
 }
 
 static Value *mod(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -759,6 +767,7 @@ void Mod3::exec(Interpreter *vm) {
 }
 
 static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (s1->get_kind() == s2->get_kind()) {
         if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
@@ -849,6 +858,7 @@ void Neq3::exec(Interpreter *vm) {
 }
 
 static Value *bt(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -889,6 +899,7 @@ void Bt3::exec(Interpreter *vm) {
 }
 
 static Value *lt(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -929,6 +940,7 @@ void Lt3::exec(Interpreter *vm) {
 }
 
 static Value *beq(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -969,6 +981,7 @@ void Beq3::exec(Interpreter *vm) {
 }
 
 static Value *leq(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -1009,6 +1022,7 @@ void Leq3::exec(Interpreter *vm) {
 }
 
 static Value *in(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
@@ -1042,6 +1056,7 @@ void In3::exec(Interpreter *vm) {
 }
 
 static Value *andOP(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -1079,6 +1094,7 @@ void And3::exec(Interpreter *vm) {
 }
 
 static Value *orOP(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -1116,6 +1132,7 @@ void Or3::exec(Interpreter *vm) {
 }
 
 static Value *xorOP(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
@@ -1153,6 +1170,7 @@ void Xor3::exec(Interpreter *vm) {
 }
 
 static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     if (isa<StringValue>(s1) && isa<IntValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
@@ -1191,6 +1209,7 @@ void Subsc3::exec(Interpreter *vm) {
 }
 
 static Value *slice(Value *s1, Value *s2, Interpreter *vm) {
+    (void) vm;
     Value *res = nullptr;
     assert(false && "TODO: Unimplemented opcode");
     return res;
@@ -1375,11 +1394,3 @@ void Switch::exec(Interpreter *vm) {
 void For::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
-
-/*
-
-void ::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
-}
-
-*/

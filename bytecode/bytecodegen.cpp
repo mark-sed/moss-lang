@@ -483,7 +483,45 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         case OperatorKind::OP_UNPACK:
             assert(false && "TODO: Unimplemented operator");
 
-        default: assert(false && "Unknown operator");
+        default: assert(false && "Unknown binary operator");
+    }
+
+    assert(false && "Unreachable");
+    return nullptr;
+}
+
+RegValue *BytecodeGen::emit(ir::UnaryExpr *expr) {
+    RegValue *val = emit(expr->get_expr());
+
+    switch (expr->get_op().get_kind()) {
+        case OperatorKind::OP_NOT: {
+            if (val->is_const()) {
+                // TODO: This should be just output of constant
+                append(new StoreConst(next_reg(), free_reg(val)));
+                auto strv = val_last_reg();
+                append(new Not(next_reg(), strv));
+            }
+            else {
+                append(new Not(next_reg(), free_reg(val)));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_MINUS: {
+            if (val->is_const()) {
+                // TODO: This should be just output of constant
+                append(new StoreConst(next_reg(), free_reg(val)));
+                auto strv = val_last_reg();
+                append(new Neg(next_reg(), strv));
+            }
+            else {
+                append(new Neg(next_reg(), free_reg(val)));
+            }
+            return last_reg();
+        }
+        case OperatorKind::OP_SILENT: {
+            assert(false && "TODO: Silent operator codegen");
+        }
+        default: assert(false && "Unknown unary operator");
     }
 
     assert(false && "Unreachable");
@@ -533,6 +571,9 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
     }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);
+    }
+    else if (auto ue = dyn_cast<UnaryExpr>(expr)) {
+        bcv = emit(ue);
     }
     else if (auto val = dyn_cast<Variable>(expr)) {
         if (val->is_non_local()) {

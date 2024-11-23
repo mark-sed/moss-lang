@@ -60,6 +60,7 @@ private:
     opcode::Register curr_reg;  ///< Current free register
 
     RegValue *emit(ir::BinaryExpr *expr);
+    RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
     void emit(ir::Raise *r);

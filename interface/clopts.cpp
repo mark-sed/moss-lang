@@ -32,7 +32,11 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     }
 
     if(version) {
-        outs << "moss " << MOSS_VERSION << "\n";
+        outs << "moss " << MOSS_VERSION;
+#ifndef NDEBUG
+        outs << " (DEBUG build)";
+#endif
+        outs << "\n";
         exit(0);
     }
 }

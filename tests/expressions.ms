@@ -27,3 +27,8 @@ true and true
 12 xor 12
 "\n"
 0x1a_2b ++ "\n"
+-42
+"\n"
+a = 1
+not (a < 42)
+"\n"
