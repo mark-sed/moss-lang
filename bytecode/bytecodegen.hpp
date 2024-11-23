@@ -90,9 +90,8 @@ private:
     inline opcode::Register val_last_creg() { return this->curr_creg-1; }
     inline opcode::Register val_last_reg() { return this->curr_reg-1; }
 
-    void reset_regs(opcode::Register cr=0, opcode::Register ccr=0) {
+    void reset_regs(opcode::Register cr=0) {
         curr_reg = cr;
-        curr_creg = ccr;
     }
 
     inline RegValue *get_ncreg(RegValue *val) {

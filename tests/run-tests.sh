@@ -8,6 +8,7 @@ OUTP_ERR=/tmp/.moss_test_err.txt
 OUTP_STD=/tmp/.moss_test_std.txt
 TEST_DIR="" # Directory where the test are located
 POSITIONAL_ARGS=()
+RUN_TEST_FLAGS="${RUN_TEST_FLAGS:=}" # Additional flags for run
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -41,6 +42,7 @@ INDEX=0
 C_OFF='\033[0m'
 C_RED='\033[0;31m'
 C_GREEN='\033[0;32m'
+C_GRAY='\033[1;30m'
 
 function failed {
     FAILED_TESTS+=" $1"
@@ -48,13 +50,20 @@ function failed {
 }
 
 function run {
-    CMD="$MOSS ${TEST_DIR}$1"
+    CMD="$MOSS ${RUN_TEST_FLAGS} ${TEST_DIR}$1"
     $CMD 2>$OUTP_ERR 1>$OUTP_STD
     RETCODE=$(echo $?)
 }
 
 function run_exec {
+    CMD="$MOSS -e $1"
     $MOSS -e "$1" 2>$OUTP_ERR 1>$OUTP_STD
+    RETCODE=$(echo $?)
+}
+
+function run_log {
+    CMD="$MOSS ${RUN_TEST_FLAGS} ${@:2} ${TEST_DIR}$1"
+    $CMD &>$OUTP_STD
     RETCODE=$(echo $?)
 }
 
@@ -81,6 +90,17 @@ function expect_pass_exec {
         cat $OUTP_ERR
     fi
 }
+
+function expect_pass_log {
+    run_log "${@:1:$#-1}"
+    if [[ $RETCODE -ne 0 ]]; then
+        failed "${@: -1}" "Program failed."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+    fi
+}
+
 
 function expect_fail {
     run $1
@@ -228,7 +248,7 @@ function test_factorial {
     expect_out_eq "2432902008176640000" $1
 }
 
-function test_exit {
+function test_lib_exit {
     expect_pass "stdlib_tests/exit.ms" $1
     expect_out_eq "hi\n" $1
 
@@ -236,7 +256,7 @@ function test_exit {
     expect_fail_exec "exit(42)" "" $1
 }
 
-function test_vardump {
+function test_lib_vardump {
     expect_pass "stdlib_tests/vardump.ms" $1
     expect_out_eq 'Int(42)
 String(\"\\nhello\\n\\tthere\")
@@ -262,6 +282,18 @@ List(1) [
 ]\nEnum {}\n' $1
 }
 
+function test_gc_local_vars {
+    expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
+    expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: ENUM(MyEnum)
+gc.cpp::sweep: Deleting: ENUM_VALUE(A)
+gc.cpp::sweep: Deleting: ENUM_VALUE(B)
+gc.cpp::sweep: Deleting: ENUM_VALUE(C)
+gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: LIST(List)
+done\n" $1
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -281,14 +313,20 @@ function run_all_tests {
     run_test collatz
 
     # stdlib tests
-    run_test exit
-    run_test vardump
+    run_test lib_exit
+    run_test lib_vardump
+
+    # gc tests
+    run_test gc_local_vars
 
     # xfails
 }
 
 # Count all functions starting with test_ 
 TEST_AMOUNT=$(declare -F | grep "test_" | wc -l)
+if [ ! -z "$RUN_TEST_FLAGS" ]; then
+    printf "${C_GRAY}Running all tests with \"${RUN_TEST_FLAGS}\"${C_OFF}\n"
+fi
 start_time=`date +%s`
 run_all_tests
 if [ ! -z "$FAILED_TESTS" -a "$FAILED_TESTS" != " " ]; then

@@ -30,28 +30,40 @@ void mslib::exit(Interpreter *vm, Value *code) {
     // No need to set any return as we jump to the end
 }
 
-void mslib::vardump(Interpreter *vm, Value *v) {
+Value *mslib::vardump(Interpreter *vm, Value *v) {
     std::stringstream ss;
     ss << *v << "\n";
-    set_return(vm, new StringValue(ss.str()));
+    return new StringValue(ss.str());
 }
 
 void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     auto args = vm->get_call_frame()->get_args();
     // TODO: Generalize the argument extraction and type checking
+    Value *ret_v = nullptr;
     if (name == "exit") {
         assert(args.size() == 1 && "Mismatch of args");
         exit(vm, args[0].value);
+        // We must return here as otherwise the bci which exit set would be
+        // overriden by the caller bci
+        return;
     }
     else if (name == "vardump") {
         assert(args.size() == 1 && "Mismatch of args");
-        vardump(vm, args[0].value);
+        ret_v = vardump(vm, args[0].value);
     }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
         // TODO: Change to exception
         err = new StringValue(msg);
     }
+
+    auto return_reg = vm->get_call_frame()->get_return_reg();
+    auto caller_addr = vm->get_call_frame()->get_caller_addr();
+    vm->pop_call_frame();
+    if (!ret_v)
+        ret_v = BuiltIns::Nil;
+    vm->store(return_reg, ret_v);
+    vm->set_bci(caller_addr);
 }
 
 void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {

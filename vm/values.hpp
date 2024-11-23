@@ -60,6 +60,8 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
     }
+    assert(false && "Type kind in to string conversion");
+    return "UNKNOWN";
 }
 
 /** Base class of all values */

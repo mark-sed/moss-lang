@@ -297,7 +297,6 @@ void Call::exec(Interpreter *vm) {
         }
     }
 
-    vm->push_frame();
     if (fun->has_annotation(annots::INTERNAL)) {
         Value *err = nullptr;
         mslib::dispatch(vm, fun->get_name(), err);
@@ -307,6 +306,7 @@ void Call::exec(Interpreter *vm) {
         }
     }
     else {
+        vm->push_frame();
         vm->set_bci(fun->get_body_addr());
     }
 }

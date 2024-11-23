@@ -36,7 +36,7 @@ private:
     bool global;
 public:
     MemoryPool(bool holds_consts=false, bool global=false) : holds_consts(holds_consts), global(global) {
-        if (!global) {
+        if (!global && !holds_consts) {
             // TODO: Fine tune these values
             pool = std::vector<Value *>(128, nullptr);
         }
