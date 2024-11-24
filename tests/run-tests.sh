@@ -300,7 +300,7 @@ done\n" $1
 function test_gc_recursion {
     # This test just checks that GC is triggered without any special mode
     # If this fails it might be because of changes in gc threshold (next_gc) 
-    expect_pass_log "gc_tests/recursion.ms" "--v5=gc.cpp::collect_garbage" $1
+    expect_pass_log "gc_tests/recursion.ms" "--v1=gc.cpp::collect_garbage" $1
     expect_out_eq "gc.cpp::collect_garbage: Running GC
 gc.cpp::collect_garbage: Finished GC
 233\n" $1

@@ -34,6 +34,9 @@ void *Value::operator new(size_t size) {
         LOGMAX("Allocations reached the GC threshold: " << Value::allocated_bytes << "B allocated; " << Value::next_gc << "B is the threshold");
         global_controls::trigger_gc = true;
         Value::next_gc *= global_controls::gc_grow_factor;
+        /*if (Value::next_gc > global_controls::max_next_gc) {
+            Value::next_gc = global_controls::max_next_gc;
+        }*/
         LOGMAX("New gc threshold set to: " << Value::next_gc << "B");
     }
     void *v = ::operator new(size);

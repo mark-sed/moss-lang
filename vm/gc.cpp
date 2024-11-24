@@ -119,7 +119,10 @@ void TracingGC::mark_roots() {
 }
 
 void TracingGC::collect_garbage() {
-    LOGMAX("Running GC");
+    LOG1("Running GC");
+#ifndef NDEBUG
+    auto pre_run_allocations = Value::allocated_bytes;
+#endif
     gray_list.clear();
     // gray list is empty and values are not marked, so all values are white
     mark_roots();
@@ -128,5 +131,19 @@ void TracingGC::collect_garbage() {
     // Value is black when it is not in gray stack and marked is set
     sweep();
     // Freed not used values
-    LOGMAX("Finished GC");
+
+#ifndef NDEBUG
+    LOGMAX("Freed " << (pre_run_allocations - Value::allocated_bytes) << "B");
+    if (clopts::stress_test_gc) {
+        LOGMAX("Finished GC (stress test so not modifying next_gc)");
+        return;
+    }
+#endif
+
+    // TODO: Keep this? If we have trigger also by time then maybe remove this
+    // If enought values were freed there is no need to have such a high next_gc, reset it.
+    if ((Value::next_gc / global_controls::gc_grow_factor) / 2 > Value::allocated_bytes) {
+        Value::next_gc /= global_controls::gc_grow_factor;
+    }
+    LOG1("Finished GC");
 }

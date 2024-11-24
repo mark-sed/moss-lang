@@ -79,13 +79,13 @@ protected:
     Value(TypeKind kind, ustring name, Value *type);
 
     static int tab_depth;
-    static size_t allocated_bytes;
-    static size_t next_gc;
 public:
     virtual Value *clone() = 0;
     virtual ~Value();
 
     static std::list<Value *> all_values;
+    static size_t allocated_bytes;
+    static size_t next_gc;
 
     // We need to store any allocation to all object list for GC to collect it
     // once not used
