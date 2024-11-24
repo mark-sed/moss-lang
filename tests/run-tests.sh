@@ -285,6 +285,9 @@ List(1) [
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting: ENUM(MyEnum)
 gc.cpp::sweep: Deleting: ENUM_VALUE(A)
 gc.cpp::sweep: Deleting: ENUM_VALUE(B)
@@ -292,6 +295,15 @@ gc.cpp::sweep: Deleting: ENUM_VALUE(C)
 gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: LIST(List)
 done\n" $1
+}
+
+function test_gc_recursion {
+    # This test just checks that GC is triggered without any special mode
+    # If this fails it might be because of changes in gc threshold (next_gc) 
+    expect_pass_log "gc_tests/recursion.ms" "--v5=gc.cpp::collect_garbage" $1
+    expect_out_eq "gc.cpp::collect_garbage: Running GC
+gc.cpp::collect_garbage: Finished GC
+233\n" $1
 }
 
 ###--- Running tests ---###
@@ -318,6 +330,7 @@ function run_all_tests {
 
     # gc tests
     run_test gc_local_vars
+    run_test gc_recursion
 
     # xfails
 }

@@ -99,11 +99,11 @@ void TracingGC::mark_roots() {
     for (auto mem: vm->frames) {
         mark_frame(mem);
     }
-    // We need to mark also constant pool so that values are not deleted
-    // as they are added to the all value pool.
-    // TODO: perhaps we could just set some additional mark to mark it as
-    // constant value not for deletion
-    mark_frame(vm->const_pool);
+
+    // We need to mark also constant pools
+    for (auto mem: vm->const_pools) {
+        mark_frame(mem);
+    }
 
     // Mark values pushed as parents
     for (auto pl: vm->parent_list) {

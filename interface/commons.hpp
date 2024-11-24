@@ -103,6 +103,8 @@ namespace global_controls {
 
 extern bool trigger_gc;
 
+constexpr float gc_grow_factor = 2.0;
+
 }
 
 }

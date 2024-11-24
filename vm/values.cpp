@@ -1,13 +1,21 @@
 #include "values.hpp"
+#include "logging.hpp"
 
 using namespace moss;
 
 int Value::tab_depth = 0;
+size_t Value::allocated_bytes = 0;
+size_t Value::next_gc = 1024 * 1024;
 std::list<Value *> Value::all_values{};
 
 Value::Value(TypeKind kind, ustring name, Value *type) 
         : marked(false), kind(kind), type(type), name(name), 
           attrs(new MemoryPool()), annotations{} {
+}
+
+Value::~Value() {
+    // Values will be deleted by gc
+    delete attrs;
 }
 
 Value *Value::get_attr(ustring name) {
@@ -18,6 +26,30 @@ void Value::set_attr(ustring name, Value *v) {
     auto reg = attrs->get_free_reg();
     attrs->store(reg, v);
     attrs->store_name(reg, name);
+}
+
+void *Value::operator new(size_t size) {
+    Value::allocated_bytes += size;
+    if (Value::allocated_bytes > Value::next_gc) {
+        LOGMAX("Allocations reached the GC threshold: " << Value::allocated_bytes << "B allocated; " << Value::next_gc << "B is the threshold");
+        global_controls::trigger_gc = true;
+        Value::next_gc *= global_controls::gc_grow_factor;
+        LOGMAX("New gc threshold set to: " << Value::next_gc << "B");
+    }
+    void *v = ::operator new(size);
+    assert(v && "Allocation failed?");
+    all_values.push_back(static_cast<Value *>(v));
+#ifndef NDEBUG
+    if (clopts::stress_test_gc) {
+        global_controls::trigger_gc = true;
+    }
+#endif
+    return v;
+}
+
+void Value::operator delete(void * p, size_t size) {
+    Value::allocated_bytes -= size;
+    ::operator delete(p, size);
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {

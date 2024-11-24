@@ -8,7 +8,7 @@ using namespace moss;
 Interpreter::Interpreter(Bytecode *code, File *src_file) 
         : code(code), src_file(src_file), gc(new gcs::TracingGC(this)), bci(0), exit_code(0),
           bci_modified(false) {
-    this->const_pool = new MemoryPool(true, true);
+    this->const_pools.push_back(new MemoryPool(true, true));
     // Global frame
     this->frames.push_back(new MemoryPool(false, true));
     init_const_frame();
@@ -16,10 +16,19 @@ Interpreter::Interpreter(Bytecode *code, File *src_file)
 }
 
 Interpreter::~Interpreter() {
-    delete const_pool;
+    for (auto p: const_pools) {
+        delete p;
+    }
     for(auto p: frames) {
         delete p;
     }
+    for (auto f: call_frames) {
+        delete f;
+    }
+    for (auto p: parent_list) {
+        delete p;
+    }
+    delete gc;
     // Code is to be deleted by the creator of it
 }
 
@@ -53,7 +62,7 @@ void Interpreter::init_global_frame() {
 }
 
 void Interpreter::init_const_frame() {
-    auto cf = get_const_pool();
+    auto cf = get_global_const_pool();
 
     opcode::Register reg = 0;
     cf->store(reg++, BuiltIns::Nil);
@@ -78,7 +87,11 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
             os << "\t[" << index << "] Local frame:\n" << *f << "\n";
         ++index;
     }
-    os << "\tConstant pool:\n" << *const_pool << "\n";
+    index = 0;
+    for (auto f: const_pools) {
+        os << "\t[" << index << "] Constant frame:\n" << *f << "\n";
+        ++index;
+    }
     os << "\tExit code: " << exit_code << "\n";
     os << "}\n";
     return os;
@@ -143,12 +156,19 @@ void Interpreter::copy_names(opcode::Register from, opcode::Register to) {
 void Interpreter::push_frame() {
     LOGMAX("Frame pushed");
     this->frames.push_back(new MemoryPool());
+    this->const_pools.push_back(new MemoryPool(true));
 }
 
 void Interpreter::pop_frame() {
     LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
+    auto f = frames.back();
     frames.pop_back();
+    delete f;
+    assert(const_pools.size() > 1 && "Trying to pop global const frame");
+    auto c = const_pools.back();
+    const_pools.pop_back();
+    delete c;
 }
 
 void Interpreter::run() {

@@ -48,7 +48,7 @@ public:
         }
     }
     virtual ~MemoryPool() {
-        // TODO:
+        // Values are deleted by gc
     }
 
     /** Stores a value into a register */

@@ -79,32 +79,19 @@ protected:
     Value(TypeKind kind, ustring name, Value *type);
 
     static int tab_depth;
+    static size_t allocated_bytes;
+    static size_t next_gc;
 public:
     virtual Value *clone() = 0;
-    virtual ~Value() {
-        // We cannot just delete the value of annotation as it might be class name
-        // or used somewhere else, let gc handle it
-    }
+    virtual ~Value();
 
     static std::list<Value *> all_values;
 
     // We need to store any allocation to all object list for GC to collect it
     // once not used
-    void *operator new(size_t size) {
-        void *v = ::operator new(size);
-        assert(v && "Allocation failed?");
-        all_values.push_back(static_cast<Value *>(v));
-#ifndef NDEBUG
-        if (clopts::stress_test_gc) {
-            global_controls::trigger_gc = true;
-        }
-#endif
-        return v;
-    }
+    void *operator new(size_t size);
 
-    /*static void operator delete(void * p) {
-        free(p);
-    }*/
+    static void operator delete(void * p, size_t size);
 
     void set_marked(bool m) { this->marked = m; }
     bool is_marked() { return this->marked; }

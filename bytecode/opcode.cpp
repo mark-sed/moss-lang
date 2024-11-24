@@ -309,6 +309,8 @@ void Call::exec(Interpreter *vm) {
         vm->push_frame();
         vm->set_bci(fun->get_body_addr());
     }
+
+    LOGMAX(Value::all_values.size());
 }
 
 void PushFrame::exec(Interpreter *vm) {

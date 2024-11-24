@@ -718,6 +718,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     // Registers need to be reset, store them and restore after whole
     // function is generated
     auto pre_function_reg = curr_reg;
+    auto pre_function_creg = curr_creg;
     reset_regs(fun->get_args().size());
     // Generate function body
     emit(fun->get_body());
@@ -728,6 +729,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     fn_end_jmp->addr = get_curr_address() + 1;
 
     this->curr_reg = pre_function_reg;
+    this->curr_creg = pre_function_creg;
 }
 
 void BytecodeGen::emit(ir::Class *cls) {
