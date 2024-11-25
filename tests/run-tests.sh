@@ -306,6 +306,16 @@ gc.cpp::collect_garbage: Finished GC
 233\n" $1
 }
 
+function test_gc_global_dependency {
+    expect_pass_log "gc_tests/global_dependency.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
+    expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: INT(Int)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: INT(Int)
+gc.cpp::sweep: Deleting: STRING(String)
+done\n" $1
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -331,6 +341,7 @@ function run_all_tests {
     # gc tests
     run_test gc_local_vars
     run_test gc_recursion
+    run_test gc_global_dependency
 
     # xfails
 }
