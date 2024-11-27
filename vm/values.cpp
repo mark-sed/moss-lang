@@ -8,9 +8,9 @@ size_t Value::allocated_bytes = 0;
 size_t Value::next_gc = 1024 * 1024;
 std::list<Value *> Value::all_values{};
 
-Value::Value(TypeKind kind, ustring name, Value *type) 
+Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
         : marked(false), kind(kind), type(type), name(name), 
-          attrs(new MemoryPool()), annotations{} {
+          attrs(attrs), annotations{} {
 }
 
 Value::~Value() {
@@ -19,10 +19,14 @@ Value::~Value() {
 }
 
 Value *Value::get_attr(ustring name) {
+    if (!attrs) return nullptr;
     return attrs->load_name(name);
 }
 
 void Value::set_attr(ustring name, Value *v) {
+    if (!attrs) {
+        this->attrs = new MemoryPool();
+    }
     auto reg = attrs->get_free_reg();
     attrs->store(reg, v);
     attrs->store_name(reg, name);

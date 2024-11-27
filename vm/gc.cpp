@@ -38,6 +38,7 @@ void TracingGC::blacken_value(Value *v) {
     }
     // Value might have attributes
     if (v->get_attrs()) {
+        LOGMAX(v->get_attrs());
         mark_frame(v->get_attrs());
     }
 

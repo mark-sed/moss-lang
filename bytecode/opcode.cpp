@@ -466,12 +466,11 @@ void PromoteObject::exec(Interpreter *vm) {
 }
 
 void BuildClass::exec(Interpreter *vm) {
-    auto cls = new ClassValue(name, vm->get_parent_list());
+    auto cls = new ClassValue(name, vm->get_top_frame(), vm->get_parent_list());
     vm->store(dst, cls);
     vm->store_name(dst, name);
     vm->clear_parent_list();
     vm->push_frame();
-    cls->set_attrs(vm->get_top_frame());
 }
 
 void Copy::exec(Interpreter *vm) {

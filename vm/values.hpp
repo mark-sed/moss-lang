@@ -76,7 +76,7 @@ protected:
     MemoryPool *attrs;
     std::map<ustring, Value *> annotations;
 
-    Value(TypeKind kind, ustring name, Value *type);
+    Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs=nullptr);
 
     static int tab_depth;
 public:
@@ -134,7 +134,6 @@ public:
 
     /** Sets (new or overrides) attribute name to value v*/
     void set_attr(ustring name, Value *v);
-    void set_attrs(MemoryPool *attrs) { this->attrs = attrs; }
     MemoryPool *get_attrs() { return this->attrs; }
 };
 
@@ -368,6 +367,8 @@ public:
     ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
     ClassValue(ustring name, std::list<ClassValue *> supers) 
         : Value(ClassType, name, BuiltIns::Type), supers(supers) {}
+    ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
+        : Value(ClassType, name, BuiltIns::Type, frm), supers(supers) {}
 
     virtual Value *clone() {
         return new ClassValue(this->name, this->supers);
@@ -439,6 +440,11 @@ public:
              std::vector<FunValueArg *> args,
              opcode::Address body_addr) 
             : Value(ClassType, name, BuiltIns::Function), args(args), body_addr(body_addr) {}
+
+    ~FunValue() {
+        for(auto a: args)
+            delete a;
+    }
 
     virtual Value *clone() {
         return new FunValue(this->name, this->args, this->body_addr);

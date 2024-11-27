@@ -72,7 +72,7 @@ public:
         return pool.size()-1;
     }
 
-    std::vector<Value *> get_pool() { return this->pool; }
+    std::vector<Value *> &get_pool() { return this->pool; }
 
     std::ostream& debug(std::ostream& os) const;
 };

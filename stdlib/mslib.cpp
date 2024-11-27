@@ -31,6 +31,7 @@ void mslib::exit(Interpreter *vm, Value *code) {
 }
 
 Value *mslib::vardump(Interpreter *vm, Value *v) {
+    (void)vm;
     std::stringstream ss;
     ss << *v << "\n";
     return new StringValue(ss.str());
