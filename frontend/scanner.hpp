@@ -10,7 +10,7 @@
 #ifndef _SCANNER_HPP_
 #define _SCANNER_HPP_
 
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "source.hpp"
 #include "utils.hpp"
 #include "errors.hpp"

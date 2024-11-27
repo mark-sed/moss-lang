@@ -10,9 +10,10 @@
 #ifndef _VALUES_HPP_
 #define _VALUES_HPP_
 
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "utils.hpp"
 #include "memory.hpp"
+#include "clopts.hpp"
 #include <cstdint>
 #include <map>
 #include <sstream>
@@ -24,7 +25,6 @@ namespace moss {
 class MemoryPool;
 
 enum class TypeKind {
-    // Primitive types
     INT,
     FLOAT,
     BOOL,
@@ -33,8 +33,7 @@ enum class TypeKind {
     LIST,
     DICT,
     ADDRESS,
-    FUN,    // Used as a stopper for primitive types in opcode
-    // Non-primitive types
+    FUN,
     FUN_LIST,
     OBJECT,
     CLASS,
@@ -43,10 +42,32 @@ enum class TypeKind {
     ENUM_VALUE
 };
 
+inline ustring TypeKind2String(TypeKind kind) {
+    switch(kind) {
+        case TypeKind::INT: return "INT";
+        case TypeKind::FLOAT: return "FLOAT";
+        case TypeKind::BOOL: return "BOOL";
+        case TypeKind::NIL: return "NIL";
+        case TypeKind::STRING: return "STRING";
+        case TypeKind::LIST: return "LIST";
+        case TypeKind::DICT: return "DICT";
+        case TypeKind::ADDRESS: return "ADDRESS";
+        case TypeKind::FUN: return "FUN";
+        case TypeKind::FUN_LIST: return "FUN_LIST";
+        case TypeKind::OBJECT: return "OBJECT";
+        case TypeKind::CLASS: return "CLASS";
+        case TypeKind::SPACE: return "SPACE";
+        case TypeKind::ENUM: return "ENUM";
+        case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
+    }
+    assert(false && "Type kind in to string conversion");
+    return "UNKNOWN";
+}
+
 /** Base class of all values */
 class Value {
 protected:
-    int references;
+    bool marked;
     
     TypeKind kind;
     Value *type;
@@ -55,15 +76,31 @@ protected:
     MemoryPool *attrs;
     std::map<ustring, Value *> annotations;
 
-    Value(TypeKind kind, ustring name, Value *type);
+    Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs=nullptr);
 
     static int tab_depth;
 public:
     virtual Value *clone() = 0;
-    virtual ~Value() {
-        // We cannot just delete the value of annotation as it might be class name
-        // or used somewhere else, let gc handle it
-    }
+    virtual ~Value();
+
+    static std::list<Value *> all_values;
+    static size_t allocated_bytes;
+    static size_t next_gc;
+
+    // We need to store any allocation to all object list for GC to collect it
+    // once not used
+    void *operator new(size_t size);
+
+    static void operator delete(void * p, size_t size);
+
+    void set_marked(bool m) { this->marked = m; }
+    bool is_marked() { return this->marked; }
+
+    TypeKind get_kind() { return this->kind; }
+    Value *get_type() { return this->type; }
+    ustring get_name() { return this->name; }
+
+    virtual std::ostream& debug(std::ostream& os) const = 0;
 
     virtual opcode::StringConst as_string() const = 0;
     virtual opcode::StringConst dump() {
@@ -74,19 +111,6 @@ public:
         assert(false && "as_float requested on non numerical value");
         return 0.0;
     }
-
-    TypeKind get_kind() { return this->kind; }
-    Value *get_type() { return this->type; }
-    ustring get_name() { return this->name; }
-
-    virtual std::ostream& debug(std::ostream& os) const = 0;
-
-    /** Returns how many references are there for this value */
-    int get_references() { return this->references; }
-    /** Increments reference counter */
-    void inc_refs() { this->references += 1; }
-    /** Decrements reference counter */
-    void dec_refs() { this->references -= 1; }
 
     void annotate(ustring name, Value *val) {
         annotations[name] = val;
@@ -110,7 +134,7 @@ public:
 
     /** Sets (new or overrides) attribute name to value v*/
     void set_attr(ustring name, Value *v);
-    void set_attrs(MemoryPool *attrs) { this->attrs = attrs; }
+    MemoryPool *get_attrs() { return this->attrs; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
@@ -343,6 +367,8 @@ public:
     ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
     ClassValue(ustring name, std::list<ClassValue *> supers) 
         : Value(ClassType, name, BuiltIns::Type), supers(supers) {}
+    ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
+        : Value(ClassType, name, BuiltIns::Type, frm), supers(supers) {}
 
     virtual Value *clone() {
         return new ClassValue(this->name, this->supers);
@@ -351,6 +377,8 @@ public:
     virtual opcode::StringConst as_string() const override {
         return "<Class " + name + ">";
     }
+
+    std::list<ClassValue *> get_supers() { return this->supers; }
 
     virtual std::ostream& debug(std::ostream& os) const override;
 };
@@ -412,6 +440,11 @@ public:
              std::vector<FunValueArg *> args,
              opcode::Address body_addr) 
             : Value(ClassType, name, BuiltIns::Function), args(args), body_addr(body_addr) {}
+
+    ~FunValue() {
+        for(auto a: args)
+            delete a;
+    }
 
     virtual Value *clone() {
         return new FunValue(this->name, this->args, this->body_addr);
@@ -543,6 +576,9 @@ public:
 
     void set_values(std::vector<EnumValue *> vals) {
         this->vals = vals;
+    }
+    std::vector<EnumValue *> get_values() {
+        return this->vals;
     }
 
     virtual opcode::StringConst as_string() const override {

@@ -40,10 +40,6 @@ static bool is_int_expr(Value *v1, Value *v2) {
     return isa<IntValue>(v1) && isa<IntValue>(v2);
 }
 
-static bool is_primitive_type(Value *v) {
-    return v->get_kind() <= TypeKind::FUN;
-}
-
 void opcode::raise(Interpreter *vm, Value *exc) {
     (void) vm;
     errs << exc->as_string();
@@ -58,7 +54,6 @@ void Load::exec(Interpreter *vm) {
     auto v = vm->load_name(this->name);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
-    v->inc_refs();
     vm->store(this->dst, v);
 }
 
@@ -66,7 +61,6 @@ void LoadAttr::exec(Interpreter *vm) {
     auto *v = vm->load(this->src);
     auto attr = v->get_attr(this->name);
     assert(attr && "TODO: Nonexistent attr raise exception");
-    attr->inc_refs();
     vm->store(this->dst, attr);
 }
 
@@ -74,7 +68,6 @@ void LoadGlobal::exec(Interpreter *vm) {
     auto *v = vm->load_global_name(this->name);
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
-    v->inc_refs();
     vm->store(this->dst, v);
 }
 
@@ -84,7 +77,6 @@ void LoadNonLoc::exec(Interpreter *vm) {
 
 void Store::exec(Interpreter *vm) {
     auto *v = vm->load(src);
-    v->inc_refs();
     vm->store(this->dst, v);
 }
 
@@ -94,14 +86,12 @@ void StoreName::exec(Interpreter *vm) {
 
 void StoreConst::exec(Interpreter *vm) {
     auto c = vm->load_const(csrc);
-    c->inc_refs();
     vm->store(dst, c);
 }
 
 void StoreAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
     auto *v = vm->load(this->src);
-    v->inc_refs();
     dstobj->set_attr(this->name, v);
 }
 
@@ -319,6 +309,8 @@ void Call::exec(Interpreter *vm) {
         vm->push_frame();
         vm->set_bci(fun->get_body_addr());
     }
+
+    LOGMAX(Value::all_values.size());
 }
 
 void PushFrame::exec(Interpreter *vm) {
@@ -474,12 +466,11 @@ void PromoteObject::exec(Interpreter *vm) {
 }
 
 void BuildClass::exec(Interpreter *vm) {
-    auto cls = new ClassValue(name, vm->get_parent_list());
+    auto cls = new ClassValue(name, vm->get_top_frame(), vm->get_parent_list());
     vm->store(dst, cls);
     vm->store_name(dst, name);
     vm->clear_parent_list();
     vm->push_frame();
-    cls->set_attrs(vm->get_top_frame());
 }
 
 void Copy::exec(Interpreter *vm) {
@@ -799,6 +790,7 @@ static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
     else if (isa<NilValue>(s1) || isa<NilValue>(s1)) {
         res = new BoolValue(false);
     }
+    // TODO compare class values and enum values and such
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -824,17 +816,21 @@ void Eq3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+/*static bool can_eq(Value *s) {
+    return isa<IntValue>(s) || isa<FloatValue>(s) || isa<BoolValue>(s) ||
+        isa<NilValue>(s) || isa<StringValue>(s) || isa<ListValue>(s);
+}*/
+
 static Value *neq(Value *s1, Value *s2, Interpreter *vm) {
     Value *res = nullptr;
-    if (is_primitive_type(s1) && is_primitive_type(s2)) {
-        auto eqRes = eq(s1, s2, vm);
-        auto neqRes = new BoolValue(!dyn_cast<BoolValue>(eqRes)->get_value());
-        delete eqRes;
-        return neqRes;
+    if (isa<ObjectValue>(s1) || isa<ObjectValue>(s2)) {
+        assert(false && "TODO: call object method");
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        // TODO: Perhaps this should call can_eq??
+        auto eqRes = eq(s1, s2, vm);
+        auto neqRes = new BoolValue(!dyn_cast<BoolValue>(eqRes)->get_value());
+        return neqRes;
     }
     return res;
 }

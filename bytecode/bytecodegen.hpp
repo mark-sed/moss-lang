@@ -12,7 +12,7 @@
 
 #include "bytecode.hpp"
 #include "ir.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 
 namespace moss {
 

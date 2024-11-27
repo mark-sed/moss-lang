@@ -10,7 +10,7 @@
 #ifndef _OPCODE_HPP_
 #define _OPCODE_HPP_
 
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "interpreter.hpp"
 #include "utils.hpp"
 #include <cstdint>

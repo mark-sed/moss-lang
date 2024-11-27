@@ -10,7 +10,7 @@
 #ifndef _ERRORS_HPP_
 #define _ERRORS_HPP_
 
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "scanner.hpp"
 #include "source.hpp"
 #include "diagnostics.hpp"

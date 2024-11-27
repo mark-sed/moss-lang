@@ -7,15 +7,6 @@ using namespace moss;
 void MemoryPool::store(opcode::Register reg, Value *v) {
     // FIXME
     assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Resize pool when out of bounds");
-    if (pool[reg]) {
-        pool[reg]->dec_refs();
-        if (pool[reg]->get_references() == 0) {
-            // TODO: GC has to take care of this and free it in other parts?
-            // FIXME: This fails, but now we're leaking memory
-            // delete pool[reg];
-            pool[reg] = nullptr;
-        }
-    }
     pool[reg] = v;
 }
 

@@ -1,22 +1,62 @@
 #include "values.hpp"
+#include "logging.hpp"
 
 using namespace moss;
 
 int Value::tab_depth = 0;
+size_t Value::allocated_bytes = 0;
+size_t Value::next_gc = 1024 * 1024;
+std::list<Value *> Value::all_values{};
 
-Value::Value(TypeKind kind, ustring name, Value *type) 
-        : references(1), kind(kind), type(type), name(name), 
-          attrs(new MemoryPool()), annotations{} {
+Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
+        : marked(false), kind(kind), type(type), name(name), 
+          attrs(attrs), annotations{} {
+}
+
+Value::~Value() {
+    // Values will be deleted by gc
+    delete attrs;
 }
 
 Value *Value::get_attr(ustring name) {
+    if (!attrs) return nullptr;
     return attrs->load_name(name);
 }
 
 void Value::set_attr(ustring name, Value *v) {
+    if (!attrs) {
+        this->attrs = new MemoryPool();
+    }
     auto reg = attrs->get_free_reg();
     attrs->store(reg, v);
     attrs->store_name(reg, name);
+}
+
+void *Value::operator new(size_t size) {
+    Value::allocated_bytes += size;
+    if (Value::allocated_bytes > Value::next_gc) {
+        LOGMAX("Allocations reached the GC threshold: " << Value::allocated_bytes << "B allocated; " << Value::next_gc << "B is the threshold");
+        global_controls::trigger_gc = true;
+        Value::next_gc *= global_controls::gc_grow_factor;
+        /*if (Value::next_gc > global_controls::max_next_gc) {
+            Value::next_gc = global_controls::max_next_gc;
+        }*/
+        LOGMAX("New gc threshold set to: " << Value::next_gc << "B");
+    }
+    void *v = ::operator new(size);
+    assert(v && "Allocation failed?");
+    all_values.push_back(static_cast<Value *>(v));
+#ifndef NDEBUG
+    if (clopts::stress_test_gc) {
+        global_controls::trigger_gc = true;
+    }
+#endif
+    return v;
+}
+
+void Value::operator delete(void * p, size_t size) {
+    Value::allocated_bytes -= size;
+    ::operator delete(p, size);
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {
@@ -63,7 +103,7 @@ Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {
-    new IntValue(0), new IntValue(1), new IntValue(2), new IntValue(3),
+    new IntValue(0), new IntValue(19999), new IntValue(2), new IntValue(3),
     new IntValue(4), new IntValue(5), new IntValue(6), new IntValue(7),
     new IntValue(8), new IntValue(9), new IntValue(10), new IntValue(11),
     new IntValue(12), new IntValue(13), new IntValue(14), new IntValue(15),

@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 if (MSVC)
     #add_compile_options(/W4 /WX)
 else()
-    add_compile_options(-Wall -Wextra -pedantic)
+    add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete)
 endif()
 
 # Includes for headers
@@ -33,6 +33,7 @@ set(SOURCES
     frontend/source.cpp
     midend/ir.cpp
     stdlib/mslib.cpp
+    interface/commons.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp
     interface/errors.cpp
@@ -44,6 +45,7 @@ set(SOURCES
     bytecode/bytecode_reader.cpp
     bytecode/bytecode_writer.cpp
     bytecode/opcode.cpp
+    vm/gc.cpp
     vm/interpreter.cpp
     vm/memory.cpp
     vm/values.cpp

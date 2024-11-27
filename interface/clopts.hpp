@@ -11,7 +11,7 @@
 #define _CLOPTS_HPP_
 
 #include "args.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include <string>
 
 namespace moss {
@@ -23,6 +23,9 @@ inline args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");
 inline args::Positional<std::string> file_name(arg_parser, "<file name>", "Input moss program to run");
 inline args::ValueFlag<std::string> code(arg_parser, "<code>", "String of moss code to be run", {'e', "execute"});
 
+// GC flags
+inline args::Flag delete_values_on_exit(arg_parser, "delete-values-on-exit", "Deletes all values left by GC on exit", {"delete-values-on-exit"});
+
 #ifndef NDEBUG
 // Debugging
 inline args::ValueFlag<std::string> verbose1(arg_parser, "<csv file::method list>", "Enables prints for logs level 1", {"v", "v1", "verbose", "verbose1"});
@@ -33,6 +36,8 @@ inline args::ValueFlag<std::string> verbose5(arg_parser, "<csv file::method list
 
 inline args::Flag parse_only(arg_parser, "parse-only", "Runs only the parser and does not execute any code", {"parse-only"});
 inline args::Flag annotate_bc(arg_parser, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
+
+inline args::Flag stress_test_gc(arg_parser, "stress-test-gc", "Runs GC after every allocation", {"stress-test-gc"});
 #endif
 
 /**

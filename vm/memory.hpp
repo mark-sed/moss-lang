@@ -11,7 +11,7 @@
 #define _MEMORY_HPP_
 
 #include "values.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "opcode.hpp"
 #include <vector>
 #include <map>
@@ -36,7 +36,7 @@ private:
     bool global;
 public:
     MemoryPool(bool holds_consts=false, bool global=false) : holds_consts(holds_consts), global(global) {
-        if (!global) {
+        if (!global && !holds_consts) {
             // TODO: Fine tune these values
             pool = std::vector<Value *>(128, nullptr);
         }
@@ -48,7 +48,7 @@ public:
         }
     }
     virtual ~MemoryPool() {
-        // TODO:
+        // Values are deleted by gc
     }
 
     /** Stores a value into a register */
@@ -71,6 +71,8 @@ public:
         pool.push_back(nullptr);
         return pool.size()-1;
     }
+
+    std::vector<Value *> &get_pool() { return this->pool; }
 
     std::ostream& debug(std::ostream& os) const;
 };

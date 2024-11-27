@@ -1,10 +1,11 @@
 #include "logging.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "utils.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <regex>
 
 using namespace moss;
 
@@ -35,9 +36,13 @@ void Logger::debug(unsigned level, const ustring &file_func, const ustring &mess
     if (disable || level > logging_level) {
         return;
     }
+
+    auto match_f = [file_func](ustring f) {
+        return std::regex_match(f, std::regex(file_func));
+    };
     // Check if function has logging enabled
     if (!log_everything) {
-        if(enabled.find(file_func) == enabled.end()){
+        if(std::find_if(begin(enabled), end(enabled), match_f) == enabled.end()){
             return;
         }
     }

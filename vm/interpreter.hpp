@@ -15,7 +15,8 @@
 #include "memory.hpp"
 #include "bytecode.hpp"
 #include "source.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
+#include "gc.hpp"
 #include <cstdint>
 #include <list>
 
@@ -25,6 +26,10 @@ class MemoryPool;
 class Bytecode;
 class Value;
 class ClassValue;
+
+namespace gcs {
+    class TracingGC;
+}
 
 /**
  * Structure that holds information about argument in a function call
@@ -96,12 +101,14 @@ inline std::ostream& operator<< (std::ostream& os, CallFrame &cf) {
  */
 class Interpreter {
 private:
+    friend class gcs::TracingGC;
     Bytecode *code;
     File *src_file;
-    MemoryPool *const_pool;
+    std::list<MemoryPool *> const_pools;
     std::list<MemoryPool *> frames; ///< Frame stack
     std::list<CallFrame *> call_frames; ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
+    gcs::TracingGC *gc;
 
     opcode::Address bci;
 
@@ -109,7 +116,8 @@ private:
 
     bool bci_modified;
 
-    MemoryPool *get_const_pool() { return this->const_pool; }
+    MemoryPool *get_global_const_pool() { return this->const_pools.front(); }
+    MemoryPool *get_const_pool() { return this->const_pools.back(); }
     MemoryPool *get_local_frame() { return this->frames.back(); }
     MemoryPool *get_global_frame() { return this->frames.front(); }
 
@@ -178,7 +186,9 @@ public:
      */
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
+        auto cf = call_frames.back();
         call_frames.pop_back(); 
+        delete cf;
     }
 
     /**

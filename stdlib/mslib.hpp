@@ -13,8 +13,9 @@
 #define _MSLIB_HPP_
 
 #include "interpreter.hpp"
-#include "os_interface.hpp"
+#include "commons.hpp"
 #include "memory.hpp"
+#include "values.hpp"
 #include <cassert>
 
 namespace moss {
@@ -22,7 +23,7 @@ namespace moss {
 namespace mslib {
 
 void exit(Interpreter *vm, Value *code);
-void vardump(Interpreter *vm, Value *v);
+Value *vardump(Interpreter *vm, Value *v);
 
 void dispatch(Interpreter *vm, ustring name, Value *&err);
 
