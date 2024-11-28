@@ -112,3 +112,13 @@ fun caller(a) {
 
 caller(greet)
 "\n"
+
+fun outterf(a) {
+    fun innerf() {
+        return "goo " ++ a
+    }
+
+    return innerf()
+}
+
+outterf("inner fun\n")

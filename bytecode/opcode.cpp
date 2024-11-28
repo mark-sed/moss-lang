@@ -159,6 +159,20 @@ static bool can_call(FunValue *f, CallFrame *cf) {
     std::vector<CallFrameArg> call_args;
     call_args.assign(og_call_args.begin(), og_call_args.end());
 
+    if (og_call_args.size() > fun_args.size()) {
+        bool is_vararg = false;
+        for (auto fa : fun_args) {
+            if (fa->vararg) {
+                is_vararg = true;
+                break;
+            }
+        }
+        if (!is_vararg) {
+            LOGMAX("Passed more arguments that the function has parameters");
+            return false;
+        }
+    }
+
     bool named_args = false;
     for (unsigned i = 0; i < call_args.size(); ++i) {
         CallFrameArg &arg = call_args[i];
@@ -309,8 +323,6 @@ void Call::exec(Interpreter *vm) {
         vm->push_frame();
         vm->set_bci(fun->get_body_addr());
     }
-
-    LOGMAX(Value::all_values.size());
 }
 
 void PushFrame::exec(Interpreter *vm) {

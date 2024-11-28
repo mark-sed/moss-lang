@@ -190,7 +190,7 @@ function test_functions {
 0\n1\n123\n125\n123\n1trueanil[]1\n<function fooa with 3 overloads>
 12[3, 4, 5]false97\n12[]false97\n12[3, 4, 5]false97
 []\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, \"ok\", false, nil]\ntrue[1]
-1\n0\n0\n42\nhello from greet\n" $1
+1\n0\n0\n42\nhello from greet\ngoo inner fun\n" $1
 }
 
 function test_ifs {
@@ -254,6 +254,14 @@ function test_lib_exit {
 
     expect_fail_exec "exit(\"bye\")" "bye" $1
     expect_fail_exec "exit(42)" "" $1
+
+    expect_fail_exec "
+fun exit(a, b) {
+    a ++ \"\n\"
+    exit(b)
+}
+exit(\"la fin\", 2)" "" $1
+    expect_out_eq "la fin\n" $1
 }
 
 function test_lib_vardump {
