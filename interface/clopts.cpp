@@ -8,11 +8,11 @@
 
 using namespace moss::clopts;
 
-args::ValueFlag<bool> opt_use_color(arg_parser, "0 or 1", "Enables colored error messages", {"use-color"});
+args::ValueFlag<bool> opt_use_color(interface_group, "0 or 1", "Enables colored error messages", {"use-color"});
 
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
-    args::HelpFlag help(arg_parser, "help", "Display available options", {'h', "help"});
-    args::Flag version(arg_parser, "version", "Display the version of this program", {"version"});
+    args::HelpFlag help(interface_group, "help", "Display available options", {'h', "help"});
+    args::Flag version(interface_group, "version", "Display the version of this program", {"version"});
 
     file_name.KickOut(true);
     code.KickOut(true);

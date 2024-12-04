@@ -20,25 +20,35 @@ namespace moss {
 namespace clopts {
 
 inline args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");
-inline args::Positional<std::string> file_name(arg_parser, "<file name>", "Input moss program to run");
-inline args::ValueFlag<std::string> code(arg_parser, "<code>", "String of moss code to be run", {'e', "execute"});
+inline args::Group interpreter_group(arg_parser, "Interpreter options:");
+inline args::Positional<std::string> file_name(interpreter_group, "<file name>", "Input moss program to run");
+inline args::ValueFlag<std::string> code(interpreter_group, "<code>", "String of moss code to be run", {'e', "execute"});
+
+// Bytecode flags
+inline args::Group bc_group(arg_parser, "Moss bytecode options:");
+inline args::ValueFlag<std::string> output(bc_group, "<msb file name>", "Outputs moss bytecode for input program", {'o', "output-msb"});
+inline args::Flag dump_text_bc(bc_group, "S", "Outputs bytecode in textual form", {'S', "textual-msb"});
+inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
 
 // GC flags
-inline args::Flag delete_values_on_exit(arg_parser, "delete-values-on-exit", "Deletes all values left by GC on exit", {"delete-values-on-exit"});
+inline args::Group gc_group(arg_parser, "Garbage collector options:");
+inline args::Flag delete_values_on_exit(gc_group, "delete-values-on-exit", "Deletes all values left by GC on exit", {"delete-values-on-exit"});
 
 #ifndef NDEBUG
 // Debugging
-inline args::ValueFlag<std::string> verbose1(arg_parser, "<csv file::method list>", "Enables prints for logs level 1", {"v", "v1", "verbose", "verbose1"});
-inline args::ValueFlag<std::string> verbose2(arg_parser, "<csv file::method list>", "Enables prints for logs level 2", {"vv", "v2", "verbose2"});
-inline args::ValueFlag<std::string> verbose3(arg_parser, "<csv file::method list>", "Enables prints for logs level 3", {"vvv", "v3", "verbose3"});
-inline args::ValueFlag<std::string> verbose4(arg_parser, "<csv file::method list>", "Enables prints for logs level 4", {"vvvv", "v4", "verbose4"});
-inline args::ValueFlag<std::string> verbose5(arg_parser, "<csv file::method list>", "Enables prints for logs level 5", {"vvvvv", "v5", "verbose5"});
+inline args::Group debugging_group(arg_parser, "Debugging options:");
+inline args::ValueFlag<std::string> verbose1(debugging_group, "<csv file::method list>", "Enables prints for logs level 1", {"v", "v1", "verbose", "verbose1"});
+inline args::ValueFlag<std::string> verbose2(debugging_group, "<csv file::method list>", "Enables prints for logs level 2", {"vv", "v2", "verbose2"});
+inline args::ValueFlag<std::string> verbose3(debugging_group, "<csv file::method list>", "Enables prints for logs level 3", {"vvv", "v3", "verbose3"});
+inline args::ValueFlag<std::string> verbose4(debugging_group, "<csv file::method list>", "Enables prints for logs level 4", {"vvvv", "v4", "verbose4"});
+inline args::ValueFlag<std::string> verbose5(debugging_group, "<csv file::method list>", "Enables prints for logs level 5", {"vvvvv", "v5", "verbose5"});
 
-inline args::Flag parse_only(arg_parser, "parse-only", "Runs only the parser and does not execute any code", {"parse-only"});
-inline args::Flag annotate_bc(arg_parser, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
+inline args::Flag parse_only(debugging_group, "parse-only", "Runs only the parser and does not execute any code", {"parse-only"});
 
-inline args::Flag stress_test_gc(arg_parser, "stress-test-gc", "Runs GC after every allocation", {"stress-test-gc"});
+inline args::Flag stress_test_gc(debugging_group, "stress-test-gc", "Runs GC after every allocation", {"stress-test-gc"});
 #endif
+
+inline args::Group interface_group(arg_parser, "Interface options:");
 
 /**
  * Interpreter argument parsing. It also accepts the program arguments
