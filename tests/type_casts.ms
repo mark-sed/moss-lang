@@ -14,7 +14,7 @@
 
 class MyClass {
 
-    new MyClass(v) {
+    fun MyClass(v) {
         this.v = v
     }
 

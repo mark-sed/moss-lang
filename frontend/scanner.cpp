@@ -597,7 +597,6 @@ const std::unordered_map<ustring, TokenType> Scanner::KEYWORDS = {
     {"try", TokenType::TRY},
     {"catch", TokenType::CATCH},
     {"finally", TokenType::FINALLY},
-    {"new", TokenType::NEW},
     {"assert", TokenType::ASSERT},
 
     {"break", TokenType::BREAK},

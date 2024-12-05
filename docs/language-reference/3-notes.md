@@ -60,7 +60,7 @@ additional parsing (if this is desired).
 class EquationNote : Note {
     COUNT = 0
 
-    new EquationNote(s) {
+    fun EquationNote(s) {
         COUNT += 1
         this.count = COUNT
         super(s)

@@ -103,7 +103,6 @@ enum class TokenType {
     TRY,        ///< try
     CATCH,      ///< catch
     FINALLY,    ///< finally
-    NEW,        ///< new
     ASSERT,     ///< assert
 
     BREAK,      ///< break
@@ -202,7 +201,6 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::TRY: os << "TRY"; break;
         case TokenType::CATCH: os << "CATCH"; break;
         case TokenType::FINALLY: os << "FINALLY"; break;
-        case TokenType::NEW: os << "NEW"; break;
         case TokenType::ASSERT: os << "ASSERT"; break;
         case TokenType::BREAK: os << "BREAK"; break;
         case TokenType::CONTINUE: os << "CONTINUE"; break;

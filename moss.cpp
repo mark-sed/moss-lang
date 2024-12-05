@@ -67,7 +67,7 @@ int main(int argc, const char *argv[]) {
     if (!clopts::file_name && clopts::input_bc) {
         error::error(error::ErrorCode::ARGUMENT, "Input msb file needs to be specified for '--bytecode' option", nullptr, true);
     }
-    if (input_is_msb && clopts::output) {
+    if (input_is_msb && clopts::output && !clopts::dump_text_bc) {
         error::error(error::ErrorCode::ARGUMENT, "Trying to dump bytecode for bytecode input", nullptr, true);
     }
     if (clopts::dump_text_bc && !clopts::output) {

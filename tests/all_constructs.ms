@@ -119,7 +119,7 @@ aspc // nil assignment
 // Classes
 
 class Range : Iterable, BaseClass {
-    new Range(start, end, step=1) {
+    fun Range(start, end, step=1) {
         this.start = start
         this.end = end
         this.step = step

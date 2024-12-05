@@ -10,7 +10,7 @@ class Cat : Animal, Hungry {
 
     CNAME = "Cat"
     
-    new Cat(name:String) {
+    fun Cat(name:String) {
         
     }
 

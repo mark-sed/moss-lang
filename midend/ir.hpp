@@ -333,6 +333,8 @@ public:
     }
 
     std::vector<Argument *> get_args() { return this->args; }
+    void set_constructor(bool c) { this->constructor = c; }
+    bool is_constructor() { return this->constructor; }
 
     virtual std::ostream& debug(std::ostream& os) const;
 };

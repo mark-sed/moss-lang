@@ -1179,7 +1179,7 @@ fun bar(x=true,
     return z
 }
 
-new Foo (t:Bool)
+fun Foo (t:Bool)
 {}
 
 fun baz(a, b, ... others, more=true) {}
@@ -1204,7 +1204,7 @@ fun bar(...o) {}
     // Errors
 ustring incorrect = R"(
 fun foo {}
-new fun foo() {}
+fun fun foo() {}
 fun bar(1) {}
 fun bar() : Bool {}
 fun baz(a, b:) {}
@@ -1264,14 +1264,12 @@ filter = (fun() = 3)() + 3
 
     // Errors
 ustring incorrect = R"(
-new foo() = 4
 fun foo1() = return 1
 fun(a) {}
 fun() = a = 3
 )";
 
     IRType expected_incorr[] = {
-        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

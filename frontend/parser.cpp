@@ -649,13 +649,13 @@ IR *Parser::declaration() {
         ++multi_line_parsing;
         if (check(TokenType::ID)) {
             auto name = advance();
-            std::vector<Expression *> parents;
+            std::vector<Expression *> clparents;
             if (match(TokenType::COLON)) {
-                parents = expr_list(true);
-                parser_assert(!parents.empty(), create_diag(diags::PARENT_LIST_EXPECTED));
+                clparents = expr_list(true);
+                parser_assert(!clparents.empty(), create_diag(diags::PARENT_LIST_EXPECTED));
             }
             auto clbody = block();
-            decl = new Class(name->get_value(), parents, clbody);
+            decl = new Class(name->get_value(), clparents, clbody);
             no_end_needed = true;
         }
         else {
@@ -685,9 +685,7 @@ IR *Parser::declaration() {
     }
 
     // fun / constructor / lambdas
-    else if (check({TokenType::FUN, TokenType::NEW})) {
-        auto funt = advance();
-        bool constructor = funt->get_type() == TokenType::NEW;
+    else if (match(TokenType::FUN)) {
         ustring name = "";
         if (check(TokenType::ID)) {
             auto id = advance();
@@ -701,7 +699,7 @@ IR *Parser::declaration() {
         }
         skip_nls();
         if (check(TokenType::LEFT_CURLY)) {
-            decl = new Function(name, args, constructor);
+            decl = new Function(name, args);
             // Assign outter annotations
             for (auto ann : outter_annots) {
                 decl->add_annotation(ann);
@@ -710,15 +708,11 @@ IR *Parser::declaration() {
             parents.push_back(decl);
             auto fnbody = block();
             if (name.empty()) {
-                if(constructor)
-                    parser_error(create_diag(diags::MISSING_CONSTR_NAME));
-                else
-                    parser_error(create_diag(diags::ANONYMOUS_FUN));
+                parser_error(create_diag(diags::ANONYMOUS_FUN));
             }
             dyn_cast<Function>(decl)->set_body(fnbody);
         }
         else if (match(TokenType::SET)) {
-            parser_assert(!constructor, create_diag(diags::LAMBDA_CONSTRUCTOR));
             auto lmbody = expression();
             parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
             decl = new Lambda(name, args, lmbody);

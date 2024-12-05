@@ -68,8 +68,8 @@ TEST(Scanner, OperatorTokens){
 
 /** Tokens that are keyword */
 TEST(Scanner, KeywordTokens){
-    ustring code = "and  for  switch  case  try  in  import  as  if  else  while  catch  or  not  xor  do  finally  new  return  enum  class  assert  fun  nil  true  false  super  this  break  continue  raise  space";
-    ustring expected = "AND FOR SWITCH CASE TRY IN IMPORT AS IF ELSE WHILE CATCH OR NOT XOR DO FINALLY NEW RETURN ENUM CLASS ASSERT FUN NIL TRUE FALSE SUPER THIS BREAK CONTINUE RAISE SPACE ";
+    ustring code = "and  for  switch  case  try  in  import  as  if  else  while  catch  or  not  xor  do  finally  return  enum  class  assert  fun  nil  true  false  super  this  break  continue  raise  space";
+    ustring expected = "AND FOR SWITCH CASE TRY IN IMPORT AS IF ELSE WHILE CATCH OR NOT XOR DO FINALLY RETURN ENUM CLASS ASSERT FUN NIL TRUE FALSE SUPER THIS BREAK CONTINUE RAISE SPACE ";
 
     std::stringstream ss;
     run_tokenizer(ss, code);

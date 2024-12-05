@@ -295,7 +295,7 @@ class MyClass : XClass {
 
     NAME = "My Class"
 
-    new MyClass(a) {
+    fun MyClass(a) {
         this.a = a
     }
 

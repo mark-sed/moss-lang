@@ -25,12 +25,12 @@ space {
 Classes allow for multiple inheritance and all function in their body have
 hidden `this` variable, which accesses the object it belongs to.
 
-Class can contain multiple constructors (prefixed `new` and followed by the
-class name)
+Class can contain multiple constructors (functions that have the same name as
+the class)
 
 ```cpp
 class Range : Iterable, BaseClass {
-    new Range(start, end, step=1) {
+    fun Range(start, end, step=1) {
         this.start = start
         this.end = end
         this.step = step

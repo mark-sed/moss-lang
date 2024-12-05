@@ -183,7 +183,7 @@ MyClass() // Will be converted to string and outputted
 class EquationNote : Note {
     COUNT = 0
 
-    new EquationNote(s) {
+    fun EquationNote(s) {
         COUNT += 1
         this.count = COUNT
         super(s)
@@ -506,7 +506,7 @@ space {
 }
 
 class Range : Iterable, BaseClass {
-    new Range(start, end, step=1) {
+    fun Range(start, end, step=1) {
         this.start = start
         this.end = end
         this.step = step
@@ -575,7 +575,7 @@ class MyClass : XClass {
 
     NAME = "My Class"
 
-    new MyClass(a) {
+    fun MyClass(a) {
         this.a = a
     }
 

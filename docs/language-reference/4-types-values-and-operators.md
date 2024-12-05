@@ -33,8 +33,8 @@ bin_j = 0B0101
 ```
 
 __Class constructors__:
-* `new Int(v:[Int, Float, Bool, String])`
-* `new Int(v=0)`
+* `fun Int(v:[Int, Float, Bool, String])`
+* `fun Int(v=0)`
 
 __Class operators__:
 * `fun (+)(x:[Int, Float, Complex])`
@@ -70,8 +70,8 @@ infinity_value = Float("inf")
 ```
 
 __Class constructors__:
-* `new Float(v:[Int, Float, Bool, String])`
-* `new Float(v=0.0)`
+* `fun Float(v:[Int, Float, Bool, String])`
+* `fun Float(v=0.0)`
 
 __Class operators__:
 * `fun (+)(x:[Int, Float, Complex])`
@@ -101,9 +101,9 @@ c = Complex("2-1i") // 2-1i
 ```
 
 __Class constructors__:
-* `new Complex(r:[Int, Float]=0, i:[Int, Float]=0)`
-* `new Complex(c:String)`
-* `new Complex(c:Complex)`
+* `fun Complex(r:[Int, Float]=0, i:[Int, Float]=0)`
+* `fun Complex(c:String)`
+* `fun Complex(c:Complex)`
 
 __Class operators__:
 * `fun (+)(x:[Int, Float, Complex])`
@@ -130,8 +130,8 @@ b4 = b1 == true
 ```
 
 __Class constructors__:
-* `new Bool(v:[Int, Float, Bool, NilType])`
-* `new Bool(v=false)`
+* `fun Bool(v:[Int, Float, Bool, NilType])`
+* `fun Bool(v=false)`
 
 __Class operators__:
 * `fun (and)(x:Bool)`
@@ -181,8 +181,8 @@ help // "Program usage:\n\tmoss [interpret options] <input file> [program args]\
 ```
 
 __Class constructors__:
-* `new String(v)`
-* `new String(v="")`
+* `fun String(v)`
+* `fun String(v="")`
 
 __Class operators__:
 * `fun (+)(x:String)`
@@ -214,7 +214,7 @@ a == b  // true
 ```
 
 __Class constructors__:
-* `new NilType()`
+* `fun NilType()`
 
 ## Enum
 
@@ -241,7 +241,7 @@ mix = ["pirate", 42, true, nil, nil, "ok"]
 ```
 
 __Class constructors__:
-* `new List(.. v)`
+* `fun List(.. v)`
 
 __Class operators__:
 * `fun (+)(x:List)`
@@ -306,8 +306,8 @@ mappings = {"name": "Marek", "id": 42}
 ```
 
 __Class constructors__:
-* `new Dict()`
-* `new Dict(keys:List, values:List)`
+* `fun Dict()`
+* `fun Dict(keys:List, values:List)`
 
 __Class operators__:
 * `fun (in)(x)`
@@ -340,7 +340,7 @@ foo(1,2..5) // this is equivalent to foo(1, (2..5))
 ```
 
 __Class constructors__:
-* `new Range(start, end, step=1)`
+* `fun Range(start, end, step=1)`
 
 __Class operators__:
 * `fun (in)(x)`

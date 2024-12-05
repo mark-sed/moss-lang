@@ -84,14 +84,12 @@ enum DiagID {
     MULTIPLE_DEFAULTS,      ///< More than 1 default in a switch
     PARENT_LIST_EXPECTED,   ///< No parents after a colon
     MISSING_CLASS_NAME,     ///< Class without name
-    MISSING_CONSTR_NAME,    ///< No name after new
     DEFAULT_NOT_ALLOWED,    ///< Default value assigned where it cannot be
     MISSING_FUN_BODY,       ///< No = or {} after function declaration
     MULTIPLE_VARARGS,       ///< Multiple variable arguments in single function
     NOT_PURE_VARARG,        ///< Setting type or value to vararg
     ANONYMOUS_FUN,          ///< Function without a name
     SET_EXPECTED,           ///< Expecting '='
-    LAMBDA_CONSTRUCTOR,     ///< new with =
     LAMBDA_WITH_BODY,       ///< {} after a lambda
     SET_NOT_ALLOWED,        ///< Assignment is not allowed here
     DICT_NO_COLON,          ///< No : after a key
@@ -168,14 +166,12 @@ static const char * DIAG_MSGS[] = {
     "Multiple default cases found in a switch — at most 1 default case can be present",
     "Expecting a list of parent classes",
     "Class must have a name",
-    "Constructor requires a name",
     "Default value cannot be assigned",
     "Function must have a body ('{}') or lambda must return a value ('=')",
     "Function can have only 1 variable argument ('...')",
     "Variable argument cannot be typed nor have a default value",
     "Function must have a name, only lambdas can be anonymous",
     "Expecting '='",
-    "Constructor cannot be a lambda",
     "Lambda cannot have a body",
     "Assignment is not allowed here — perhaps you meant to use '=='?",
     "Dictionary key must be followed by a colon (':')",
