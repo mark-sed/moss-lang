@@ -43,6 +43,8 @@ public:
 
     /** Writes bytecode into a file */
     void write(Bytecode *code);
+    /** Writes bytecode into a file in textual form */
+    void write_textual(Bytecode *code);
 };
 
 }

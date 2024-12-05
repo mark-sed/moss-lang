@@ -231,7 +231,7 @@ public:
     virtual ~BinExprOpCode() {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src1 << ", %" << src2;
+        os << mnem << "  %" << dst << ", %" << src1 << ", %" << src2;
         return os;
     }
 
@@ -276,7 +276,7 @@ public:
     Load(Register dst, StringConst name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -297,7 +297,7 @@ public:
     LoadAttr(Register dst, Register src, StringConst name) : OpCode(ClassType, "LOAD_ATTR"), dst(dst), src(src), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", %" << src << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -317,7 +317,7 @@ public:
     LoadGlobal(Register dst, StringConst name) : OpCode(ClassType, "LOAD_GLOBAL"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -337,7 +337,7 @@ public:
     LoadNonLoc(Register dst, StringConst name) : OpCode(ClassType, "LOAD_NONLOC"), dst(dst), name(name) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -357,7 +357,7 @@ public:
     Store(Register dst, Register src) : OpCode(ClassType, "STORE"), dst(dst), src(src) {}
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -379,7 +379,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -401,7 +401,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", " << " #" << csrc;
+        os << mnem << "  %" << dst << ", " << " #" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -424,7 +424,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", %" << obj << ", \"" << name << "\"";
+        os << mnem << "  %" << src << ", %" << obj << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -447,7 +447,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << csrc << ", %" << obj << ", \"" << name << "\"";
+        os << mnem << "  %" << csrc << ", %" << obj << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -469,7 +469,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << dst << ", " << val;
+        os << mnem << "  #" << dst << ", " << val;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -491,7 +491,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << dst << ", " << val;
+        os << mnem << "  #" << dst << ", " << val;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -515,7 +515,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << dst << ", " << (val ? "true" : "false");
+        os << mnem << "  #" << dst << ", " << (val ? "true" : "false");
         return os;
     }
     bool equals(OpCode *other) override {
@@ -537,7 +537,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << dst << ", \"" << utils::sanitize(val) << "\"";
+        os << mnem << "  #" << dst << ", \"" << utils::sanitize(val) << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -558,7 +558,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << dst;
+        os << mnem << "  #" << dst;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -579,7 +579,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t" << addr;
+        os << mnem << "  " << addr;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -601,7 +601,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", " << addr;
+        os << mnem << "  %" << src << ", " << addr;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -623,7 +623,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", " << addr;
+        os << mnem << "  %" << src << ", " << addr;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -645,7 +645,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -734,7 +734,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src;
+        os << mnem << "  %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -755,7 +755,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << csrc;
+        os << mnem << "  %" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -776,7 +776,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src;
+        os << mnem << "  %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -797,7 +797,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t#" << csrc;
+        os << mnem << "  #" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -819,7 +819,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", \"" << name << "\"";
+        os << mnem << "  %" << src << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -843,7 +843,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << fun << ", \"" << name << "\"" << ", \"" << arg_names << "\"";
+        os << mnem << "  %" << fun << ", \"" << name << "\"" << ", \"" << arg_names << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -864,7 +864,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << fun;
+        os << mnem << "  %" << fun;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -888,7 +888,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << fun << ", " << index << ", %" << src;
+        os << mnem << "  %" << fun << ", " << index << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -912,7 +912,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << fun << ", " << index << ", #" << csrc;
+        os << mnem << "  %" << fun << ", " << index << ", #" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -936,7 +936,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << fun << ", " << index << ", \"" << name << "\"";
+        os << mnem << "  %" << fun << ", " << index << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -958,7 +958,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << fun << ", " << index;
+        os << mnem << "  %" << fun << ", " << index;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -980,7 +980,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1001,7 +1001,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t\"" << name << "\"";
+        os << mnem << "  \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1022,7 +1022,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << parent;
+        os << mnem << "  %" << parent;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1044,7 +1044,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << cls;
+        os << mnem << "  %" << dst << ", %" << cls;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1066,7 +1066,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", %" << cls;
+        os << mnem << "  %" << src << ", %" << cls;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1088,7 +1088,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1110,7 +1110,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1132,7 +1132,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1155,7 +1155,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", \"" << name << "\", %" << val;
+        os << mnem << "  %" << dst << ", \"" << name << "\", %" << val;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1176,7 +1176,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src;
+        os << mnem << "  %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1590,7 +1590,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1612,7 +1612,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1634,7 +1634,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", %" << msg;
+        os << mnem << "  %" << src << ", %" << msg;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1672,7 +1672,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src;
+        os << mnem << "  %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1694,7 +1694,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << klass;
+        os << mnem << "  %" << dst << ", %" << klass;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1716,7 +1716,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << src;
+        os << mnem << "  %" << dst << ", %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1738,7 +1738,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", #" << csrc;
+        os << mnem << "  %" << dst << ", #" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1759,7 +1759,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst;
+        os << mnem << "  %" << dst;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1783,7 +1783,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << keys << ", %" << vals;
+        os << mnem << "  %" << dst << ", %" << keys << ", %" << vals;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1807,7 +1807,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << vals << ", \"" << name << "\"";
+        os << mnem << "  %" << dst << ", %" << vals << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1832,7 +1832,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << start << ", %" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", %" << step << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1857,7 +1857,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", #" << start << ", %" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", %" << step << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1882,7 +1882,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << start << ", #" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", #" << step << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1907,7 +1907,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << start << ", %" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", %" << step << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1932,7 +1932,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", #" << start << ", #" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", #" << step << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1957,7 +1957,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", #" << start << ", %" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", %" << step << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -1982,7 +1982,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", %" << start << ", #" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", #" << step << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -2007,7 +2007,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << dst << ", #" << start << ", #" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", #" << step << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -2032,7 +2032,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << src << ", %" << vals << ", %" << addrs << ", %" << default_addr;
+        os << mnem << "  %" << src << ", %" << vals << ", %" << addrs << ", %" << default_addr;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -2055,7 +2055,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\t%" << index << ", %" << iterator;
+        os << mnem << "  %" << index << ", %" << iterator;
         return os;
     }
     bool equals(OpCode *other) override {

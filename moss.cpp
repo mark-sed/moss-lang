@@ -70,6 +70,9 @@ int main(int argc, const char *argv[]) {
     if (input_is_msb && clopts::output) {
         error::error(error::ErrorCode::ARGUMENT, "Trying to dump bytecode for bytecode input", nullptr, true);
     }
+    if (clopts::dump_text_bc && !clopts::output) {
+        error::error(error::ErrorCode::ARGUMENT, "Option -S requires -o specified", nullptr, true);
+    }
 
     ir::IR *main_mod = nullptr;
     File *input_file = nullptr;
@@ -133,14 +136,17 @@ int main(int argc, const char *argv[]) {
     if (clopts::output) {
         // Bytecode output
         std::filesystem::path bcpath = args::get(clopts::output);
-        if (bcpath.extension() != ".msb") {
+        if (bcpath.extension() != ".msb" && !clopts::dump_text_bc) {
             bcpath += ".msb";
         }
         LOGMAX("Outputting bytecode to path: " << bcpath);
 
         BytecodeFile bfo(bcpath);
         BytecodeWriter bc_writer(bfo);
-        bc_writer.write(bc);
+        if (clopts::dump_text_bc)
+            bc_writer.write_textual(bc);
+        else
+            bc_writer.write(bc);
     }
 
     int exit_code = 0;

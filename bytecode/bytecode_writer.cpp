@@ -335,3 +335,12 @@ void BytecodeWriter::write(Bytecode *code) {
     this->stream->flush();
     LOGMAX("Finished writing bytecode");
 }
+
+void BytecodeWriter::write_textual(Bytecode *code) {
+    LOGMAX("Writing textual bytecode to file: " << this->file.get_path());
+    assert(code && "Bytecode to be written is null");
+
+    *this->stream << *code;
+
+    LOGMAX("Finished writing textual bytecode");
+}

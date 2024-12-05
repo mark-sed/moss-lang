@@ -169,6 +169,19 @@ function expect_out_eq_rx {
     fi
 }
 
+function expect_file_eq {
+    res=$(diff $1 $2)
+    if [[ $? -ne 0 ]]; then
+        failed $3 "Output differs"
+        printf "Expected:\n-------\n"
+        cat $1
+        printf "Got:\n----\n"
+        cat $2
+        printf "Diff:\n-----\n"
+        echo "$res"
+    fi
+}
+
 function testnum {
     printf "[${INDEX}/${TEST_AMOUNT}]"
 }
@@ -365,7 +378,13 @@ function test_bc_read_write {
     expect_pass_log "bc_read_write.msb" "--print-bc-header" $1
     expect_out_eq_rx "Bytecode header:\n  id:        0xff00002a\n  checksum:  0x0\n  version:   \(0x[0-9A-Za-z]*\) [0-9]+\.[0-9]+\.[0-9]+\n  timestamp: \([0-9]+\) .*\n" $1
 
+    # Textual output
+    expect_pass_log "hello-world.ms" "-o ${TEST_DIR}/bc_read_write.txt" "-S" $1
+    expect_out_eq "Hello, World!\n" $1
+    expect_file_eq "${TEST_DIR}/bc_read_write_expected.txt" "${TEST_DIR}/bc_read_write.txt" $1
+
     rm -f ${TEST_DIR}/bc_read_write.msb
+    rm -f ${TEST_DIR}/bc_read_write.txt
 }
 
 ###--- Running tests ---###
