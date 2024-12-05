@@ -12,6 +12,7 @@
 
 #include "source.hpp"
 #include "bytecode.hpp"
+#include "bytecode_header.hpp"
 #include "opcode.hpp"
 #include <fstream>
 #include <cstdlib>
@@ -33,6 +34,7 @@ private:
     opcode::FloatConst read_const_float();
     opcode::BoolConst read_const_bool();
     opcode::Address read_address();
+    bc_header::BytecodeHeader read_header();
 public:
     BytecodeReader(BytecodeFile &file) : file(file), buffer_size(256) {
         this->stream = file.get_new_stream();

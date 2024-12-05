@@ -12,6 +12,7 @@
 
 #include "source.hpp"
 #include "bytecode.hpp"
+#include "bytecode_header.hpp"
 #include "opcode.hpp"
 #include <fstream>
 #include <cstdlib>
@@ -31,6 +32,7 @@ private:
     void write_address(opcode::Address addr);
     void write_string(opcode::StringConst val);
     void write_int(opcode::IntConst v);
+    void write_header(bc_header::BytecodeHeader bch);
 public:
     BytecodeWriter(BytecodeFile &file) : file(file) {
         this->stream = file.create_out_stream();

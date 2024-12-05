@@ -11,6 +11,7 @@
 #define _BYTECODE_HPP_
 
 #include "opcode.hpp"
+#include "bytecode_header.hpp"
 #include <cstdint>
 #include <vector>
 #include <map>
@@ -28,11 +29,12 @@ namespace opcode {
 class Bytecode {
 private:
     std::vector<opcode::OpCode *> code;
+    bc_header::BytecodeHeader *header;
 #ifndef NDEBUG
     std::map<unsigned, ustring> comments;
 #endif
 public:
-    Bytecode() {}
+    Bytecode() : header(nullptr) {}
     ~Bytecode();
 
     std::ostream& debug(std::ostream& os);
@@ -56,6 +58,14 @@ public:
     }
 
     std::vector<opcode::OpCode *> get_code() { return this->code; }
+
+    void set_header(bc_header::BytecodeHeader *header) {
+        this->header = header;
+    }
+
+    bc_header::BytecodeHeader *get_header() {
+        return this->header;
+    }
 
     /*std::vector<opcode::OpCode *>::iterator begin() { return code.begin(); }
     std::vector<opcode::OpCode *>::const_iterator begin() const { return code.begin(); }

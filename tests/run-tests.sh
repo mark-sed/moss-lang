@@ -159,6 +159,16 @@ function expect_out_eq {
     fi
 }
 
+function expect_out_eq_rx {
+    outstr=$(cat $OUTP_STD)
+    cat $OUTP_STD | grep -zoP "$1" &>/dev/null
+    if [[ $? -ne 0 ]]; then
+        failed $2 "Output differs"
+        printf "Expected:\n-------\n${1}\n"
+        printf "Got:\n----\n${outstr}\n"
+    fi
+}
+
 function testnum {
     printf "[${INDEX}/${TEST_AMOUNT}]"
 }
@@ -350,6 +360,10 @@ function test_bc_read_write {
 
     # Cannot output bc for input bc
     expect_fail_log "bc_read_write.msb" "-o test.msb" "Trying to dump bytecode for bytecode input" $1
+
+    # Check header
+    expect_pass_log "bc_read_write.msb" "--print-bc-header" $1
+    expect_out_eq_rx "Bytecode header:\n  id:        0xff00002a\n  checksum:  0x0\n  version:   \(0x[0-9A-Za-z]*\) [0-9]+\.[0-9]+\.[0-9]+\n  timestamp: \([0-9]+\) .*\n" $1
 
     rm -f ${TEST_DIR}/bc_read_write.msb
 }

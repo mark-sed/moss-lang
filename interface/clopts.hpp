@@ -32,6 +32,7 @@ inline args::Flag output_only(bc_group, "output-only", "Outputs bytecode and doe
 inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
 
 inline args::Flag input_bc(bc_group, "bytecode", "Treats input file as bytecode file", {"bytecode"});
+inline args::Flag print_bc_info(bc_group, "print-bc-header", "Prints bytecode file (.msb) header and exits", {"print-bc-header"});
 
 // GC flags
 inline args::Group gc_group(arg_parser, "Garbage collector options:");

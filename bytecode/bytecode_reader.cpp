@@ -59,6 +59,13 @@ Address BytecodeReader::read_address() {
     return *(Address *)&buffer[0];
 }
 
+bc_header::BytecodeHeader BytecodeReader::read_header() {
+    char buffer[BCH_SIZE];
+    char *buffer_ptr = &buffer[0];
+    this->stream->read(buffer_ptr, BCH_SIZE);
+    return *(bc_header::BytecodeHeader *)&buffer[0];
+}
+
 Bytecode *BytecodeReader::read() {
     LOG1("Reading bytecode from file " << this->file.get_name());
 
@@ -67,7 +74,10 @@ Bytecode *BytecodeReader::read() {
     char opcode_char;
     opcode_t opcode;
 
-    // TODO: first read bytecode header with version and such
+    bc_header::BytecodeHeader header_val = read_header();
+    bc_header::BytecodeHeader *header = new bc_header::BytecodeHeader(header_val);
+    LOGMAX("Read header: " << *header);
+    bc->set_header(header);
 
     do {
         this->stream->read(&opcode_char, BC_OPCODE_SIZE);

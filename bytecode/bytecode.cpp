@@ -4,6 +4,8 @@
 using namespace moss;
 
 Bytecode::~Bytecode() {
+    if (header)
+        delete header;
     for (auto *op: code) {
         delete op;
     }

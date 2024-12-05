@@ -1,4 +1,5 @@
 #include "bytecode_writer.hpp"
+#include "bytecode_header.hpp"
 #include "logging.hpp"
 #include "bytecode.hpp"
 #include "commons.hpp"
@@ -29,9 +30,19 @@ void BytecodeWriter::write_string(StringConst val) {
     this->stream->write(txt, val.size());
 }
 
+void BytecodeWriter::write_header(bc_header::BytecodeHeader bch) {
+    this->stream->write(reinterpret_cast<const char *>(&bch.id), BCH_ID_SIZE);
+    this->stream->write(reinterpret_cast<char *>(&bch.checksum), BCH_CHECKSUM_SIZE);
+    this->stream->write(reinterpret_cast<char *>(&bch.version), BCH_VERSION_SIZE);
+    this->stream->write(reinterpret_cast<char *>(&bch.timestamp), BCH_TIMESTAMP_SIZE);
+}
+
 void BytecodeWriter::write(Bytecode *code) {
     LOGMAX("Writing bytecode to file: " << this->file.get_path());
     assert(code && "Bytecode to be written is null");
+
+    bc_header::BytecodeHeader header = bc_header::create_header();
+    write_header(header);
 
     for (opcode::OpCode *op_gen: code->get_code()) {
         opcode_t opc = op_gen->get_type();
