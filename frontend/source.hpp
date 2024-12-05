@@ -27,13 +27,14 @@ protected:
     ustring path;
 
     File(ustring path) : path(path) {}
-    virtual ~File() {}
 
     /**
      * @return Source as an input stream
      */
     virtual std::istream *get_new_stream() = 0;
 public:
+    virtual ~File() {}
+
     /**
      * Getter for path to this file. But as this may hold also string or stream
      * source, then this path is not an actual path and this should be checked 

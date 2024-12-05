@@ -8,6 +8,7 @@
 #include "bytecodegen.hpp"
 #include "interpreter.hpp"
 #include "clopts.hpp"
+#include "bytecode_writer.hpp"
 #include <vector>
 
 using namespace moss;
@@ -54,7 +55,7 @@ void Repl::run() {
         }
 
 #ifndef NDEBUG
-        if (!clopts::parse_only) {
+        if (!clopts::parse_only && !clopts::output_only) {
             //LOGMAX(*bc);
             interpreter->run();
             // TODO: Also dont print if line is silent
@@ -62,15 +63,29 @@ void Repl::run() {
                 outs << "\n";
         }
 #else
-        interpreter->run();
-        // TODO: Also dont print if line is silent
-        if (line_irs.size() != 0)
-            outs << "\n";
+        if (!clopts::output_only) {
+            interpreter->run();
+            // TODO: Also dont print if line is silent
+            if (line_irs.size() != 0)
+                outs << "\n";
+        }
 #endif
 
         for (auto i : line_irs) {
             delete i;
         }
+    }
+
+    if (clopts::output) {
+        std::filesystem::path bcpath = args::get(clopts::output);
+        if (bcpath.extension() != ".msb") {
+            bcpath += ".msb";
+        }
+        LOGMAX("Outputting bytecode to path: " << bcpath);
+
+        BytecodeFile bfo(bcpath);
+        BytecodeWriter bc_writer(bfo);
+        bc_writer.write(bc);
     }
 
     delete interpreter;

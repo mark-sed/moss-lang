@@ -2,7 +2,9 @@
  * Prints Hello, World! to the standard output
  */
 
-print("Hello, World!\n")
+// TODO: Uncomment
+//print("Hello, World!\n")
+"Hello, World!\n"
 
 /* Another alternative is to just put the string
  * on the line:

@@ -134,6 +134,22 @@ function expect_fail_exec {
     fi
 }
 
+function expect_fail_log {
+    run_log "${@:1:$#-2}"
+    local errmsg=$(cat "$OUTP_STD")
+    if [[ $RETCODE -eq 0 ]]; then
+        failed "${@: -1}" "Test was supposed to fail, but passed."
+    elif ! [[ "$errmsg" =~ "${*: -2:1}" ]] ; then
+        failed "${@: -1}" "Error message differs."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+        printf "Expected error regex:\n--------------\n"
+        printf "${*: -2:1}"
+        printf "\n"
+    fi
+}
+
 function expect_out_eq {
     outstr=$(cat $OUTP_STD)
     if ! cmp  "$OUTP_STD" <(printf "$1") ; then
@@ -324,10 +340,26 @@ gc.cpp::sweep: Deleting: STRING(String)
 done\n" $1
 }
 
+function test_bc_read_write {
+    # Run and generate bc_read_write.msb
+    expect_pass_log "hello-world.ms" "-o ${TEST_DIR}/bc_read_write" $1
+    expect_out_eq "Hello, World!\n" $1
+
+    expect_pass "bc_read_write.msb" $1
+    expect_out_eq "Hello, World!\n" $1
+
+    # Cannot output bc for input bc
+    expect_fail_log "bc_read_write.msb" "-o test.msb" "Trying to dump bytecode for bytecode input" $1
+
+    rm -f ${TEST_DIR}/bc_read_write.msb
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
     run_test empty
+    run_test bc_read_write
+
     run_test output
     run_test expressions
     run_test variables
