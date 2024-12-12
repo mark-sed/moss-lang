@@ -1,0 +1,5 @@
+v = print(1,2,3,4)
+v = print("hi", "there", separator="-", end=".\n")
+v = print()
+v = print(true)
+v = print(1,2,3,separator=",",end="!\n")

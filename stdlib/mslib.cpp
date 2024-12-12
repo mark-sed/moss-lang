@@ -64,7 +64,21 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     }
     else if (name == "print") {
         assert(args.size() == 3 && "Mismatch of args");
-        ret_v = print(vm, args[0].value, args[1].value, args[2].value);
+        Value *msgs = nullptr;
+        Value *separator = nullptr;
+        Value *end = nullptr;
+        for (auto a: args) {
+            if (a.name == "msgs")
+                msgs = a.value;
+            else if (a.name == "end")
+                end = a.value;
+            else if (a.name == "separator")
+                separator = a.value;
+        }
+        assert(msgs);
+        assert(separator);
+        assert(end);
+        ret_v = print(vm, msgs, end, separator);
     }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));

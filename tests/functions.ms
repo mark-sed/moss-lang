@@ -60,6 +60,7 @@ fun vararg(a, b, ... c, d=false, e=97) {
 }
 
 vararg(1, 2, 3, 4, 5, d=6, e=7)
+vararg(1, 2, 3, 4, 5, e=7, d=6)
 vararg(1, 2)
 vararg(1, 2, 3, 4, 5)
 

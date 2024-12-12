@@ -227,7 +227,7 @@ function test_functions {
     expect_pass "functions.ms" $1
     expect_out_eq "hi there\nnot here\nnil\n9\n11\n1false\ntest2\n42
 0\n1\n123\n125\n123\n1trueanil[]1\n<function fooa with 3 overloads>
-12[3, 4, 5]false97\n12[]false97\n12[3, 4, 5]false97
+12[3, 4, 5]67\n12[3, 4, 5]67\n12[]false97\n12[3, 4, 5]false97
 []\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, \"ok\", false, nil]\ntrue[1]
 1\n0\n0\n42\nhello from greet\ngoo inner fun\n" $1
 }
@@ -329,6 +329,11 @@ List(1) [
 ]\nEnum {}\n' $1
 }
 
+function test_lib_print {
+    expect_pass "stdlib_tests/print.ms" $1
+    expect_out_eq '1 2 3 4\nhi-there.\n\ntrue\n1,2,3!\n' $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -365,7 +370,7 @@ done\n" $1
 
 function test_bc_read_write {
     # Run and generate bc_read_write.msb
-    expect_pass_log "hello-world.ms" "-o ${TEST_DIR}/bc_read_write" $1
+    expect_pass_log "bc_rw_output.ms" "-o ${TEST_DIR}/bc_read_write" $1
     expect_out_eq "Hello, World!\n" $1
 
     expect_pass "bc_read_write.msb" $1
@@ -379,7 +384,7 @@ function test_bc_read_write {
     expect_out_eq_rx "Bytecode header:\n  id:        0xff00002a\n  checksum:  0x0\n  version:   \(0x[0-9A-Za-z]*\) [0-9]+\.[0-9]+\.[0-9]+\n  timestamp: \([0-9]+\) .*\n" $1
 
     # Textual output
-    expect_pass_log "hello-world.ms" "-o ${TEST_DIR}/bc_read_write.txt" "-S" $1
+    expect_pass_log "bc_rw_output.ms" "-o ${TEST_DIR}/bc_read_write.txt" "-S" $1
     expect_out_eq "Hello, World!\n" $1
     expect_file_eq "${TEST_DIR}/bc_read_write_expected.txt" "${TEST_DIR}/bc_read_write.txt" $1
 
@@ -410,6 +415,7 @@ function run_all_tests {
     # stdlib tests
     run_test lib_exit
     run_test lib_vardump
+    run_test lib_print
 
     # gc tests
     run_test gc_local_vars
