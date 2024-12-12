@@ -151,6 +151,23 @@ void JmpIfFalse::exec(Interpreter *vm) {
 }
 
 // TODO: Return reason why it cannot be called
+// We determine if we can call passed in function with passed in call frame
+// First we copy call arguments so that we can modify them (add default ones and such)
+// Then we check if we have more call arguments than function argument, if that is the case
+//   then there has to be a vararg, otherwise this cannot be called
+// Then we start parsing call arguments, if we encounter named one, then we remember this
+//   to check and make sure that only named ones are after this
+// For named args we go through actual function args and try to match the names
+//   If name is matched then type is matched
+// For non-named args we check if the function argument at given position is vararg
+//   If it is vararg, then we eat all non-named arguments and add them into a ListValue
+//   then we delete call argument collected and replace it with this ListValue
+//   If it is not a vararg, so just a positional argument, then we check that the type
+//   matches the function argument type at given position
+// Some arguments might not have been set and have default value, for those we go
+//   though function arguments and if the argument is a vararg it is set to empty list
+//   and if it has a default value then we set it to it (clone of the value)
+// Finally we just check if fun and call arg size match
 static bool can_call(FunValue *f, CallFrame *cf) {
     LOGMAX("Checking if can call " << *f);
     const auto &og_call_args = cf->get_args();
@@ -210,6 +227,9 @@ static bool can_call(FunValue *f, CallFrame *cf) {
                     CallFrameArg &varg = call_args[j];
                     if (varg.name.empty()) {
                         vararg_vals.push_back(varg.value);
+                    }
+                    else {
+                        break;
                     }
                 }
                 LOGMAX("Setting call argument " << i << " to " << j << " as vararg list");
