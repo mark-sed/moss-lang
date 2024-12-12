@@ -236,7 +236,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
 
     // Find not set values and set them in call
     // We have to go through all the fun_args, because there might be a case
-    // where some value in the middle is left our by dirrect assignment
+    // where some value in the middle is left out by dirrect assignment
     // E.g.:
     //      fun foo(a=1, b=2, c=3) {}
     //      foo(c=0, a=2)

@@ -24,6 +24,7 @@ namespace mslib {
 
 void exit(Interpreter *vm, Value *code);
 Value *vardump(Interpreter *vm, Value *v);
+Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator);
 
 void dispatch(Interpreter *vm, ustring name, Value *&err);
 
