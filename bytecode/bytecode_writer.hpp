@@ -1,11 +1,11 @@
-/**
- * @file bytecode_writer.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Writes bytecode to a file or object
- */
+///
+/// \file bytecode_writer.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Writes bytecode to a file or object
+///
 
 #ifndef _BYTECODE_WRITER_HPP_
 #define _BYTECODE_WRITER_HPP_
@@ -19,10 +19,8 @@
 
 namespace moss {
 
-/** 
- * Writes bytecode object into a file, which can be again read
- * by BytecodeReader and run. 
- */
+/// Writes bytecode object into a file, which can be again read
+/// by BytecodeReader and run. 
 class BytecodeWriter {
 private:
     BytecodeFile &file;
@@ -41,9 +39,9 @@ public:
         delete this->stream;
     }
 
-    /** Writes bytecode into a file */
+    /// Writes bytecode into a file
     void write(Bytecode *code);
-    /** Writes bytecode into a file in textual form */
+    /// Writes bytecode into a file in textual form
     void write_textual(Bytecode *code);
 };
 

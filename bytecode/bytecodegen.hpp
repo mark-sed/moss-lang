@@ -1,11 +1,11 @@
-/**
- * @file bytecodegen.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Bytecode generator from IR
- */
+/// 
+/// \file bytecodegen.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Bytecode generator from IR
+/// 
 
 #ifndef _BYTECODEGEN_HPP_
 #define _BYTECODEGEN_HPP_
@@ -16,16 +16,14 @@
 
 namespace moss {
 
-/** Namespace for all bytecode code generation resources */
+/// Namespace for all bytecode code generation resources
 namespace bcgen {
 
-/**
- * This class represents a register value and its properties.
- * This has to be encapsulated to store these properties and change them
- * based on other IRs. 
- * We mainly need to distinguish where this value is to be stored, if it should
- * reside in the constant pool or variable pool
- */
+/// This class represents a register value and its properties.
+/// This has to be encapsulated to store these properties and change them
+/// based on other IRs. 
+/// We mainly need to distinguish where this value is to be stored, if it should
+/// reside in the constant pool or variable pool 
 class RegValue {
 private:
     opcode::Register value; ///< Actual register value for opcode
@@ -34,7 +32,7 @@ private:
 public:
     RegValue(opcode::Register value, bool constant=false) : value(value), constant(constant), silent(false) {}
 
-    /** @return Opcode register this represents */
+    /// @return Opcode register this represents
     opcode::Register reg() { return this->value; }
 
     bool is_const() { return this->constant; }
@@ -46,16 +44,14 @@ public:
     bool is_silent() { return this->silent; }
 };
 
-/**
- * @brief Bytecode generator
- * 
- * Generates bytecode from IR. This class works by modifying a Bytecode
- * class passed to it, so it keeps its state and can be called to generate
- * new code multiple times
- */
+/// \brief Bytecode generator
+/// 
+/// Generates bytecode from IR. This class works by modifying a Bytecode
+/// class passed to it, so it keeps its state and can be called to generate
+/// new code multiple times 
 class BytecodeGen {
 private:
-    Bytecode *code; ///< Bytecode it will be appending opcodes to
+    Bytecode *code;             ///< Bytecode it will be appending opcodes to
     opcode::Register curr_creg; ///< Current free constant register
     opcode::Register curr_reg;  ///< Current free register
 
@@ -119,17 +115,15 @@ public:
         // Code is to be deleted by the creator of it
     }
 
-    /**
-     * @brief Generates opcodes from IR
-     * 
-     * This modifies the Bytecode object passed to this on creation and
-     * works with this as if it was connected to the previously passed in IRs.
-     * Meaning that the registers will not start from 0 if multiple Modules
-     * are passed to this.
-     * 
-     * @note This relies on the Bytecode object (passed on creation) being
-     *       valid and not modified by anyone else but this class.
-     */
+    /// \brief Generates opcodes from IR
+    /// 
+    /// This modifies the Bytecode object passed to this on creation and
+    /// works with this as if it was connected to the previously passed in IRs.
+    /// Meaning that the registers will not start from 0 if multiple Modules
+    /// are passed to this.
+    /// 
+    /// \note This relies on the Bytecode object (passed on creation) being
+    ///       valid and not modified by anyone else but this class. 
     void generate(ir::IR *decl);
 };
 

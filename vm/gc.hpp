@@ -1,11 +1,11 @@
-/**
- * @file gc.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Tracing moss garbage collector
- */
+/// 
+/// \file gc.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Tracing moss garbage collector
+/// 
 
 #ifndef _GC_HPP_
 #define _GC_HPP_
@@ -21,15 +21,13 @@ class Interpreter;
 class Value;
 class MemoryPool;
 
-/** Namespace for garbage collector resources */
+/// Namespace for garbage collector resources
 namespace gcs {
 
-/**
- * @brief Tracing (mark-and-sweep) garbage collector
- * 
- * This GC goes from root values and marks values that are reachabled from
- * withing these roots. It then frees all those not marked.
- */
+/// \brief Tracing (mark-and-sweep) garbage collector
+/// 
+/// This GC goes from root values and marks values that are reachable from
+/// withing these roots. It then frees all those not marked.
 class TracingGC {
 private:
     Interpreter *vm;

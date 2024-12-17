@@ -1,12 +1,12 @@
-/**
- * @file ir.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Internal representation of moss constructs.
- * This IR is then lowered into bytecode.
- */
+/// 
+/// \file ir.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Internal representation of moss constructs.
+/// This IR is then lowered into bytecode.
+/// 
 
 #ifndef _IR_HPP_
 #define _IR_HPP_
@@ -24,8 +24,10 @@
 
 namespace moss {
 
+/// Internal representation of code namespace
 namespace ir {
 
+/// IR class type for easy casting and checking
 enum IRType {
     CONSTRUCT,
     EXPRESSION,
@@ -80,7 +82,7 @@ enum IRType {
 
 class Annotation;
 
-/** Base class for any IR value */
+/// Base class for any IR value
 class IR {
 protected:
     IRType ir_type;
@@ -115,12 +117,10 @@ public:
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
     return ir.debug(os);
 }
-
-/** 
- * @brief IRs that are constructs
- * Constructs cannot appear in an expression and have certain control flow
- * and body.
- */
+ 
+/// \brief IRs that are constructs
+/// Constructs cannot appear in an expression and have certain control flow
+/// and body.
 class Construct : public IR {
 protected:
     std::list<IR *> body;
@@ -154,11 +154,9 @@ public:
     void set_body(std::list<IR *> b) { this->body = b; }
 };
 
-/**
- * @brief Statements serve for control.
- * Statements cannot appear in expression and example can be break,
- * import, return or assert
- */
+/// \brief Statements serve for control.
+/// Statements cannot appear in expression and example can be break,
+/// import, return or assert
 class Statement : public IR {
 protected:
     Statement(IRType ir_type, ustring name) : IR(ir_type, name) {}
@@ -171,9 +169,7 @@ public:
     }
 };
 
-/**
- * @brief Expression represents some value
- */
+/// \brief Expression represents some value 
 class Expression : public IR {
 protected:
     Expression(IRType ir_type, ustring name) : IR(ir_type, name) {}
@@ -820,10 +816,8 @@ public:
     EndOfFile() : Statement(ClassType, "<end-of-file>") {}
 };
 
-/**
- * Types of operators
- * @note Beware that the order is used for checks
- */
+/// Types of operators
+/// \note Beware that the order is used for checks
 enum OperatorKind {
     OP_UNKNOWN,
     OP_CONCAT, ///< ++
@@ -861,9 +855,7 @@ enum OperatorKind {
     OP_UNPACK  ///< <<
 };
 
-/**
- * Operator in an expression
- */
+/// Operator in an expression
 class Operator {
 private:
     OperatorKind kind;
@@ -1001,9 +993,7 @@ public:
     }
 };
 
-/** 
- * IR for denoting * in import of all symbols
- */
+/// IR for denoting * in import of all symbols
 class AllSymbols : public Expression {
 public:
     static const IRType ClassType = IRType::ALL_SYMBOLS;

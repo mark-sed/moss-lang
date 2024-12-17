@@ -1,11 +1,11 @@
-/**
- * @file bytecode_reader.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Reads bytecode from a stream
- */
+///
+/// \file bytecode_reader.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Reads bytecode from a stream
+/// 
 
 #ifndef _BYTECODE_READER_HPP_
 #define _BYTECODE_READER_HPP_
@@ -19,7 +19,7 @@
 
 namespace moss {
 
-/** Reader of bytecode files, it converts them into bytecode object */
+/// Reader of bytecode files, it converts them into bytecode object
 class BytecodeReader {
 private:
     BytecodeFile &file;
@@ -46,7 +46,7 @@ public:
         std::free(str_buffer);
     }
 
-    /** Reads bytecode into Bytecode object */
+    /// Reads bytecode into Bytecode object
     Bytecode *read();
 };
 

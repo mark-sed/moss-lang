@@ -1,11 +1,11 @@
-/**
- * @file scanner.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Tokenization and lexical analysis of moss code
- */
+/// 
+/// \file scanner.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Tokenization and lexical analysis of moss code
+/// 
 
 #ifndef _SCANNER_HPP_
 #define _SCANNER_HPP_
@@ -29,7 +29,7 @@ namespace error {
     }
 }
 
-/** Scanner token types */
+/// Scanner token types
 enum class TokenType {
     LEFT_PAREN,     ///< (
     RIGHT_PAREN,    ///< )
@@ -231,7 +231,7 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
 }
 
 
-/** Object represents a scanner token */
+/// Object represents a scanner token
 class Token {
 protected:
     ustring value;
@@ -256,14 +256,12 @@ inline std::ostream& operator<< (std::ostream& os, Token &t) {
     return t.debug(os);
 }
 
-/**
- * @brief Token that represents syntactic error
- * 
- * Syntactic error has to be accepted and exception has to be raised from it.
- * Because of this there is this special kind of token, which holds the token
- * and message to display with the exception. There is also a note, which
- * might recommend how to fix this error. 
- */
+/// \brief Token that represents syntactic error
+/// 
+/// Syntactic error has to be accepted and exception has to be raised from it.
+/// Because of this there is this special kind of token, which holds the token
+/// and message to display with the exception. There is also a note, which
+/// might recommend how to fix this error.  
 class ErrorToken : public Token {
 private:
     ustring note;
@@ -287,16 +285,14 @@ public:
         return os;
     }
 };
-
-/** 
- * @brief Special object that represents a token value
- * 
- * Tokens and values can be a character (int), but also
- * utf-8 character which is better to be saved as string.
- * It would be possible to use only string, but because of speedup
- * it is handled this way. This allows to not create string for
- * one character and also allows to check if value is in fact utf-8
- */
+ 
+/// \brief Special object that represents a token value
+/// 
+/// Tokens and values can be a character (int), but also
+/// utf-8 character which is better to be saved as string.
+/// It would be possible to use only string, but because of speedup
+/// it is handled this way. This allows to not create string for
+/// one character and also allows to check if value is in fact utf-8
 struct UTF8Char {
     int c;
     ustring str;
@@ -305,21 +301,19 @@ struct UTF8Char {
     UTF8Char(int c) : c(c), str(), is_utf(false) {}
     UTF8Char(ustring str) : c(-1), str(str), is_utf(true) {}
 
-    /** @return this value as string (might or might not be utf-8) */
+    /// \return this value as string (might or might not be utf-8)
     inline ustring to_str() {
         if (is_utf) return str;
         return std::string(1, c);
     }
 };
 
-/**
- * @brief Syntactic analyzer and tokenizer for moss language
- * 
- * Scanner works always with one file/module, this might be input file passed
- * by the user or just string of moss code or stdin. Scanner does not care for
- * this as this is handled by SourceFile class that provides the stream to
- * read from.
- */
+/// \brief Syntactic analyzer and tokenizer for moss language
+/// 
+/// Scanner works always with one file/module, this might be input file passed
+/// by the user or just string of moss code or stdin. Scanner does not care for
+/// this as this is handled by SourceFile class that provides the stream to
+/// read from.
 class Scanner {
 private:
     SourceFile &file;
@@ -363,12 +357,12 @@ public:
         }
     }
 
-    /** @return Next token from the current file, including whitespace token */
+    /// \return Next token from the current file, including whitespace token
     Token *next_token();
-    /** @return Next token from the current file, that is not a whitespace token*/
+    /// \return Next token from the current file, that is not a whitespace token
     Token *next_nonws_token();
 
-    /** @return Vector that contains lines from the source file (for error reporting) */
+    /// \return Vector that contains lines from the source file (for error reporting)
     std::vector<ustring> get_src_text() { return this->src_text; }
 };
 

@@ -1,11 +1,11 @@
-/**
- * @file clopts.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Command line options handler
- */
+/// 
+/// \file clopts.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Command line options handler
+/// 
 
 #ifndef _CLOPTS_HPP_
 #define _CLOPTS_HPP_
@@ -16,7 +16,7 @@
 
 namespace moss {
 
-/** Command line (terminal) options */
+/// Command line (terminal) options
 namespace clopts {
 
 inline args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");
@@ -54,18 +54,16 @@ inline args::Flag stress_test_gc(debugging_group, "stress-test-gc", "Runs GC aft
 
 inline args::Group interface_group(arg_parser, "Interface options:");
 
-/**
- * Interpreter argument parsing. It also accepts the program arguments
- * @param argc Number of arguments including the program name
- * @param argv Arguments including the program name
- * @warning This function might terminate the program (after help, version or on error)
- */
+/// Interpreter argument parsing. It also accepts the program arguments
+/// \param argc Number of arguments including the program name
+/// \param argv Arguments including the program name
+/// \warning This function might terminate the program (after help, version or on error) 
 void parse_clopts(int argc, const char *argv[]);
 
-/** @return logging (verbose) level set by the user */
+/// \return logging (verbose) level set by the user
 int get_logging_level();
 
-/** @return value passed to set verbose level (should be a csv of file::method values) */
+/// \return value passed to set verbose level (should be a csv of file::method values)
 std::string get_logging_list();
 
 bool use_color();

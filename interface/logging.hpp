@@ -1,11 +1,11 @@
-/**
- * @file logging.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Debug logging
- */
+/// 
+/// \file logging.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Debug logging
+/// 
 
 #ifndef _LOGGING_HPP_
 #define _LOGGING_HPP_
@@ -24,9 +24,7 @@
 
 namespace moss {
 
-/**
- * Base class for all loggers
- */ 
+/// Base class for all loggers 
 class BaseLogger {
 protected:
     bool disable;
@@ -35,55 +33,39 @@ protected:
     std::vector<std::ostream *> streams;
     std::ios_base::fmtflags flags;
 public:
-    /** Constructor */
-    BaseLogger();
-    /** 
-     * Destructor. 
-     * Flushes streams 
-     */
+    /// Constructor
+    BaseLogger(); 
+    /// Destructor. 
+    /// Flushes streams
     ~BaseLogger();
 
-    /**
-     * Setter for disabling
-     * @param disable If true, the logger will be disabled
-     */
+    /// Setter for disabling
+    /// \param disable If true, the logger will be disabled
     void set_disable(bool disable) { this->disable=disable; }
 
-    /**
-     * Sets logging level to be printed
-     * @param level Verbosity level
-     */ 
+    /// Sets logging level to be printed
+    /// \param level Verbosity level
     void set_logging_level(unsigned level) { this->logging_level = level; }
 
-    /**
-     * Adds a new initialized ostream to log to
-     */ 
+    /// Adds a new initialized ostream to log to 
     void add_stream(std::ostream *stream) { this->streams.push_back(stream); }
 
-    /**
-     * Setter for logging everything
-     * @param log_everything new value
-     */ 
+    /// Setter for logging everything
+    /// \param log_everything new value 
     void set_log_everything(bool log_everything) { this->log_everything = log_everything; }
 
-    /**
-     * Setter for flags
-     */
+    /// Setter for flags
     void set_flags(std::ios_base::fmtflags flags) { this->flags = flags; }
 
-    /**
-     * Getter for flags
-     */ 
+    /// Getter for flags 
     std::ios_base::fmtflags get_flags() { return flags; }
 
-    /** Getter for log_everything */
+    /// Getter for log_everything
     bool is_log_everything() { return this->log_everything; }
 };
 
 
-/**
- * Class for debugging logs
- */ 
+/// Class for debugging logs 
 class Logger : public BaseLogger {
 private:
     std::set<ustring> enabled;
@@ -92,24 +74,18 @@ public:
     Logger();
     ~Logger();
 
-    /**
-     * @return logger instance 
-     */ 
+    /// \return logger instance  
     static Logger &get();
 
-    /**
-     * Debug logging
-     * @param level Verbosity level
-     * @param file_func __FILE__ should be passed here or the file name
-     * @param message Message to print
-     */
+    /// Debug logging
+    /// \param level Verbosity level
+    /// \param file_func __FILE__ should be passed here or the file name
+    /// \param message Message to print 
     void debug(unsigned level, const ustring &file_func, const ustring &message);
 
     
-    /**
-     * Set file::functions to output to log
-     * @param enabled Set of file::function names
-     */
+    /// Set file::functions to output to log
+    /// \param enabled Set of file::function names
     void set_enabled(std::set<ustring> enabled) { this->enabled = enabled; }
 };
 

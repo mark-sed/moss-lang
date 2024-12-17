@@ -1,11 +1,11 @@
-/**
- * @file values.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Moss VM types
- */
+/// 
+/// \file values.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Moss VM types
+/// 
 
 #ifndef _VALUES_HPP_
 #define _VALUES_HPP_
@@ -64,7 +64,7 @@ inline ustring TypeKind2String(TypeKind kind) {
     return "UNKNOWN";
 }
 
-/** Base class of all values */
+/// Base class of all values
 class Value {
 protected:
     bool marked;
@@ -87,8 +87,8 @@ public:
     static size_t allocated_bytes;
     static size_t next_gc;
 
-    // We need to store any allocation to all object list for GC to collect it
-    // once not used
+    /// We need to store any allocation to all object list for GC to collect it
+    /// once not used
     void *operator new(size_t size);
 
     static void operator delete(void * p, size_t size);
@@ -123,16 +123,14 @@ public:
         assert(has_annotation(name) && "Did not check annotation existence");
         return annotations[name];
     }
-
-    /** 
-     * Returns register in which is attribute stored 
-     * If this attribute is not set, then nullptr is returned
-     * @param name Attribute name
-     * @return Value of attribute or nullptr is not set
-     */
+ 
+    /// Returns register in which is attribute stored 
+    /// If this attribute is not set, then nullptr is returned
+    /// \param name Attribute name
+    /// \return Value of attribute or nullptr is not set
     Value *get_attr(ustring name);
 
-    /** Sets (new or overrides) attribute name to value v*/
+    /// Sets (new or overrides) attribute name to value v
     void set_attr(ustring name, Value *v);
     MemoryPool *get_attrs() { return this->attrs; }
 };
@@ -151,11 +149,8 @@ bool isa(Value* t);
 template<class T>
 T *dyn_cast(Value* t);
 
-/**
- * This namespace contains values (pointers) for all the built-in types
- * 
- * NOTE: When adding a new value also add it to Interpreter::init_global_frame
- */
+/// This namespace contains values (pointers) for all the built-in types
+/// \note: When adding a new value also add it to Interpreter::init_global_frame
 namespace BuiltIns {
     extern Value *Type;// = new ClassValue("Type");
     extern Value *Int;// = new ClassValue("Int");
@@ -173,7 +168,7 @@ namespace BuiltIns {
     extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
 }
 
-/** Moss integer value */
+/// Moss integer value
 class IntValue : public Value {
 private:
     opcode::IntConst value;
@@ -201,7 +196,7 @@ public:
     }
 };
 
-/** Moss float value */
+/// Moss float value
 class FloatValue : public Value {
 private:
     opcode::FloatConst value;
@@ -228,7 +223,7 @@ public:
     }
 };
 
-/** Moss boolean value */
+/// Moss boolean value
 class BoolValue : public Value {
 private:
     opcode::BoolConst value;
@@ -252,7 +247,7 @@ public:
     }
 };
 
-/** Moss string value */
+/// Moss string value
 class StringValue : public Value {
 private:
     opcode::StringConst value;
@@ -280,7 +275,7 @@ public:
     }
 };
 
-/** Moss nil value (holds only one value) */
+/// Moss nil value (holds only one value)
 class NilValue : public Value {
 public:
     static const TypeKind ClassType = TypeKind::NIL;

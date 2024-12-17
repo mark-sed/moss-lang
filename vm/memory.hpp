@@ -1,11 +1,11 @@
-/**
- * @file memory.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Memory pools for the vm
- */
+/// 
+/// \file memory.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Memory pools for the vm
+/// 
 
 #ifndef _MEMORY_HPP_
 #define _MEMORY_HPP_
@@ -22,12 +22,10 @@ namespace moss {
 
 class Value;
 
-/**
- * @brief Virtual memory representation
- * It holds pool of values with reference counting for their garbage collection
- * and it also holds symbol table which has the variable names and corresponding
- * index into the pool.
- */
+/// \brief Virtual memory representation
+/// It holds pool of values with reference counting for their garbage collection
+/// and it also holds symbol table which has the variable names and corresponding
+/// index into the pool. 
 class MemoryPool {
 private:
     std::vector<Value *> pool;
@@ -51,15 +49,13 @@ public:
         // Values are deleted by gc
     }
 
-    /** Stores a value into a register */
-    void store(opcode::Register reg, Value *v);
-    /** 
-     * Loads value at specified register index 
-     * If there was no value stored, then Nil is stored there and returned
-     */
+    /// Stores a value into a register
+    void store(opcode::Register reg, Value *v); 
+    /// Loads value at specified register index 
+    /// If there was no value stored, then Nil is stored there and returned
     Value *load(opcode::Register reg);
 
-    /** Sets a name for specific register */
+    /// Sets a name for specific register
     void store_name(opcode::Register reg, ustring name);
 
     Value *load_name(ustring name);

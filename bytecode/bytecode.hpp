@@ -1,11 +1,11 @@
-/**
- * @file bytecode.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief VM bytecode
- */
+///
+/// \file bytecode.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief VM bytecode
+///
 
 #ifndef _BYTECODE_HPP_
 #define _BYTECODE_HPP_
@@ -22,10 +22,8 @@ namespace opcode {
     class OpCode;    
 }
 
-/**
- * @brief Class holding bytecode program
- * It consists of a vector of opcodes and API to work with it.
- */
+/// \brief Class holding bytecode program
+/// It consists of a vector of opcodes and API to work with it. 
 class Bytecode {
 private:
     std::vector<opcode::OpCode *> code;
@@ -49,7 +47,7 @@ public:
     void push_comment(ustring comm) { comments[code.size()-1] = comm; }
 #endif
 
-    /** How many opcodes are in this bytecode program */
+    /// How many opcodes are in this bytecode program
     size_t size() { return code.size(); }
 
     inline opcode::OpCode *operator[](opcode::Address addr) {

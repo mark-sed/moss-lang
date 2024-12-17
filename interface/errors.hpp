@@ -1,11 +1,11 @@
-/**
- * @file errors.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Error handling
- */
+/// 
+/// \file errors.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Error handling
+/// 
 
 #ifndef _ERRORS_HPP_
 #define _ERRORS_HPP_
@@ -28,9 +28,7 @@ namespace diags {
     class Diagnostic;
 }
 
-/**
- * Namespace holding resources for error and warning handling
- */
+/// Namespace holding resources for error and warning handling
 namespace error {
     
     
@@ -46,9 +44,7 @@ namespace error {
         inline msgtype MULTIPLE_SEPARATORS = "Multiple connected digit separators";
     }
 
-    /**
-     * Namespace for terminal colorization
-     */ 
+    /// Namespace for terminal colorization 
     namespace colors {
 
         extern const char *NO_COLOR;
@@ -70,12 +66,10 @@ namespace error {
         extern const char *WHITE;
         extern const char *RESET;
 
-        /**
-         * Returns passes in color in case the output is not redirected.
-         * If output is redirected then this returns empty string ("")
-         * @param color Colors to sanitize
-         * @return color if output if not redirected otherwise empty string
-         */ 
+        /// Returns passes in color in case the output is not redirected.
+        /// If output is redirected then this returns empty string ("")
+        /// \param color Colors to sanitize
+        /// \return color if output if not redirected otherwise empty string 
         inline const char *colorize(const char * color) {
             // Check if stderr is redirected
             if(!is_stderr_atty() || !clopts::use_color()) {
@@ -84,10 +78,8 @@ namespace error {
             return color;
         }
 
-        /**
-         * Resets set color to default terminal settings
-         * @return colors::RESET if output is not redirected otherwise empty string
-         */ 
+        /// Resets set color to default terminal settings
+        /// \return colors::RESET if output is not redirected otherwise empty string 
         inline const char *reset() {
             // Check if stderr is redirected
             if(!is_stderr_atty() || !clopts::use_color()) {
@@ -97,10 +89,8 @@ namespace error {
         }
     }
 
-    /**
-     * Possible enum codes
-     * @note When new code is added its string name should be added also to the get_code_name function
-     */
+    /// Possible enum codes
+    /// \note When new code is added its string name should be added also to the get_code_name function
     enum ErrorCode {
         NO_ERROR = 0,  ///< When no error occurred but program had to exit (otherwise return code would be for some error 0)
         RUNTIME,       ///< Error caused by users program
@@ -112,47 +102,35 @@ namespace error {
         UNKNOWN,       ///< Unknown error (shouldn't be really used)
     };
 
-    /**
-     * Returns name of ErrorCode
-     * @param code Error code
-     * @return Error code's name
-     */
+    /// Returns name of ErrorCode
+    /// \param code Error code
+    /// \return Error code's name
     const char *get_code_name(ErrorCode code);
 
-    /**
-     * Function for when error occurs
-     * Prints error information passed in and might exit with passed in code
-     * @param code Code of an error that occurred
-     * @param msg Info message to be printed for the user
-     * @param src_f Source file
-     * @param exit If true (default), then after the message is printed program exits with code
-     */
+    /// Function for when error occurs
+    /// Prints error information passed in and might exit with passed in code
+    /// \param code Code of an error that occurred
+    /// \param msg Info message to be printed for the user
+    /// \param src_f Source file
+    /// \param exit If true (default), then after the message is printed program exits with code
     void error(error::ErrorCode code, const char *msg, File *src_f=nullptr, bool exit=true);
 
-    /**
-     * Prints diagnostics error and exits with RUNTIME error code
-     * @param msg Diagnostics message
-     * @warning This will terminate the program
-     */
+    /// Prints diagnostics error and exits with RUNTIME error code
+    /// \param msg Diagnostics message
+    /// \warning This will terminate the program
     [[noreturn]] void error(diags::Diagnostic msg);
 
-    /**
-     * Formats Diagnostics error into a string message with colors (unless
-     * output redirection is detected).
-     * @return Formatted Diagnostics error
-     */
+    /// Formats Diagnostics error into a string message with colors (unless
+    /// output redirection is detected).
+    /// \return Formatted Diagnostics error
     ustring format_error(diags::Diagnostic msg);
 
-    /**
-     * Prints warning to std::wcerr
-     * @param msg Message to print
-     */ 
+    /// Prints warning to std::wcerr
+    /// \param msg Message to print 
     void warning(const char *msg);
 
-    /**
-     * Exits program with passed in code
-     * @param code Error code to exit with
-     */ 
+    /// Exits program with passed in code
+    /// \param code Error code to exit with 
     [[noreturn]] void exit(error::ErrorCode code);
 }
 

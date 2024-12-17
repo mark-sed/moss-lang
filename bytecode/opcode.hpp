@@ -1,11 +1,11 @@
-/**
- * @file opcode.hpp
- * @author Marek Sedlacek
- * @copyright Copyright 2024 Marek Sedlacek. All rights reserved.
- *            See accompanied LICENSE file.
- * 
- * @brief Bytecode opcodes
- */
+/// 
+/// \file opcode.hpp
+/// \author Marek Sedlacek
+/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+///            See accompanied LICENSE file.
+/// 
+/// \brief Bytecode opcodes
+/// 
 
 #ifndef _OPCODE_HPP_
 #define _OPCODE_HPP_
@@ -192,7 +192,7 @@ enum OpCodes : opcode_t {
 
 void raise(Interpreter *vm, Value *exc);
 
-/** Base Opcode class */
+/// Base Opcode class
 class OpCode {
 protected:
     OpCodes op_type;
@@ -216,7 +216,7 @@ public:
     virtual void exec(Interpreter *vm) = 0;
 };
 
-/** Binary expression opcode */
+/// Binary expression opcode
 class BinExprOpCode: public OpCode {
 public:
     Register dst;
