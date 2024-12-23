@@ -32,6 +32,10 @@ Interpreter::~Interpreter() {
     // Code is to be deleted by the creator of it
 }
 
+size_t Interpreter::get_free_reg(MemoryPool *fr) {
+    return fr->get_free_reg();
+}
+
 size_t Interpreter::get_code_size() { 
     return this->code->size();
 }
@@ -162,9 +166,9 @@ void Interpreter::push_frame() {
 void Interpreter::pop_frame() {
     LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
-    auto f = frames.back();
+    //auto f = frames.back();
     frames.pop_back();
-    delete f;
+    //delete f;
     assert(const_pools.size() > 1 && "Trying to pop global const frame");
     auto c = const_pools.back();
     const_pools.pop_back();

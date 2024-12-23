@@ -56,8 +56,9 @@ private:
     std::vector<CallFrameArg> args;
     opcode::Register return_reg;
     opcode::Address caller_addr;
+    bool constructor_call;
 public:
-    CallFrame() : return_reg(0) {}
+    CallFrame() : return_reg(0), constructor_call(false) {}
 
     void push_back(Value *v) { args.push_back(CallFrameArg(v)); }
     void push_back(ustring name, Value *v) { args.push_back(CallFrameArg(name, v)); }
@@ -67,10 +68,12 @@ public:
     void set_return_reg(opcode::Register r) { this->return_reg = r; }
     void set_caller_addr(opcode::Address addr) { this->caller_addr = addr; }
     void set_args(std::vector<CallFrameArg> args) { this->args = args; }
+    void set_constructor_call(bool b) { this->constructor_call = b; }
 
     std::vector<CallFrameArg> &get_args() { return this->args; }
     opcode::Register get_return_reg() { return this->return_reg; }
     opcode::Address get_caller_addr() { return this->caller_addr; }
+    bool is_constructor_call() { return this->constructor_call; }
 
     std::ostream& debug(std::ostream& os) const {
         os << "CallFrame:\n"
@@ -187,6 +190,8 @@ public:
         this->bci = v;
         this->bci_modified = true; 
     }
+
+    size_t get_free_reg(MemoryPool *fr);
 
     size_t get_code_size();
 

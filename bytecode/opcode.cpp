@@ -308,6 +308,12 @@ void Call::exec(Interpreter *vm) {
     auto *funV = vm->load(src);
     assert(funV && "TODO: Raise function not found");
 
+    ClassValue *constructor_of = nullptr;
+    // Class constructor call
+    if (auto cls = dyn_cast<ClassValue>(funV)) {
+        funV = cls->get_attrs()->load_name(cls->get_name());
+        constructor_of = cls;
+    }
     FunValue *fun = dyn_cast<FunValue>(funV);
     if (!fun) {
         auto fvl = dyn_cast<FunValueList>(funV);
@@ -329,6 +335,14 @@ void Call::exec(Interpreter *vm) {
         if (!can_call(fun, cf)) {
             assert(false && "TODO: Raise incorrect function call");
         }
+    }
+
+    // Set this object if constructor is being called
+    if (constructor_of) {
+        auto this_reg = vm->get_free_reg(vm->get_top_frame());
+        vm->store(this_reg, new ObjectValue(constructor_of));
+        vm->store_name(this_reg, "this");
+        cf->set_constructor_call(true);
     }
 
     if (fun->has_annotation(annots::INTERNAL)) {
@@ -368,9 +382,16 @@ void PopCallFrame::exec(Interpreter *vm) {
 }
 
 void Return::exec(Interpreter *vm) {
-    auto return_reg = vm->get_call_frame()->get_return_reg();
-    auto caller_addr = vm->get_call_frame()->get_caller_addr();
-    auto ret_v = vm->load(src);
+    auto cf = vm->get_call_frame();
+    auto return_reg = cf->get_return_reg();
+    auto caller_addr = cf->get_caller_addr();
+    Value *ret_v = nullptr;
+    if (cf->is_constructor_call()) {
+        ret_v = vm->load_name("this");
+    }
+    else {
+        ret_v = vm->load(src);
+    }
     vm->pop_call_frame();
     vm->pop_frame();
     assert(ret_v && "Return register does not contain any value??");
@@ -498,11 +519,12 @@ void PromoteObject::exec(Interpreter *vm) {
 }
 
 void BuildClass::exec(Interpreter *vm) {
-    auto cls = new ClassValue(name, vm->get_top_frame(), vm->get_parent_list());
+    auto cls = new ClassValue(name, vm->get_parent_list());
     vm->store(dst, cls);
     vm->store_name(dst, name);
     vm->clear_parent_list();
     vm->push_frame();
+    cls->set_attrs(vm->get_top_frame());
 }
 
 void Copy::exec(Interpreter *vm) {

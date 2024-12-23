@@ -132,6 +132,8 @@ public:
 
     /// Sets (new or overrides) attribute name to value v
     void set_attr(ustring name, Value *v);
+
+    void set_attrs(MemoryPool *p);
     MemoryPool *get_attrs() { return this->attrs; }
 };
 

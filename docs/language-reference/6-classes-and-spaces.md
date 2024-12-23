@@ -68,3 +68,21 @@ other document section:
 It is called at the beginning of an iteration.
 * `fun __next()` - Called to get the next value in an iteration. Once the end
 is reached, an exception is raised.
+
+### Class constructor
+
+Constructor has to have the same name as the class:
+
+```cpp
+class Foo {
+    fun Foo(id:Int) {
+        this.id = id
+    }
+
+    fun Foo(id) {
+        this.id = hash(id)
+    }
+}
+```
+
+If there is no constructor then one with no arguments is created implicitly (but not once one is created).

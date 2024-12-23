@@ -23,6 +23,10 @@ Value *Value::get_attr(ustring name) {
     return attrs->load_name(name);
 }
 
+void Value::set_attrs(MemoryPool *p) {
+    this->attrs = p;
+}
+
 void Value::set_attr(ustring name, Value *v) {
     if (!attrs) {
         this->attrs = new MemoryPool();
