@@ -372,7 +372,7 @@ public:
     }
 
     virtual opcode::StringConst as_string() const override {
-        return "<Class " + name + ">";
+        return "<class " + name + ">";
     }
 
     std::list<ClassValue *> get_supers() { return this->supers; }

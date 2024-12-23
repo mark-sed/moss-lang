@@ -246,7 +246,8 @@ function test_whiles {
 
 function test_classes {
     expect_pass "classes.ms" $1
-    expect_out_eq "42\n<Class Cat>\n" $1
+    expect_out_eq "42\n<class Cat>\n<object of class Cat>
+<object of class Animal>\n" $1
 }
 
 function test_lists {

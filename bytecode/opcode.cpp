@@ -311,8 +311,20 @@ void Call::exec(Interpreter *vm) {
     ClassValue *constructor_of = nullptr;
     // Class constructor call
     if (auto cls = dyn_cast<ClassValue>(funV)) {
-        funV = cls->get_attrs()->load_name(cls->get_name());
         constructor_of = cls;
+        funV = cls->get_attrs()->load_name(cls->get_name());
+        if (!funV) {
+            // No constructor is provided so execute implicit one
+            // by setting this and returning 
+            auto this_reg = vm->get_free_reg(vm->get_top_frame());
+            auto obj = new ObjectValue(constructor_of);
+            vm->store(this_reg, obj);
+            vm->store_name(this_reg, "this");
+            vm->store(cf->get_return_reg(), obj);
+            // Also pop call frame
+            vm->pop_call_frame();
+            return;
+        }
     }
     FunValue *fun = dyn_cast<FunValue>(funV);
     if (!fun) {

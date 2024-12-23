@@ -19,3 +19,12 @@ class Cat : Animal, Hungry {
 }
 
 Cat++"\n"
+
+vilda = Cat("Vilda")
+vilda
+"\n"
+
+// Test implicit constructor
+anm = Animal()
+anm
+"\n"
