@@ -1108,36 +1108,9 @@ Expression *Parser::unary_plus_minus() {
         return expr;
     }
 
-    return element_access();
+    return call();
 }
 
-Expression *Parser::element_access() {
-    Expression *expr = subscript();
-
-    while (match(TokenType::DOT)) {
-        parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
-        auto elem = subscript();
-        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
-    }
-
-    return expr;
-}
-
-// Subscript or slice
-Expression *Parser::subscript() {
-    Expression *expr = call();
-
-    while (match(TokenType::LEFT_SQUARE)) {
-        parser_assert(expr, create_diag(diags::NO_LHS_IN_SUBSCRIPT));
-        auto index = ternary_if();
-        parser_assert(index, create_diag(diags::EXPR_EXPECTED));
-        expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-        expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC));
-    }
-
-    return expr;
-}
 
 std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allow_set) {
     std::vector<ir::Expression *> args;
@@ -1188,7 +1161,7 @@ std::vector<ir::Argument *> Parser::arg_list() {
 }
 
 Expression *Parser::call() {
-    Expression *expr = note();
+    Expression *expr = element_access();
 
     while (match(TokenType::LEFT_PAREN)) {
         // This assert should never be raised as ( would be matched in constant
@@ -1199,6 +1172,34 @@ Expression *Parser::call() {
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         expr = new Call(expr, args);
     } 
+
+    return expr;
+}
+
+Expression *Parser::element_access() {
+    Expression *expr = subscript();
+
+    while (match(TokenType::DOT)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
+        auto elem = subscript();
+        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
+    }
+
+    return expr;
+}
+
+// Subscript or slice
+Expression *Parser::subscript() {
+    Expression *expr = note();
+
+    while (match(TokenType::LEFT_SQUARE)) {
+        parser_assert(expr, create_diag(diags::NO_LHS_IN_SUBSCRIPT));
+        auto index = ternary_if();
+        parser_assert(index, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+        expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC));
+    }
 
     return expr;
 }
