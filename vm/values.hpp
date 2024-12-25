@@ -20,6 +20,8 @@
 #include <list>
 #include <vector>
 
+#include "logging.hpp"
+
 namespace moss {
 
 class MemoryPool;
@@ -134,6 +136,7 @@ public:
     void set_attr(ustring name, Value *v);
 
     void set_attrs(MemoryPool *p);
+    void copy_attrs(MemoryPool *p);
     MemoryPool *get_attrs() { return this->attrs; }
 };
 
@@ -368,7 +371,9 @@ public:
         : Value(ClassType, name, BuiltIns::Type, frm), supers(supers) {}
 
     virtual Value *clone() {
-        return new ClassValue(this->name, this->supers);
+        auto cpy = new ClassValue(this->name, this->supers);
+        cpy->set_attrs(this->attrs);
+        return cpy;
     }
 
     virtual opcode::StringConst as_string() const override {
@@ -384,11 +389,15 @@ class ObjectValue : public Value {
 public:
     static const TypeKind ClassType = TypeKind::OBJECT;
 
-    ObjectValue(ClassValue *cls) : Value(ClassType, "<object>", cls) {}
+    ObjectValue(ClassValue *cls) : Value(ClassType, "<object>", cls) {
+        this->copy_attrs(cls->get_attrs());
+    }
 
     virtual Value *clone() {
         assert(isa<ClassValue>(this->type) && "type was modified?");
-        return new ObjectValue(dyn_cast<ClassValue>(this->type));
+        auto cpy = new ObjectValue(dyn_cast<ClassValue>(this->type));
+        cpy->copy_attrs(this->get_attrs());
+        return cpy;
     }
 
     virtual opcode::StringConst as_string() const override {

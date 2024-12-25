@@ -86,3 +86,18 @@ class Foo {
 ```
 
 If there is no constructor then one with no arguments is created implicitly (but not once one is created).
+
+### Calling class methods
+
+When calling a method on class not an object one can pass the object as the last argument:
+
+```cpp
+class Foo {
+    fun doit(num) {
+        this.num = num
+    }
+}
+
+foo = Foo()
+Foo.doit(67, foo) // This is the same as `foo.doit(67)`
+```

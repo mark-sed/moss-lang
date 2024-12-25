@@ -170,13 +170,39 @@ void JmpIfFalse::exec(Interpreter *vm) {
 // Finally we just check if fun and call arg size match
 static bool can_call(FunValue *f, CallFrame *cf) {
     LOGMAX("Checking if can call " << *f);
-    const auto &og_call_args = cf->get_args();
+    auto &og_call_args = cf->get_args();
     const auto fun_args = f->get_args();
 
     std::vector<CallFrameArg> call_args;
-    call_args.assign(og_call_args.begin(), og_call_args.end());
+    CallFrameArg *ths = nullptr;
+    if (og_call_args.empty() || og_call_args.back().name != "this")
+        call_args.assign(og_call_args.begin(), og_call_args.end());
+    else {
+        // When class method is called then this is set to the class
+        if (dyn_cast<ClassValue>(og_call_args.back().value)) {
+            // In such case we use the last arg as this
+            if (!og_call_args[og_call_args.size()-2].name.empty()) {
+                LOGMAX("Cannot call, no this argument provided");
+                return false;
+            }
+            ths = &(og_call_args[og_call_args.size()-2]);
+            if (!ths->name.empty()) {
+                LOGMAX("Cannot call, last argument has set name");
+                return false;
+            }
+            ths->name = "this";
+            call_args.assign(og_call_args.begin(), og_call_args.end()-2);
+            LOGMAX("Set this argument to the last one passed in: " << *ths);
+        }
+        else {
+            // We remove "this" argument for mathching and then append it back
+            call_args.assign(og_call_args.begin(), og_call_args.end()-1);
+            ths = &(og_call_args.back());
+            LOGMAX("This argument passed in");
+        }
+    }
 
-    if (og_call_args.size() > fun_args.size()) {
+    if (call_args.size() > fun_args.size()) {
         bool is_vararg = false;
         for (auto fa : fun_args) {
             if (fa->vararg) {
@@ -293,6 +319,8 @@ static bool can_call(FunValue *f, CallFrame *cf) {
 
     // The function can be called only if call arguments are 1:1 to function args
     if (call_args.size() == fun_args.size()) {
+        if (ths)
+            call_args.push_back(*ths);
         cf->set_args(call_args);
         LOGMAX("Call frame set -- function callable: " << *f << " with:\n" << *cf);
         return true;
@@ -315,11 +343,8 @@ void Call::exec(Interpreter *vm) {
         funV = cls->get_attrs()->load_name(cls->get_name());
         if (!funV) {
             // No constructor is provided so execute implicit one
-            // by setting this and returning 
-            auto this_reg = vm->get_free_reg(vm->get_top_frame());
+            // by setting this and returning
             auto obj = new ObjectValue(constructor_of);
-            vm->store(this_reg, obj);
-            vm->store_name(this_reg, "this");
             vm->store(cf->get_return_reg(), obj);
             // Also pop call frame
             vm->pop_call_frame();
@@ -351,10 +376,11 @@ void Call::exec(Interpreter *vm) {
 
     // Set this object if constructor is being called
     if (constructor_of) {
-        auto this_reg = vm->get_free_reg(vm->get_top_frame());
-        vm->store(this_reg, new ObjectValue(constructor_of));
-        vm->store_name(this_reg, "this");
+        auto obj = new ObjectValue(constructor_of);
+        cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
         cf->set_constructor_call(true);
+        LOGMAX("Constructor detected, creating object and passing in: " << *obj);
+        LOGMAX(*cf);
     }
 
     if (fun->has_annotation(annots::INTERNAL)) {
@@ -399,7 +425,7 @@ void Return::exec(Interpreter *vm) {
     auto caller_addr = cf->get_caller_addr();
     Value *ret_v = nullptr;
     if (cf->is_constructor_call()) {
-        ret_v = vm->load_name("this");
+        ret_v = cf->get_args().back().value;
     }
     else {
         ret_v = vm->load(src);
@@ -412,9 +438,17 @@ void Return::exec(Interpreter *vm) {
 }
 
 void ReturnConst::exec(Interpreter *vm) {
-    auto return_reg = vm->get_call_frame()->get_return_reg();
-    auto caller_addr = vm->get_call_frame()->get_caller_addr();
-    auto ret_v = vm->load_const(csrc);
+    auto cf = vm->get_call_frame();
+    auto return_reg = cf->get_return_reg();
+    auto caller_addr = cf->get_caller_addr();
+    Value *ret_v = nullptr;
+    if (cf->is_constructor_call()) {
+        // this value is the last argument
+        ret_v = cf->get_args().back().value;
+    }
+    else {
+        ret_v = vm->load_const(csrc);
+    }
     vm->pop_call_frame();
     vm->pop_frame();
     assert(ret_v && "Return register does not contain any value??");

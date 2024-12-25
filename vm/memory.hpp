@@ -45,6 +45,12 @@ public:
             pool = std::vector<Value *>(BC_RESERVED_REGS+256, nullptr);
         }
     }
+    MemoryPool *clone() {
+        auto cpy = new MemoryPool(holds_consts, global);
+        cpy->pool = pool;
+        cpy->sym_table = sym_table;
+        return cpy;
+    }
     virtual ~MemoryPool() {
         // Values are deleted by gc
     }

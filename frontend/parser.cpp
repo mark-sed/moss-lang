@@ -1175,7 +1175,7 @@ Expression *Parser::call_access_subs() {
         }
         else if (match(TokenType::DOT)) {
             parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
-            auto elem = call_access_subs();
+            auto elem = note();
             parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
             expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
         }

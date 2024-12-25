@@ -405,6 +405,12 @@ foo::goo
 
 0x1a_2b
 1_000_234
+
+a.b[c.d]()().a
+a.b.c()
+a().c[a()+1][1]().f
+f[a.c][c[1]]
+a.replace("a", "b").format()
 )";
 
     ustring expected = R"(((- a) > 4)
@@ -442,6 +448,11 @@ foo(1, (3..4))
 (foo :: goo)
 6699
 1000234
+(((a . b) [] (c . d))()() . a)
+((a . b) . c)()
+((((a() . c) [] (a() + 1)) [] 1)() . f)
+((f [] (a . c)) [] (c [] 1))
+((a . replace)("a", "b") . format)()
 <IR: <end-of-file>>
 )";
 

@@ -27,6 +27,10 @@ void Value::set_attrs(MemoryPool *p) {
     this->attrs = p;
 }
 
+void Value::copy_attrs(MemoryPool *p) {
+    this->attrs = p->clone();
+}
+
 void Value::set_attr(ustring name, Value *v) {
     if (!attrs) {
         this->attrs = new MemoryPool();

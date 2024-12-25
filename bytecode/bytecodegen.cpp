@@ -16,11 +16,22 @@ using namespace opcode;
 
 // TODO: Consider rewriting this without using RegValue *, but using just RegValue
 RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
-    // Dont emit for left if set and its variable
+    LOGMAX("Generating " << *expr);
     RegValue *left = nullptr;
-    if (expr->get_op().get_kind() != OperatorKind::OP_SET || !isa<Variable>(expr->get_left()))
-        left = emit(expr->get_left());
-    auto right = emit(expr->get_right());
+    RegValue *right = nullptr;
+    // Dont emit for left if set and its variable
+    if (expr->get_op().get_kind() != OperatorKind::OP_SET || !isa<Variable>(expr->get_left())) {
+        // Dont emit also scope nor access
+        BinaryExpr *be = dyn_cast<BinaryExpr>(expr->get_left());
+        if (!be || be->get_op().get_kind() != OperatorKind::OP_ACCESS ||
+                expr->get_op().get_kind() != OperatorKind::OP_SET) {
+            left = emit(expr->get_left());
+        }
+    }
+    if (expr->get_op().get_kind() != OperatorKind::OP_ACCESS ||
+          !isa<Variable>(expr->get_right())) {
+        right = emit(expr->get_right());
+    }
 
     // TODO: Optimize 2 consts into literals
     switch (expr->get_op().get_kind()) {
@@ -144,25 +155,30 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             return last_reg();
         }
         case OperatorKind::OP_SET: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
-            }
-            if (right->is_const()) {
-                append(new StoreConst(next_reg(), free_reg(right)));
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                if (right->is_const()) {
+                    append(new StoreConst(next_reg(), free_reg(right)));
+                } else {
+                    append(new Store(next_reg(), free_reg(right)));
+                }
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
                 auto reg = last_reg();
                 reg->set_silent(true);
                 append(new StoreName(reg->reg(), irvar->get_name()));
                 return reg;
-            }
-            else {
-                append(new Store(next_reg(), free_reg(right)));
-                auto reg = last_reg();
-                reg->set_silent(true);
-                append(new StoreName(reg->reg(), irvar->get_name()));
-                return reg;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto rval = last_reg();
+                auto leftE = emit(be->get_left(), true);
+                rval->set_silent(true);
+                append(new StoreAttr(rval->reg(), free_reg(leftE), rightE->get_name()));
+                return rval;
+            } else {
+                assert(false && "Missing assignment type");
             }
         }
         case OperatorKind::OP_SET_CONCAT: {
@@ -460,8 +476,19 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
             return last_reg();
         }
-        case OperatorKind::OP_ACCESS:
-            assert(false && "TODO: Unimplemented operator");
+        case OperatorKind::OP_ACCESS: {
+            auto att_name = expr->get_right();
+            opcode::Register leftR = left->reg();
+            assert(left);
+            if (left->is_const()) {
+                append(new StoreConst(next_reg(), free_reg(left)));
+                leftR = val_last_reg();
+                append(new LoadAttr(next_reg(), leftR, att_name->get_name()));
+            } else {
+                append(new LoadAttr(next_reg(), free_reg(left), att_name->get_name()));
+            }
+            return last_reg();
+        }
         case OperatorKind::OP_SUBSC: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), free_reg(right)));
@@ -584,6 +611,11 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         }
         bcv = last_reg();
     }
+    else if (isa<ThisLiteral>(expr)) {
+        // This is just a variable in bytecode
+        append(new Load(next_reg(), "this"));
+        bcv = last_reg();
+    }
     else if (auto val = dyn_cast<ir::Call>(expr)) {
         append(new PushCallFrame());
         auto fun = emit(val->get_fun());
@@ -604,6 +636,12 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
                 else {
                     append(new PushArg(free_reg(a_val)));
                 }
+            }
+        }
+        if (auto be = dyn_cast<BinaryExpr>(val->get_fun())) {
+            if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                auto ths = emit(be->get_left(), true);
+                append(new PushNamedArg(free_reg(ths), "this"));
             }
         }
         append(new opcode::Call(next_reg(), free_reg(fun)));
@@ -719,7 +757,8 @@ void BytecodeGen::emit(ir::Function *fun) {
     // function is generated
     auto pre_function_reg = curr_reg;
     auto pre_function_creg = curr_creg;
-    reset_regs(fun->get_args().size());
+    // We add one for possible "this" argument
+    reset_regs(fun->get_args().size()+1);
     // Generate function body
     emit(fun->get_body());
     // TODO: Generate return in function IR body if needed, not here

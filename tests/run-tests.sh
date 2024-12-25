@@ -247,7 +247,15 @@ function test_whiles {
 function test_classes {
     expect_pass "classes.ms" $1
     expect_out_eq "42\n<class Cat>\n<object of class Cat>
-<object of class Animal>\n" $1
+Vilda\nmeow\n<object of class Animal>\n" $1
+}
+
+function test_attributes {
+    expect_pass "attributes.ms" $1
+    expect_out_eq "constructed\n56\n56\n56\n<object of class Foo>
+<object of class B>\n91\n91\n91 != 65\n-1 == -1\n" $1
+
+
 }
 
 function test_lists {
@@ -406,6 +414,7 @@ function run_all_tests {
     run_test ifs
     run_test whiles
     run_test classes
+    run_test attributes
     run_test lists
     run_test enums
 
