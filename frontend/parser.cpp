@@ -1108,7 +1108,7 @@ Expression *Parser::unary_plus_minus() {
         return expr;
     }
 
-    return call();
+    return call_access_subs();
 }
 
 
@@ -1160,47 +1160,33 @@ std::vector<ir::Argument *> Parser::arg_list() {
     return args;
 }
 
-Expression *Parser::call() {
-    Expression *expr = element_access();
-
-    while (match(TokenType::LEFT_PAREN)) {
-        // This assert should never be raised as ( would be matched in constant
-        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
-        // All exprs and allow set for named function params
-        auto args = expr_list(false, true);
-        skip_nls();
-        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        expr = new Call(expr, args);
-    } 
-
-    return expr;
-}
-
-Expression *Parser::element_access() {
-    Expression *expr = subscript();
-
-    while (match(TokenType::DOT)) {
-        parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
-        auto elem = subscript();
-        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
-    }
-
-    return expr;
-}
-
-// Subscript or slice
-Expression *Parser::subscript() {
+Expression *Parser::call_access_subs() {
     Expression *expr = note();
 
-    while (match(TokenType::LEFT_SQUARE)) {
-        parser_assert(expr, create_diag(diags::NO_LHS_IN_SUBSCRIPT));
-        auto index = ternary_if();
-        parser_assert(index, create_diag(diags::EXPR_EXPECTED));
-        expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-        expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC));
+    while(check({TokenType::LEFT_PAREN, TokenType::DOT, TokenType::LEFT_SQUARE})) {
+        if (match(TokenType::LEFT_PAREN)) {
+            // This assert should never be raised as ( would be matched in constant
+            parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
+            // All exprs and allow set for named function params
+            auto args = expr_list(false, true);
+            skip_nls();
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+            expr = new Call(expr, args);
+        }
+        else if (match(TokenType::DOT)) {
+            parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
+            auto elem = call_access_subs();
+            parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+            expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
+        }
+        else if (match(TokenType::LEFT_SQUARE)) {
+            parser_assert(expr, create_diag(diags::NO_LHS_IN_SUBSCRIPT));
+            auto index = ternary_if();
+            parser_assert(index, create_diag(diags::EXPR_EXPECTED));
+            expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
+            expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC));
+        }
     }
-
     return expr;
 }
 

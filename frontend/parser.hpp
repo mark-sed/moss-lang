@@ -84,9 +84,7 @@ private:
     ir::Expression *mul_div_mod();
     ir::Expression *exponentiation();
     ir::Expression *unary_plus_minus();
-    ir::Expression *element_access();
-    ir::Expression *subscript();
-    ir::Expression *call();
+    ir::Expression *call_access_subs();
     ir::Expression *note();
     ir::Expression *scope(bool allow_star=false);
 
