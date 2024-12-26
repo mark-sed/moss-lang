@@ -1397,4 +1397,178 @@ ustring incorrect = R"(
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, OperatorFunctionCalls){
+    ustring code = R"(
+4 + a * c.(-)(42) + 2
+g.(*)(c.(-)(2))
+
+a.(++)(b)
+a.(^)(b)
+a.(+)(b)
+a.(-)(b)
+a.(/)(b)
+a.(*)(b)
+a.(%)(b)
+a.(==)(b)
+a.(!=)(b)
+a.(>)(b)
+a.(<)(b)
+a.(>=)(b)
+a.(<=)(b)
+a.(&&)(b)
+a.(||)(b)
+a.(and)(b)
+a.(or)(b)
+(not)(b)
+a.(xor)(b)
+a.(in)(b)
+(+)(b)
+(-)(b)
+
+(31).(-)(22)
+(*)(a, 4)
+1.1.(%)(2.2)
+(-1)
+(- 1)
+( - )(5)
+c.(  *  )(81)
+)";
+
+ustring expected = R"(((4 + (a * (c . (-))(42))) + 2)
+(g . (*))((c . (-))(2))
+(a . (++))(b)
+(a . (^))(b)
+(a . (+))(b)
+(a . (-))(b)
+(a . (/))(b)
+(a . (*))(b)
+(a . (%))(b)
+(a . (==))(b)
+(a . (!=))(b)
+(a . (>))(b)
+(a . (<))(b)
+(a . (>=))(b)
+(a . (<=))(b)
+(a . (&&))(b)
+(a . (||))(b)
+(a . (and))(b)
+(a . (or))(b)
+(not)(b)
+(a . (xor))(b)
+(a . (in))(b)
+(+)(b)
+(-)(b)
+(31 . (-))(22)
+(*)(a, 4)
+(1.1 . (%))(2.2)
+(- 1)
+(- 1)
+(-)(5)
+(c . (*))(81)
+<IR: <end-of-file>>
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    std::stringstream ss;
+    for (auto decl: mod->get_body()) {
+        ss << *decl << "\n";
+    }
+
+    EXPECT_EQ(ss.str(), expected);
+
+    // Errors
+ustring incorrect = R"(
+3.(+)(2)
+(~)(a)
+a.()(2)
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
+TEST(Parsing, OperatorMethods){
+    ustring code = R"(
+fun (+)(a) { return a + b; }
+fun (-)(a) = a - b
+fun (+)() { return +a; }
+fun (-)() = -a
+fun (not)() { return false; }
+fun (++)(a) { return a ++ b; }
+fun (^)(a) { return a ^ b; }
+fun (/)(a) { return a / b; }
+fun (%)(a) { return a % b; }
+fun (==)(a) { return a.b == b.b; }
+fun (!=)(a) { return a != b; }
+fun (>)(a) { return a > b; }
+fun (<)(a) { return a < b; }
+fun (>=)(a) { return a >= b; }
+fun (<=)(a) { return a <= b; }
+fun (&&)(a) { return a && b; }
+fun (||)(a) { return a || b; }
+fun (and)(a) { return a and b; }
+fun (or)(a) { return a or b; }
+fun (xor)(a) { return a xor b; }
+fun (in)(a) { return a in b; }
+)";
+
+    IRType expected[] = {
+        IRType::FUNCTION,
+        IRType::LAMBDA,
+        IRType::FUNCTION,
+        IRType::LAMBDA,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+fun (+1)(a) { return a + b; }
+fun (hello)(a, b) { return a + b; }
+fun (+++)(a) { return a + b; }
+fun ()(a) { return a + b; }
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

@@ -43,6 +43,12 @@ __Class operators__:
 * `fun (/)(x:[Int, Float, Complex])`
 * `fun (%)(x:[Int, Float, Complex])`
 * `fun (^)(x:[Int, Float, Complex])`
+* `fun (==)(x:[Int, Float, Complex])`
+* `fun (!=)(x:[Int, Float, Complex])`
+* `fun (<=)(x:[Int, Float, Complex])`
+* `fun (>=)(x:[Int, Float, Complex])`
+* `fun (<)(x:[Int, Float, Complex])`
+* `fun (>)(x:[Int, Float, Complex])`
 * `fun (and)(x:Int)`
 * `fun (or)(x:Int)`
 * `fun (xor)(x:Int)`
@@ -80,6 +86,12 @@ __Class operators__:
 * `fun (/)(x:[Int, Float, Complex])`
 * `fun (%)(x:[Int, Float, Complex])`
 * `fun (^)(x:[Int, Float, Complex])`
+* `fun (==)(x:[Int, Float, Complex])`
+* `fun (!=)(x:[Int, Float, Complex])`
+* `fun (<=)(x:[Int, Float, Complex])`
+* `fun (>=)(x:[Int, Float, Complex])`
+* `fun (<)(x:[Int, Float, Complex])`
+* `fun (>)(x:[Int, Float, Complex])`
 
 __Class methods__:
 * `fun is_nan()`
@@ -112,6 +124,12 @@ __Class operators__:
 * `fun (/)(x:[Int, Float, Complex])`
 * `fun (%)(x:[Int, Float, Complex])`
 * `fun (^)(x:[Int, Float, Complex])`
+* `fun (==)(x:[Int, Float, Complex])`
+* `fun (!=)(x:[Int, Float, Complex])`
+* `fun (<=)(x:[Int, Float, Complex])`
+* `fun (>=)(x:[Int, Float, Complex])`
+* `fun (<)(x:[Int, Float, Complex])`
+* `fun (>)(x:[Int, Float, Complex])`
 
 __Class methods__:
 
@@ -140,6 +158,8 @@ __Class operators__:
 * `fun (not)()`
 * `fun (&&)(x)`
 * `fun (||)(x)`
+* `fun (==)(x:bool)`
+* `fun (!=)(x:bool)`
 
 __Class methods__:
 
@@ -188,6 +208,12 @@ __Class operators__:
 * `fun (+)(x:String)`
 * `fun (in)(x:String)`
 * `fun ([])(x:[Int, Range])`
+* `fun (==)(x:String)`
+* `fun (!=)(x:String)`
+* `fun (<=)(x:String)`
+* `fun (>=)(x:String)`
+* `fun (<)(x:String)`
+* `fun (>)(x:String)`
 
 __Class methods__:
 * `fun len()`
@@ -247,6 +273,8 @@ __Class operators__:
 * `fun (+)(x:List)`
 * `fun (in)(x)`
 * `fun ([])(x:[Int, Range])`
+* `fun (==)(x)`
+* `fun (!=)(x)`
 
 __Class methods__:
 * `fun append(x)`

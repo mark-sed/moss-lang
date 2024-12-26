@@ -239,6 +239,14 @@ Token *Parser::advance() {
     return tokens[curr_token++];
 }
 
+void Parser::take_back() {
+    assert(curr_token > 0 && "take back before any advance");
+    while (tokens[--curr_token]->get_type() == TokenType::WS) {
+        assert(curr_token > 0 && "take back before any non-ws advance");
+        --curr_token;
+    }
+}
+
 void Parser::parser_error(diags::Diagnostic err_msg) {
     // TODO: Change to specific exception child type (such as TypeError)
     auto str_msg = error::format_error(err_msg);
@@ -692,6 +700,14 @@ IR *Parser::declaration() {
             name = id->get_value();
         }
         expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+        // Check operator function
+        auto op_name = operator_name();
+        if (op_name) {
+            name = op_name->get_op().as_string();
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+            expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+            delete op_name;
+        }
         std::vector<Argument *> args;
         if (!match(TokenType::RIGHT_PAREN)) {
             args = arg_list();
@@ -1231,11 +1247,33 @@ Expression *Parser::scope(bool allow_star) {
     return expr;
 }
 
+ir::OperatorLiteral *Parser::operator_name() {
+    if (check({TokenType::CONCAT, TokenType::EXP, TokenType::PLUS,
+          TokenType::MINUS, TokenType::DIV, TokenType::MUL,
+          TokenType::MOD, TokenType::EQ, TokenType::NEQ,
+          TokenType::BT, TokenType::LT, TokenType::BEQ, TokenType::LEQ,
+          TokenType::SHORT_C_AND, TokenType::SHORT_C_OR, TokenType::AND,
+          TokenType::OR, TokenType::NOT, TokenType::XOR, TokenType::IN})) {
+        auto op = token2operator(advance()->get_type());
+        return new OperatorLiteral(op);
+    }
+    return nullptr;
+}
+
 Expression *Parser::constant() {
     if (match(TokenType::LEFT_PAREN)) {
         bool prev_fun_args_state = lower_range_prec;
         lower_range_prec = false; // This will allow for range in function call
-        auto expr = ternary_if();
+        Expression *expr = operator_name();
+        if (!expr)
+            expr = ternary_if();
+        else {
+            // There might be (+) or (+1)
+            if (!check(TokenType::RIGHT_PAREN)) {
+                take_back();
+                expr = ternary_if();
+            }
+        }
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         lower_range_prec = prev_fun_args_state;

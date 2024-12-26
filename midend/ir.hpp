@@ -71,6 +71,7 @@ enum IRType {
     CALL,
     THIS_LITERAL,
     SUPER_LITERAL,
+    OPERATOR_LITERAL,
     INT_LITERAL,
     FLOAT_LITERAL,
     BOOL_LITERAL,
@@ -1228,6 +1229,23 @@ public:
     }
 };
 
+/// Holds operator as a name for function - `(+)`
+class OperatorLiteral : public Expression {
+private:
+    Operator op;
+public:
+    static const IRType ClassType = IRType::OPERATOR_LITERAL;
+
+    OperatorLiteral(Operator op) : Expression(ClassType, "<operator-literal>"), op(op) {}
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "(" << op << ")";
+        return os;
+    }
+
+    Operator get_op() { return this->op; }
+};
+
 class Note : public Expression {
 private:
     Expression *prefix;
@@ -1403,6 +1421,7 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         else if (auto e = dyn_cast<ir::Call>(i)) return e;
         else if (auto e = dyn_cast<ir::ThisLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::SuperLiteral>(i)) return e;
+        else if (auto e = dyn_cast<ir::OperatorLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::IntLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::FloatLiteral>(i)) return e;
         else if (auto e = dyn_cast<ir::BoolLiteral>(i)) return e;
