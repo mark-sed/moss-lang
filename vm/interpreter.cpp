@@ -135,6 +135,15 @@ Value *Interpreter::load_name(ustring name) {
     return nullptr;
 }
 
+Value *Interpreter::load_type(ustring name) {
+    for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
+        auto val = (*riter)->load_name(name);
+        if (val && isa<ClassValue>(val))
+            return val;
+    }
+    return nullptr;
+}
+
 Value *Interpreter::load_global_name(ustring name) {
     return get_global_frame()->load_name(name);
 }

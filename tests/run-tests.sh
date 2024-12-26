@@ -254,8 +254,11 @@ function test_attributes {
     expect_pass "attributes.ms" $1
     expect_out_eq "constructed\n56\n56\n56\n<object of class Foo>
 <object of class B>\n91\n91\n91 != 65\n-1 == -1\n" $1
+}
 
-
+function test_operator_funs {
+    expect_pass "operator_funs.ms" $1
+    expect_out_eq "1111\nfalse\ntrue\n1000\n990\ntrue\nfalse\n" $1
 }
 
 function test_lists {
@@ -415,6 +418,7 @@ function run_all_tests {
     run_test whiles
     run_test classes
     run_test attributes
+    run_test operator_funs
     run_test lists
     run_test enums
 

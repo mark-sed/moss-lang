@@ -145,6 +145,8 @@ public:
     /// Looks up a name and returns value corresponding to it in symbol table
     /// If there is no such name, then exception is raised with name error 
     Value *load_name(ustring name);
+
+    Value *load_type(ustring name);
  
     /// Looks up a name in global frame and returns its value
     /// If there is no such name, then exception is raised with name error 

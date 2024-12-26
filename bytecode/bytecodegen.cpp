@@ -20,7 +20,8 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     RegValue *left = nullptr;
     RegValue *right = nullptr;
     // Dont emit for left if set and its variable
-    if (expr->get_op().get_kind() != OperatorKind::OP_SET || !isa<Variable>(expr->get_left())) {
+    if (expr->get_op().get_kind() != OperatorKind::OP_SET ||
+          !(isa<Variable>(expr->get_left()) || isa<OperatorLiteral>(expr->get_left()))) {
         // Dont emit also scope nor access
         BinaryExpr *be = dyn_cast<BinaryExpr>(expr->get_left());
         if (!be || be->get_op().get_kind() != OperatorKind::OP_ACCESS ||
@@ -29,7 +30,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         }
     }
     if (expr->get_op().get_kind() != OperatorKind::OP_ACCESS ||
-          !isa<Variable>(expr->get_right())) {
+          !(isa<Variable>(expr->get_right()) || isa<OperatorLiteral>(expr->get_right()))) {
         right = emit(expr->get_right());
     }
 
@@ -477,15 +478,23 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             return last_reg();
         }
         case OperatorKind::OP_ACCESS: {
-            auto att_name = expr->get_right();
+            auto att = expr->get_right();
+            ustring att_name = "";
+            if (isa<Variable>(att)) {
+                att_name = att->get_name();
+            } else if (auto opl = dyn_cast<OperatorLiteral>(att)) {
+                att_name = opl->get_op().as_string();
+            } else {
+                assert(false && "Unknown IR in access");
+            }
             opcode::Register leftR = left->reg();
             assert(left);
             if (left->is_const()) {
                 append(new StoreConst(next_reg(), free_reg(left)));
                 leftR = val_last_reg();
-                append(new LoadAttr(next_reg(), leftR, att_name->get_name()));
+                append(new LoadAttr(next_reg(), leftR, att_name));
             } else {
-                append(new LoadAttr(next_reg(), free_reg(left), att_name->get_name()));
+                append(new LoadAttr(next_reg(), free_reg(left), att_name));
             }
             return last_reg();
         }
@@ -614,6 +623,10 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
     else if (isa<ThisLiteral>(expr)) {
         // This is just a variable in bytecode
         append(new Load(next_reg(), "this"));
+        bcv = last_reg();
+    }
+    else if (auto opl = dyn_cast<OperatorLiteral>(expr)) {
+        append(new Load(next_reg(), opl->get_op().as_string()));
         bcv = last_reg();
     }
     else if (auto val = dyn_cast<ir::Call>(expr)) {

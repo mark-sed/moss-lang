@@ -319,8 +319,11 @@ static bool can_call(FunValue *f, CallFrame *cf) {
 
     // The function can be called only if call arguments are 1:1 to function args
     if (call_args.size() == fun_args.size()) {
-        if (ths)
+        if (ths) {
+            ths->name = "this";
+            ths->dst = call_args.size();
             call_args.push_back(*ths);
+        }
         cf->set_args(call_args);
         LOGMAX("Call frame set -- function callable: " << *f << " with:\n" << *cf);
         return true;
@@ -529,9 +532,8 @@ void SetDefaultConst::exec(Interpreter *vm) {
 
 void SetType::exec(Interpreter *vm) {
     auto fv = load_last_fun(fun, vm);
-    auto type = vm->load_name(name);
-    assert(type && "TODO: Raise unknown name exception for type");
-    // TODO: Check that type is really a type
+    auto type = vm->load_type(name);
+    assert(type && "TODO: Raise unknown type exception for type");
     fv->set_type(index, type);
 }
 
