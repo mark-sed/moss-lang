@@ -143,13 +143,15 @@ public:
     Value *load_const(opcode::Register reg);
  
     /// Looks up a name and returns value corresponding to it in symbol table
-    /// If there is no such name, then exception is raised with name error 
+    /// If there is no such name, then nullptr is returned
     Value *load_name(ustring name);
 
+    /// Looks up a type (ClassValue) that matches passed in name
+    /// If there is no type with such name, then nullptr is returned
     Value *load_type(ustring name);
  
     /// Looks up a name in global frame and returns its value
-    /// If there is no such name, then exception is raised with name error 
+    /// If there is no such name, then nullptr is returned
     Value *load_global_name(ustring name);
 
     /// Pushes a new frame (memory pool) into a frame stack

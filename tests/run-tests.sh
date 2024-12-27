@@ -258,7 +258,7 @@ function test_attributes {
 
 function test_operator_funs {
     expect_pass "operator_funs.ms" $1
-    expect_out_eq "1111 == 1111\nfalse == false\ntrue == true\n1000 == 1000
+    expect_out_eq "1111 == 1111 == 1111\nfalse == false\ntrue == true\n1000 == 1000
 990 == 990\ntrue == true\nfalse == false\n1005\n1020\n1001
 false\ntrue\ntrue\ntrue\nfalse\ntrue\n0\n1010\n1010\n1023
 0\n-1011\n-1011\n1001\n1100\n" $1

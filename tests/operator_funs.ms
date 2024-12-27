@@ -80,6 +80,8 @@ no = NumOffset(10, 1000)
 no.(+)(101)
 " == "
 no + 101
+" == "
+NumOffset.(+)(101, no)
 "\n"
 no2 = NumOffset(10, -1000)
 no.(==)(no2)
