@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <initializer_list>
 
 using namespace moss;
 using namespace moss::opcode;
@@ -331,12 +332,11 @@ static bool can_call(FunValue *f, CallFrame *cf) {
     return false;
 }
 
-void Call::exec(Interpreter *vm) {
+void call(Interpreter *vm, Register dst, Value *funV) {
     auto cf = vm->get_call_frame();
     cf->set_return_reg(dst);
     cf->set_caller_addr(vm->get_bci()+1);
 
-    auto *funV = vm->load(src);
     assert(funV && "TODO: Raise function not found");
 
     ClassValue *constructor_of = nullptr;
@@ -398,6 +398,42 @@ void Call::exec(Interpreter *vm) {
         vm->push_frame();
         vm->set_bci(fun->get_body_addr());
     }
+}
+
+void call(Interpreter *vm, Register dst, Value *funV, std::initializer_list<Value *> args) {
+    vm->push_call_frame();
+    for (auto v: args) {
+        vm->get_call_frame()->push_back(v);
+    }
+    call(vm, dst, funV);
+}
+
+void call_method(Interpreter *vm, Register dst, Value *funV, std::initializer_list<Value *> args) {
+    vm->push_call_frame();
+    for (auto v: args) {
+        vm->get_call_frame()->push_back(v);
+    }
+    assert(args.size() != 0 && "Missing this argument");
+    vm->get_call_frame()->get_args().back().name = "this";
+    call(vm, dst, funV);
+}
+
+void call_operator(Interpreter *vm, ustring op, Value *s1, Value *s2, Register dst) {
+    auto v = s1->get_attr(op);
+    assert(v && "TODO: Operator function not found for object error");
+    call_method(vm, dst, v, {s2, s1});
+}
+
+void call_operator_unary(Interpreter *vm, ustring op, Value *s1, Register dst) {
+    auto v = s1->get_attr(op);
+    assert(v && "TODO: Operator function not found for object error");
+    call_method(vm, dst, v, {s1});
+}
+
+void Call::exec(Interpreter *vm) {
+    auto v = vm->load(src);
+    assert(v && "TODO: Raise error function not found");
+    call(vm, dst, v);
 }
 
 void PushFrame::exec(Interpreter *vm) {
@@ -604,6 +640,10 @@ static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpr
     assert(s1 && "Value or nil should have been loaded");
     assert(s2 && "Value or nil should have been loaded");
 
+    // TODO: Check if s1 is object and if it has ++ method to be called
+    // if so then call it and return it `as_string` if its not
+    // if it does not then do as for all other
+
     ustring s1_str = s1->as_string();
     ustring s2_str = s2->as_string();
 
@@ -627,7 +667,7 @@ void Concat3::exec(Interpreter *vm) {
 
 // TODO: For most exprs is to check over/underflow when check is enabled
 // TODO: Call user defined method for non native type
-static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
+static Value *exp(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -638,6 +678,9 @@ static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(std::pow(s1->as_float(), s2->as_float()));
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "^", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -646,24 +689,24 @@ static Value *exp(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Exp::exec(Interpreter *vm) {
-    auto res = exp(vm->load(src1), vm->load(src2), vm);
+    auto res = exp(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Exp2::exec(Interpreter *vm) {
-    auto res = exp(vm->load_const(src1), vm->load(src2), vm);
+    auto res = exp(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Exp3::exec(Interpreter *vm) {
-    auto res = exp(vm->load(src1), vm->load_const(src2), vm);
+    auto res = exp(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *add(Value *s1, Value *s2, Interpreter *vm) {
+static Value *add(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -674,6 +717,9 @@ static Value *add(Value *s1, Value *s2, Interpreter *vm) {
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() + s2->as_float());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "+", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -682,24 +728,24 @@ static Value *add(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Add::exec(Interpreter *vm) {
-    auto res = add(vm->load(src1), vm->load(src2), vm);
+    auto res = add(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Add2::exec(Interpreter *vm) {
-    auto res = add(vm->load_const(src1), vm->load(src2), vm);
+    auto res = add(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Add3::exec(Interpreter *vm) {
-    auto res = add(vm->load(src1), vm->load_const(src2), vm);
+    auto res = add(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *sub(Value *s1, Value *s2, Interpreter *vm) {
+static Value *sub(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -710,6 +756,9 @@ static Value *sub(Value *s1, Value *s2, Interpreter *vm) {
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() - s2->as_float());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "-", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -718,24 +767,24 @@ static Value *sub(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Sub::exec(Interpreter *vm) {
-    auto res = sub(vm->load(src1), vm->load(src2), vm);
+    auto res = sub(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Sub2::exec(Interpreter *vm) {
-    auto res = sub(vm->load_const(src1), vm->load(src2), vm);
+    auto res = sub(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Sub3::exec(Interpreter *vm) {
-    auto res = sub(vm->load(src1), vm->load_const(src2), vm);
+    auto res = sub(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *div(Value *s1, Value *s2, Interpreter *vm) {
+static Value *div(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void)vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -754,6 +803,9 @@ static Value *div(Value *s1, Value *s2, Interpreter *vm) {
         }
         res = new FloatValue(s1->as_float() / s2->as_float());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "/", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -762,24 +814,24 @@ static Value *div(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Div::exec(Interpreter *vm) {
-    auto res = div(vm->load(src1), vm->load(src2), vm);
+    auto res = div(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Div2::exec(Interpreter *vm) {
-    auto res = div(vm->load_const(src1), vm->load(src2), vm);
+    auto res = div(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Div3::exec(Interpreter *vm) {
-    auto res = div(vm->load(src1), vm->load_const(src2), vm);
+    auto res = div(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *mul(Value *s1, Value *s2, Interpreter *vm) {
+static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -790,6 +842,9 @@ static Value *mul(Value *s1, Value *s2, Interpreter *vm) {
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() * s2->as_float());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "*", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -798,24 +853,24 @@ static Value *mul(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Mul::exec(Interpreter *vm) {
-    auto res = mul(vm->load(src1), vm->load(src2), vm);
+    auto res = mul(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Mul2::exec(Interpreter *vm) {
-    auto res = mul(vm->load_const(src1), vm->load(src2), vm);
+    auto res = mul(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Mul3::exec(Interpreter *vm) {
-    auto res = mul(vm->load(src1), vm->load_const(src2), vm);
+    auto res = mul(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *mod(Value *s1, Value *s2, Interpreter *vm) {
+static Value *mod(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -834,6 +889,9 @@ static Value *mod(Value *s1, Value *s2, Interpreter *vm) {
         }
         res = new FloatValue(std::fmod(s1->as_float(), s2->as_float()));
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "%", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -842,24 +900,24 @@ static Value *mod(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Mod::exec(Interpreter *vm) {
-    auto res = mod(vm->load(src1), vm->load(src2), vm);
+    auto res = mod(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Mod2::exec(Interpreter *vm) {
-    auto res = mod(vm->load_const(src1), vm->load(src2), vm);
+    auto res = mod(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Mod3::exec(Interpreter *vm) {
-    auto res = mod(vm->load(src1), vm->load_const(src2), vm);
+    auto res = mod(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
+static Value *eq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (s1->get_kind() == s2->get_kind()) {
@@ -883,7 +941,7 @@ static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
             res = new BoolValue(true);
         }
         else {
-            assert(false && "TODO: Call custom method for eq");
+            call_operator(vm, "==", s1, s2, dst);
         }
     }
     else if (is_float_expr(s1, s2)) {
@@ -891,6 +949,9 @@ static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
     }
     else if (isa<NilValue>(s1) || isa<NilValue>(s1)) {
         res = new BoolValue(false);
+    }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "==", s1, s2, dst);
     }
     // TODO compare class values and enum values and such
     else {
@@ -901,19 +962,19 @@ static Value *eq(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Eq::exec(Interpreter *vm) {
-    auto res = eq(vm->load(src1), vm->load(src2), vm);
+    auto res = eq(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Eq2::exec(Interpreter *vm) {
-    auto res = eq(vm->load_const(src1), vm->load(src2), vm);
+    auto res = eq(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Eq3::exec(Interpreter *vm) {
-    auto res = eq(vm->load(src1), vm->load_const(src2), vm);
+    auto res = eq(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
@@ -923,14 +984,14 @@ void Eq3::exec(Interpreter *vm) {
         isa<NilValue>(s) || isa<StringValue>(s) || isa<ListValue>(s);
 }*/
 
-static Value *neq(Value *s1, Value *s2, Interpreter *vm) {
+static Value *neq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     Value *res = nullptr;
     if (isa<ObjectValue>(s1) || isa<ObjectValue>(s2)) {
-        assert(false && "TODO: call object method");
+        call_operator(vm, "!=", s1, s2, dst);
     }
     else {
         // TODO: Perhaps this should call can_eq??
-        auto eqRes = eq(s1, s2, vm);
+        auto eqRes = eq(s1, s2, dst, vm);
         auto neqRes = new BoolValue(!dyn_cast<BoolValue>(eqRes)->get_value());
         return neqRes;
     }
@@ -938,24 +999,24 @@ static Value *neq(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Neq::exec(Interpreter *vm) {
-    auto res = neq(vm->load(src1), vm->load(src2), vm);
+    auto res = neq(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Neq2::exec(Interpreter *vm) {
-    auto res = neq(vm->load_const(src1), vm->load(src2), vm);
+    auto res = neq(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Neq3::exec(Interpreter *vm) {
-    auto res = neq(vm->load(src1), vm->load_const(src2), vm);
+    auto res = neq(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *bt(Value *s1, Value *s2, Interpreter *vm) {
+static Value *bt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -971,6 +1032,9 @@ static Value *bt(Value *s1, Value *s2, Interpreter *vm) {
         StringValue *st2 = dyn_cast<StringValue>(s2);
         res = new BoolValue(st1->get_value() > st2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, ">", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -979,24 +1043,24 @@ static Value *bt(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Bt::exec(Interpreter *vm) {
-    auto res = bt(vm->load(src1), vm->load(src2), vm);
+    auto res = bt(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Bt2::exec(Interpreter *vm) {
-    auto res = bt(vm->load_const(src1), vm->load(src2), vm);
+    auto res = bt(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Bt3::exec(Interpreter *vm) {
-    auto res = bt(vm->load(src1), vm->load_const(src2), vm);
+    auto res = bt(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *lt(Value *s1, Value *s2, Interpreter *vm) {
+static Value *lt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -1012,6 +1076,9 @@ static Value *lt(Value *s1, Value *s2, Interpreter *vm) {
         StringValue *st2 = dyn_cast<StringValue>(s2);
         res = new BoolValue(st1->get_value() < st2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "<", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1020,24 +1087,24 @@ static Value *lt(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Lt::exec(Interpreter *vm) {
-    auto res = lt(vm->load(src1), vm->load(src2), vm);
+    auto res = lt(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Lt2::exec(Interpreter *vm) {
-    auto res = lt(vm->load_const(src1), vm->load(src2), vm);
+    auto res = lt(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Lt3::exec(Interpreter *vm) {
-    auto res = lt(vm->load(src1), vm->load_const(src2), vm);
+    auto res = lt(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *beq(Value *s1, Value *s2, Interpreter *vm) {
+static Value *beq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -1053,6 +1120,9 @@ static Value *beq(Value *s1, Value *s2, Interpreter *vm) {
         StringValue *st2 = dyn_cast<StringValue>(s2);
         res = new BoolValue(st1->get_value() >= st2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, ">=", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1061,24 +1131,24 @@ static Value *beq(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Beq::exec(Interpreter *vm) {
-    auto res = beq(vm->load(src1), vm->load(src2), vm);
+    auto res = beq(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Beq2::exec(Interpreter *vm) {
-    auto res = beq(vm->load_const(src1), vm->load(src2), vm);
+    auto res = beq(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Beq3::exec(Interpreter *vm) {
-    auto res = beq(vm->load(src1), vm->load_const(src2), vm);
+    auto res = beq(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *leq(Value *s1, Value *s2, Interpreter *vm) {
+static Value *leq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -1094,6 +1164,9 @@ static Value *leq(Value *s1, Value *s2, Interpreter *vm) {
         StringValue *st2 = dyn_cast<StringValue>(s2);
         res = new BoolValue(st1->get_value() <= st2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "<=", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1102,24 +1175,24 @@ static Value *leq(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Leq::exec(Interpreter *vm) {
-    auto res = leq(vm->load(src1), vm->load(src2), vm);
+    auto res = leq(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Leq2::exec(Interpreter *vm) {
-    auto res = leq(vm->load_const(src1), vm->load(src2), vm);
+    auto res = leq(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Leq3::exec(Interpreter *vm) {
-    auto res = leq(vm->load(src1), vm->load_const(src2), vm);
+    auto res = leq(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *in(Value *s1, Value *s2, Interpreter *vm) {
+static Value *in(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
@@ -1127,6 +1200,10 @@ static Value *in(Value *s1, Value *s2, Interpreter *vm) {
         StringValue *st2 = dyn_cast<StringValue>(s2);
         // s1 in s2 => s2.find(s1)
         res = new BoolValue(st2->get_value().find(st1->get_value()) != ustring::npos);
+    }
+    else if (isa<ObjectValue>(s2)) {
+        // Here we need to flip the arguments as to call the method on the collection
+        call_operator(vm, "in", s2, s1, dst);
     }
     else {
         // FIXME: Raise unsupported operator type exception
@@ -1136,24 +1213,24 @@ static Value *in(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void In::exec(Interpreter *vm) {
-    auto res = in(vm->load(src1), vm->load(src2), vm);
+    auto res = in(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void In2::exec(Interpreter *vm) {
-    auto res = in(vm->load_const(src1), vm->load(src2), vm);
+    auto res = in(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void In3::exec(Interpreter *vm) {
-    auto res = in(vm->load(src1), vm->load_const(src2), vm);
+    auto res = in(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *andOP(Value *s1, Value *s2, Interpreter *vm) {
+static Value *andOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -1166,6 +1243,9 @@ static Value *andOP(Value *s1, Value *s2, Interpreter *vm) {
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
         res = new BoolValue(b1->get_value() && b2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "and", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1174,24 +1254,24 @@ static Value *andOP(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void And::exec(Interpreter *vm) {
-    auto res = andOP(vm->load(src1), vm->load(src2), vm);
+    auto res = andOP(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void And2::exec(Interpreter *vm) {
-    auto res = andOP(vm->load_const(src1), vm->load(src2), vm);
+    auto res = andOP(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void And3::exec(Interpreter *vm) {
-    auto res = andOP(vm->load(src1), vm->load_const(src2), vm);
+    auto res = andOP(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *orOP(Value *s1, Value *s2, Interpreter *vm) {
+static Value *orOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -1204,6 +1284,9 @@ static Value *orOP(Value *s1, Value *s2, Interpreter *vm) {
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
         res = new BoolValue(b1->get_value() || b2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "or", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1212,24 +1295,24 @@ static Value *orOP(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Or::exec(Interpreter *vm) {
-    auto res = orOP(vm->load(src1), vm->load(src2), vm);
+    auto res = orOP(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Or2::exec(Interpreter *vm) {
-    auto res = orOP(vm->load_const(src1), vm->load(src2), vm);
+    auto res = orOP(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Or3::exec(Interpreter *vm) {
-    auto res = orOP(vm->load(src1), vm->load_const(src2), vm);
+    auto res = orOP(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
-static Value *xorOP(Value *s1, Value *s2, Interpreter *vm) {
+static Value *xorOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     if (is_int_expr(s1, s2)) {
@@ -1242,6 +1325,9 @@ static Value *xorOP(Value *s1, Value *s2, Interpreter *vm) {
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
         res = new BoolValue(b1->get_value() ^ b2->get_value());
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "xor", s1, s2, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1250,19 +1336,19 @@ static Value *xorOP(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Xor::exec(Interpreter *vm) {
-    auto res = xorOP(vm->load(src1), vm->load(src2), vm);
+    auto res = xorOP(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Xor2::exec(Interpreter *vm) {
-    auto res = xorOP(vm->load_const(src1), vm->load(src2), vm);
+    auto res = xorOP(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Xor3::exec(Interpreter *vm) {
-    auto res = xorOP(vm->load(src1), vm->load_const(src2), vm);
+    auto res = xorOP(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
@@ -1334,6 +1420,9 @@ void Not::exec(Interpreter *vm) {
     else if (BoolValue *b1 = dyn_cast<BoolValue>(s1)) {
         res = new BoolValue(!(b1->get_value()));
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator_unary(vm, "not", s1, dst);
+    }
     else {
         // FIXME: Raise unsupported operator type exception
         assert(false && "TODO: unsupported operator type raise exception");
@@ -1350,6 +1439,9 @@ void Neg::exec(Interpreter *vm) {
     }
     else if (FloatValue *f1 = dyn_cast<FloatValue>(s1)) {
         res = new FloatValue(-(f1->get_value()));
+    }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator_unary(vm, "-", s1, dst);
     }
     else {
         // FIXME: Raise unsupported operator type exception
