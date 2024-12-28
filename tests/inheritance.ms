@@ -43,12 +43,12 @@ d = D() // "A"
 d
 "\n"
 
-_ = d.b_call()
-_ = d.a_call()
+~d.b_call()
+~d.a_call()
 
-_ = c.a_call()
+~c.a_call()
 
 e = E() // "B"
 "\n"
 
-_ = E.b_call(e)
+~E.b_call(e)

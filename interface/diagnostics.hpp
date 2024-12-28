@@ -120,7 +120,7 @@ static const char * DIAG_MSGS[] = {
     "Missing ']'",
     "Unmatched ')'",
     "Compound assignment operators ('%s') cannot be chained",
-    "Silent operator ('~') cannot be chained",
+    "Silence operator ('~') cannot be chained",
     "Missing ':' — ternary if requires false branch",
     "Ternary if requires a condition",
     "Expecting '..' in a range expression",

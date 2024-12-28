@@ -10,9 +10,9 @@ fun wh(count) {
     "done\n"
 }
 
-a = wh(0)
-a = wh(1)
-a = wh(5)
+~wh(0)
+~wh(1)
+~wh(5)
 
 count = 3
 while(count > 0) {

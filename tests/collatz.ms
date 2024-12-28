@@ -16,8 +16,8 @@ fun collatz(n) {
     }
 }
 
-a = collatz(42)
+~collatz(42)
 "\n"
-a = collatz(4194304)
+~collatz(4194304)
 "\n"
-a = collatz(7)
+~collatz(7)

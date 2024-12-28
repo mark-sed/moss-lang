@@ -555,7 +555,9 @@ RegValue *BytecodeGen::emit(ir::UnaryExpr *expr) {
             return last_reg();
         }
         case OperatorKind::OP_SILENT: {
-            assert(false && "TODO: Silent operator codegen");
+            auto lr = last_reg();
+            lr->set_silent(true);
+            return lr;
         }
         default: assert(false && "Unknown unary operator");
     }

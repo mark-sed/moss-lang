@@ -2,7 +2,8 @@
  * Prints Hello, World! to the standard output
  */
 
-print("Hello, World!")
+// We use ~ (silence operator) to not output return from print
+~print("Hello, World!")
 
 /* Another alternative is to just put the string
  * on the line:

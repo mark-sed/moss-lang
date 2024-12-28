@@ -40,17 +40,17 @@ fun fooa(a=0) {
     a
 }
 
-x = fooa()
+~fooa()
 "\n"
-x = fooa(1)
+~fooa(1)
 "\n"
-x = fooa(1, 2, 3)
+~fooa(1, 2, 3)
 "\n"
-x = fooa(b=2, a=1)
+~fooa(b=2, a=1)
 "\n"
-x = fooa(b=2, a=1, c=3)
+~fooa(b=2, a=1, c=3)
 "\n"
-x = fooa(1, true, "a", nil)
+~fooa(1, true, "a", nil)
 "\n"
 // Test string output
 fooa ++ "\n"
@@ -77,10 +77,10 @@ fun varargsf(a:[Int,Bool], ... b) {
     a ++ b ++ "\n"
 }
 
-c = varargsf(1, 2)
-c = varargsf(1, 2, 3, 4)
-c = varargsf(0, 1, "ok", false, nil)
-c = varargsf(true, 1)
+~varargsf(1, 2)
+~varargsf(1, 2, 3, 4)
+~varargsf(0, 1, "ok", false, nil)
+~varargsf(true, 1)
 
 fun getID(x:String) {
     return 1
