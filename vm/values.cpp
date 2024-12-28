@@ -95,6 +95,16 @@ Value *EnumValue::clone() {
     return new EnumValue(dyn_cast<EnumTypeValue>(this->type), this->name);
 }
 
+std::list<ClassValue *> ClassValue::get_all_supers() {
+    std::list<ClassValue *> sups(supers);
+    // Append supers of supers
+    for (auto s: supers) {
+        auto s_sups = s->get_all_supers();
+        sups.insert(sups.end(), s_sups.begin(), s_sups.end());
+    }
+    return sups;
+} 
+
 Value *BuiltIns::Type = new ClassValue("Type");
 
 Value *BuiltIns::Int = new ClassValue("Int");

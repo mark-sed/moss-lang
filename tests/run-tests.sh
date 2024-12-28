@@ -256,6 +256,12 @@ function test_attributes {
 <object of class B>\n91\n91\n91 != 65\n-1 == -1\n" $1
 }
 
+function test_inheritance {
+    expect_pass "inheritance.ms" $1
+    expect_out_eq "A\n<object of class A>\nB\n<object of class B>\nB
+<object of class C>\nA\n<object of class D>\nb_call\na_call\na_call\nB\nb_call\n" $1
+}
+
 function test_operator_funs {
     expect_pass "operator_funs.ms" $1
     expect_out_eq "1111 == 1111 == 1111\nfalse == false\ntrue == true\n1000 == 1000
@@ -421,6 +427,7 @@ function run_all_tests {
     run_test whiles
     run_test classes
     run_test attributes
+    run_test inheritance
     run_test operator_funs
     run_test lists
     run_test enums

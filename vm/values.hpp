@@ -382,6 +382,8 @@ public:
 
     std::list<ClassValue *> get_supers() { return this->supers; }
 
+    std::list<ClassValue *> get_all_supers();
+
     virtual std::ostream& debug(std::ostream& os) const override;
 };
 

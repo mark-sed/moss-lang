@@ -101,3 +101,55 @@ class Foo {
 foo = Foo()
 Foo.doit(67, foo) // This is the same as `foo.doit(67)`
 ```
+
+### Class inheritance
+
+Class can extend multiple other classes, which will be used for attribute lookup.
+
+Constructor for parent classes will be called only when no constructor for child class is provided and it will be the first found constructor in the extention class list.
+
+```cpp
+class A {
+    fun A() {
+        print("A")
+    }
+}
+
+class B : A {
+    fun B() {
+        print(B)
+    }
+}
+
+class C : A {
+}
+
+class D : A, B {
+}
+
+a = A() // "A"
+b = B() // "B"
+c = C() // "A"
+
+c = D() // "A"
+```
+
+Keyword `super` can be used to access specific parent attribute or constructor.
+
+```cpp
+class A {
+    fun A() {
+        print("A")
+    }
+}
+
+class B : A {
+    fun B() {
+        print("B ", end="")
+        super()
+    }
+}
+
+b = B() // "B A"
+
+```

@@ -61,6 +61,21 @@ void Load::exec(Interpreter *vm) {
 void LoadAttr::exec(Interpreter *vm) {
     auto *v = vm->load(this->src);
     auto attr = v->get_attr(this->name);
+    // This could possibly be an object or a class
+    if (!attr && (isa<ObjectValue>(v) || isa<ClassValue>(v))) {
+        ClassValue *cls = nullptr;
+        if (isa<ObjectValue>(v)) {
+            cls = dyn_cast<ClassValue>(v->get_type());
+        } else {
+            cls = dyn_cast<ClassValue>(v);
+        }
+
+        for (auto sup: cls->get_all_supers()) {
+            attr = sup->get_attr(this->name);
+            if (attr)
+                break;
+        }
+    }
     assert(attr && "TODO: Nonexistent attr raise exception");
     vm->store(this->dst, attr);
 }
@@ -345,13 +360,21 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         constructor_of = cls;
         funV = cls->get_attrs()->load_name(cls->get_name());
         if (!funV) {
+            // No constructor provided, look for one in parent classes
+            for (auto parent : cls->get_all_supers()) {
+                funV = parent->get_attrs()->load_name(parent->get_name());
+                if (funV)
+                    break;
+            }
             // No constructor is provided so execute implicit one
             // by setting this and returning
-            auto obj = new ObjectValue(constructor_of);
-            vm->store(cf->get_return_reg(), obj);
-            // Also pop call frame
-            vm->pop_call_frame();
-            return;
+            if (!funV) {
+                auto obj = new ObjectValue(constructor_of);
+                vm->store(cf->get_return_reg(), obj);
+                // Also pop call frame
+                vm->pop_call_frame();
+                return;
+            }
         }
     }
     FunValue *fun = dyn_cast<FunValue>(funV);
