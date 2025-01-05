@@ -355,6 +355,11 @@ function test_lib_print {
     expect_out_eq '1 2 3 4\nhi-there.\n\ntrue\n1,2,3!\n' $1
 }
 
+function test_lib_type_constructors {
+    expect_pass "stdlib_tests/type_constructors.ms" $1
+    expect_out_eq '56\n56\n42\n10\n0\n22\n' $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -440,6 +445,7 @@ function run_all_tests {
     run_test lib_exit
     run_test lib_vardump
     run_test lib_print
+    run_test lib_type_constructors
 
     # gc tests
     run_test gc_local_vars

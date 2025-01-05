@@ -168,6 +168,8 @@ namespace BuiltIns {
     extern Value *Function;// = new ClassValue("Function");
     extern Value *FunctionList;// = new ClassValue("FunctionList");
 
+    extern Value *Exception;
+
     extern Value *Nil;
     #define BUILT_INS_INT_CONSTANTS_AM 262
     extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];

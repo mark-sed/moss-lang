@@ -4,6 +4,7 @@
 #include "diagnostics.hpp"
 #include "logging.hpp"
 #include <functional>
+#include <cstdlib>
 
 using namespace moss;
 using namespace mslib;
@@ -47,6 +48,30 @@ Value *mslib::print(Interpreter *vm, Value *msgs, Value *end, Value *separator) 
     return BuiltIns::Nil;
 }
 
+Value *mslib::Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
+    (void)vm;
+    (void)ths;
+    auto base_int = dyn_cast<IntValue>(base);
+    assert(base_int && "TODO: Raise type exception as base is not int");
+
+    if (isa<IntValue>(v))
+        return v;
+    if (auto sv = dyn_cast<StringValue>(v)) {
+        char *pend;
+        auto vi = std::strtol(sv->as_string().c_str(), &pend, base_int->get_value());
+        if (*pend != '\0')
+            assert(false && "TODO: Raise error value is not int");
+        if (errno != 0)
+            assert(false && "TODO: Raise conversion error");
+        return new IntValue(vi);
+    }
+    if (auto fv = dyn_cast<FloatValue>(v)) {
+        return new IntValue(static_cast<opcode::IntConst>(fv->get_value()));
+    }
+    
+    assert(false && "Incorrect arg type");
+}
+
 void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     auto args = vm->get_call_frame()->get_args();
     // TODO: Generalize the argument extraction and type checking
@@ -80,6 +105,24 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert(end);
         ret_v = print(vm, msgs, end, separator);
     }
+    else if (name == "Int") {
+        assert(args.size() == 3 && "Mismatch of args");
+        Value *ths = nullptr;
+        Value *v = nullptr;
+        Value *base = nullptr;
+        for (auto a : args) {
+            if (a.name == "this")
+                ths = a.value;
+            else if (a.name == "v")
+                v = a.value;
+            else if (a.name == "base")
+                base = a.value;
+        }
+        assert(ths);
+        assert(v);
+        assert(base);
+        ret_v = Int(vm, ths, v, base);
+    }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
         // TODO: Change to exception
@@ -93,6 +136,20 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);
     vm->set_bci(caller_addr);
+}
+
+static void init_builtins(MemoryPool *gf) {
+    auto create_method = [gf](ustring name, ustring arg_names) {
+        auto f = new FunValue(name, arg_names);
+        // All functions MUST be annotated "@internal"
+        f->annotate(annots::INTERNAL, BuiltIns::Nil);
+        return f;
+    };
+
+    auto int_constr = create_method("Int", "v,base");
+    int_constr->set_default(1, BuiltIns::IntConstants[10]);
+    // TODO: Use set_type
+    BuiltIns::Int->set_attr("Int", int_constr);
 }
 
 void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {
@@ -119,4 +176,6 @@ void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {
     f_print->set_vararg(0);
     f_print->set_default(1, new StringValue("\n"));
     f_print->set_default(2, new StringValue(" "));
+
+    init_builtins(gf);
 }

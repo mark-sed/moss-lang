@@ -26,6 +26,8 @@ void exit(Interpreter *vm, Value *code);
 Value *vardump(Interpreter *vm, Value *v);
 Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator);
 
+Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base);
+
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources
 /// \param name Name of the function to execute

@@ -358,7 +358,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     // Class constructor call
     if (auto cls = dyn_cast<ClassValue>(funV)) {
         constructor_of = cls;
-        funV = cls->get_attrs()->load_name(cls->get_name());
+        if (cls->get_attrs())
+            funV = cls->get_attrs()->load_name(cls->get_name());
         if (!funV) {
             // No constructor provided, look for one in parent classes
             for (auto parent : cls->get_all_supers()) {

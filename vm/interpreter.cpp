@@ -60,6 +60,8 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Function", BuiltIns::Function, gf);
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
 
+    store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
+
     mslib::init(gf, reg);
 
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
