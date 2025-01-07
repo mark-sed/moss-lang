@@ -725,6 +725,9 @@ void BytecodeGen::emit(ir::DoWhile *whstmt) {
 }
 
 void BytecodeGen::emit(ir::Module *mod) {
+    for (auto val: mod->get_annotations()) {
+        assert(false && "TOOD: Missing module annotation generation");
+    }
     emit(mod->get_body());
 }
 
@@ -793,6 +796,14 @@ void BytecodeGen::emit(ir::Class *cls) {
         append(new PushParent(free_reg(p_reg)));
     }
     append(new BuildClass(next_reg(), cls->get_name()));
+    // Add annotations
+    // Since BuildClass will push a new frame we need to load the class by name
+    auto cls_reg = next_reg();
+    append(new Load(cls_reg, cls->get_name()));
+    for (auto annt : cls->get_annotations()) {
+        auto annot_val = emit(annt->get_value(), true);
+        append(new Annotate(cls_reg, annt->get_name(), free_reg(annot_val)));
+    }
     emit(cls->get_body());
     /*for (auto d : cls->get_body()) {
         if (auto be = dyn_cast<BinaryExpr>(d)) {

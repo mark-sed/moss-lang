@@ -662,8 +662,16 @@ IR *Parser::declaration() {
                 clparents = expr_list(true);
                 parser_assert(!clparents.empty(), create_diag(diags::PARENT_LIST_EXPECTED));
             }
+            // We need to store annotation so that inner IRs don't consume them
+            std::list<ir::Annotation *> cl_annts;
+            cl_annts.insert(cl_annts.end(), std::make_move_iterator(outter_annots.begin()), std::make_move_iterator(outter_annots.end()));
+            outter_annots.clear();
             auto clbody = block();
             decl = new Class(name->get_value(), clparents, clbody);
+            // Assign outter annotations
+            for (auto ann : cl_annts) {
+                decl->add_annotation(ann);
+            }
             no_end_needed = true;
         }
         else {
