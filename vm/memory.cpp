@@ -5,8 +5,12 @@
 using namespace moss;
 
 void MemoryPool::store(opcode::Register reg, Value *v) {
-    // FIXME
-    assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Resize pool when out of bounds");
+    if (reg >= static_cast<opcode::Register>(pool.size())) {
+        LOGMAX("No more space, resizing pool from: " << pool.size() << " to " << pool.size()+(pool.size()/4));
+        // TODO: Find some nice heuristic for this number
+        pool.resize(pool.size()+(pool.size()/4), nullptr);
+    }
+
     pool[reg] = v;
 }
 
