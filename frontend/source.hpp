@@ -14,6 +14,7 @@
 #include <utility>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 
 namespace moss {
 
@@ -130,6 +131,8 @@ public:
     std::pair<unsigned, unsigned> get_lines() { return lines; }
     std::pair<unsigned, unsigned> get_cols() { return cols; }
 };
+
+std::optional<ustring> get_file_path(ustring file);
 
 }
 

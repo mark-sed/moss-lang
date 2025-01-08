@@ -87,6 +87,12 @@ int main(int argc, const char *argv[]) {
             repl.run();
             return 0;
         }
+        else if (main_file->get_type() == SourceFile::SourceType::FILE) {
+            // Set pwd for finding other modules
+            std::filesystem::path main_f_path = main_file->get_name();
+            global_controls::pwd = main_f_path.parent_path();
+            LOGMAX("Setting pwd to: " << global_controls::pwd);
+        }
 
         Parser parser(*main_file);
         main_mod = parser.parse(true);

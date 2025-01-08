@@ -3,6 +3,7 @@
 #include "logging.hpp"
 #include <cstring>
 #include <fstream>
+#include <filesystem>
 
 using namespace moss;
 
@@ -43,4 +44,13 @@ std::ostream *BytecodeFile::create_out_stream() {
     }
     LOGMAX("Created new output bytecode file: " << this->path);
     return f;
+}
+
+std::optional<ustring> moss::get_file_path(ustring file) {
+    auto filep = std::filesystem::path(file);
+    if (std::filesystem::exists(global_controls::pwd / filep))
+        return global_controls::pwd / filep;
+    // TODO: Search lib directories
+
+    return std::nullopt;
 }

@@ -25,6 +25,7 @@
 namespace moss {
 
 class MemoryPool;
+class Interpreter;
 
 enum class TypeKind {
     INT,
@@ -422,14 +423,19 @@ public:
 };
 
 class ModuleValue : public Value {
+private:
+    Interpreter *vm;
 public:
     static const TypeKind ClassType = TypeKind::MODULE;
 
-    ModuleValue(ustring name) : Value(ClassType, name, BuiltIns::Module) {}
-    ModuleValue(ustring name, MemoryPool *frm) : Value(ClassType, name, BuiltIns::Module, frm) {}
+    ModuleValue(ustring name, Interpreter *vm)
+        : Value(ClassType, name, BuiltIns::Module), vm(vm) {}
+    ModuleValue(ustring name, MemoryPool *frm, Interpreter *vm)
+        : Value(ClassType, name, BuiltIns::Module, frm), vm(vm) {}
+    ~ModuleValue();
 
     virtual Value *clone() {
-        auto cpy = new ModuleValue(this->name);
+        auto cpy = new ModuleValue(this->name, this->vm);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
         return cpy;
@@ -439,11 +445,7 @@ public:
         return "<module " + name + ">";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
-        // TODO: Output all attributes and so on
-        os << "(Module)" << name;
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const override;
 };
 
 class FunValueArg {

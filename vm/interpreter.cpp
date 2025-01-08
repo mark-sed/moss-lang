@@ -19,7 +19,7 @@ Interpreter::~Interpreter() {
     for (auto p: const_pools) {
         delete p;
     }
-    for(auto p: frames) {
+    for (auto p: frames) {
         delete p;
     }
     for (auto f: call_frames) {
@@ -59,6 +59,7 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Address", BuiltIns::Address, gf);
     store_glob_val(reg++, "Function", BuiltIns::Function, gf);
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
+    store_glob_val(reg++, "Module", BuiltIns::Module, gf);
 
     store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
 

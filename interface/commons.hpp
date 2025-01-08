@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
+#include <filesystem>
 
 namespace moss {
 
@@ -100,6 +101,8 @@ namespace global_controls {
 extern bool trigger_gc; ///< Global flag for triggering GC
 
 constexpr float gc_grow_factor = 2.0; ///< By how much will the gc threshold grow
+
+extern std::filesystem::path pwd; ///< Current working directory based of main file
 
 }
 

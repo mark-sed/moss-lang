@@ -113,10 +113,9 @@ private:
 
     bool bci_modified;
 
-    MemoryPool *get_global_const_pool() { return this->const_pools.front(); }
+    MemoryPool *get_global_const_pool() { return this->const_pools.front(); };
     MemoryPool *get_const_pool() { return this->const_pools.back(); }
     MemoryPool *get_local_frame() { return this->frames.back(); }
-    MemoryPool *get_global_frame() { return this->frames.front(); }
 
     void init_const_frame();
     void init_global_frame();
@@ -125,6 +124,8 @@ public:
     ~Interpreter();
 
     void run();
+
+    MemoryPool *get_global_frame() { return this->frames.front(); }
 
     /// Stores a value into a register
     void store(opcode::Register reg, Value *v);

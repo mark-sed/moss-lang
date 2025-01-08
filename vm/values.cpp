@@ -87,6 +87,19 @@ std::ostream& ClassValue::debug(std::ostream& os) const {
     return os;
 }
 
+std::ostream& ModuleValue::debug(std::ostream& os) const {
+    // TODO: Output all attributes and so on
+    os << "(Module)" << name;
+    if (attrs)
+        os << ": " << *attrs;
+    return os;
+}
+
+ModuleValue::~ModuleValue()  {
+    delete vm->get_src_file();
+    delete vm;
+}
+
 EnumValue::EnumValue(EnumTypeValue *type, ustring name) : Value(ClassType, name, type) {
 }
 
