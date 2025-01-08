@@ -119,6 +119,8 @@ Value *BuiltIns::Address = new ClassValue("Address");
 Value *BuiltIns::Function = new ClassValue("Function");
 Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 
+Value *BuiltIns::Module = new ClassValue("Module");
+
 Value *BuiltIns::Exception = new ClassValue("Exception");
 
 Value *BuiltIns::Nil = new NilValue();

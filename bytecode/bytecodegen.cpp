@@ -717,6 +717,27 @@ void BytecodeGen::emit(ir::While *whstmt) {
     jmp_end->addr = get_curr_address() + 1;
 }
 
+void BytecodeGen::emit_import_expr(ir::Expression *e) {
+    if (isa<ir::Variable>(e)) {
+        append(new opcode::Import(next_reg(), e->get_name()));
+    } else if (auto be = dyn_cast<BinaryExpr>(e)) {
+        assert(be->get_op().get_kind() == OperatorKind::OP_SCOPE && "Incorrect expression in import");
+        emit_import_expr(be->get_left());
+        auto res_reg = val_last_reg();
+        append(new opcode::LoadAttr(next_reg(), res_reg, be->get_right()->get_name()));
+    } else {
+        assert(false && "Incorrect import expression value");
+    }
+}
+
+void BytecodeGen::emit(ir::Import *im) {
+    assert(im->get_names().size() == im->get_aliases().size() && "we should always set alias");
+    for (size_t i = 0; i < im->get_names().size(); ++i) {
+        emit_import_expr(im->get_names()[i]);
+        append(new StoreName(val_last_reg(), im->get_aliases()[i]));
+    }
+}
+
 void BytecodeGen::emit(ir::DoWhile *whstmt) {
     auto pre_while_bc = get_curr_address() + 1;
     emit(whstmt->get_body());
@@ -860,6 +881,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto w = dyn_cast<ir::DoWhile>(decl)) {
         emit(w);
+    }
+    else if (auto i = dyn_cast<ir::Import>(decl)) {
+        emit(i);
     }
     else if (isa<EndOfFile>(decl)) {
         append(new End());

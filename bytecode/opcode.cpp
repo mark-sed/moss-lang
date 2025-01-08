@@ -602,6 +602,13 @@ void SetVararg::exec(Interpreter *vm) {
     fv->set_vararg(index);
 }
 
+/*static ModuleValue *load_module(Interpreter *vm, ustring name) {
+    // TODO: We need ensure that the imported module has its own global scope
+    // and that it does not have globals from the current one. The GF also
+    // needs to have all the standard stuff just as if it was run like main
+    return nullptr;
+}*/
+
 void Import::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }

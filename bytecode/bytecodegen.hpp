@@ -59,11 +59,14 @@ private:
     RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
+    void emit_import_expr(ir::Expression *e);
+
     void emit(ir::Raise *r);
     void emit(ir::Return *r);
     void emit(ir::Module *mod);
     void emit(ir::If *ifstmt);
     void emit(ir::While *whstmt);
+    void emit(ir::Import *im);
     void emit(ir::DoWhile *whstmt);
     void emit(ir::Function *fun);
     void emit(ir::Class *cls);

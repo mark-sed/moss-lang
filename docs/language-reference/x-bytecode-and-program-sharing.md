@@ -217,7 +217,8 @@ b = 8
 
 ```
 0   STORE_INT_CONST #200, 430
-1   IMPORT      %0(sx), "systemx"
+1   IMPORT      %0, "systemx"
+    STORE_NAME  %0, "sx"
 
 3   LOAD_ATTR   %3, %0(sx), "a"
 3   ADD         %1(a), %3, #200
@@ -445,4 +446,16 @@ x       LIST_PUSH_CONST %0, #1
 x       STORE_STR_CONST #2, "WHITE"
 x       LIST_PUSH_CONST %0, #2
 x       BUILD_ENUM      %1, %0, "Colors"
+```
+
+### Scopes
+
+```cpp
+Foo::goo
+```
+
+```
+x   LOAD_NAME %0, "Foo"
+x   LOAD_ATTR %1, %0, "goo"
+x   OUTPUT %1
 ```

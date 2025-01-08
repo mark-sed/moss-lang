@@ -39,6 +39,7 @@ enum class TypeKind {
     FUN_LIST,
     OBJECT,
     CLASS,
+    MODULE,
     SPACE,
     ENUM,
     ENUM_VALUE
@@ -58,6 +59,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::FUN_LIST: return "FUN_LIST";
         case TypeKind::OBJECT: return "OBJECT";
         case TypeKind::CLASS: return "CLASS";
+        case TypeKind::MODULE: return "MODULE";
         case TypeKind::SPACE: return "SPACE";
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
@@ -156,6 +158,7 @@ T *dyn_cast(Value* t);
 
 /// This namespace contains values (pointers) for all the built-in types
 /// \note: When adding a new value also add it to Interpreter::init_global_frame
+///        and instantiate it in values.cpp
 namespace BuiltIns {
     extern Value *Type;// = new ClassValue("Type");
     extern Value *Int;// = new ClassValue("Int");
@@ -167,6 +170,8 @@ namespace BuiltIns {
     extern Value *Address;// = new ClassValue("Address");
     extern Value *Function;// = new ClassValue("Function");
     extern Value *FunctionList;// = new ClassValue("FunctionList");
+    extern Value *Function;// = new ClassValue("Function");
+    extern Value *Module;
 
     extern Value *Exception;
 
@@ -375,6 +380,7 @@ public:
     virtual Value *clone() {
         auto cpy = new ClassValue(this->name, this->supers);
         cpy->set_attrs(this->attrs);
+        cpy->annotations = this->annotations;
         return cpy;
     }
 
@@ -411,6 +417,31 @@ public:
     virtual std::ostream& debug(std::ostream& os) const override {
         // TODO: Output all attributes and so on
         os << "(" << this->type->get_name() << ")object";
+        return os;
+    }
+};
+
+class ModuleValue : public Value {
+public:
+    static const TypeKind ClassType = TypeKind::MODULE;
+
+    ModuleValue(ustring name) : Value(ClassType, name, BuiltIns::Module) {}
+    ModuleValue(ustring name, MemoryPool *frm) : Value(ClassType, name, BuiltIns::Module, frm) {}
+
+    virtual Value *clone() {
+        auto cpy = new ModuleValue(this->name);
+        cpy->set_attrs(this->attrs);
+        cpy->annotations = this->annotations;
+        return cpy;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        return "<module " + name + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        // TODO: Output all attributes and so on
+        os << "(Module)" << name;
         return os;
     }
 };
