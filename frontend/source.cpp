@@ -49,7 +49,7 @@ std::ostream *BytecodeFile::create_out_stream() {
 std::optional<ustring> moss::get_file_path(ustring file) {
     auto filep = std::filesystem::path(file);
     if (std::filesystem::exists(global_controls::pwd / filep))
-        return global_controls::pwd / filep;
+        return (global_controls::pwd / filep).string();
     // TODO: Search lib directories
 
     return std::nullopt;

@@ -32,7 +32,12 @@ namespace bc_header {
 /// 4B | major, minor, patch, 0x00
 /// 4B | timestamp
 /// 
+#ifdef __linux__
 struct __attribute__((packed)) BytecodeHeader {
+#else
+// TODO: Handle other OSs
+struct BytecodeHeader {
+#endif
     const std::uint32_t id = 0xFF'00'00'2A;
     std::uint32_t checksum;
     std::uint32_t version;

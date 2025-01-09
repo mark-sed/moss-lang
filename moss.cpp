@@ -147,7 +147,7 @@ int main(int argc, const char *argv[]) {
         }
         LOGMAX("Outputting bytecode to path: " << bcpath);
 
-        BytecodeFile bfo(bcpath);
+        BytecodeFile bfo(bcpath.string());
         BytecodeWriter bc_writer(bfo);
         if (clopts::dump_text_bc)
             bc_writer.write_textual(bc);

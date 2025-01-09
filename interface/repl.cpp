@@ -83,7 +83,7 @@ void Repl::run() {
         }
         LOGMAX("Outputting bytecode to path: " << bcpath);
 
-        BytecodeFile bfo(bcpath);
+        BytecodeFile bfo(bcpath.string());
         BytecodeWriter bc_writer(bfo);
         bc_writer.write(bc);
     }
