@@ -67,6 +67,12 @@ function run_log {
     RETCODE=$(echo $?)
 }
 
+function run_compile {
+    CMD="$MOSS -o ${TEST_DIR}$2 ${TEST_DIR}$1"
+    $MOSS -o ${TEST_DIR}$2 ${TEST_DIR}$1 2>$OUTP_ERR 1>$OUTP_STD
+    RETCODE=$(echo $?)
+}
+
 function expect_pass {
     run "${@:1:$#-1}"
     if [[ $RETCODE -ne 0 ]]; then
@@ -83,6 +89,18 @@ function expect_pass_exec {
     run_exec "${@:1:$#-1}"
     if [[ $RETCODE -ne 0 ]]; then
         failed "${@: -1}" "Program failed."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+        printf "Error output:\n-------------\n"
+        cat $OUTP_ERR
+    fi
+}
+
+function expect_pass_compile {
+    run_compile "${@:1:$#-1}"
+    if [[ $RETCODE -ne 0 ]]; then
+        failed "${@: -1}" "Program compilation failed."
         printf "Command:\n--------\n$CMD\n"
         printf "Output:\n-------\n"
         cat $OUTP_STD
@@ -286,6 +304,19 @@ function test_enums {
 }\n" $1
 }
 
+function test_basic_import {
+    expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
+    expect_pass "module_tests/module.ms" $1
+    expect_out_eq "module.ms started
+Hello, from greet.ms
+Back in module
+Hi, from msb greet
+<module greet>
+<module greet_compiled>
+Ending module.ms\n" $1
+    rm -f ${TEST_DIR}module_tests/greet_compiled.msb
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -436,6 +467,8 @@ function run_all_tests {
     run_test operator_funs
     run_test lists
     run_test enums
+
+    run_test basic_import
 
     run_test fibonacci
     run_test factorial
