@@ -103,9 +103,9 @@ switch(val) {
 
 import Math
 import Statistics as st, Models as mod
-import Math::Models as mods
+import Math.Models as mods
 
-import Rng::*
+import Rng.*
 
 space SomeSpace {
     fun foo() { print("hi"); }
@@ -115,12 +115,12 @@ space SomeSpace {
     }
 }
 
-import ::SomeSpace::*
-import ::SomeSpace::Space2::baz
+import ::SomeSpace.*
+import ::SomeSpace.Space2.baz
 
 foo() // Foo is now accessible without scope
 baz() // Also does not require scope
-Space2::bar() // Requires scope for space2, since only baz was imported
+Space2.bar() // Requires scope for space2, since only baz was imported
 
 fun bar() {
     raise 42
@@ -230,7 +230,7 @@ md(header("Introduction"))
 
 import out
 
-@converter(out::Formats::Markdown, ["tx1", "text1", "txt1"])
+@converter(out.Formats.Markdown, ["tx1", "text1", "txt1"])
 fun tx1_from_md(s, ... flags) {
     return s.replace("###", "<h3>").replace("##", "<h2>").replace("#", "<h1>")
 }
@@ -243,19 +243,19 @@ This is your introduction to moss notes.
 
 import out
 
-@converter("eq", out::Formats::LaTeX)
+@converter("eq", out.Formats.LaTeX)
 fun eq2tex(s) {
     return r"\begin{equation} \tag{" ++ s.count ++ "}\n" ++ s ++ r"\n\end{equation}"
 }
 
 import out
 
-@converter("eq", out::Formats::LaTeX)
+@converter("eq", out.Formats.LaTeX)
 fun eq2tex(s) {
     return r"\begin{equation} \tag{" ++ s.count ++ "}\n" ++ s ++ r"\n\end{equation}"
 }
 
-@converter("eq", out::Formats::Markdown)
+@converter("eq", out.Formats.Markdown)
 fun eq2md(s) {
     return f"Eq. {s.count}: `" ++ s ++ "`"
 }
@@ -263,32 +263,32 @@ fun eq2md(s) {
 import out
 import sys
 
-@generator(out::Formats::LaTeX, out::Formats::PDF)
-@platform(sys::Platform::Linux) // Invoked only on Linux
+@generator(out.Formats.LaTeX, out.Formats.PDF)
+@platform(sys.Platform.Linux) // Invoked only on Linux
 fun tex2pdf(s) {
-    tmp = out::create_tmp(s)
-    sys.system(f"pdflatex {tmp} -o {out::out_path()}")
+    tmp = out.create_tmp(s)
+    sys.system(f"pdflatex {tmp} -o {out.out_path()}")
 }
 
 import out
 import sys
 
-@generator(out::Formats::LaTeX, out::Formats::PDF)
-@platform(sys::Platform::Linux) // Invoked only on Linux
+@generator(out.Formats.LaTeX, out.Formats.PDF)
+@platform(sys.Platform.Linux) // Invoked only on Linux
 fun tex2pdf(s) {
-    tmp = out::create_out_tmp(s)
+    tmp = out.create_out_tmp(s)
     // Here we use out_path() which returns path to the output file
     // that the user has chosen, but if this is not the final generator
     // in the pipeline, then this will be some dummy value
-    sys.system(f"pdflatex {tmp} -o {out::out_path()}")
-    return out::out_path()
+    sys.system(f"pdflatex {tmp} -o {out.out_path()}")
+    return out.out_path()
 }
 
-@generator(out::Formats::PDF, "pdfa")
-@platform(sys::Platform::Linux)
+@generator(out.Formats.PDF, "pdfa")
+@platform(sys.Platform.Linux)
 fun pdf2pdfa(path) {
     // Here out_path will be the actual one chosen by the user
-    sys.system(f"bash pdf2pdfa.sh {path} {out::out_path()}")
+    sys.system(f"bash pdf2pdfa.sh {path} {out.out_path()}")
 }
 
 @!notebook
@@ -317,18 +317,18 @@ fun divxy(x:Int, y:Int) {
     return x / y
 }
 
-@doc_writer(out::Formats::HTML)
+@doc_writer(out.Formats.HTML)
 fun doc2html(code) {
     // Conversion code
 }
 
-import BestConverters::*
-import ShinyMarkdown::md2tex
+import BestConverters.*
+import ShinyMarkdown.md2tex
 
 @converter("fasta", "fastq")
 fun fasta2fastq(f) {
     import FastaConv
-    return FastaConv::to_fastq(f)
+    return FastaConv.to_fastq(f)
 }
 
 md"""
@@ -406,8 +406,8 @@ enum COLORS {
     GREEN
 }
 
-flower = COLORS::PURPLE
-moss = COLORS::GREEN
+flower = COLORS.PURPLE
+moss = COLORS.GREEN
 
 names = ["luke", "leia", "han"]
 mix = ["pirate", 42, true, nil, nil, "ok"]
@@ -522,7 +522,7 @@ class Range : Iterable, BaseClass {
     }
 }
 
-Range::__next(range)
+Range.__next(range)
 
 @!min_version("1.1") // Module annotation
 
@@ -617,7 +617,7 @@ enum Colors {
 import python
 
 datetime = python.module("datetime")
-now = datetime::datetime.now()
+now = datetime.datetime.now()
 
 print(now)
 )";

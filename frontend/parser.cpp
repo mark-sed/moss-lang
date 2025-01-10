@@ -285,19 +285,24 @@ ustring Parser::get_last_id(Expression *e) {
     }
     if (auto be = dyn_cast<BinaryExpr>(e)) {
         if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()) && !isa<UnaryExpr>(be->get_left())) 
-            parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
-        if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
+            parser_error(create_diag(diags::MEMBER_OR_ID_EXPECTED));
+        if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
             return get_last_id(be->get_right());
         }
         else {
-            parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
+            parser_error(create_diag(diags::MEMBER_OR_ID_EXPECTED));
         }
     }
-    parser_error(create_diag(diags::SCOPE_OR_ID_EXPECTED));
+    if (auto ue = dyn_cast<UnaryExpr>(e)) {
+        if (ue->get_op().get_kind() == OperatorKind::OP_SCOPE) {
+            assert(false && "TODO: Handle global value");
+        }
+    }
+    parser_error(create_diag(diags::MEMBER_OR_ID_EXPECTED));
     return "";
 }
 
-bool Parser::is_id_or_scope(Expression *e) {
+bool Parser::is_id_or_member(Expression *e) {
     assert(e && "nullptr passed for check");
     if (isa<Variable>(e)) {
         return true;
@@ -305,10 +310,15 @@ bool Parser::is_id_or_scope(Expression *e) {
     if (auto be = dyn_cast<BinaryExpr>(e)) {
         if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()))
             return false;
-        if (be->get_op().get_kind() == OperatorKind::OP_SCOPE) {
-            return is_id_or_scope(be->get_right());
+        if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+            return is_id_or_member(be->get_right());
         }
         return false;
+    }
+    if (auto ue = dyn_cast<UnaryExpr>(e)) {
+        if (ue->get_op().get_kind() == OperatorKind::OP_SCOPE) {
+            assert(false && "TODO: Handle unary global variable");
+        }
     }
     return false;
 }
@@ -449,8 +459,8 @@ IR *Parser::declaration() {
         do {
             if (name)
                 skip_nls();
-            name = scope(true);
-            parser_assert(name, create_diag(diags::SCOPE_OR_ID_EXPECTED));
+            name = call_access_subs(true);
+            parser_assert(name, create_diag(diags::MEMBER_OR_ID_EXPECTED));
             names.push_back(name);
             // We always call get_last_id as it checks that the name is ID or Scope
             ustring alias = get_last_id(name);
@@ -518,7 +528,7 @@ IR *Parser::declaration() {
     else if (match(TokenType::FOR)) {
         expect(TokenType::LEFT_PAREN, create_diag(diags::FOR_REQUIRES_PARENTH));
         auto iterator = expression();
-        parser_assert(is_id_or_scope(iterator), create_diag(diags::SCOPE_OR_ID_EXPECTED));
+        parser_assert(is_id_or_member(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
         parser_assert(iterator, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::COLON, create_diag(diags::FOR_MISSING_COLON));
         auto collection = expression();
@@ -1148,7 +1158,7 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allo
         expr = expression(allow_set);
         if (expr) {
             if (only_scope_or_id)
-                parser_assert(is_id_or_scope(expr), create_diag(diags::SCOPE_OR_ID_EXPECTED));
+                parser_assert(is_id_or_member(expr), create_diag(diags::MEMBER_OR_ID_EXPECTED));
             args.push_back(expr);
         }
     } while (match(TokenType::COMMA) && expr);
@@ -1184,7 +1194,7 @@ std::vector<ir::Argument *> Parser::arg_list() {
     return args;
 }
 
-Expression *Parser::call_access_subs() {
+Expression *Parser::call_access_subs(bool allow_star) {
     Expression *expr = note();
 
     while(check({TokenType::LEFT_PAREN, TokenType::DOT, TokenType::LEFT_SQUARE})) {
@@ -1199,9 +1209,17 @@ Expression *Parser::call_access_subs() {
         }
         else if (match(TokenType::DOT)) {
             parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
-            auto elem = note();
-            parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-            expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
+            if (match(TokenType::MUL)) {
+                parser_assert(allow_star, create_diag(diags::STAR_MEMBER_OUTSIDE_IMPORT)); 
+                parser_assert(expr, create_diag(diags::STAR_IMPORT_GLOBAL));
+                // Return since there cannot be anything else after this
+                return new BinaryExpr(expr, new AllSymbols(), Operator(OperatorKind::OP_ACCESS));
+            }
+            else {
+                auto elem = note();
+                parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
+            }
         }
         else if (match(TokenType::LEFT_SQUARE)) {
             parser_assert(expr, create_diag(diags::NO_LHS_IN_SUBSCRIPT));
@@ -1229,30 +1247,14 @@ ir::Expression *Parser::note() {
     return expr;
 }
 
-Expression *Parser::scope(bool allow_star) {
-    Expression *expr = constant();
-
-    while (match(TokenType::SCOPE)) {
-        if (match(TokenType::MUL)) {
-            parser_assert(allow_star, create_diag(diags::STAR_SCOPE_OUTSIDE_IMPORT)); 
-            parser_assert(expr, create_diag(diags::STAR_IMPORT_GLOBAL));
-            // Return since there cannot be anything else after this
-            return new BinaryExpr(expr, new AllSymbols(), Operator(OperatorKind::OP_SCOPE));
-        }
-        else {
-            auto elem = constant();
-            parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-            // Expr may be nullptr as that is the global scope
-            if (!expr) {
-                expr = new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE));
-            }
-            else {
-                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_SCOPE));
-            }
-        }
+Expression *Parser::scope() {
+    if (match(TokenType::SCOPE)) {
+        auto elem = constant();
+        parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
+        return new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE));
     }
 
-    return expr;
+    return constant();
 }
 
 ir::OperatorLiteral *Parser::operator_name() {
@@ -1442,7 +1444,7 @@ Argument *Parser::argument(bool allow_default_value) {
                     skip_nls();
                     expr = expression();
                     if (expr) {
-                        parser_assert(is_id_or_scope(expr), create_diag(diags::SCOPE_OR_ID_EXPECTED));
+                        parser_assert(is_id_or_member(expr), create_diag(diags::MEMBER_OR_ID_EXPECTED));
                         types.push_back(expr);
                     }
                 } while (match(TokenType::COMMA) && expr);
@@ -1451,9 +1453,9 @@ Argument *Parser::argument(bool allow_default_value) {
                 lower_range_prec = false;
             }
             else {
-                auto type = scope();
+                auto type = call_access_subs();
                 parser_assert(type, create_diag(diags::TYPE_EXPECTED));
-                parser_assert(is_id_or_scope(type), create_diag(diags::SCOPE_OR_ID_EXPECTED));
+                parser_assert(is_id_or_member(type), create_diag(diags::MEMBER_OR_ID_EXPECTED));
                 types.push_back(type);
             }
         }

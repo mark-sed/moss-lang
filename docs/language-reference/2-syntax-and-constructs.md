@@ -185,12 +185,12 @@ have alias.
 ```py
 import Math
 import Statistics as st, Models as mod
-import Math::Models as mods
+import Math.Models as mods
 ```
 
 Imported can be also all of the symbols
 ```py
-import Rng::*
+import Rng.*
 ```
 
 Once import is encountered this module is run, but not as a "main".
@@ -209,12 +209,12 @@ space SomeSpace {
     }
 }
 
-import ::SomeSpace::*
-import ::SomeSpace::Space2::baz
+import ::SomeSpace.*
+import ::SomeSpace.Space2.baz
 
 foo() // Foo is now accessible without scope
 baz() // Also does not require scope
-Space2::bar() // Requires scope for space2, since only baz was imported
+Space2.bar() // Requires scope for space2, since only baz was imported
 ```
 
 

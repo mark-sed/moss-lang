@@ -8,6 +8,13 @@ size_t Value::allocated_bytes = 0;
 size_t Value::next_gc = 1024 * 1024;
 std::list<Value *> Value::all_values{};
 
+bool moss::has_methods(Value *v) {
+    assert(v->get_kind() != TypeKind::DICT && "TODO: Add dict to this function");
+    return isa<ObjectValue>(v) || isa<ClassValue>(v) || isa<IntValue>(v) 
+        || isa<FloatValue>(v) || isa<BoolValue>(v) || isa<NilValue>(v)
+        || isa<StringValue>(v) || isa<ListValue>(v);
+}
+
 Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
         : marked(false), kind(kind), type(type), name(name), 
           attrs(attrs), annotations{} {

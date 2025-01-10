@@ -2,7 +2,7 @@
 
 * We need moss code inclusion for easy change of lib functions and classes
 * This code should be compilable for faster import
-* It should pretty much work as `import libms::*`
+* It should pretty much work as `import libms.*`
 
 # General imports into name
 
@@ -18,7 +18,7 @@ and interpret the code, this frame can be then stored into `ModuleValue` value.
 
 When importing into global scope
 ```py
-import Rng::*
+import Rng.*
 ```
 
 We do the same as before, but this time we push this ModuleValue not under it's
@@ -33,7 +33,7 @@ When we then search for a name, we:
 # Partial imports
 
 ```py
-import MathAdv::PI
+import MathAdv.PI
 ```
 
 Once again the whole module has to be imported as in other cases (so also

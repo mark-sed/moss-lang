@@ -11,4 +11,8 @@ greet
 grcmp
 "\n"
 
+import greet.NAME as GsName
+
+"greet's name: " ++ greet.NAME ++ " (" ++ GsName ++ ")\n"
+
 "Ending module.ms\n"

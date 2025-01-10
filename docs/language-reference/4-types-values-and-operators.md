@@ -253,8 +253,8 @@ enum COLORS {
     GREEN
 }
 
-flower = COLORS::PURPLE
-moss = COLORS::GREEN
+flower = COLORS.PURPLE
+moss = COLORS.GREEN
 ```
 
 ## List
@@ -381,7 +381,7 @@ __Class methods__:
 
 | **Operator**                     | **Description**                                  | **Associativity** |
 |----------------------------------|--------------------------------------------------|---------------|
-| `::`                             | Scope resolution (class or space element selection) | Left       |
+| `::`                             | Global scope resolution                          | Left       |
 | `()`                             | Function call                                    | Left          |
 | `[]`                             | List Selection                                   | Left          |
 | `.`                              | Object element selection                         | Left          |

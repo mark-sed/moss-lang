@@ -74,7 +74,7 @@ enum DiagID {
     CATCH_EXPECTED,         ///< Try without catch
     INCORRECT_ARGUMENT,     ///< Value is not ID for argument
     TYPE_EXPECTED,          ///< Expecting type name
-    SCOPE_OR_ID_EXPECTED,   ///< Expecting name or scope
+    MEMBER_OR_ID_EXPECTED,   ///< Expecting name or member
     ID_EXPECTED,            ///< Name expected
     SWITCH_BODY_EXPECTED,   ///< Missing body after switch
     SWITCH_CASE_EXPECTED,   ///< Expecting case or default
@@ -93,7 +93,7 @@ enum DiagID {
     DICT_NO_COLON,          ///< No : after a key
     EMPTY_DICT_WITHOUT_COLON, ///< {} is not an empty dict
     STAR_IMPORT_GLOBAL,     ///< ::*
-    STAR_SCOPE_OUTSIDE_IMPORT, ///< x::* not in import
+    STAR_MEMBER_OUTSIDE_IMPORT, ///< x.* not in import
     COLON_EXPECTED,         ///< Expecting :
     LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
     ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
@@ -154,7 +154,7 @@ static const char * DIAG_MSGS[] = {
     "Expecting 'catch' after try",
     "Incorrect argument",
     "Type expected",
-    "Expecting an identificator or a scope",
+    "Expecting an identificator or a member",
     "Expecting an identificator",
     "Expecting a switch body with cases",
     "Expecting 'case' or 'default'",
@@ -173,7 +173,7 @@ static const char * DIAG_MSGS[] = {
     "Dictionary key must be followed by a colon (':')",
     "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
     "Cannot star import from global scope",
-    "Star scope can appear only in import",
+    "Star member can appear only in import",
     "Expecting ':'",
     "Only assignments are allowed in assignment section of list comprehension",
     "Annotation must have an ID name",

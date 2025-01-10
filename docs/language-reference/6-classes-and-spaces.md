@@ -51,7 +51,7 @@ When calling methods on static classes, not objects, `this` argument has to be
 passed in as the first one:
 
 ```cpp
-Range::__next(range)
+Range.__next(range)
 ```
 
 ### Class default methods

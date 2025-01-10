@@ -654,6 +654,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             }
         }
         if (auto be = dyn_cast<BinaryExpr>(val->get_fun())) {
+            // We push "this" always, but remove it if it should not be passed in
             if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
                 auto ths = emit(be->get_left(), true);
                 append(new PushNamedArg(free_reg(ths), "this"));
@@ -721,7 +722,7 @@ void BytecodeGen::emit_import_expr(ir::Expression *e) {
     if (isa<ir::Variable>(e)) {
         append(new opcode::Import(next_reg(), e->get_name()));
     } else if (auto be = dyn_cast<BinaryExpr>(e)) {
-        assert(be->get_op().get_kind() == OperatorKind::OP_SCOPE && "Incorrect expression in import");
+        assert(be->get_op().get_kind() == OperatorKind::OP_ACCESS && "Incorrect expression in import");
         emit_import_expr(be->get_left());
         auto res_reg = val_last_reg();
         append(new opcode::LoadAttr(next_reg(), res_reg, be->get_right()->get_name()));

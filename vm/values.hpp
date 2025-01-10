@@ -27,6 +27,7 @@ namespace moss {
 class MemoryPool;
 class Interpreter;
 
+/// \note Add any new that have object methods to has_methods
 enum class TypeKind {
     INT,
     FLOAT,
@@ -146,6 +147,8 @@ public:
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
     return v.debug(os);
 }
+
+bool has_methods(Value *v);
 
 // Forward declarations
 template<class T>
@@ -444,6 +447,8 @@ public:
     virtual opcode::StringConst as_string() const override {
         return "<module " + name + ">";
     }
+
+    Interpreter *get_vm() { return vm; }
 
     virtual std::ostream& debug(std::ostream& os) const override;
 };

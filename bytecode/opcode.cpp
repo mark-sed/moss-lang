@@ -194,6 +194,10 @@ static bool can_call(FunValue *f, CallFrame *cf) {
     auto &og_call_args = cf->get_args();
     const auto fun_args = f->get_args();
 
+    for (auto a : og_call_args) {
+        LOGMAX(a);
+    }
+
     std::vector<CallFrameArg> call_args;
     CallFrameArg *ths = nullptr;
     if (og_call_args.empty() || og_call_args.back().name != "this")
@@ -360,6 +364,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     assert(funV && "TODO: Raise function not found");
 
     ClassValue *constructor_of = nullptr;
+    Value *called_fun_owner = nullptr;
     // Class constructor call
     if (auto cls = dyn_cast<ClassValue>(funV)) {
         constructor_of = cls;
@@ -382,6 +387,13 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 return;
             }
         }
+    }
+    else if (!cf->get_args().empty() && cf->get_args().back().name == "this" && !has_methods(cf->get_args().back().value)) {
+        // this argument is set for all attribute calls (as we don't know the
+        // type in bytecodegen), so remove it if the value should not know it
+        LOGMAX("Removing this from non-object call");
+        called_fun_owner = cf->get_args().back().value;
+        cf->get_args().pop_back();
     }
     FunValue *fun = dyn_cast<FunValue>(funV);
     if (!fun) {
@@ -422,6 +434,14 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             raise(vm, err);
             return;
         }
+    }
+    else if (called_fun_owner && isa<ModuleValue>(called_fun_owner)) {
+        LOGMAX("Setting up module for its function call");
+        // TODO: We probably need to use mod's vm and run it, but we need to
+        // push frame and set the call frame and then catch the return, but
+        // this has to handle nested functions, so probably set something
+        // in the call frame
+        assert(false && "TODO: Module function calls");
     }
     else {
         vm->push_frame();

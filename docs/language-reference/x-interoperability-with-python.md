@@ -9,7 +9,7 @@ Module `python` provides all needed resources.
 import python
 
 datetime = python.module("datetime")
-now = datetime::datetime.now()
+now = datetime.datetime.now()
 
 print(now)
 ```

@@ -85,9 +85,9 @@ private:
     ir::Expression *mul_div_mod();
     ir::Expression *exponentiation();
     ir::Expression *unary_plus_minus();
-    ir::Expression *call_access_subs();
+    ir::Expression *call_access_subs(bool allow_star=false);
     ir::Expression *note();
-    ir::Expression *scope(bool allow_star=false);
+    ir::Expression *scope();
 
     bool check(TokenType type);
     bool check(std::initializer_list<TokenType> types);
@@ -112,7 +112,7 @@ private:
     void skip_nls(unsigned max);
 
     ustring get_last_id(ir::Expression *e);
-    bool is_id_or_scope(ir::Expression *e);
+    bool is_id_or_member(ir::Expression *e);
  
     /// Unescapes a string (for printing and so on) using moss string
     /// escape sequences

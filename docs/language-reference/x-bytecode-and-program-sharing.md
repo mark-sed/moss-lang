@@ -451,7 +451,7 @@ x       BUILD_ENUM      %1, %0, "Colors"
 ### Scopes
 
 ```cpp
-Foo::goo
+Foo.goo
 ```
 
 ```

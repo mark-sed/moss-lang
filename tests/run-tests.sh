@@ -313,6 +313,8 @@ Back in module
 Hi, from msb greet
 <module greet>
 <module greet_compiled>
+Hello, from greet.ms
+greet's name: greet.ms (greet.ms)
 Ending module.ms\n" $1
     rm -f ${TEST_DIR}module_tests/greet_compiled.msb
 }

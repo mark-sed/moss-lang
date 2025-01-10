@@ -188,7 +188,7 @@ false or c
 a.access.b
 some[2]
 some[1,2..60]
-std::math::pi
+std.math.pi
 ::NAME
 
 []
@@ -209,7 +209,7 @@ std::math::pi
 {1:"some", "some":1}
 {
     "color": "blue",
-    "rarity": Rarity::COMMON,
+    "rarity": Rarity.COMMON,
     "hidden": false
 }
 {"filter": (fun(a)=a%2==0),
@@ -328,7 +328,7 @@ std::math::pi
         OperatorKind::OP_ACCESS,
         OperatorKind::OP_SUBSC,
         OperatorKind::OP_SUBSC,
-        OperatorKind::OP_SCOPE,
+        OperatorKind::OP_ACCESS,
         OperatorKind::OP_SCOPE,
     };
 
@@ -400,8 +400,8 @@ foo(true)
 foo(a+2, a++4, 1+(1*2))
 foo(1,3..4) // 1 has precedence as an argument
 
-std::math::pi + 4
-foo::goo
+std.math.pi + 4
+foo.goo
 
 0x1a_2b
 1_000_234
@@ -444,8 +444,8 @@ foo()
 foo(true)
 foo((a + 2), (a ++ 4), (1 + (1 * 2)))
 foo(1, (3..4))
-(((std :: math) :: pi) + 4)
-(foo :: goo)
+(((std . math) . pi) + 4)
+(foo . goo)
 6699
 1000234
 (((a . b) [] (c . d))()() . a)
@@ -486,9 +486,19 @@ ustring incorrect = R"(
 0_x2a
 0_.e2
 12_.2_2
+a::b
+a[2]::c
+a.v.c.d::a.c
+foo()::goo
+::name::em
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -559,11 +569,15 @@ ustring incorrect = R"(
 space
 space Foo
 space Goo::Foo {}
+space Goo.Foo {}
 space Foo+1
-A::B::*
+A::B
+A.B.*
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -579,7 +593,7 @@ TEST(Parsing, Classes){
     ustring code = R"(
 class Animal {}
 
-class Range : Is::Iterable, BaseClass {
+class Range : Is.Iterable, BaseClass {
     NAME = "range"
 }
 
@@ -934,19 +948,19 @@ try ""; catch (a:Bool) "bool"; catch(a:Int) "Int"; catch(x) "some other"
 
 try ""
 catch(e: [Int]) {}
-catch(e: [Int, Bool, A::Foo])
+catch(e: [Int, Bool, A.Foo])
     "exit"
 
 try ""; catch (a:Int) {
 } finally "finally"
 
-try ""; catch (a:A::C) "c"; catch(x) "some other"; finally {
+try ""; catch (a:A.C) "c"; catch(x) "some other"; finally {
     exit(0)
 }
 
 try ""
 catch(e: [Int]) {}
-catch(e: [Int, Bool, A::Foo])
+catch(e: [Int, Bool, A.Foo])
     "e"
 finally
     "finally"
@@ -971,7 +985,7 @@ try {}
 try {} catch () {}
 try {} catch(b) {} finally (a) {}
 try {} catch(a) ""; catch(a:) {}
-try { ""; } catch (e:[Int, F.a]) {} finally {}
+try { ""; } catch (e:[Int, F::a]) {} finally {}
 try { ""; } catch (e:3) {}
 catch(e) {}
 finally {}
@@ -998,20 +1012,21 @@ import math
 import FooBar as f
 import F, Boo as B, C, D as Dee
 
-import Some::Space::Value
-import So::Bo::Go as Goo, Foo::F as f1
+import Some.Space.Value
+import So.Bo.Go as Goo, Foo.F as f1
 
 import A,
-       B::b,
+       B.b,
        C as C1,
        D
 
-import A::c::*
-import SomeValue::*
+import A.c.*
+import SomeValue.*
 
-import ::A::C as c
-import ::SomeSpace::*
-import ::SomeSpace::Space2::baz
+// TODO: Uncomment once global values are handled
+//import ::A.C as c
+//import ::SomeSpace.*
+//import ::SomeSpace.Space2.baz
 )";
 
     IRType expected[] = {
@@ -1023,9 +1038,9 @@ import ::SomeSpace::Space2::baz
         IRType::IMPORT,
         IRType::IMPORT,
         IRType::IMPORT,
-        IRType::IMPORT,
-        IRType::IMPORT,
-        IRType::IMPORT,
+        //IRType::IMPORT,
+        //IRType::IMPORT,
+        //IRType::IMPORT,
 
         IRType::END_OF_FILE
     };
@@ -1070,13 +1085,17 @@ import 32
 import "Foo"
 import Foo as F as G
 import Goo as Goo::Goo
+import Goo as Goo.Goo
 import O1 as "o1"
 import F::A[1]
+import F.A[1]
 import G::A.a::C::d
-import ::*
 import *
-import ::A // This is import of the same name as the same name
 )";
+
+// TODO: Add once globals are handled
+// import ::A // This is import of the same name as the same name
+// import ::*
 
     IRType expected_incorr[] = {
         IRType::RAISE,

@@ -188,7 +188,7 @@ for your transformation.
 ```cpp
 import out
 
-@converter(out::Formats::Markdown, ["tx1", "text1", "txt1"])
+@converter(out.Formats.Markdown, ["tx1", "text1", "txt1"])
 fun tx1_from_md(s, ... flags) {
     return s.replace("###", "<h3>").replace("##", "<h2>").replace("#", "<h1>")
 }
@@ -226,7 +226,7 @@ desired output format.
 ```cpp
 import out
 
-@converter("eq", out::Formats::LaTeX)
+@converter("eq", out.Formats.LaTeX)
 fun eq2tex(s) {
     return r"\begin{equation} \tag{" ++ s.count ++ "}\n" ++ s ++ r"\n\end{equation}"
 }
@@ -250,12 +250,12 @@ their order of definitions and the pipeline length.
 ```cpp
 import out
 
-@converter("eq", out::Formats::LaTeX)
+@converter("eq", out.Formats.LaTeX)
 fun eq2tex(s) {
     return r"\begin{equation} \tag{" ++ s.count ++ "}\n" ++ s ++ r"\n\end{equation}"
 }
 
-@converter("eq", out::Formats::Markdown)
+@converter("eq", out.Formats.Markdown)
 fun eq2md(s) {
     return f"Eq. {s.count}: `" ++ s ++ "`"
 }
@@ -285,11 +285,11 @@ Generators are called after all notes have been collected (script terminated).
 import out
 import sys
 
-@generator(out::Formats::LaTeX, out::Formats::PDF)
-@platform(sys::Platform::Linux) // Invoked only on Linux
+@generator(out.Formats.LaTeX, out.Formats.PDF)
+@platform(sys.Platform.Linux) // Invoked only on Linux
 fun tex2pdf(s) {
-    tmp = out::create_tmp(s)
-    sys.system(f"pdflatex {tmp} -o {out::out_path()}")
+    tmp = out.create_tmp(s)
+    sys.system(f"pdflatex {tmp} -o {out.out_path()}")
 }
 ```
 
@@ -301,22 +301,22 @@ generate more formats.
 import out
 import sys
 
-@generator(out::Formats::LaTeX, out::Formats::PDF)
-@platform(sys::Platform::Linux) // Invoked only on Linux
+@generator(out.Formats.LaTeX, out.Formats.PDF)
+@platform(sys.Platform.Linux) // Invoked only on Linux
 fun tex2pdf(s) {
-    tmp = out::create_out_tmp(s)
+    tmp = out.create_out_tmp(s)
     // Here we use out_path() which returns path to the output file
     // that the user has chosen, but if this is not the final generator
     // in the pipeline, then this will be some dummy value
-    sys.system(f"pdflatex {tmp} -o {out::out_path()}")
-    return out::out_path()
+    sys.system(f"pdflatex {tmp} -o {out.out_path()}")
+    return out.out_path()
 }
 
-@generator(out::Formats::PDF, "pdfa")
-@platform(sys::Platform::Linux)
+@generator(out.Formats.PDF, "pdfa")
+@platform(sys.Platform.Linux)
 fun pdf2pdfa(path) {
     // Here out_path will be the actual one chosen by the user
-    sys.system(f"bash pdf2pdfa.sh {path} {out::out_path()}")
+    sys.system(f"bash pdf2pdfa.sh {path} {out.out_path()}")
 }
 ```
 
@@ -403,7 +403,7 @@ There is a Documentation output mode, which does not execute any code nor notes
 and sends declarations into special `doc_writer` convertors/generators.
 
 ```cpp
-@doc_writer(out::Formats::HTML)
+@doc_writer(out.Formats.HTML)
 fun doc2html(code) {
     // Conversion code
 }
@@ -425,13 +425,13 @@ overshadowing one.
 The latest defined scope accessible converter will be used.
 
 ```cpp
-import BestConverters::*
-import ShinyMarkdown::md2tex
+import BestConverters.*
+import ShinyMarkdown.md2tex
 
 @converter("fasta", "fastq")
 fun fasta2fastq(f) {
     import FastaConv
-    return FastaConv::to_fastq(f)
+    return FastaConv.to_fastq(f)
 }
 
 md"""
