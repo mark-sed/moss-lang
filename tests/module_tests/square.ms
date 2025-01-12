@@ -11,10 +11,19 @@ import mod1.*
 square_all(4)
 "\n"
 
-
-import mod2
+// mod2 is imported from mod1
 mod2.const_val(true)
 "\n"
+// mod2 can be also accessed from mod1
+mod1.mod2.const_val(false)
+"\n"
+
+fun call_inner() {
+    import mod3 as modik
+    ~modik.outter_fun(1)
+}
+
+~call_inner()
 
 // TODO: Uncomment once added
 //import mod1.square_all
