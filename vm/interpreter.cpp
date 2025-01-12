@@ -7,7 +7,7 @@ using namespace moss;
 
 Interpreter::Interpreter(Bytecode *code, File *src_file) 
         : code(code), src_file(src_file), gc(new gcs::TracingGC(this)), bci(0), exit_code(0),
-          bci_modified(false) {
+          bci_modified(false), stop(false) {
     this->const_pools.push_back(new MemoryPool(true, true));
     // Global frame
     this->frames.push_back(new MemoryPool(false, true));
@@ -125,9 +125,9 @@ void Interpreter::store_name(opcode::Register reg, ustring name) {
     get_local_frame()->store_name(reg, name);
 }
 
-Value *Interpreter::load_name(ustring name) {
+Value *Interpreter::load_name(ustring name, Value **owner) {
     for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
-        auto val = (*riter)->load_name(name);
+        auto val = (*riter)->load_name(name, owner);
         if (val)
             return val;
     }
@@ -169,12 +169,23 @@ void Interpreter::pop_frame() {
     delete c;
 }
 
+void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
+    push_frame();
+    call_frames.push_back(cf);
+    set_bci(fun->get_body_addr());
+    run();
+}
+
 void Interpreter::run() {
     LOG1("Running interpreter\n----- OUTPUT: -----");
 
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
         opc->exec(this);
+        if (stop) {
+            stop = false;
+            break;
+        }
 
         // If bci was modified (jmp), then don't change it
         if (bci_modified)

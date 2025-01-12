@@ -116,6 +116,7 @@ void TracingGC::mark_roots() {
         for (auto arg: cf->get_args()) {
             mark_value(arg.value);
         }
+        mark_value(cf->get_extern_return_value());
     }
 }
 

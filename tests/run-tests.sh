@@ -334,6 +334,12 @@ Ending module.ms\n" $1
     rm -f ${TEST_DIR}module_tests/greet_compiled.msb
 }
 
+function test_import_calls {
+    expect_pass "module_tests/square.ms" $1
+    expect_out_eq "mod1 ran!\nsquare\nmod2fun\ngot result\n25\n9\n100\n49
+mod1 ran!\nsquare_all\nmod2fun\ngot result\n16\n6\n" $1
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -486,6 +492,7 @@ function run_all_tests {
     run_test enums
 
     run_test basic_import
+    run_test import_calls
 
     run_test fibonacci
     run_test factorial

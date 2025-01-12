@@ -29,7 +29,7 @@ void MemoryPool::store_name(opcode::Register reg, ustring name) {
     this->sym_table[name] = reg;
 }
 
-Value *MemoryPool::load_name(ustring name) {
+Value *MemoryPool::load_name(ustring name, Value **owner) {
     auto index = this->sym_table.find(name);
     if (index != this->sym_table.end()) {
         auto v = this->pool[index->second];
@@ -38,8 +38,12 @@ Value *MemoryPool::load_name(ustring name) {
     // Look for name also in spilled values
     for (auto riter = spilled_values.rbegin(); riter != spilled_values.rend(); ++riter) {
         auto val = (*riter)->get_attr(name);
-        if (val)
+        if (val) {
+            if (owner) {
+                *owner = *riter;
+            }
             return val;
+        }
     }
     return nullptr;
 }

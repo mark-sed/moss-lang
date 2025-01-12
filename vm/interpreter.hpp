@@ -25,6 +25,7 @@ namespace moss {
 class MemoryPool;
 class Bytecode;
 class Value;
+class FunValue;
 class ClassValue;
 
 namespace gcs {
@@ -57,8 +58,13 @@ private:
     opcode::Register return_reg;
     opcode::Address caller_addr;
     bool constructor_call;
+    bool extern_module_call;
+    Value *extern_return_value;
 public:
-    CallFrame() : return_reg(0), constructor_call(false) {}
+    CallFrame() : return_reg(0),
+                  constructor_call(false),
+                  extern_module_call(false),
+                  extern_return_value(nullptr) {}
 
     void push_back(Value *v) { args.push_back(CallFrameArg(v)); }
     void push_back(ustring name, Value *v) { args.push_back(CallFrameArg(name, v)); }
@@ -69,11 +75,15 @@ public:
     void set_caller_addr(opcode::Address addr) { this->caller_addr = addr; }
     void set_args(std::vector<CallFrameArg> args) { this->args = args; }
     void set_constructor_call(bool b) { this->constructor_call = b; }
+    void set_extern_module_call(bool b) { this->extern_module_call = b; }
+    void set_extern_return_value(Value *v) { this->extern_return_value = v; }
 
     std::vector<CallFrameArg> &get_args() { return this->args; }
     opcode::Register get_return_reg() { return this->return_reg; }
     opcode::Address get_caller_addr() { return this->caller_addr; }
     bool is_constructor_call() { return this->constructor_call; }
+    bool is_extern_module_call() { return this->extern_module_call; }
+    Value *get_extern_return_value() { return this->extern_return_value; }
 
     std::ostream& debug(std::ostream& os) const {
         os << "CallFrame:\n"
@@ -114,6 +124,7 @@ private:
     int exit_code;
 
     bool bci_modified;
+    bool stop;
 
     MemoryPool *get_global_const_pool() { return this->const_pools.front(); };
     MemoryPool *get_const_pool() { return this->const_pools.back(); }
@@ -126,6 +137,8 @@ public:
     ~Interpreter();
 
     void run();
+
+    void cross_module_call(FunValue *fun, CallFrame *cf);
 
     MemoryPool *get_global_frame() { return this->frames.front(); }
 
@@ -147,7 +160,9 @@ public:
  
     /// Looks up a name and returns value corresponding to it in symbol table
     /// If there is no such name, then nullptr is returned
-    Value *load_name(ustring name);
+    /// \param owner If not null then it will be set to the owner if the value
+    ///              is a module or space. Otherwise nullptr.
+    Value *load_name(ustring name, Value **owner=nullptr);
 
     /// Looks up a type (ClassValue) that matches passed in name
     /// If there is no type with such name, then nullptr is returned
@@ -175,12 +190,17 @@ public:
 
     /// Pushes a new empty call frame into call frame stack
     void push_call_frame() { call_frames.push_back(new CallFrame()); }
-    /// Pops top (most recent) frame from call frame stack
+    /// Pops top (most recent) frame from call frame stack and deletes it
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
         auto cf = call_frames.back();
         call_frames.pop_back(); 
         delete cf;
+    }
+    /// Pops most recet call frame, but does not delete it
+    void drop_call_frame() {
+        assert(!this->call_frames.empty() && "no call frame to pop");
+        call_frames.pop_back(); 
     }
 
     /// Pushes a new class into parent list
@@ -193,6 +213,9 @@ public:
     int get_exit_code() { return exit_code; }
 
     void set_exit_code(int c) { this->exit_code = c; }
+
+    void set_stop(bool s) { this->stop = s; }
+    bool is_stop() { return this->stop; }
 
     /// \return Current bytecode index
     opcode::Address get_bci() { return this->bci; }

@@ -418,6 +418,15 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
 
+    // We can call the function, but it might be external module/space call
+    // So lets load it again and extract owner
+    vm->load_name(fun->get_name(), &called_fun_owner);
+#ifndef NDEBUG
+    if (called_fun_owner) {
+        LOGMAX("Function detected to be from other module");
+    }
+#endif
+
     // Set this object if constructor is being called
     if (constructor_of) {
         auto obj = new ObjectValue(constructor_of);
@@ -437,11 +446,17 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
     else if (called_fun_owner && isa<ModuleValue>(called_fun_owner)) {
         LOGMAX("Setting up module for its function call");
-        // TODO: We probably need to use mod's vm and run it, but we need to
-        // push frame and set the call frame and then catch the return, but
-        // this has to handle nested functions, so probably set something
-        // in the call frame
-        assert(false && "TODO: Module function calls");
+        auto mod = dyn_cast<ModuleValue>(called_fun_owner);
+        // This calls the function
+        LOGMAX("Calling different module's function");
+        cf->set_extern_module_call(true);
+        mod->get_vm()->cross_module_call(fun, vm->get_call_frame());
+        LOGMAX("External function has handed over control to original module");
+        // This is after return from the function
+        vm->store(cf->get_return_reg(), cf->get_extern_return_value());
+        vm->set_bci(cf->get_caller_addr());
+        // Remove already pushed in call frame
+        vm->pop_call_frame();
     }
     else {
         vm->push_frame();
@@ -518,11 +533,22 @@ void Return::exec(Interpreter *vm) {
     else {
         ret_v = vm->load(src);
     }
-    vm->pop_call_frame();
-    vm->pop_frame();
     assert(ret_v && "Return register does not contain any value??");
-    vm->store(return_reg, ret_v);
-    vm->set_bci(caller_addr);
+    if (cf->is_extern_module_call()) {
+        // We need to propagete the return value back using the CallFrame
+        // which is used by both VMs. We also need to stop the current
+        // vm and this will return back to the call.
+        cf->set_extern_return_value(ret_v);
+        vm->set_stop(true);
+        // pop_call_frame deletes the frame, so we cannot call it here
+        // the original owner will delete it.
+        vm->drop_call_frame();
+    } else {
+        vm->pop_frame();
+        vm->store(return_reg, ret_v);
+        vm->set_bci(caller_addr);
+        vm->pop_call_frame();
+    }
 }
 
 void ReturnConst::exec(Interpreter *vm) {
@@ -537,11 +563,22 @@ void ReturnConst::exec(Interpreter *vm) {
     else {
         ret_v = vm->load_const(csrc);
     }
-    vm->pop_call_frame();
-    vm->pop_frame();
     assert(ret_v && "Return register does not contain any value??");
-    vm->store(return_reg, ret_v);
-    vm->set_bci(caller_addr);
+    if (cf->is_extern_module_call()) {
+        // We need to propagete the return value back using the CallFrame
+        // which is used by both VMs. We also need to stop the current
+        // vm and this will return back to the call.
+        cf->set_extern_return_value(ret_v);
+        vm->set_stop(true);
+        // pop_call_frame deletes the frame, so we cannot call it here
+        // the original owner will delete it.
+        vm->drop_call_frame();
+    } else {
+        vm->pop_frame();
+        vm->store(return_reg, ret_v);
+        vm->set_bci(caller_addr);
+        vm->pop_call_frame();
+    }
 }
 
 void PushArg::exec(Interpreter *vm) {
