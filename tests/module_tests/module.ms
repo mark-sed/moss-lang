@@ -15,4 +15,11 @@ import greet.NAME as GsName
 
 "greet's name: " ++ greet.NAME ++ " (" ++ GsName ++ ")\n"
 
+fun foo() {
+    import greet.*
+    NAME ++ "\n"
+}
+
+~foo()
+
 "Ending module.ms\n"

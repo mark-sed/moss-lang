@@ -185,7 +185,7 @@ void BytecodeWriter::write(Bytecode *code) {
             write_string(o->name);
         }
         else if (auto o = dyn_cast<opcode::ImportAll>(op_gen)){
-            write_string(o->name);
+            write_register(o->src);
         }
         else if (auto o = dyn_cast<opcode::PushParent>(op_gen)){
             write_register(o->parent);

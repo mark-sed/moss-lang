@@ -246,7 +246,7 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new Import(reg, str));
             } break;
             case opcode::OpCodes::IMPORT_ALL: {
-                bc->push_back(new ImportAll(read_string()));
+                bc->push_back(new ImportAll(read_register()));
             } break;
             case opcode::OpCodes::PUSH_PARENT: {
                 bc->push_back(new PushParent(read_register()));

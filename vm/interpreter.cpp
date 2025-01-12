@@ -80,10 +80,6 @@ void Interpreter::init_const_frame() {
     assert(reg < BC_RESERVED_CREGS && "More c registers used that is reserved");
 }
 
-/*std::ostream& Interpreter::debug_pool(std::ostream &os) const {
-
-}*/
-
 std::ostream& Interpreter::debug(std::ostream& os) const {
     os << "Interpreter {\n";
     unsigned index = 0;
@@ -151,23 +147,9 @@ Value *Interpreter::load_global_name(ustring name) {
     return get_global_frame()->load_name(name);
 }
 
-/*ustring Interpreter::get_reg_pure_name(opcode::Register reg) {
-    return get_local_frame()->get_reg_pure_name(reg);
+void Interpreter::push_spilled_value(Value *v) {
+    get_top_frame()->push_spilled_value(v);
 }
-
-std::vector<ustring> Interpreter::get_reg_names(opcode::Register reg) {
-    return get_local_frame()->get_reg_names(reg);
-}
-
-std::pair<Value *, opcode::Register> Interpreter::load_name_reg(ustring name) {
-    // TODO: Walk frames???
-    return get_local_frame()->load_name_reg(name);
-}
-
-void Interpreter::copy_names(opcode::Register from, opcode::Register to) {
-    // TODO: Walk frames??
-    return get_local_frame()->copy_names(from, to);
-}*/
 
 void Interpreter::push_frame() {
     LOGMAX("Frame pushed");

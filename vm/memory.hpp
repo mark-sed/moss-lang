@@ -30,6 +30,7 @@ class MemoryPool {
 private:
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
+    std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     bool holds_consts;
     bool global;
 public:
@@ -65,6 +66,10 @@ public:
     void store_name(opcode::Register reg, ustring name);
 
     Value *load_name(ustring name);
+
+    void push_spilled_value(Value *v) {
+        this->spilled_values.push_back(v);
+    }
 
     size_t get_free_reg() {
         for (size_t i = 0; i < pool.size(); ++i) {

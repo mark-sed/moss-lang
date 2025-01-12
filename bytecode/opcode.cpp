@@ -678,7 +678,11 @@ void Import::exec(Interpreter *vm) {
 }
 
 void ImportAll::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto mod = vm->load(src);
+    assert(mod && "Non existent module for import all");
+    // TODO: Uncomment
+    //assert(isa<ModuleValue>(mod) || isa<SpaceValue>(mod) && "Spilling something else than module or space");
+    vm->push_spilled_value(mod);
 }
 
 void PushParent::exec(Interpreter *vm) {

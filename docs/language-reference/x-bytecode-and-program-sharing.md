@@ -99,7 +99,7 @@ xxh - SET_TYPE          %fun, int, "name"
 xxh - SET_VARARG        %fun, int
 
 xxh - IMPORT        %dst, "name"
-xxh - IMPORT_ALL    "name"
+xxh - IMPORT_ALL    %src
 
 xxh - PUSH_PARENT   %class
 xxh - CREATE_OBJ    %dst, %class

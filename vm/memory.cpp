@@ -16,7 +16,7 @@ void MemoryPool::store(opcode::Register reg, Value *v) {
 
 Value *MemoryPool::load(opcode::Register reg) {
     // FIXME
-    assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Resize pool when out of bounds");
+    assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Pool access out of bounds, handle");
     Value *v = pool[reg];
     if (v)
         return v;
@@ -34,6 +34,12 @@ Value *MemoryPool::load_name(ustring name) {
     if (index != this->sym_table.end()) {
         auto v = this->pool[index->second];
         return v;
+    }
+    // Look for name also in spilled values
+    for (auto riter = spilled_values.rbegin(); riter != spilled_values.rend(); ++riter) {
+        auto val = (*riter)->get_attr(name);
+        if (val)
+            return val;
     }
     return nullptr;
 }

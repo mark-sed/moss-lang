@@ -1054,10 +1054,9 @@ import A,
 import A.c.*
 import SomeValue.*
 
-// TODO: Uncomment once global values are handled
-//import ::A.C as c
-//import ::SomeSpace.*
-//import ::SomeSpace.Space2.baz
+import ::A.C as c
+import ::SomeSpace.*
+import ::SomeSpace.Space2.baz
 )";
 
     IRType expected[] = {
@@ -1069,9 +1068,9 @@ import SomeValue.*
         IRType::IMPORT,
         IRType::IMPORT,
         IRType::IMPORT,
-        //IRType::IMPORT,
-        //IRType::IMPORT,
-        //IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
 
         IRType::END_OF_FILE
     };

@@ -315,7 +315,22 @@ Hi, from msb greet
 <module greet_compiled>
 Hello, from greet.ms
 greet's name: greet.ms (greet.ms)
+Hello, from greet.ms
+greet.ms
 Ending module.ms\n" $1
+
+    # Check that import spill stays in its scope
+# TODO: Uncomment once assertion is replaced with raise
+#    expect_fail_exec "
+#fun foo() {
+#    import greet.*
+#    NAME ++ \"\n\"
+#}
+#~foo()
+#NAME++\"\n\"
+#" "" $1
+#    expect_out_eq "Hello, from greet.ms\ngreet.ms\n" $1
+
     rm -f ${TEST_DIR}module_tests/greet_compiled.msb
 }
 

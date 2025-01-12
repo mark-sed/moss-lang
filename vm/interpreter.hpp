@@ -101,8 +101,10 @@ private:
     friend class gcs::TracingGC;
     Bytecode *code;
     File *src_file;
+    
     std::list<MemoryPool *> const_pools;
     std::list<MemoryPool *> frames;      ///< Frame stack
+
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
     gcs::TracingGC *gc;
@@ -159,7 +161,11 @@ public:
     void push_frame();
     /// Pops a frame (memory pool) from a frame stack
     void pop_frame();
+    /// \return Top frame, meaning the current local frame or global if no local is inserted
     MemoryPool *get_top_frame() { return this->get_local_frame(); }
+
+    /// Spills value into current frame
+    void push_spilled_value(Value *v);
 
     /// Returns top call frame
     CallFrame *get_call_frame() { 

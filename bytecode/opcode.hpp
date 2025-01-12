@@ -80,7 +80,7 @@ enum OpCodes : opcode_t {
     SET_VARARG, //        %fun, int
 
     IMPORT, //        %dst, "name"
-    IMPORT_ALL, //    "name"
+    IMPORT_ALL, //    %src
 
     PUSH_PARENT, //   %class
     CREATE_OBJ, //    %dst, %class
@@ -992,22 +992,22 @@ public:
 
 class ImportAll : public OpCode {
 public:
-    StringConst name;
+    Register src;
 
     static const OpCodes ClassType = OpCodes::IMPORT_ALL;
 
-    ImportAll(StringConst name) : OpCode(ClassType, "IMPORT_ALL"), name(name) {}
+    ImportAll(Register src) : OpCode(ClassType, "IMPORT_ALL"), src(src) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  \"" << name << "\"";
+        os << mnem << "  %" << src;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<ImportAll>(other);
         if (!casted) return false;
-        return casted->name == name;
+        return casted->src == src;
     }
 };
 

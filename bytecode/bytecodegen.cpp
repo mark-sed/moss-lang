@@ -725,7 +725,11 @@ void BytecodeGen::emit_import_expr(ir::Expression *e) {
         assert(be->get_op().get_kind() == OperatorKind::OP_ACCESS && "Incorrect expression in import");
         emit_import_expr(be->get_left());
         auto res_reg = val_last_reg();
-        append(new opcode::LoadAttr(next_reg(), res_reg, be->get_right()->get_name()));
+        if (isa<AllSymbols>(be->get_right())) {
+            append(new opcode::ImportAll(res_reg));
+        } else {
+            append(new opcode::LoadAttr(next_reg(), res_reg, be->get_right()->get_name()));
+        }
     } else {
         assert(false && "Incorrect import expression value");
     }
@@ -735,7 +739,8 @@ void BytecodeGen::emit(ir::Import *im) {
     assert(im->get_names().size() == im->get_aliases().size() && "we should always set alias");
     for (size_t i = 0; i < im->get_names().size(); ++i) {
         emit_import_expr(im->get_names()[i]);
-        append(new StoreName(val_last_reg(), im->get_aliases()[i]));
+        if (!isa<ImportAll>(code->get_code().back()))
+            append(new StoreName(val_last_reg(), im->get_aliases()[i]));
     }
 }
 

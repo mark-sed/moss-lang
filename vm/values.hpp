@@ -133,7 +133,7 @@ public:
     /// Returns register in which is attribute stored 
     /// If this attribute is not set, then nullptr is returned
     /// \param name Attribute name
-    /// \return Value of attribute or nullptr is not set
+    /// \return Value of attribute or nullptr if not set
     Value *get_attr(ustring name);
 
     /// Sets (new or overrides) attribute name to value v
