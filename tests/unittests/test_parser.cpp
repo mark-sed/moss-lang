@@ -191,6 +191,13 @@ some[1,2..60]
 std.math.pi
 ::NAME
 
+a, b, c, d, e, f = [1, 3]
+a, c.f[1] = call(1, 2)
+a = 52
+::c, $nlc, h = [1, 2, 3]
+::i, ::j, ::g, ::d, ::e = some_list()
+$a, $b.e.a = ["s", "g"]
+
 []
 [1,2,3,4]
 [
@@ -275,6 +282,13 @@ std.math.pi
         IRType::BINARY_EXPR,
         IRType::UNARY_EXPR,
 
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+
         IRType::LIST,
         IRType::LIST,
         IRType::LIST,
@@ -304,7 +318,7 @@ std.math.pi
         OperatorKind::OP_DIV,
         OperatorKind::OP_MUL,
         OperatorKind::OP_MOD,
-        OperatorKind::OP_SET,        
+        OperatorKind::OP_SET,
         OperatorKind::OP_SET_CONCAT, 
         OperatorKind::OP_SET_EXP,    
         OperatorKind::OP_SET_PLUS,   
@@ -330,6 +344,13 @@ std.math.pi
         OperatorKind::OP_SUBSC,
         OperatorKind::OP_ACCESS,
         OperatorKind::OP_SCOPE,
+
+        OperatorKind::OP_SET,
+        OperatorKind::OP_SET,
+        OperatorKind::OP_SET,
+        OperatorKind::OP_SET,
+        OperatorKind::OP_SET,
+        OperatorKind::OP_SET,
     };
 
     SourceFile sf(code, SourceFile::SourceType::STRING);
@@ -411,6 +432,9 @@ a.b.c()
 a().c[a()+1][1]().f
 f[a.c][c[1]]
 a.replace("a", "b").format()
+
+a, b.c[2], $foo, ::a = [1, 2, 3, 4]
+goo[0], roo = [true, false]
 )";
 
     ustring expected = R"(((- a) > 4)
@@ -453,6 +477,8 @@ foo(1, (3..4))
 ((((a() . c) [] (a() + 1)) [] 1)() . f)
 ((f [] (a . c)) [] (c [] 1))
 ((a . replace)("a", "b") . format)()
+((a,((b . c) [] 2),$foo,(:: a)) = [1, 2, 3, 4])
+(((goo [] 0),roo) = [true, false])
 <IR: <end-of-file>>
 )";
 
@@ -491,9 +517,14 @@ a[2]::c
 a.v.c.d::a.c
 foo()::goo
 ::name::em
+
+a+1, b+2, c+3 = [1,2]
+a, b+2 = [1,2]
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

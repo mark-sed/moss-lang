@@ -29,7 +29,7 @@ fun foo() {
     return [1, 2, 3, 4, 5]
 }
 
-[e, f[0].a, g] = foo()
+e, f[0].a, g = foo()
 
 e // 1 
 f[0].a // 2

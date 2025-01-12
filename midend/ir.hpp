@@ -60,6 +60,7 @@ enum IRType {
     BINARY_EXPR, // Start of Expresion IDs -- Add any new to dyn_cast bellow!
     UNARY_EXPR,
     VARIABLE,
+    MULTI_VAR,
     ALL_SYMBOLS,
     ARGUMENT,
     LAMBDA,
@@ -933,12 +934,19 @@ public:
               : Expression(ClassType, "<binary-expression>"),
                 left(left), right(right), op(op) {}
     ~BinaryExpr() {
-        delete left;
-        delete right;
+        // We need to check since in parse we might generate binexpr to then
+        // extract the left and right and reassign it, in such case the old
+        // binexpr is deleted and left and right is nullptr
+        if (left)
+            delete left;
+        if (right)
+            delete right;
     }
 
     Expression *get_left() { return this->left; }
     Expression *get_right() { return this->right; }
+    void set_left(Expression *e) { this->left = e; }
+    void set_right(Expression *e) { this->right = e; }
     Operator get_op() { return this->op; }
 
     virtual ustring as_string() override {
@@ -990,6 +998,35 @@ public:
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << (non_local ? "$" : "") << name;
+        return os;
+    }
+};
+
+class Multivar : public Expression {
+private:
+    std::vector<ir::Expression *> vars;
+public:
+    static const IRType ClassType = IRType::MULTI_VAR;
+
+    Multivar(std::vector<ir::Expression *> vars) : Expression(ClassType, "<multivar>"), vars(vars) {}
+    ~Multivar() {
+        for (auto v: vars)
+            delete v;
+    }
+
+    std::vector<ir::Expression *> get_vars() { return this->vars; }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        bool first = true;
+        for (auto v: vars) {
+            if (first) {
+                os << "(" << *v;
+                first = false;
+            } else {
+                os << "," << *v;
+            }
+        }
+        os << ")";
         return os;
     }
 };

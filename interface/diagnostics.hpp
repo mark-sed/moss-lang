@@ -100,6 +100,8 @@ enum DiagID {
     CANNOT_BE_ANNOTATED,    ///< Construct that cannot be annotated
     DANGLING_ANNOTATION,    ///< Annotation not followed by anything
     INTERNAL_WITHOUT_BODY,  ///< Internally marked function is not internal or has not been implemented
+    SET_EXPECTED_FOR_MULTIVAL, ///< a,b,c = val but missing =
+    EXPR_CANNOT_BE_ASSIGN_TO, /// a+1, b = 2
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -180,6 +182,8 @@ static const char * DIAG_MSGS[] = {
     "'%s' cannot be annotated — perhaps you meant to use inner annotation ('!@')",
     "Dangling outter annotation — to annotate the module use inner annotation ('!@')",
     "Function '%s' is marked as '@internal', but does not have an internal body",
+    "Expecting '=' for multivalue asignment",
+    "Found non-assignable expression",
 };
 
 /// \brief Diagnostic message for error reporting

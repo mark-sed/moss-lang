@@ -68,6 +68,7 @@ private:
     ir::OperatorLiteral *operator_name();
     ir::Argument *argument(bool allow_default_value=false);
     std::list<ir::IR *> cases();
+    ir::Expression *list_of_vars(ir::Expression *first, ir::Expression *second);
 
     ir::Expression *unpack();
     ir::Expression *silent();
@@ -94,7 +95,7 @@ private:
     bool match(TokenType type);
     Token *expect(TokenType type, diags::Diagnostic msg);
     Token *advance();
-    void take_back();
+    void put_back();
 
     bool check_ws(TokenType type);
     bool match_ws(TokenType type);

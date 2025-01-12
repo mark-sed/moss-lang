@@ -239,7 +239,7 @@ Token *Parser::advance() {
     return tokens[curr_token++];
 }
 
-void Parser::take_back() {
+void Parser::put_back() {
     assert(curr_token > 0 && "take back before any advance");
     while (tokens[--curr_token]->get_type() == TokenType::WS) {
         assert(curr_token > 0 && "take back before any non-ws advance");
@@ -313,11 +313,14 @@ bool Parser::is_id_or_member(Expression *e) {
         if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
             return is_id_or_member(be->get_right());
         }
+        if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+            return is_id_or_member(be->get_left());
+        }
         return false;
     }
     if (auto ue = dyn_cast<UnaryExpr>(e)) {
         if (ue->get_op().get_kind() == OperatorKind::OP_SCOPE) {
-            assert(false && "TODO: Handle unary global variable");
+            return is_id_or_member(ue->get_expr());
         }
     }
     return false;
@@ -1051,6 +1054,39 @@ Expression *Parser::membership() {
     return expr;
 }
 
+Expression *Parser::list_of_vars(Expression *first, Expression *second) {
+    parser_assert(is_id_or_member(first), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+    parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+    std::vector<ir::Expression *> vars = {first, second};
+    Expression *expr = nullptr;
+    lower_range_prec = true;
+    do {
+        skip_nls();
+        expr = expression(true);
+        if (expr) {
+            if (auto be = dyn_cast<BinaryExpr>(expr)) {
+                if (be->get_op().get_kind() == OperatorKind::OP_SET) {
+                    parser_assert(is_id_or_member(be->get_left()), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+                    vars.push_back(be->get_left());
+                    expr = be->get_right();
+                    be->set_left(nullptr);
+                    be->set_right(nullptr);
+                    break;
+                }
+                else {
+                    assert(false && "TODO: Handle");
+                }
+            }
+            else {
+                parser_assert(is_id_or_member(expr), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+                vars.push_back(expr);
+            }
+        }
+    } while (match(TokenType::COMMA) && expr);
+    lower_range_prec = false;
+    return new BinaryExpr(new Multivar(vars), expr, Operator(OperatorKind::OP_SET));
+}
+
 Expression *Parser::range() {
     Expression *expr = concatenation();
 
@@ -1067,6 +1103,17 @@ Expression *Parser::range() {
         parser_assert(expr, create_diag(diags::NO_LHS_IN_RANGE));
         auto second = concatenation();
         parser_assert(second, create_diag(diags::EXPR_EXPECTED));
+        // List of value to assing to
+        if (match(TokenType::COMMA)) {
+            return list_of_vars(expr, second);
+        }
+        else if (match(TokenType::SET)) {
+            std::vector<ir::Expression *> vars = {expr, second};
+            parser_assert(is_id_or_member(expr), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+            parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+            auto res = concatenation();
+            return new BinaryExpr(new Multivar(vars), res, Operator(OperatorKind::OP_SET));
+        }
         expect(TokenType::RANGE, create_diag(diags::RANGE_EXPECTED));
         auto end = concatenation();
         parser_assert(second, create_diag(diags::EXPR_EXPECTED));
@@ -1280,7 +1327,7 @@ Expression *Parser::constant() {
         else {
             // There might be (+) or (+1)
             if (!check(TokenType::RIGHT_PAREN)) {
-                take_back();
+                put_back();
                 expr = ternary_if();
             }
         }
