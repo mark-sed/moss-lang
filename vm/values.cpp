@@ -17,7 +17,7 @@ bool moss::has_methods(Value *v) {
 
 Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
         : marked(false), kind(kind), type(type), name(name), 
-          attrs(attrs), annotations{}/*, external_module_owner(nullptr)*/ {
+          attrs(attrs), annotations{}, external_module_owner(nullptr) {
 }
 
 Value::~Value() {

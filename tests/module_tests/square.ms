@@ -25,7 +25,6 @@ fun call_inner() {
 
 ~call_inner()
 
-// TODO: Uncomment once added
-//import mod1.square_all
-//square_all(6)
-//"\n"
+import mod3.sum3
+sum3(1,2,3)
+"\n"

@@ -80,6 +80,11 @@ void LoadAttr::exec(Interpreter *vm) {
             if (attr)
                 break;
         }
+    } else if (isa<ModuleValue>(v) && (isa<FunValue>(attr) || isa<FunValueList>(attr))) {
+        // If we're loading an attribute from a module, then set the value's
+        // owner to that module so it can be correctly called, this is needed
+        // only for functions and lambdas
+        attr->set_external_module_owner(v);
     }
     assert(attr && "TODO: Nonexistent attr raise exception");
     vm->store(this->dst, attr);
@@ -418,9 +423,13 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
 
+    // Lets try to get owner if this is a dot imported function
+    if (!called_fun_owner)
+        called_fun_owner = fun->get_external_module_owner();
     // We can call the function, but it might be external module/space call
     // So lets load it again and extract owner
-    vm->load_name(fun->get_name(), &called_fun_owner);
+    if (!called_fun_owner)
+        vm->load_name(fun->get_name(), &called_fun_owner);
 #ifndef NDEBUG
     if (called_fun_owner) {
         LOGMAX("Function detected to be from other module");

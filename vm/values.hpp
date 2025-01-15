@@ -81,7 +81,7 @@ protected:
     
     MemoryPool *attrs;
     std::map<ustring, Value *> annotations;
-    //Value *external_module_owner;
+    Value *external_module_owner;
 
     Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs=nullptr);
 
@@ -143,8 +143,8 @@ public:
     void set_attrs(MemoryPool *p);
     void copy_attrs(MemoryPool *p);
     MemoryPool *get_attrs() { return this->attrs; }
-    //void set_external_module_owner(Value *v) { this->external_module_owner = v; }
-    //Value *get_external_module_owner() { return this->external_module_owner; }
+    void set_external_module_owner(Value *v) { this->external_module_owner = v; }
+    Value *get_external_module_owner() { return this->external_module_owner; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
