@@ -304,6 +304,12 @@ function test_enums {
 }\n" $1
 }
 
+function test_optional_typing {
+    expect_pass "optional_typing.ms" $1
+    expect_out_eq "Int first\nString first\nAll other types
+1\n2\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -490,6 +496,7 @@ function run_all_tests {
     run_test operator_funs
     run_test lists
     run_test enums
+    run_test optional_typing
 
     run_test basic_import
     run_test import_calls

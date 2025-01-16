@@ -31,19 +31,28 @@ void OpCode::check_load(Value *v, Interpreter *vm) {
     error::error(error::ErrorCode::BYTECODE, msg.c_str(), vm->get_src_file(), true);
 }*/
 
-/**
- * True iff one of the values is a float and the other is float or int
- */
+/// True iff one of the values is a float and the other is float or int
 static bool is_float_expr(Value *v1, Value *v2) {
     return (isa<FloatValue>(v1) && (isa<FloatValue>(v2) || isa<IntValue>(v2))) || 
         (isa<FloatValue>(v2) && (isa<FloatValue>(v1) || isa<IntValue>(v1)));
 }
 
-/**
- * True iff both values are ints
- */
+/// True iff both values are ints 
 static bool is_int_expr(Value *v1, Value *v2) {
     return isa<IntValue>(v1) && isa<IntValue>(v2);
+}
+
+/// @return true if t1 is same as t2 or t1 is subtype of t2 (child class)
+static bool is_type_eq_or_subtype(Value *t1, Value *t2) {
+    if (t1 == t2)
+        return true;
+    if (auto cls1 = dyn_cast<ClassValue>(t1)) {
+        auto cls2 = dyn_cast<ClassValue>(t2);
+        if (!cls2)
+            return false;
+        return cls1->has_parent(cls2);
+    }
+    return false;
 }
 
 void opcode::raise(Interpreter *vm, Value *exc) {
@@ -258,7 +267,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
                     // Check that also type matches
                     matched = fun_args[j]->types.empty();
                     for (auto type: fun_args[j]->types) {
-                        if (type == arg.value->get_type()) {
+                        if (is_type_eq_or_subtype(arg.value->get_type(), type)) {
                             matched = true;
                             break;
                         }
@@ -297,7 +306,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
                 // No types always matches otherwise it will be false and set in for
                 bool matched = fa->types.empty();
                 for (auto type: fa->types) {
-                    if (type == arg.value->get_type()) {
+                    if (is_type_eq_or_subtype(arg.value->get_type(), type)) {
                         matched = true;
                         break;
                     }

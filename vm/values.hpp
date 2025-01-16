@@ -396,6 +396,10 @@ public:
     }
 
     std::list<ClassValue *> get_supers() { return this->supers; }
+    
+    bool has_parent(ClassValue *c) {
+        return std::find(supers.begin(), supers.end(), c) != supers.end();
+    }
 
     std::list<ClassValue *> get_all_supers();
 
