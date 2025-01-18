@@ -20,6 +20,8 @@ void mslib::exit(Interpreter *vm, Value *code) {
     }
     // Jump to end of file bc
     vm->set_bci(vm->get_code_size()-1);
+    global_controls::exit_called = true;
+    vm->set_stop(true);
     // No need to set any return as we jump to the end
 }
 

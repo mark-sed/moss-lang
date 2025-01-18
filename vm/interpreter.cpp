@@ -182,7 +182,7 @@ void Interpreter::run() {
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
         opc->exec(this);
-        if (stop) {
+        if (stop || global_controls::exit_called) {
             stop = false;
             break;
         }

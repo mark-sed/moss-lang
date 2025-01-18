@@ -37,7 +37,8 @@ public:
  
     /// \brief Runs REPL
     /// This is the main loop with reading, evaluating and printing
-    void run();
+    /// \return Exit code of interpreter
+    int run();
 };
 
 }

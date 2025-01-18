@@ -100,6 +100,8 @@ namespace global_controls {
 
 extern bool trigger_gc; ///< Global flag for triggering GC
 
+extern bool exit_called; ///< Global flag for repl when exit is called (as it cannot jump to END)
+
 constexpr float gc_grow_factor = 2.0; ///< By how much will the gc threshold grow
 
 extern std::filesystem::path pwd; ///< Current working directory based of main file

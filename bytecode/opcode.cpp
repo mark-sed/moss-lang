@@ -475,6 +475,10 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         vm->set_bci(cf->get_caller_addr());
         // Remove already pushed in call frame
         vm->pop_call_frame();
+        if (mod->get_vm()->get_exit_code() != 0) {
+            LOGMAX("Delagating exit code from external module");
+            vm->set_exit_code(mod->get_vm()->get_exit_code());
+        }
     }
     else {
         vm->push_frame();
@@ -722,7 +726,10 @@ static ModuleValue *load_module(Interpreter *vm, ustring name) {
 
     auto mod_i = new Interpreter(bc, input_file);
     mod_i->run();
-
+    if (mod_i->get_exit_code() != 0) {
+        LOGMAX("Import exited, delegating exit code");
+        vm->set_exit_code(mod_i->get_exit_code());
+    }
     return new ModuleValue(name, mod_i->get_global_frame(), mod_i);
 }
 

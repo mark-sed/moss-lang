@@ -84,8 +84,8 @@ int main(int argc, const char *argv[]) {
         // REPL
         if (main_file->get_type() == SourceFile::SourceType::REPL) {
             Repl repl(*main_file);
-            repl.run();
-            return 0;
+            auto exit_code = repl.run();
+            return exit_code;
         }
         else if (main_file->get_type() == SourceFile::SourceType::FILE) {
             // Set pwd for finding other modules

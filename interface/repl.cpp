@@ -25,7 +25,7 @@ void Repl::output_header() {
          << std::endl;
 }
 
-void Repl::run() {
+int Repl::run() {
     LOGMAX("REPL started");
 
     // TODO: Add cmd option to not print header or maybe print it just as text
@@ -37,7 +37,7 @@ void Repl::run() {
     Interpreter *interpreter = new Interpreter(bc, &src_file);
 
     bool eof_reached = false;
-    while (!eof_reached) {
+    while (!eof_reached && !global_controls::exit_called) {
         outs << error::colors::colorize(error::colors::LIGHT_GREEN) << "moss> " << error::colors::reset();
         std::vector<ir::IR *> line_irs = parser.parse_line();
         for (auto i : line_irs) {
@@ -88,8 +88,10 @@ void Repl::run() {
         bc_writer.write(bc);
     }
 
+    auto exit_code = interpreter->get_exit_code();
     delete interpreter;
     delete bc;
 
     LOGMAX("REPL finished");
+    return exit_code;
 }
