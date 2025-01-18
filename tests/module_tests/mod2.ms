@@ -13,3 +13,8 @@ fun const_val(v) {
     else
         return v
 }
+
+fun exit_mod3(code) {
+    import mod3
+    mod3.exit_me(code)
+} 

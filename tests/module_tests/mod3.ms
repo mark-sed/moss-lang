@@ -9,3 +9,7 @@ fun outter_fun(a) {
 fun sum3(a, b, c=0) {
     return a + b + c
 }
+
+fun exit_me(code) {
+    exit(code)
+}

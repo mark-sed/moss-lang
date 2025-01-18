@@ -136,6 +136,14 @@ function expect_fail {
     fi
 }
 
+function expect_retcode {
+    if [[ $RETCODE -ne $1 ]]; then
+        failed "${2}" "Return code differs."
+        printf "Expected return code: $1\n"
+        printf "Got return code: $RETCODE\n"
+    fi
+}
+
 function expect_fail_exec {
     run_exec "$1"
     local errmsg=$(cat "$OUTP_ERR")
@@ -374,6 +382,7 @@ function test_lib_exit {
 
     expect_fail_exec "exit(\"bye\")" "bye" $1
     expect_fail_exec "exit(42)" "" $1
+    expect_retcode 42 $1
 
     expect_fail_exec "
 fun exit(a, b) {
@@ -382,6 +391,11 @@ fun exit(a, b) {
 }
 exit(\"la fin\", 2)" "" $1
     expect_out_eq "la fin\n" $1
+    expect_retcode 2 $1
+
+    expect_fail "module_tests/exit_external.ms" "" $1
+    expect_out_eq "started\n" $1
+    expect_retcode 5 $1
 }
 
 function test_lib_vardump {
