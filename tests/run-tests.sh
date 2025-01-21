@@ -354,6 +354,11 @@ function test_import_calls {
 mod1 ran!\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n" $1
 }
 
+function test_closures {
+    expect_pass "closures.ms" $1
+    expect_out_eq "OC; Created Inner + OC; <object of class InnerClass>\n<class InnerClass>\n" $1
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -514,6 +519,7 @@ function run_all_tests {
 
     run_test basic_import
     run_test import_calls
+    run_test closures
 
     run_test fibonacci
     run_test factorial

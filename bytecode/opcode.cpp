@@ -67,6 +67,14 @@ void End::exec(Interpreter *vm) {
 
 void Load::exec(Interpreter *vm) {
     auto v = vm->load_name(this->name);
+    if (!v) {
+        // The refered value could possibly be method or attribute in the
+        // class or object. Look if "this" is set
+        auto ths = vm->load_name("this");
+        if (ths) {
+            v = ths->get_attr(this->name);
+        }
+    }
     // FIXME:
     assert(v && "TODO: Nonexistent name raise exception");
     vm->store(this->dst, v);

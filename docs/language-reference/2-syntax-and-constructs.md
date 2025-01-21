@@ -10,21 +10,20 @@ a `;` in their place).
 
 ## Variables
 
-Any symbol name is a variable declaration, if not yet declared, then it
-is a note.
+First assignment to a variable is treated as its declaration.
 
-```py
-foo // foo = nil
-foo // Will be outputted as "nil"
+```cpp
+foo = "hi"
+foo // Will be outputted
 ```
 
 Variable can also be assigned a value and even multiple at once:
-```py
+```cpp
 a = b = c = 42
 ```
 
 It is also possible to unpack values with assignment:
-```py
+```cpp
 fun foo() {
     return [1, 2, 3, 4, 5]
 }
@@ -38,7 +37,7 @@ g // [3, 4, 5]
 
 If you want to access some global value that is overshadowed by a local
 name, you can do that using the global scope - `::`.
-```py
+```cpp
 x = 8
 
 fun foo(x) {
@@ -49,7 +48,7 @@ fun foo(x) {
 If you want to access non-local variable overshadowed by a local one you
 can use `$`.
 
-```py
+```cpp
 x = 8
 fun foo() {
     x = 4

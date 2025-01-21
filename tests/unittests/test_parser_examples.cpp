@@ -13,8 +13,8 @@ using namespace ir;
 /** Code/snippets from syntax-and-constructs.md */
 TEST(ParserExamples, SyntaxAndConstructs){
     ustring code = R"(
-foo // foo = nil
-foo // Will be outputted as "nil"
+foo = "hi"
+foo // Will be outputted
 
 a = b = c = 42
 
