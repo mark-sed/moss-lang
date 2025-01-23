@@ -479,12 +479,14 @@ public:
 class FunValue : public Value {
 private:
     std::vector<FunValueArg *> args;
+    std::list<MemoryPool *> closures;
     opcode::Address body_addr;
 public:
     static const TypeKind ClassType = TypeKind::FUN;
 
     FunValue(opcode::StringConst name, opcode::StringConst arg_names) 
-            : Value(ClassType, name, BuiltIns::Function), args(), body_addr(0) {
+            : Value(ClassType, name, BuiltIns::Function), 
+              args(), closures(), body_addr(0) {
         auto names = utils::split_csv(arg_names, ',');
         for (auto n: names) {
             args.push_back(new FunValueArg(n, std::vector<Value *>{}));
@@ -522,6 +524,14 @@ public:
 
     void set_body_addr(opcode::Address body_addr) {
         this->body_addr = body_addr;
+    }
+
+    void push_closure(MemoryPool *p) {
+        closures.push_back(p);
+    }
+
+    std::list<MemoryPool *> get_closures() {
+        return this->closures;
     }
 
     opcode::Address get_body_addr() { return this->body_addr; }

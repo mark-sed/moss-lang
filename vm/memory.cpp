@@ -45,6 +45,16 @@ Value *MemoryPool::load_name(ustring name, Value **owner) {
             return val;
         }
     }
+    // Look for name in closures
+    if (pool_fun_owner) {
+        // Frames are pushed into closures from the back to front so no need for
+        // reverse iteration
+        for(auto f: pool_fun_owner->get_closures()) {
+            auto val = f->load_name(name, owner);
+            if (val)
+                return val;
+        }
+    }
     return nullptr;
 }
 

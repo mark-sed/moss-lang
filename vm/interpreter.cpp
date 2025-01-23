@@ -151,10 +151,14 @@ void Interpreter::push_spilled_value(Value *v) {
     get_top_frame()->push_spilled_value(v);
 }
 
-void Interpreter::push_frame() {
+void Interpreter::push_frame(FunValue *fun_owner) {
     LOGMAX("Frame pushed");
-    this->frames.push_back(new MemoryPool());
+    auto lf = new MemoryPool();
+    this->frames.push_back(lf);
     this->const_pools.push_back(new MemoryPool(true));
+    if (fun_owner)
+        lf->set_pool_fun_owner(fun_owner);
+        
 }
 
 void Interpreter::pop_frame() {
@@ -170,7 +174,7 @@ void Interpreter::pop_frame() {
 }
 
 void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
-    push_frame();
+    push_frame(fun);
     call_frames.push_back(cf);
     set_bci(fun->get_body_addr());
     run();

@@ -1,3 +1,13 @@
+fun outter() {
+    a = 24
+    fun inner() {
+        return a
+    }
+    return inner
+}
+
+outter()() ++ "\n"
+
 // Accessing values of enclosing class
 class OutterClass {
 
@@ -5,8 +15,7 @@ class OutterClass {
 
     class InnerClass {
         fun InnerClass() {
-            // TODO: Unocomment OutterClass once closures are done? But also check if we want this
-            "Created Inner + " ++ OutterClass.NAME ++ delimiter()
+            "Created Inner + " ++ NAME ++ delimiter()
         }
     }
 
@@ -24,3 +33,40 @@ oc = OutterClass()
 oc.get_inner()
 "\n"
 OutterClass.InnerClass++"\n"
+
+// Actual example
+fun bold(fn) {
+    fun wrapper() {
+        return "<b>" ++ fn() ++ "</b>"
+    }
+    return wrapper
+}
+
+fun italic(fn) {
+    fun wrapper() {
+        return "<i>" ++ fn() ++ "</i>"
+    }
+    return wrapper
+}
+
+fun text() {
+    return "Hi there!"
+}
+
+text_bold = bold(italic(text))
+text_bold()++"\n"
+//
+
+fun triple() {
+    fun double() {
+        fun single() {
+            return a ++ b
+        }
+        b = "double_val\n"
+        return single
+    }
+    a = "triple_val\n"
+    return double
+}
+
+triple()()()

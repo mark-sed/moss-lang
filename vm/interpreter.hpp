@@ -141,6 +141,7 @@ public:
     void cross_module_call(FunValue *fun, CallFrame *cf);
 
     MemoryPool *get_global_frame() { return this->frames.front(); }
+    std::list<MemoryPool *>& get_frames() { return this->frames; }
 
     /// Stores a value into a register
     void store(opcode::Register reg, Value *v);
@@ -173,7 +174,9 @@ public:
     Value *load_global_name(ustring name);
 
     /// Pushes a new frame (memory pool) into a frame stack
-    void push_frame();
+    /// \param fun_owner If set then the function owner of the frame is set,
+    ///                  this is needed for accessing function closures
+    void push_frame(FunValue *fun_owner=nullptr);
     /// Pops a frame (memory pool) from a frame stack
     void pop_frame();
     /// \return Top frame, meaning the current local frame or global if no local is inserted

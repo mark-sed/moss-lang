@@ -21,6 +21,7 @@
 namespace moss {
 
 class Value;
+class FunValue;
 
 /// \brief Virtual memory representation
 /// It holds pool of values with reference counting for their garbage collection
@@ -28,13 +29,14 @@ class Value;
 /// index into the pool. 
 class MemoryPool {
 private:
+    FunValue *pool_fun_owner; ///< This value is set to the owner of this pool if it is a function
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     bool holds_consts;
     bool global;
 public:
-    MemoryPool(bool holds_consts=false, bool global=false) : holds_consts(holds_consts), global(global) {
+    MemoryPool(bool holds_consts=false, bool global=false) : pool_fun_owner(nullptr), holds_consts(holds_consts), global(global) {
         if (!global && !holds_consts) {
             // TODO: Fine tune these values
             pool = std::vector<Value *>(128, nullptr);
@@ -80,6 +82,10 @@ public:
     }
 
     std::vector<Value *> &get_pool() { return this->pool; }
+    
+    bool is_global() { return this->global; }
+
+    void set_pool_fun_owner(FunValue *f) { this->pool_fun_owner = f; }
 
     std::ostream& debug(std::ostream& os) const;
 };

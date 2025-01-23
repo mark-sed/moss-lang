@@ -489,7 +489,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
     else {
-        vm->push_frame();
+        vm->push_frame(fun);
         vm->set_bci(fun->get_body_addr());
     }
 }
@@ -631,6 +631,12 @@ void PushNamedArg::exec(Interpreter *vm) {
 
 void CreateFun::exec(Interpreter *vm) {
     FunValue *funval = new FunValue(name, arg_names);
+    for (auto riter = vm->get_frames().rbegin(); riter != vm->get_frames().rend(); ++riter) {
+        // Push all latest local frames as closures of current function
+        if ((*riter)->is_global())
+            break;
+        funval->push_closure(*riter);
+    }
     auto f = vm->load_name(name);
     if (f && (isa<FunValue>(f) || isa<FunValueList>(f))) {
         if (auto fv = dyn_cast<FunValue>(f)) {

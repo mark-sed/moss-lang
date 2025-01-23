@@ -59,6 +59,9 @@ void TracingGC::blacken_value(Value *v) {
             }
             mark_value(arg->default_value);
         }
+        for (auto f: subv->get_closures()) {
+            mark_frame(f);
+        }
     }
     else if (auto subv = dyn_cast<FunValueList>(v)) {
         for (auto fv: subv->get_funs()) {
