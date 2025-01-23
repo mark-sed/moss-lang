@@ -17,6 +17,7 @@
 
 namespace moss {
 
+class ModuleValue;
 class Interpreter;
 namespace opcode {
     class OpCode;
@@ -191,6 +192,7 @@ enum OpCodes : opcode_t {
 };
 
 void raise(Interpreter *vm, Value *exc);
+ModuleValue *load_module(Interpreter *vm, ustring name);
 
 /// Base Opcode class
 class OpCode {

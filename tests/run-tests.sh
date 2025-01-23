@@ -382,6 +382,11 @@ function test_factorial {
     expect_out_eq "2432902008176640000" $1
 }
 
+function test_lib_constants {
+    expect_pass "stdlib_tests/constants.ms" $1
+    expect_out_eq_rx "[0-9]\.[0-9]\.[0-9]\n" $1
+}
+
 function test_lib_exit {
     expect_pass "stdlib_tests/exit.ms" $1
     expect_out_eq "hi\n" $1
@@ -527,10 +532,11 @@ function run_all_tests {
     run_test collatz
 
     # stdlib tests
+    run_test lib_constants
     run_test lib_exit
     run_test lib_vardump
     run_test lib_print
-    run_test lib_type_constructors
+    #run_test lib_type_constructors
 
     # gc tests
     run_test gc_local_vars

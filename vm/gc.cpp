@@ -1,8 +1,25 @@
 #include "gc.hpp"
+#include "values.hpp"
 #include "logging.hpp"
 
 using namespace moss;
 using namespace gcs;
+
+std::vector<ModuleValue *> TracingGC::currently_imported_modules{};
+
+void TracingGC::push_currently_imported_module(ModuleValue *m) {
+    currently_imported_modules.push_back(m);
+}
+
+void TracingGC::pop_currently_imported_module() {
+    currently_imported_modules.pop_back();
+}
+
+#ifndef NDEBUG
+ModuleValue *TracingGC::top_currently_imported_module() {
+    return currently_imported_modules.back();
+}
+#endif
 
 TracingGC::TracingGC(Interpreter *vm) : vm(vm) {
     LOGMAX("Initializing Tracing GC");
@@ -29,7 +46,7 @@ void TracingGC::sweep() {
 }
 
 void TracingGC::blacken_value(Value *v) {
-    LOGMAX("Blacken: " << *v);
+    //LOGMAX("Blacken: " << *v);
     // Every value has a type
     mark_value(v->get_type());
     // Values might have annotation
@@ -38,7 +55,6 @@ void TracingGC::blacken_value(Value *v) {
     }
     // Value might have attributes
     if (v->get_attrs()) {
-        LOGMAX(v->get_attrs());
         mark_frame(v->get_attrs());
     }
 
@@ -73,6 +89,10 @@ void TracingGC::blacken_value(Value *v) {
             mark_value(v);
         }
     }
+    else if (auto subv = dyn_cast<ModuleValue>(v)) {
+        LOGMAX("Blackening module: " << subv->get_name());
+        mark_roots(subv->get_vm());
+    }
 }
 
 void TracingGC::trace_refs() {
@@ -98,40 +118,60 @@ void TracingGC::mark_frame(MemoryPool *p) {
     for (auto v : p->get_pool()) {
         mark_value(v);
     }
+    // Spilled values
+    for (auto v: p->get_spilled_values()) {
+        mark_value(v);
+    }
 }
 
-void TracingGC::mark_roots() {
-    for (auto mem: vm->frames) {
+void TracingGC::mark_roots(Interpreter *ivm) {
+    for (auto mem: ivm->frames) {
         mark_frame(mem);
     }
 
     // We need to mark also constant pools
-    for (auto mem: vm->const_pools) {
+    for (auto mem: ivm->const_pools) {
         mark_frame(mem);
     }
 
     // Mark values pushed as parents
-    for (auto pl: vm->parent_list) {
+    for (auto pl: ivm->parent_list) {
         mark_value(pl);
     }
 
     // Call frame marking
-    for (auto cf: vm->call_frames) {
+    for (auto cf: ivm->call_frames) {
         for (auto arg: cf->get_args()) {
             mark_value(arg.value);
         }
         mark_value(cf->get_extern_return_value());
     }
+
+    // libms marking
+    if (ivm->is_main() && Interpreter::libms_mod) {
+        assert(Interpreter::libms_mod->get_vm() && "sanity check");
+        mark_value(Interpreter::libms_mod);
+    }
+    // Modules in the middle of import, this should be done only once, so by main
+    if (ivm->is_main()) {
+        for (auto m: currently_imported_modules) {
+            mark_value(m);
+        }
+    }
 }
 
 void TracingGC::collect_garbage() {
     LOG1("Running GC");
+    if (!Interpreter::libms_mod) {
+        LOGMAX("Libms is not yet loaded, cannot collect garbage");
+        return;
+    }
 #ifndef NDEBUG
     auto pre_run_allocations = Value::allocated_bytes;
 #endif
     gray_list.clear();
     // gray list is empty and values are not marked, so all values are white
-    mark_roots();
+    mark_roots(vm);
     // values in gray list (and marked also) are gray
     trace_refs();
     // Value is black when it is not in gray stack and marked is set
@@ -142,6 +182,7 @@ void TracingGC::collect_garbage() {
     LOGMAX("Freed " << (pre_run_allocations - Value::allocated_bytes) << "B");
     if (clopts::stress_test_gc) {
         LOGMAX("Finished GC (stress test so not modifying next_gc)");
+        LOG1("Finished GC");
         return;
     }
 #endif

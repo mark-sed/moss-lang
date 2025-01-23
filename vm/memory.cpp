@@ -66,7 +66,7 @@ std::ostream& MemoryPool::debug(std::ostream& os) const {
     os << "> Memory pool:\n";
     size_t skip = 0;
     if (global) {
-        skip = holds_consts ? BC_RESERVED_CREGS : BC_RESERVED_REGS;
+        skip = holds_consts ? BC_RESERVED_CREGS : 0;
         os << "-- Reserved regs (" << skip << ") skipped --\n";
     }
     for (size_t i = skip; i < this->pool.size(); ++i) {

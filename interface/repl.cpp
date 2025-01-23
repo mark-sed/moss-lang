@@ -34,7 +34,7 @@ int Repl::run() {
     Bytecode *bc = new Bytecode();
     bcgen::BytecodeGen cgen(bc);
 
-    Interpreter *interpreter = new Interpreter(bc, &src_file);
+    Interpreter *interpreter = new Interpreter(bc, &src_file, true);
 
     bool eof_reached = false;
     while (!eof_reached && !global_controls::exit_called) {

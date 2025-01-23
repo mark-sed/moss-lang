@@ -5,8 +5,11 @@
 ///            See accompanied LICENSE file.
 ///
 
-class Int {
+__LIB_MS_VERSION = "0.0.1"
+
+/*class Int {
     
     @internal
     Int(a, base) {}
-}
+}*/
+

@@ -22,7 +22,8 @@ Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs)
 
 Value::~Value() {
     // Values will be deleted by gc
-    delete attrs;
+    if (attrs)
+        delete attrs;
 }
 
 Value *Value::get_attr(ustring name) {
@@ -105,6 +106,9 @@ std::ostream& ModuleValue::debug(std::ostream& os) const {
 ModuleValue::~ModuleValue()  {
     delete vm->get_src_file();
     delete vm;
+    // Attrs need to be set to nullptr as ~Value will be called, but
+    // vm destructor should delete global frame which is attrs
+    this->attrs = nullptr;
 }
 
 EnumValue::EnumValue(EnumTypeValue *type, ustring name) : Value(ClassType, name, type) {

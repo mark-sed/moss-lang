@@ -700,7 +700,7 @@ void SetVararg::exec(Interpreter *vm) {
     fv->set_vararg(index);
 }
 
-static ModuleValue *load_module(Interpreter *vm, ustring name) {
+ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
     LOGMAX("Loading module: " << name);
     // First see if we have .msb and then .ms
     std::optional<ustring> path_opt = get_file_path(name+".msb");
@@ -739,12 +739,18 @@ static ModuleValue *load_module(Interpreter *vm, ustring name) {
     }
 
     auto mod_i = new Interpreter(bc, input_file);
+    // We need to create the module value before running it so that gc can
+    // access its values while its running
+    auto gen_mod = new ModuleValue(name, mod_i->get_global_frame(), mod_i);
+    vm->push_currently_imported_module(gen_mod);
     mod_i->run();
     if (mod_i->get_exit_code() != 0) {
         LOGMAX("Import exited, delegating exit code");
         vm->set_exit_code(mod_i->get_exit_code());
     }
-    return new ModuleValue(name, mod_i->get_global_frame(), mod_i);
+    assert(vm->top_currently_imported_module() == gen_mod && "Currently generated incorrectly popped?");
+    vm->pop_currently_imported_module();
+    return gen_mod;
 }
 
 void Import::exec(Interpreter *vm) {

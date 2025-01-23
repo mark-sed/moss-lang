@@ -20,7 +20,7 @@ TEST(Memory, Attributes) {
     bc->push_back(new opcode::StoreAttr(101, 100, "some_val"));
     bc->push_back(new opcode::LoadAttr(102, 100, "some_val"));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -52,7 +52,7 @@ TEST(Memory, Constants) {
 
     bc->push_back(new opcode::StoreNilConst(reg++));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(int_val(i->load_const(reg_start++)), -9223372036854775807LL);

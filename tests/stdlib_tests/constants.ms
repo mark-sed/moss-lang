@@ -1,0 +1,2 @@
+__LIB_MS_VERSION
+"\n"

@@ -82,6 +82,7 @@ public:
     }
 
     std::vector<Value *> &get_pool() { return this->pool; }
+    std::list<Value *> &get_spilled_values() { return this->spilled_values; }
     
     bool is_global() { return this->global; }
 

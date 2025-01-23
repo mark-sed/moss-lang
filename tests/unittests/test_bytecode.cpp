@@ -21,7 +21,7 @@ TEST(Bytecode, Jmp) {
     bc->push_back(new opcode::StoreConst(0, 300));
     bc->push_back(new opcode::End());
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -52,7 +52,7 @@ TEST(Bytecode, JmpIf) {
     bc->push_back(new opcode::StoreIntConst(3, 303));
     bc->push_back(new opcode::End());
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -76,7 +76,7 @@ TEST(Bytecode, Concat) {
     bc->push_back(new opcode::Concat2(103, 302, 102));
     bc->push_back(new opcode::Concat(104, 101, 103));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -128,7 +128,7 @@ TEST(Bytecode, Arithmetics) {
     bc->push_back(new opcode::Neg(17, 2)); // -0.5 
     bc->push_back(new opcode::Neg(18, 16)); // 8 
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -247,7 +247,7 @@ TEST(Bytecode, EqualsNotEquals) {
     bc->push_back(new opcode::Neq2(52, 316, 43));
     bc->push_back(new opcode::Neq3(53, 5, 305));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -380,7 +380,7 @@ TEST(Bytecode, Comparisons) {
     bc->push_back(new opcode::Leq3(45, 7, 307));
     bc->push_back(new opcode::Leq(46, 13, 12));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(bool_val(i->load(16)), false);
@@ -451,7 +451,7 @@ TEST(Bytecode, In) {
     bc->push_back(new opcode::In(11, 5, 0));
     bc->push_back(new opcode::In2(12, 302, 2));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -516,7 +516,7 @@ TEST(Bytecode, BitWiseOperators) {
     bc->push_back(new opcode::Not(28, 4));
     bc->push_back(new opcode::Not(29, 5));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);
@@ -576,7 +576,7 @@ TEST(Bytecode, Subscript) {
     bc->push_back(new opcode::Subsc(10, 2, 4));
     bc->push_back(new opcode::Subsc(11, 2, 5));
 
-    Interpreter *i = new Interpreter(bc);
+    Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
 
     EXPECT_EQ(i->get_exit_code(), 0);

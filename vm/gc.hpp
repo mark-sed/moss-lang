@@ -19,6 +19,7 @@ namespace moss {
 
 class Interpreter;
 class Value;
+class ModuleValue;
 class MemoryPool;
 
 /// Namespace for garbage collector resources
@@ -34,16 +35,24 @@ private:
 
     std::vector<Value *> gray_list; ///< Work list of marked values
 
-    void mark_roots();
+    void mark_roots(Interpreter *vm);
     void mark_frame(MemoryPool *p);
     void mark_value(Value *v);
     void trace_refs();
     void blacken_value(Value *v);
     void sweep();
+
+    static std::vector<ModuleValue *> currently_imported_modules;
 public:
     TracingGC(Interpreter *vm);
 
     void collect_garbage();
+
+    static void push_currently_imported_module(ModuleValue *m);
+    static void pop_currently_imported_module();
+#ifndef NDEBUG
+    static ModuleValue *top_currently_imported_module();
+#endif
 };
 
 }

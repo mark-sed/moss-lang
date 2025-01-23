@@ -158,7 +158,13 @@ int main(int argc, const char *argv[]) {
     int exit_code = 0;
     // Interpretation
     if (!clopts::output_only) {
-        Interpreter *interpreter = new Interpreter(bc, input_file);
+        Interpreter *interpreter = new Interpreter(bc, input_file, true);
+
+        // Load libms
+        /*Interpreter::libms_mod = opcode::load_module(interpreter, "libms");
+        assert(Interpreter::libms_mod && "TODO: Raise Could not load libms");
+        interpreter->push_spilled_value(Interpreter::libms_mod);*/
+
         interpreter->run();
 
         LOGMAX(*interpreter);

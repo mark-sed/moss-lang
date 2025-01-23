@@ -17,6 +17,7 @@
 #include "source.hpp"
 #include "commons.hpp"
 #include "gc.hpp"
+#include "values.hpp"
 #include <cstdint>
 #include <list>
 
@@ -26,6 +27,7 @@ class MemoryPool;
 class Bytecode;
 class Value;
 class FunValue;
+class ModuleValue;
 class ClassValue;
 
 namespace gcs {
@@ -117,7 +119,7 @@ private:
 
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
-    gcs::TracingGC *gc;
+    static gcs::TracingGC *gc;
 
     opcode::Address bci;
 
@@ -125,6 +127,7 @@ private:
 
     bool bci_modified;
     bool stop;
+    bool main;
 
     MemoryPool *get_global_const_pool() { return this->const_pools.front(); };
     MemoryPool *get_const_pool() { return this->const_pools.back(); }
@@ -133,12 +136,14 @@ private:
     void init_const_frame();
     void init_global_frame();
 public:
-    Interpreter(Bytecode *code, File *src_file=nullptr);
+    Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();
 
     void run();
 
     void cross_module_call(FunValue *fun, CallFrame *cf);
+
+    static ModuleValue *libms_mod;
 
     MemoryPool *get_global_frame() { return this->frames.front(); }
     std::list<MemoryPool *>& get_frames() { return this->frames; }
@@ -211,6 +216,22 @@ public:
     /// Clears parent list
     void clear_parent_list() { parent_list.clear(); }
     std::list<ClassValue *> get_parent_list() { return this->parent_list; }
+
+    /// Pushes a ModuleValue into a list of Modules currently being imported.
+    /// This is needed so that GC can mark these values and not collect them
+    /// since the module value will be placed into frame after the full run
+    void push_currently_imported_module(ModuleValue *m);
+    /// Removes last module from list of currently imported modules
+    void pop_currently_imported_module();
+#ifndef NDEBUG
+    /// Returns current last module in the list of currently imported modules.
+    /// This method is for debugging
+    ModuleValue *top_currently_imported_module();
+#endif
+
+    //void collect_garbage();
+
+    bool is_main() { return this->main; }
 
     /// \return Interpreter exit code
     int get_exit_code() { return exit_code; }

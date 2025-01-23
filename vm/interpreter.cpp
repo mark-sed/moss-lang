@@ -2,17 +2,37 @@
 #include "logging.hpp"
 #include "values.hpp"
 #include "mslib.hpp"
+#include "values.hpp"
 
 using namespace moss;
 
-Interpreter::Interpreter(Bytecode *code, File *src_file) 
-        : code(code), src_file(src_file), gc(new gcs::TracingGC(this)), bci(0), exit_code(0),
-          bci_modified(false), stop(false) {
+gcs::TracingGC *Interpreter::gc = nullptr;
+ModuleValue *Interpreter::libms_mod = nullptr;
+
+Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
+        : code(code), src_file(src_file), bci(0), exit_code(0),
+          bci_modified(false), stop(false), main(main) {
+    if (main && !gc) {
+        gc = new gcs::TracingGC(this);
+    }
+    assert(gc && "sanity check");
     this->const_pools.push_back(new MemoryPool(true, true));
     // Global frame
     this->frames.push_back(new MemoryPool(false, true));
     init_const_frame();
-    init_global_frame();
+    if (!libms_mod && !main) {
+        // Init libms module
+        init_global_frame();
+    }
+    if (!libms_mod && main) {
+        // Loading a module will also create an interpreter and so we need to
+        // set a flag to not try to load it again
+        Interpreter::libms_mod = opcode::load_module(this, "libms");
+        assert(libms_mod && "TODO: Raise Could not load libms");
+    }
+    // We don't spill in libms itself so check that it was loaded
+    if (libms_mod)
+        push_spilled_value(libms_mod);
 }
 
 Interpreter::~Interpreter() {
@@ -28,7 +48,13 @@ Interpreter::~Interpreter() {
     for (auto p: parent_list) {
         delete p;
     }
-    delete gc;
+    if (main) {
+        // Only main is the holder of gc
+        delete gc;
+        // It needs to be set to nullptr in case some other new Interpreter
+        // is created, like in unit test case
+        Interpreter::gc = nullptr;
+    }
     // Code is to be deleted by the creator of it
 }
 
@@ -148,6 +174,7 @@ Value *Interpreter::load_global_name(ustring name) {
 }
 
 void Interpreter::push_spilled_value(Value *v) {
+    assert(v && "sanity check");
     get_top_frame()->push_spilled_value(v);
 }
 
@@ -179,6 +206,24 @@ void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
     set_bci(fun->get_body_addr());
     run();
 }
+
+/*void Interpreter::collect_garbage() {
+    gc->collect_garbage();
+}*/
+
+void Interpreter::push_currently_imported_module(ModuleValue *m) {
+    gcs::TracingGC::push_currently_imported_module(m);
+}
+
+void Interpreter::pop_currently_imported_module() {
+    gcs::TracingGC::pop_currently_imported_module();
+}
+
+#ifndef NDEBUG
+ModuleValue *Interpreter::top_currently_imported_module() {
+    return gcs::TracingGC::top_currently_imported_module();
+}
+#endif
 
 void Interpreter::run() {
     LOG1("Running interpreter\n----- OUTPUT: -----");
