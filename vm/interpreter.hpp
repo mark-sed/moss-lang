@@ -156,6 +156,8 @@ public:
 
     /// Sets a name for specific register
     void store_name(opcode::Register reg, ustring name);
+
+    void remove_global_name(ustring name);
  
     /// Loads value at specified register index 
     /// If there was no value stored, then Nil is stored there and returned

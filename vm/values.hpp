@@ -119,9 +119,7 @@ public:
         return 0.0;
     }
 
-    void annotate(ustring name, Value *val) {
-        annotations[name] = val;
-    }
+    void annotate(ustring name, Value *val);
     std::map<ustring, Value *> get_annotations() { return this->annotations; }
     bool has_annotation(ustring name) {
         return annotations.find(name) != annotations.end();
@@ -389,6 +387,12 @@ public:
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
         return cpy;
+    }
+
+    void bind(ClassValue *cls) {
+        set_attrs(cls->get_attrs());
+        this->supers = cls->get_supers();
+        this->annotations = cls->get_annotations();
     }
 
     virtual opcode::StringConst as_string() const override {

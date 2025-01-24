@@ -151,6 +151,10 @@ void Interpreter::store_name(opcode::Register reg, ustring name) {
     get_local_frame()->store_name(reg, name);
 }
 
+void Interpreter::remove_global_name(ustring name) {
+    get_global_frame()->remove_name(name);
+}
+
 Value *Interpreter::load_name(ustring name, Value **owner) {
     for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
         auto val = (*riter)->load_name(name, owner);

@@ -805,7 +805,27 @@ void Annotate::exec(Interpreter *vm) {
     assert(d && "Cannot load dst");
     auto *v = vm->load(val);
     assert(v && "Cannot load val");
-    d->annotate(name, v);
+    if (auto fl = dyn_cast<FunValueList>(d)) {
+        // Annotate is called right after CreateFun so it has the be the top
+        // one in the list
+        fl->back()->annotate(name, v);
+    } else {
+        d->annotate(name, v);
+    }
+    if (name == "internal_bind") {
+        LOGMAX("Internal binding");
+        auto bind_name = dyn_cast<StringValue>(v);
+        assert(bind_name && "TODO: Raise missing bind name");
+        auto bind_val = vm->load_name(bind_name->get_value());
+        assert(bind_val && "TODO: Raise name error");
+        auto bind_class = dyn_cast<ClassValue>(bind_val);
+        assert(bind_class && "TODO: Raise type error");
+        auto ref_class = dyn_cast<ClassValue>(d);
+        assert(ref_class && "TODO: Raise type error for ref");
+        bind_class->bind(ref_class);
+        // Remove the bound class
+        vm->remove_global_name(ref_class->get_name());
+    }
 }
 
 void Output::exec(Interpreter *vm) {

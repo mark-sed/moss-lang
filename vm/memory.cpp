@@ -29,6 +29,12 @@ void MemoryPool::store_name(opcode::Register reg, ustring name) {
     this->sym_table[name] = reg;
 }
 
+void MemoryPool::remove_name(ustring name) {
+    auto pos = this->sym_table.find(name);
+    assert(pos != sym_table.end() && "Name does not exist");
+    this->sym_table.erase(pos);
+}
+
 Value *MemoryPool::load_name(ustring name, Value **owner) {
     auto index = this->sym_table.find(name);
     if (index != this->sym_table.end()) {

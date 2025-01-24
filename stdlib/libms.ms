@@ -7,9 +7,12 @@
 
 __LIB_MS_VERSION = "0.0.1"
 
-/*class Int {
-    
+@internal_bind("Int")
+class __Int {
     @internal
-    Int(a, base) {}
-}*/
+    fun Int(v:String, base=10) {}
+
+    @internal
+    fun Int(v:[Int, Float]=0) {}
+}
 

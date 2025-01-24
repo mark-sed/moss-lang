@@ -48,6 +48,11 @@ void Value::set_attr(ustring name, Value *v) {
     attrs->store_name(reg, name);
 }
 
+void Value::annotate(ustring name, Value *val) {
+    assert(!isa<FunValueList>(this) && "Annotating fun list not a function");
+    annotations[name] = val;
+}
+
 void *Value::operator new(size_t size) {
     Value::allocated_bytes += size;
     if (Value::allocated_bytes > Value::next_gc) {

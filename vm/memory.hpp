@@ -67,6 +67,8 @@ public:
     /// Sets a name for specific register
     void store_name(opcode::Register reg, ustring name);
 
+    void remove_name(ustring name);
+
     Value *load_name(ustring name, Value **owner=nullptr);
 
     void push_spilled_value(Value *v) {
