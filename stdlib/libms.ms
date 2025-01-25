@@ -16,6 +16,15 @@ class __Int {
     fun Int(v:[Int, Float]=0) {}
 }
 
+/*@internal_bind("Float")
+class __Float {
+    @internal
+    fun Float(v:String) {}
+
+    @internal
+    fun Float(v:[Int, Float]=0.0) {}
+}*/
+
 @internal
 fun vardump(value) {}
 
@@ -24,3 +33,11 @@ fun print(... msgs, end="\n", separator=" ") {}
 
 @internal
 fun exit(code=0) {}
+
+/// Exceptions
+// TODO: Place into space
+@internal_bind("Exception")
+class __Exception {
+    @internal
+    fun Exception(msg:String) {}
+}

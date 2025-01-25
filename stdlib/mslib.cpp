@@ -79,6 +79,12 @@ Value *mslib::Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
     assert(false && "Incorrect arg type");
 }
 
+Value *mslib::Exception(Interpreter *vm, Value *ths, Value *msg) {
+    (void)vm;
+    ths->set_attr("msg", msg);
+    return ths;
+}
+
 void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     auto cf = vm->get_call_frame();
     auto args = cf->get_args();
@@ -106,6 +112,10 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");
         // Base might not be set as this is only for string argument
         ret_v = Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
+    }
+    else if (name == "Exception") {
+        assert(arg_size == 2 && "Mismatch of args");
+        ret_v = Exception(vm, cf->get_arg("this"), cf->get_arg("msg"));
     }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
