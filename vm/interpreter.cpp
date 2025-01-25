@@ -58,7 +58,7 @@ Interpreter::~Interpreter() {
     // Code is to be deleted by the creator of it
 }
 
-size_t Interpreter::get_free_reg(MemoryPool *fr) {
+opcode::Register Interpreter::get_free_reg(MemoryPool *fr) {
     return fr->get_free_reg();
 }
 
@@ -207,6 +207,20 @@ void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
     call_frames.push_back(cf);
     set_bci(fun->get_body_addr());
     run();
+}
+
+void Interpreter::runtime_call(FunValue *fun) {
+    auto pre_call_bci = this->bci;
+    auto pre_bci_modified = this->bci_modified;
+    auto pre_stop = this->stop;
+
+    push_frame();
+    set_bci(fun->get_body_addr());
+    run();
+
+    this->bci = pre_call_bci;
+    this->bci_modified = pre_bci_modified;
+    this->stop = pre_stop;
 }
 
 /*void Interpreter::collect_garbage() {

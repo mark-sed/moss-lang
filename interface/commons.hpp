@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <vector>
+#include <limits>
 
 namespace moss {
 
@@ -75,6 +76,7 @@ using opcode_t = uint8_t;
 
 #define BC_REGISTER_SIZE 4  ///< How many bytes does register index take
 using Register = uint32_t;
+//constexpr Register NO_REG = std::numeric_limits<uint32_t>::max();
 
 #define BC_STR_LEN_SIZE 4   ///< How many bytes does the string size take
 using strlen_t = uint32_t;

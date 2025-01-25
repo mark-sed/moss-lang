@@ -61,11 +61,13 @@ private:
     opcode::Address caller_addr;
     bool constructor_call;
     bool extern_module_call;
+    bool runtime_call;
     Value *extern_return_value;
 public:
     CallFrame() : return_reg(0),
                   constructor_call(false),
                   extern_module_call(false),
+                  runtime_call(false),
                   extern_return_value(nullptr) {}
 
     void push_back(Value *v) { args.push_back(CallFrameArg(v)); }
@@ -78,6 +80,7 @@ public:
     void set_args(std::vector<CallFrameArg> args) { this->args = args; }
     void set_constructor_call(bool b) { this->constructor_call = b; }
     void set_extern_module_call(bool b) { this->extern_module_call = b; }
+    void set_runtime_call(bool b) { this->runtime_call = b; }
     void set_extern_return_value(Value *v) { this->extern_return_value = v; }
 
     std::vector<CallFrameArg> &get_args() { return this->args; }
@@ -85,6 +88,7 @@ public:
     opcode::Address get_caller_addr() { return this->caller_addr; }
     bool is_constructor_call() { return this->constructor_call; }
     bool is_extern_module_call() { return this->extern_module_call; }
+    bool is_runtime_call() { return this->runtime_call; }
     Value *get_extern_return_value() { return this->extern_return_value; }
 
     Value *get_arg(ustring name, bool optional=false) {
@@ -101,6 +105,8 @@ public:
         os << "CallFrame:\n"
            << "\treturn_reg: " << return_reg << "\n"
            << "\tcaller_addr: " << caller_addr << "\n"
+           << "\textern_module_call: " << extern_module_call << "\n"
+           << "\truntime_call: " << runtime_call << "\n"
            << "\targs:\n";
         unsigned index = 0;
         for(auto a: args) {
@@ -152,6 +158,7 @@ public:
     void run();
 
     void cross_module_call(FunValue *fun, CallFrame *cf);
+    void runtime_call(FunValue *fun);
 
     static ModuleValue *libms_mod;
 
@@ -261,7 +268,7 @@ public:
         this->bci_modified = true; 
     }
 
-    size_t get_free_reg(MemoryPool *fr);
+    opcode::Register get_free_reg(MemoryPool *fr);
 
     size_t get_code_size();
 

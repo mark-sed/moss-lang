@@ -360,6 +360,11 @@ function test_closures {
 <b><i>Hi there!</i></b>\ntriple_val\ndouble_val\n" $1
 }
 
+function test_implicit_calls {
+    expect_pass "implicit_calls.ms" $1
+    expect_out_eq "hello is my string\nbye is my string\n" $1
+}
+
 function test_fibonacci {
     expect_pass "fibonacci.ms" $1
     expect_out_eq "1\n55\n233\n2584\n" $1
@@ -526,6 +531,7 @@ function run_all_tests {
     run_test basic_import
     run_test import_calls
     run_test closures
+    run_test implicit_calls
 
     run_test fibonacci
     run_test factorial

@@ -42,7 +42,7 @@ static bool is_int_expr(Value *v1, Value *v2) {
     return isa<IntValue>(v1) && isa<IntValue>(v2);
 }
 
-/// @return true if t1 is same as t2 or t1 is subtype of t2 (child class)
+/// \return true if t1 is same as t2 or t1 is subtype of t2 (child class)
 static bool is_type_eq_or_subtype(Value *t1, Value *t2) {
     if (t1 == t2)
         return true;
@@ -55,9 +55,49 @@ static bool is_type_eq_or_subtype(Value *t1, Value *t2) {
     return false;
 }
 
+/// \brief Does a call within this VM to a function in the code
+/// \param vm VM where to call
+/// \param funV Function which to call
+/// \param args Arguments to pass in there the 0th arg is `this` argument
+/// \return Value returned by the function
+Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
+    LOGMAX("Doing a rungime call to " << *funV);
+    vm->push_call_frame();
+    auto cf = vm->get_call_frame();
+    for (auto v: args) {
+        cf->push_back(v);
+    }
+    assert(args.size() != 0 && "Missing this argument");
+    cf->get_args().back().name = "this";
+
+    cf->set_runtime_call(true);
+    vm->runtime_call(funV);
+    auto ret_v = cf->get_extern_return_value();
+
+    LOGMAX("Runtime call finished");
+    return ret_v;
+}
+
+/// Converts value to string
+/// \note This might do a runtime call to __String method
+static opcode::StringConst to_string(Interpreter *vm, Value *v) {
+    if (auto ov = dyn_cast<ObjectValue>(v)) {
+        auto string_attr = ov->get_attr(known_names::TO_STRING_METHOD);
+        FunValue *string_fun = nullptr;
+        if (string_attr)
+            string_fun = dyn_cast<FunValue>(string_attr);
+        if (string_fun) {
+            // We need to have a runtime call to the function that executes
+            // right now
+            return runtime_method_call(vm, string_fun, {v})->as_string();
+        }
+    }
+    return v->as_string();
+}
+
 void opcode::raise(Interpreter *vm, Value *exc) {
     (void) vm;
-    errs << exc->as_string();
+    errs << to_string(vm, exc);
 }
 
 void End::exec(Interpreter *vm) {
@@ -564,7 +604,7 @@ void Return::exec(Interpreter *vm) {
         ret_v = vm->load(src);
     }
     assert(ret_v && "Return register does not contain any value??");
-    if (cf->is_extern_module_call()) {
+    if (cf->is_extern_module_call() || cf->is_runtime_call()) {
         // We need to propagete the return value back using the CallFrame
         // which is used by both VMs. We also need to stop the current
         // vm and this will return back to the call.
@@ -594,7 +634,7 @@ void ReturnConst::exec(Interpreter *vm) {
         ret_v = vm->load_const(csrc);
     }
     assert(ret_v && "Return register does not contain any value??");
-    if (cf->is_extern_module_call()) {
+    if (cf->is_extern_module_call() || cf->is_runtime_call()) {
         // We need to propagete the return value back using the CallFrame
         // which is used by both VMs. We also need to stop the current
         // vm and this will return back to the call.
@@ -833,7 +873,7 @@ void Output::exec(Interpreter *vm) {
     auto *v = vm->load(src);
     assert(v && "Cannot load src");
 
-    std::cout << v->as_string();
+    std::cout << to_string(vm, v);
 }
 
 static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpreter *vm) {
@@ -845,8 +885,8 @@ static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpr
     // if so then call it and return it `as_string` if its not
     // if it does not then do as for all other
 
-    ustring s1_str = s1->as_string();
-    ustring s2_str = s2->as_string();
+    ustring s1_str = to_string(vm, s1);
+    ustring s2_str = to_string(vm, s2);
 
     return new StringValue(s1_str + s2_str);
 }
