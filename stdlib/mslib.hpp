@@ -34,11 +34,6 @@ Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base);
 /// \param err Possible exception from execution
 void dispatch(Interpreter *vm, ustring name, Value *&err);
 
-/// \brief Creates mslib functions and pushes them into memory pool
-/// \param gf Global frame
-/// \param reg_counter Register number at which to start inserting functions
-void init(MemoryPool *gf, opcode::Register &reg_counter);
-
 }
 
 }

@@ -442,7 +442,7 @@ function test_lib_print {
 
 function test_lib_type_constructors {
     expect_pass "stdlib_tests/type_constructors.ms" $1
-    expect_out_eq '56\n56\n42\n10\n0\n22\n100\n0\n' $1
+    expect_out_eq '56\n56\n42\n10\n0\n22\n100\n0\n-8\n' $1
 }
 
 function test_gc_local_vars {

@@ -80,55 +80,32 @@ Value *mslib::Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
 }
 
 void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
-    auto args = vm->get_call_frame()->get_args();
-    // TODO: Generalize the argument extraction and type checking
+    auto cf = vm->get_call_frame();
+    auto args = cf->get_args();
+    auto arg_size = args.size();
+
     Value *ret_v = nullptr;
+
+    // Matching function name to execute internal implementation
     if (name == "exit") {
-        assert(args.size() == 1 && "Mismatch of args");
+        assert(arg_size == 1 && "Mismatch of args");
         exit(vm, args[0].value);
         // We must return here as otherwise the bci which exit set would be
         // overriden by the caller bci
         return;
     }
     else if (name == "vardump") {
-        assert(args.size() == 1 && "Mismatch of args");
+        assert(arg_size == 1 && "Mismatch of args");
         ret_v = vardump(vm, args[0].value);
     }
     else if (name == "print") {
-        assert(args.size() == 3 && "Mismatch of args");
-        Value *msgs = nullptr;
-        Value *separator = nullptr;
-        Value *end = nullptr;
-        for (auto a: args) {
-            if (a.name == "msgs")
-                msgs = a.value;
-            else if (a.name == "end")
-                end = a.value;
-            else if (a.name == "separator")
-                separator = a.value;
-        }
-        assert(msgs);
-        assert(separator);
-        assert(end);
-        ret_v = print(vm, msgs, end, separator);
+        assert(arg_size == 3 && "Mismatch of args");
+        ret_v = print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"));
     }
     else if (name == "Int") {
-        assert((args.size() == 3 || args.size() == 2) && "Mismatch of args");
-        Value *ths = nullptr;
-        Value *v = nullptr;
-        Value *base = nullptr;
-        for (auto a : args) {
-            if (a.name == "this")
-                ths = a.value;
-            else if (a.name == "v")
-                v = a.value;
-            else if (a.name == "base")
-                base = a.value;
-        }
-        assert(ths);
-        assert(v);
+        assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");
         // Base might not be set as this is only for string argument
-        ret_v = Int(vm, ths, v, base);
+        ret_v = Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
     }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
@@ -145,7 +122,7 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     vm->set_bci(caller_addr);
 }
 
-void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {
+/*void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {
     // Note: Also add function to matching above
     auto create_fun = [gf, &reg_counter](ustring name, ustring arg_names) {
         auto f = new FunValue(name, arg_names);
@@ -156,17 +133,10 @@ void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {
         ++reg_counter;
         return f;
     };
-    
-    // exit(code=0)
-    auto f_exit = create_fun("exit", "code");
-    f_exit->set_default(0, BuiltIns::IntConstants[0]);
-
-    // vardump(value)
-    create_fun("vardump", "value");
 
     // print(... msgs, end="\n", separator=" ")
     auto f_print = create_fun("print", "msgs,end,separator");
     f_print->set_vararg(0);
     f_print->set_default(1, new StringValue("\n"));
     f_print->set_default(2, new StringValue(" "));
-}
+}*/

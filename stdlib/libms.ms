@@ -16,3 +16,11 @@ class __Int {
     fun Int(v:[Int, Float]=0) {}
 }
 
+@internal
+fun vardump(value) {}
+
+@internal
+fun print(... msgs, end="\n", separator=" ") {}
+
+@internal
+fun exit(code=0) {}

@@ -87,6 +87,16 @@ public:
     bool is_extern_module_call() { return this->extern_module_call; }
     Value *get_extern_return_value() { return this->extern_return_value; }
 
+    Value *get_arg(ustring name, bool optional=false) {
+        for (auto a: args) {
+            if (a.name == name) {
+                return a.value;
+            }
+        }
+        assert(optional && "Argument expected but not found");
+        return nullptr;
+    }
+
     std::ostream& debug(std::ostream& os) const {
         os << "CallFrame:\n"
            << "\treturn_reg: " << return_reg << "\n"
