@@ -165,7 +165,12 @@ int main(int argc, const char *argv[]) {
         assert(Interpreter::libms_mod && "TODO: Raise Could not load libms");
         interpreter->push_spilled_value(Interpreter::libms_mod);*/
 
-        interpreter->run();
+        try {
+            interpreter->run();
+        } catch (Value *v) {
+            errs << opcode::to_string(interpreter, v);
+            interpreter->set_exit_code(1);
+        }
 
         LOGMAX(*interpreter);
         exit_code = interpreter->get_exit_code();

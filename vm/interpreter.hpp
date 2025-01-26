@@ -122,6 +122,25 @@ inline std::ostream& operator<< (std::ostream& os, CallFrame &cf) {
     return cf.debug(os);
 }
 
+/// Object for matching moss exceptions to addresses.
+struct ExceptionCatch {
+    Value *type;
+    ustring name;
+    opcode::Address addr;
+
+    CallFrame *cf_position;
+    MemoryPool *frame_position;
+
+    ExceptionCatch(Value *type,
+                   ustring name,
+                   opcode::Address addr,
+                   CallFrame *cf_position,
+                   MemoryPool *frame_position)
+        : type(type), name(name), addr(addr), cf_position(cf_position),
+          frame_position(frame_position) {
+    }
+};
+
 /// \brief Interpreter for moss bytecode
 /// Interpreter holds memory pools (stack frames) and runs bytecode provided
 class Interpreter {
@@ -136,7 +155,8 @@ private:
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
 
-    std::list<Value *> exception_stack;  ///< Stack of raised exceptions, there might be multiple of them
+    std::list<ExceptionCatch> catches;
+    //std::list<Value *> exception_stack;  ///< Stack of raised exceptions, there might be multiple of them
 
     static gcs::TracingGC *gc;
 
@@ -164,9 +184,6 @@ public:
     void runtime_call(FunValue *fun);
 
     static ModuleValue *libms_mod;
-
-    MemoryPool *get_global_frame() { return this->frames.front(); }
-    std::list<MemoryPool *>& get_frames() { return this->frames; }
 
     /// Stores a value into a register
     void store(opcode::Register reg, Value *v);
@@ -208,6 +225,8 @@ public:
     void pop_frame();
     /// \return Top frame, meaning the current local frame or global if no local is inserted
     MemoryPool *get_top_frame() { return this->get_local_frame(); }
+    MemoryPool *get_global_frame() { return this->frames.front(); }
+    std::list<MemoryPool *>& get_frames() { return this->frames; }
 
     /// Spills value into current frame
     void push_spilled_value(Value *v);
@@ -216,6 +235,9 @@ public:
     CallFrame *get_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame was pushed");
         return this->call_frames.back();
+    }
+    bool has_call_frame() {
+        return !this->call_frames.empty();
     }
 
     /// Pushes a new empty call frame into call frame stack
@@ -251,11 +273,20 @@ public:
     ModuleValue *top_currently_imported_module();
 #endif
 
-    void push_exception(Value *v) { exception_stack.push_back(v); }
-    void pop_exception() { exception_stack.pop_back(); }
-    Value *top_exception() { return exception_stack.back(); }
-    bool has_exception() { return !exception_stack.empty(); }
-    std::list<Value *> &get_exceptions() { return exception_stack; }
+    void push_catch(ExceptionCatch ec) {
+        this->catches.push_back(ec);
+    }
+    void pop_catch() {
+        assert(!this->catches.empty() && "Popping empty catch stack");
+        this->catches.pop_back();
+    }
+    std::list<ExceptionCatch>& get_catches() { return this->catches; }
+
+    //void push_exception(Value *v) { exception_stack.push_back(v); }
+    //void pop_exception() { exception_stack.pop_back(); }
+    //Value *top_exception() { return exception_stack.back(); }
+    //bool has_exception() { return !exception_stack.empty(); }
+    //std::list<Value *> &get_exceptions() { return exception_stack; }
 
     //void collect_garbage();
 
@@ -276,6 +307,8 @@ public:
         this->bci = v;
         this->bci_modified = true; 
     }
+
+    void handle_exception(ExceptionCatch ec, Value *v);
 
     opcode::Register get_free_reg(MemoryPool *fr);
 

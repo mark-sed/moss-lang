@@ -486,6 +486,8 @@ public:
         delete arg;
     }
 
+    Argument *get_arg() { return arg; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "catch (" << *arg << ") {\n";
         for (auto d: body) {
@@ -517,22 +519,25 @@ public:
 class Try : public Construct {
 private:
     std::vector<Catch *> catches;
-    Finally *finallyStmt;
+    Finally *finally_stmt;
 
 public:
     static const IRType ClassType = IRType::TRY;
 
-    Try(std::vector<Catch *> catches, std::list<IR *> trbody, Finally *finallyStmt=nullptr) 
-           : Construct(ClassType, "try"), catches(catches), finallyStmt(finallyStmt) {
+    Try(std::vector<Catch *> catches, std::list<IR *> trbody, Finally *finally_stmt=nullptr) 
+           : Construct(ClassType, "try"), catches(catches), finally_stmt(finally_stmt) {
         this->body = trbody;
     }
     ~Try() {
         for (auto c : catches) {
             delete c;
         }
-        if (finallyStmt)
-            delete finallyStmt;
+        if (finally_stmt)
+            delete finally_stmt;
     }
+
+    std::vector<Catch *>& get_catches() { return catches; }
+    Finally *get_finally() { return finally_stmt; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "try {\n";
@@ -543,8 +548,8 @@ public:
         for (auto c : catches) {
             os << *c;
         }
-        if (finallyStmt)
-            os << *finallyStmt;
+        if (finally_stmt)
+            os << *finally_stmt;
         return os;
     }
 };

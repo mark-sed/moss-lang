@@ -186,6 +186,7 @@ xxh - COPY_ARGS
 xxh - RAISE         %val
 xxh - CATCH         "exc_name", addr
 xxh - CATCH_TYPED   "exc_name", "type", addr
+xxh - POP_CATCH
 
 xxh - LIST_PUSH         %dst, %val
 xxh - LIST_PUSH_CONST   %dst, #val

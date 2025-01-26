@@ -42,8 +42,7 @@ static bool is_int_expr(Value *v1, Value *v2) {
     return isa<IntValue>(v1) && isa<IntValue>(v2);
 }
 
-/// \return true if t1 is same as t2 or t1 is subtype of t2 (child class)
-static bool is_type_eq_or_subtype(Value *t1, Value *t2) {
+bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
     if (t1 == t2)
         return true;
     if (auto cls1 = dyn_cast<ClassValue>(t1)) {
@@ -87,7 +86,7 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
 
 /// Converts value to string
 /// \note This might do a runtime call to __String method
-static opcode::StringConst to_string(Interpreter *vm, Value *v) {
+opcode::StringConst opcode::to_string(Interpreter *vm, Value *v) {
     if (auto ov = dyn_cast<ObjectValue>(v)) {
         auto string_attr = ov->get_attr(known_names::TO_STRING_METHOD);
         FunValue *string_fun = nullptr;
@@ -106,8 +105,7 @@ static opcode::StringConst to_string(Interpreter *vm, Value *v) {
 
 void opcode::raise(Interpreter *vm, Value *exc) {
     (void) vm;
-
-    errs << to_string(vm, exc);
+    throw exc;
 }
 
 void End::exec(Interpreter *vm) {
@@ -1715,12 +1713,26 @@ void Raise::exec(Interpreter *vm) {
     raise(vm, s1);
 }
 
+static void catch_op(Interpreter *vm, Value *type, ustring name, Address addr) {
+    CallFrame *cf = nullptr;
+    if (vm->has_call_frame()) {
+        cf = vm->get_call_frame();
+    }
+    vm->push_catch(ExceptionCatch(type, name, addr, cf, vm->get_top_frame()));
+}
+
 void Catch::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    catch_op(vm, nullptr, name, addr);
 }
 
 void CatchTyped::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto t = vm->load(type);
+    assert(t && "Could not load type");
+    catch_op(vm, t, name, addr);
+}
+
+void PopCatch::exec(Interpreter *vm) {
+    vm->pop_catch();
 }
 
 void ListPush::exec(Interpreter *vm) {

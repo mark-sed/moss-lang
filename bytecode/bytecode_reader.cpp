@@ -649,9 +649,12 @@ Bytecode *BytecodeReader::read() {
             } break;
             case opcode::OpCodes::CATCH_TYPED: {
                 auto name = read_string();
-                auto type = read_string();
+                auto type = read_register();
                 auto addr = read_address();
                 bc->push_back(new CatchTyped(name, type, addr));
+            } break;
+            case opcode::OpCodes::POP_CATCH: {
+                bc->push_back(new PopCatch());
             } break;
             case opcode::OpCodes::LIST_PUSH: {
                 auto reg1 = read_register();

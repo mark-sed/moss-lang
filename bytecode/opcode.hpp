@@ -173,6 +173,7 @@ enum OpCodes : opcode_t {
     RAISE, //         %src
     CATCH,       //   "exc_name", addr
     CATCH_TYPED, //   "exc_name", "type", addr
+    POP_CATCH,   //
 
     LIST_PUSH, //         %dst, %val
     LIST_PUSH_CONST, //   %dst, #val
@@ -198,6 +199,10 @@ enum OpCodes : opcode_t {
 
 void raise(Interpreter *vm, Value *exc);
 ModuleValue *load_module(Interpreter *vm, ustring name);
+StringConst to_string(Interpreter *vm, Value *v);
+
+/// \return true if t1 is same as t2 or t1 is subtype of t2 (child class)
+bool is_type_eq_or_subtype(Value *t1, Value *t2);
 
 /// Base Opcode class
 class OpCode {
@@ -1714,24 +1719,42 @@ public:
 class CatchTyped : public OpCode {
 public:
     StringConst name;
-    StringConst type;
+    Register type;
     Address addr;
 
     static const OpCodes ClassType = OpCodes::CATCH_TYPED;
 
-    CatchTyped(StringConst name, StringConst type, Address addr)
+    CatchTyped(StringConst name, Register type, Address addr)
         : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  \"" << name << "\", \"" << type << "\", " << addr;
+        os << mnem << "  \"" << name << "\", %" << type << ", " << addr;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CatchTyped>(other);
         if (!casted) return false;
         return casted->name == name && casted->addr == addr && casted->type == type;
+    }
+};
+
+class PopCatch : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::POP_CATCH;
+
+    PopCatch() : OpCode(ClassType, "POP_CATCH") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PopCatch>(other);
+        return casted != nullptr;
     }
 };
 

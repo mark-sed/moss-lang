@@ -68,6 +68,7 @@ private:
     void emit(ir::While *whstmt);
     void emit(ir::Import *im);
     void emit(ir::DoWhile *whstmt);
+    void emit(ir::Try *tcf);
     void emit(ir::Function *fun);
     void emit(ir::Class *cls);
     void emit(ir::Enum *enm);

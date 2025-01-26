@@ -270,6 +270,12 @@ function test_whiles {
 -\n1\n2\n3\n3\n" $1
 }
 
+function test_try_catch {
+    expect_pass "try_catch.ms" $1
+    expect_out_eq "Success\nfinally end\nCaught NameError: Unkown name!\nfinally end
+Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8\nmodule end\n" $1
+}
+
 function test_classes {
     expect_pass "classes.ms" $1
     expect_out_eq "42\n<class Cat>\n<object of class Cat>
@@ -529,6 +535,7 @@ function run_all_tests {
     run_test functions
     run_test ifs
     run_test whiles
+    run_test try_catch
     run_test classes
     run_test attributes
     run_test inheritance

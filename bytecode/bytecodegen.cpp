@@ -857,6 +857,77 @@ void BytecodeGen::emit(ir::Enum *enm) {
     append(new BuildEnum(next_reg(), list_reg, enm->get_name()));
 }
 
+void BytecodeGen::emit(ir::Try *tcf) {
+    // Vector of catches that were generated to set jumps to their blocks
+    // It is 2D to handle typed arguments
+    std::vector<std::vector<opcode::OpCode *>> gen_catches{};
+    unsigned catch_am = 0;
+    for (auto ctch: tcf->get_catches()) {
+        Argument *a = ctch->get_arg();
+        assert(!a->has_default_value() && "Somehow catch argument has default value");
+        assert(!a->is_vararg() && "Somehow catch argument is vararg");
+        if (a->is_typed()) {
+            std::vector<opcode::OpCode *> typed_catches{};
+            for (auto t: a->get_types()) {
+                auto type_reg = emit(t, true);
+                auto c = new opcode::CatchTyped(a->get_name(), free_reg(type_reg), 0);
+                typed_catches.push_back(c);
+                append(c);
+                ++catch_am;
+            }
+            gen_catches.push_back(typed_catches);
+        } else {
+            auto c = new opcode::Catch(a->get_name(), 0);
+            gen_catches.push_back(std::vector<opcode::OpCode *>{c});
+            append(c);
+            ++catch_am;
+        }
+    }
+
+    // Try body
+    emit(tcf->get_body());
+    auto try_jmp = new opcode::Jmp(0);
+    append(try_jmp);
+
+    // List of jumps in catch blocks to set their addresses to finally block
+    std::vector<opcode::Jmp *> jmps{};
+    unsigned i = 0;
+    for (auto ctch: tcf->get_catches()) {
+        if (auto c = dyn_cast<opcode::Catch>(gen_catches[i][0])) {
+            c->addr = get_curr_address() + 1;
+        } else {
+            for (auto cv: gen_catches[i]) {
+                auto ct = dyn_cast<opcode::CatchTyped>(cv);
+                assert(ct && "Non catch was pushed into catch list");
+                ct->addr = get_curr_address() + 1;
+            }
+        }
+        
+        emit(ctch->get_body());
+
+        auto j = new opcode::Jmp(0);
+        jmps.push_back(j);
+        append(j);
+        ++i;
+    }
+
+    for (auto j: jmps) {
+        j->addr = get_curr_address() + 1;
+    }
+    // If try succeeds it needs to jump after catches (which might be finally)
+    try_jmp->addr = get_curr_address() + 1;
+
+    // Finally generation
+    if (auto fnl = tcf->get_finally()) {
+        emit(fnl->get_body());
+    }
+
+    // Generating pop_catch
+    for (unsigned i = 0; i < catch_am; ++i) {
+        append(new opcode::PopCatch());
+    }
+}
+
 void BytecodeGen::emit(ir::IR *decl) {
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
@@ -890,6 +961,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto i = dyn_cast<ir::Import>(decl)) {
         emit(i);
+    }
+    else if (auto t = dyn_cast<ir::Try>(decl)) {
+        emit(t);
     }
     else if (isa<EndOfFile>(decl)) {
         append(new End());

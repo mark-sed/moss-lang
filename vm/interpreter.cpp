@@ -3,6 +3,7 @@
 #include "values.hpp"
 #include "mslib.hpp"
 #include "values.hpp"
+#include <exception>
 
 using namespace moss;
 
@@ -242,12 +243,54 @@ ModuleValue *Interpreter::top_currently_imported_module() {
 }
 #endif
 
+void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
+    set_bci(ec.addr);
+
+    // Restoring frames
+    for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
+        if (*riter == ec.frame_position) {
+            break;
+        }
+        pop_frame();
+    }
+
+    // Restoring call frames
+    for (auto riter = call_frames.rbegin(); riter != call_frames.rend(); ++riter) {
+        if (*riter == ec.cf_position) {
+            break;
+        }
+        pop_call_frame();
+    }
+
+    // Setting exception value
+    auto reg = get_free_reg(get_top_frame());
+    store(reg, v);
+    store_name(reg, ec.name);
+}
+
 void Interpreter::run() {
     LOG1("Running interpreter of " << (src_file ? src_file->get_name() : "??") << "\n----- OUTPUT: -----");
 
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
-        opc->exec(this);
+        try {
+            opc->exec(this);
+        } catch (Value *v) {
+            // Match to known catches otherwise let fall through to next interpreter
+            // or interpreter owner to print or exit or both
+            bool handled = false;
+            for (auto ec: catches) {
+                if (!ec.type || opcode::is_type_eq_or_subtype(ec.type, v->get_type())) {
+                    LOGMAX("Caught exception");
+                    handle_exception(ec, v);
+                    handled = true;
+                    break;
+                }
+            }
+            // Rethrow exception to be handled by next interpreter or unhandled
+            if (!handled)
+                throw v;
+        }
         if (stop || global_controls::exit_called) {
             stop = false;
             break;
@@ -264,6 +307,7 @@ void Interpreter::run() {
             global_controls::trigger_gc = false;
         }
     }
+    
 
     LOG1("Finished interpreter");
 }
