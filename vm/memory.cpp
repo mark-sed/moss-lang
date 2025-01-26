@@ -64,6 +64,20 @@ Value *MemoryPool::load_name(ustring name, Value **owner) {
     return nullptr;
 }
 
+void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
+    bool first = true;
+    ++tab_depth;
+    for (auto [k, v]: sym_table) {
+        if (!first) {
+            os << ",";
+        }
+        first = false;
+        os << "\n";
+        os << std::string(tab_depth*2, ' ') << "\"" << k << "\": " << *(this->pool[v]);
+    }
+    --tab_depth;
+}
+
 std::ostream& MemoryPool::debug(std::ostream& os) const {
     os << "> Symbol table:\n";
     for (auto [k, v] : this->sym_table) {

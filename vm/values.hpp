@@ -426,11 +426,7 @@ public:
         return "<object of class " + this->type->get_name() + ">";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
-        // TODO: Output all attributes and so on
-        os << "(" << this->type->get_name() << ")object";
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const override;
 };
 
 class ModuleValue : public Value {

@@ -432,6 +432,14 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     ClassValue *constructor_of = nullptr;
     // Class constructor call
     if (auto cls = dyn_cast<ClassValue>(funV)) {
+        LOGMAX("Constructor call");
+        // Check if this is set and it is a module (e.g `mod1.MyClass()`)
+        if (!cf->get_args().empty() && cf->get_args().back().name == "this" && isa<ModuleValue>(cf->get_args().back().value)) {
+            // this argument is set for all attribute calls (as we don't know the
+            // type in bytecodegen), so remove it if the value should not know it
+            LOGMAX("Removing module arg from constructor call");
+            cf->get_args().pop_back();
+        }
         constructor_of = cls;
         if (cls->get_attrs())
             funV = cls->get_attrs()->load_name(cls->get_name());
@@ -445,6 +453,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             // No constructor is provided so execute implicit one
             // by setting this and returning
             if (!funV) {
+                LOGMAX("No constructor provided, executing implicit one");
                 auto obj = new ObjectValue(constructor_of);
                 vm->store(cf->get_return_reg(), obj);
                 // Also pop call frame
@@ -499,7 +508,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             return;
         }
     }
-    else if (fun->get_vm() != vm) {
+    else if (fun->get_vm() != vm) { // External
         LOGMAX("Function detected to be from other module");
         LOGMAX("Setting up module for its function call");
         // This calls the function

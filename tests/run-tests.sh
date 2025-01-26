@@ -362,7 +362,7 @@ function test_closures {
 
 function test_implicit_calls {
     expect_pass "implicit_calls.ms" $1
-    expect_out_eq "hello is my string\nbye is my string\n" $1
+    expect_out_eq "hello is my string\nbye is my string\n42\n<object of class MyNumber>\n" $1
 }
 
 function test_fibonacci {
@@ -437,7 +437,12 @@ List(1) [
       C
     }
   ]
-]\nEnum {}\n' $1
+]\nEnum {}
+Class MyClass : Int, Float {
+  \"MyClass\": Fun(MyClass @102),
+  \"NAME\": String(\"myclass\"),
+  \"get_n\": Fun(get_n @112)
+}\n' $1
 }
 
 function test_lib_print {

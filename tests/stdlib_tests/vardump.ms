@@ -25,3 +25,18 @@ vardump([[MyEnum]])
 enum EmptyEnum {}
 
 vardump(EmptyEnum)
+
+class MyClass : Int, Float {
+
+    NAME = "myclass"
+
+    fun MyClass(n:[Int, Float]) {
+        this.n = n 
+    }
+
+    fun get_n() {
+        return this.n
+    }
+}
+
+vardump(MyClass)

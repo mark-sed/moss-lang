@@ -82,21 +82,40 @@ void Value::operator delete(void * p, size_t size) {
 
 std::ostream& ClassValue::debug(std::ostream& os) const {
     // TODO: Output all needed debug info
-    os << "Class(" << name; 
+    os << "Class " << name;
     bool first = true;
     for (auto s : supers) {
         if (first) {
-            os << ", parents: {" << s->get_name();
+            os << " : " << s->get_name();
             first = false;
         }
         else {
             os << ", " << s->get_name();
         }
     }
-    if (!first)
+    os << " {";
+    if (!attrs || attrs->is_empty_sym_table()) {
         os << "}";
-    os << ")";
-    //os << *attrs;
+    }
+    else {
+        attrs->debug_sym_table(os, tab_depth);
+        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+    }
+
+    return os;
+}
+
+std::ostream& ObjectValue::debug(std::ostream& os) const {
+    // TODO: Output all needed debug info
+    os << "Object : " << type->get_name() << " {"; 
+    if (!attrs || attrs->is_empty_sym_table()) {
+        os << "}";
+    }
+    else {
+        attrs->debug_sym_table(os, tab_depth);
+        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+    }
+
     return os;
 }
 

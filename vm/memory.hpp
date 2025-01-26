@@ -88,9 +88,12 @@ public:
     
     bool is_global() { return this->global; }
 
+    bool is_empty_sym_table() { return this->sym_table.empty(); }
+
     void set_pool_fun_owner(FunValue *f) { this->pool_fun_owner = f; }
 
     std::ostream& debug(std::ostream& os) const;
+    void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;
 };
 
 inline std::ostream& operator<< (std::ostream& os, MemoryPool &pool) {
