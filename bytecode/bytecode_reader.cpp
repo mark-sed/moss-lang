@@ -642,10 +642,16 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::RAISE: {
                 bc->push_back(new Raise(read_register()));
             } break;
-            case opcode::OpCodes::CHECK_CATCH: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                bc->push_back(new CheckCatch(reg1, reg2));
+            case opcode::OpCodes::CATCH: {
+                auto name = read_string();
+                auto addr = read_address();
+                bc->push_back(new Catch(name, addr));
+            } break;
+            case opcode::OpCodes::CATCH_TYPED: {
+                auto name = read_string();
+                auto type = read_string();
+                auto addr = read_address();
+                bc->push_back(new CatchTyped(name, type, addr));
             } break;
             case opcode::OpCodes::LIST_PUSH: {
                 auto reg1 = read_register();

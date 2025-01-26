@@ -135,6 +135,9 @@ private:
 
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
+
+    std::list<Value *> exception_stack;  ///< Stack of raised exceptions, there might be multiple of them
+
     static gcs::TracingGC *gc;
 
     opcode::Address bci;
@@ -247,6 +250,12 @@ public:
     /// This method is for debugging
     ModuleValue *top_currently_imported_module();
 #endif
+
+    void push_exception(Value *v) { exception_stack.push_back(v); }
+    void pop_exception() { exception_stack.pop_back(); }
+    Value *top_exception() { return exception_stack.back(); }
+    bool has_exception() { return !exception_stack.empty(); }
+    std::list<Value *> &get_exceptions() { return exception_stack; }
 
     //void collect_garbage();
 

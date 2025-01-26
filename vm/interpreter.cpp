@@ -88,6 +88,7 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Module", BuiltIns::Module, gf);
 
     store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
+    store_glob_val(reg++, "NameError", BuiltIns::NameError, gf);
 
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }

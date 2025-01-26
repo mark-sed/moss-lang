@@ -184,7 +184,8 @@ xxh - ASSERT    %src, %msg
 xxh - COPY_ARGS
 
 xxh - RAISE         %val
-xxh - CHECK_CATCH   %dst, %class
+xxh - CATCH         "exc_name", addr
+xxh - CATCH_TYPED   "exc_name", "type", addr
 
 xxh - LIST_PUSH         %dst, %val
 xxh - LIST_PUSH_CONST   %dst, #val
@@ -458,4 +459,50 @@ Foo.goo
 x   LOAD_NAME %0, "Foo"
 x   LOAD_ATTR %1, %0, "goo"
 x   OUTPUT %1
+```
+
+### Try, catch, finally and raise
+
+```cpp
+try {
+    "Hi"
+    raise Exception("oups")
+} catch (e:NameError) {
+    e
+} catch (e) {
+    "oh no"
+} finally {
+    "done"
+}
+```
+
+```
+x   CATCH_TYPED  "e", "NameError", <addr of catch e:NameError>
+x   CATCH  "e", <addr of catch e:NameError>
+
+; try
+x   STORE_STR_CONST #0, "Hi"
+x   STORE_CONST     %0, #0
+x   OUTPUT %0
+x   ... ; loading Exception
+x   RAISE  %100
+x   JMP <addr of finally>
+
+; catch e:NameError
+x   LOAD_NAME %1, "e"
+x   OUTPUT %1
+x   JMP <addr of finally>
+
+; catch e
+x   STORE_STR_CONST #1, "oh no"
+x   STORE_CONST     %2, #1
+x   OUTPUT %2
+x   JMP <addr of finally>
+
+; Finally
+x   STORE_STR_CONST #2, "done"
+x   STORE_CONST     %3, #2
+x   OUTPUT %3 
+
+x   POP_CATCH
 ```

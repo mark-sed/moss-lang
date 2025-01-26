@@ -106,6 +106,7 @@ static opcode::StringConst to_string(Interpreter *vm, Value *v) {
 
 void opcode::raise(Interpreter *vm, Value *exc) {
     (void) vm;
+
     errs << to_string(vm, exc);
 }
 
@@ -1714,7 +1715,11 @@ void Raise::exec(Interpreter *vm) {
     raise(vm, s1);
 }
 
-void CheckCatch::exec(Interpreter *vm) {
+void Catch::exec(Interpreter *vm) {
+    assert(false && "TODO: Unimplemented opcode");
+}
+
+void CatchTyped::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 

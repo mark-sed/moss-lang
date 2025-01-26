@@ -243,9 +243,14 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::Raise>(op_gen)){
             write_register(o->src);
         }
-        else if (auto o = dyn_cast<opcode::CheckCatch>(op_gen)){
-            write_register(o->dst);
-            write_register(o->klass);
+        else if (auto o = dyn_cast<opcode::Catch>(op_gen)){
+            write_string(o->name);
+            write_address(o->addr);
+        }
+        else if (auto o = dyn_cast<opcode::CatchTyped>(op_gen)){
+            write_string(o->name);
+            write_string(o->type);
+            write_address(o->addr);
         }
         else if (auto o = dyn_cast<opcode::ListPush>(op_gen)){
             write_register(o->dst);

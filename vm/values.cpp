@@ -170,6 +170,7 @@ Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 Value *BuiltIns::Module = new ClassValue("Module");
 
 Value *BuiltIns::Exception = new ClassValue("Exception");
+Value *BuiltIns::NameError = new ClassValue("NameError");
 
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {

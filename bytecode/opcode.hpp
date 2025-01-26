@@ -171,7 +171,8 @@ enum OpCodes : opcode_t {
     COPY_ARGS, //
 
     RAISE, //         %src
-    CHECK_CATCH, //   %dst, %class
+    CATCH,       //   "exc_name", addr
+    CATCH_TYPED, //   "exc_name", "type", addr
 
     LIST_PUSH, //         %dst, %val
     LIST_PUSH_CONST, //   %dst, #val
@@ -1688,25 +1689,49 @@ public:
     }
 };
 
-class CheckCatch : public OpCode {
+class Catch : public OpCode {
 public:
-    Register dst;
-    Register klass;
+    StringConst name;
+    Address addr;
 
-    static const OpCodes ClassType = OpCodes::CHECK_CATCH;
+    static const OpCodes ClassType = OpCodes::CATCH;
 
-    CheckCatch(Register dst, Register klass) : OpCode(ClassType, "CHECK_CATCH"), dst(dst), klass(klass) {}
+    Catch(StringConst name, Address addr) : OpCode(ClassType, "CATCH"), name(name), addr(addr) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << klass;
+        os << mnem << "  \"" << name << "\", " << addr;
         return os;
     }
     bool equals(OpCode *other) override {
-        auto casted = dyn_cast<CheckCatch>(other);
+        auto casted = dyn_cast<Catch>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->klass == klass;
+        return casted->name == name && casted->addr == addr;
+    }
+};
+
+class CatchTyped : public OpCode {
+public:
+    StringConst name;
+    StringConst type;
+    Address addr;
+
+    static const OpCodes ClassType = OpCodes::CATCH_TYPED;
+
+    CatchTyped(StringConst name, StringConst type, Address addr)
+        : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  \"" << name << "\", \"" << type << "\", " << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<CatchTyped>(other);
+        if (!casted) return false;
+        return casted->name == name && casted->addr == addr && casted->type == type;
     }
 };
 

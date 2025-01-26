@@ -176,6 +176,7 @@ namespace BuiltIns {
     extern Value *Module;
 
     extern Value *Exception;
+    extern Value *NameError;
 
     extern Value *Nil;
     #define BUILT_INS_INT_CONSTANTS_AM 262

@@ -42,6 +42,13 @@ class __Exception {
     fun Exception(msg:String) {}
 
     fun __String() {
-        return this.msg
+        return "Exception: "++this.msg
+    }
+}
+
+@internal_bind("NameError")
+class __NameError : Exception {
+    fun __String() {
+        return "NameError: " ++ this.msg
     }
 }

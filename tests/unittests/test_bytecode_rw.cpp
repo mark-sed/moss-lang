@@ -170,7 +170,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::CopyArgs());
 
     bc->push_back(new opcode::Raise(14));
-    bc->push_back(new opcode::CheckCatch(10, 9));
+    bc->push_back(new opcode::Catch("e", 204));
+    bc->push_back(new opcode::CatchTyped("e", "NameError", 206));
 
     bc->push_back(new opcode::ListPush(7, 5));
     bc->push_back(new opcode::ListPushConst(7, 6));

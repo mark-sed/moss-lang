@@ -119,8 +119,8 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
-        // TODO: Change to exception
-        err = new StringValue(msg);
+        err = new ObjectValue(dyn_cast<ClassValue>(BuiltIns::NameError));
+        err->set_attr("msg", new StringValue(msg));
     }
 
     auto return_reg = vm->get_call_frame()->get_return_reg();
