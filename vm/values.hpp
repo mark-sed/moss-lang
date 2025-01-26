@@ -81,7 +81,6 @@ protected:
     
     MemoryPool *attrs;
     std::map<ustring, Value *> annotations;
-    Value *external_module_owner;
 
     Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs=nullptr);
 
@@ -141,8 +140,6 @@ public:
     void set_attrs(MemoryPool *p);
     void copy_attrs(MemoryPool *p);
     MemoryPool *get_attrs() { return this->attrs; }
-    void set_external_module_owner(Value *v) { this->external_module_owner = v; }
-    Value *get_external_module_owner() { return this->external_module_owner; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, Value &v) {
@@ -484,13 +481,14 @@ class FunValue : public Value {
 private:
     std::vector<FunValueArg *> args;
     std::list<MemoryPool *> closures;
+    Interpreter *vm;
     opcode::Address body_addr;
 public:
     static const TypeKind ClassType = TypeKind::FUN;
 
-    FunValue(opcode::StringConst name, opcode::StringConst arg_names) 
+    FunValue(opcode::StringConst name, opcode::StringConst arg_names, Interpreter *vm) 
             : Value(ClassType, name, BuiltIns::Function), 
-              args(), closures(), body_addr(0) {
+              args(), closures(), vm(vm), body_addr(0) {
         auto names = utils::split_csv(arg_names, ',');
         for (auto n: names) {
             args.push_back(new FunValueArg(n, std::vector<Value *>{}));
@@ -499,8 +497,9 @@ public:
 
     FunValue(opcode::StringConst name,
              std::vector<FunValueArg *> args,
+             Interpreter *vm,
              opcode::Address body_addr) 
-            : Value(ClassType, name, BuiltIns::Function), args(args), body_addr(body_addr) {}
+            : Value(ClassType, name, BuiltIns::Function), args(args), vm(vm), body_addr(body_addr) {}
 
     ~FunValue() {
         for(auto a: args)
@@ -508,7 +507,7 @@ public:
     }
 
     virtual Value *clone() {
-        return new FunValue(this->name, this->args, this->body_addr);
+        return new FunValue(this->name, this->args, this->vm, this->body_addr);
     }
 
     void set_vararg(opcode::IntConst index) {
@@ -541,6 +540,8 @@ public:
     opcode::Address get_body_addr() { return this->body_addr; }
 
     std::vector<FunValueArg *> get_args() { return this->args; }
+
+    Interpreter *get_vm() { return this->vm; }
 
     virtual opcode::StringConst as_string() const override {
         std::stringstream ss;

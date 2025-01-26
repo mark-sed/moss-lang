@@ -242,7 +242,7 @@ ModuleValue *Interpreter::top_currently_imported_module() {
 #endif
 
 void Interpreter::run() {
-    LOG1("Running interpreter\n----- OUTPUT: -----");
+    LOG1("Running interpreter of " << (src_file ? src_file->get_name() : "??") << "\n----- OUTPUT: -----");
 
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];

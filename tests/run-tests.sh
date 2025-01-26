@@ -351,7 +351,7 @@ Ending module.ms\n" $1
 function test_import_calls {
     expect_pass "module_tests/square.ms" $1
     expect_out_eq "mod1 ran!\nsquare\nmod2fun\ngot result\n25\n9\n100\n49
-mod1 ran!\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n" $1
+mod1 ran!\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\n" $1
 }
 
 function test_closures {
@@ -447,7 +447,8 @@ function test_lib_print {
 
 function test_lib_type_constructors {
     expect_pass "stdlib_tests/type_constructors.ms" $1
-    expect_out_eq '56\n56\n42\n10\n0\n22\n100\n0\n-8\n' $1
+    expect_out_eq '56\n56\n42\n10\n0\n22\n100\n0\n-8
+Some exception\n' $1
 }
 
 function test_gc_local_vars {
@@ -469,9 +470,12 @@ function test_gc_recursion {
     # This test just checks that GC is triggered without any special mode
     # If this fails it might be because of changes in gc threshold (next_gc) 
     expect_pass_log "gc_tests/recursion.ms" "--v1=gc.cpp::collect_garbage" $1
-    expect_out_eq "gc.cpp::collect_garbage: Running GC
+    # This cannot check output when --stress-test-gc is set
+    if ! [[ "$RUN_TEST_FLAGS" =~ "--stress-test-gc" ]] ; then
+        expect_out_eq "gc.cpp::collect_garbage: Running GC
 gc.cpp::collect_garbage: Finished GC
 233\n" $1
+    fi
 }
 
 function test_gc_global_dependency {

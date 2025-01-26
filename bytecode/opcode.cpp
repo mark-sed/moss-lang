@@ -61,7 +61,7 @@ static bool is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \param args Arguments to pass in there the 0th arg is `this` argument
 /// \return Value returned by the function
 Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
-    LOGMAX("Doing a rungime call to " << *funV);
+    LOGMAX("Doing a runtime call to " << *funV);
     vm->push_call_frame();
     auto cf = vm->get_call_frame();
     for (auto v: args) {
@@ -70,8 +70,15 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
     assert(args.size() != 0 && "Missing this argument");
     cf->get_args().back().name = "this";
 
-    cf->set_runtime_call(true);
-    vm->runtime_call(funV);
+    if (funV->get_vm() != vm) {
+        LOGMAX("Function detected as external, doing cross module call");
+        cf->set_extern_module_call(true);
+        funV->get_vm()->cross_module_call(funV, cf);
+    }
+    else {
+        cf->set_runtime_call(true);
+        vm->runtime_call(funV);
+    }
     auto ret_v = cf->get_extern_return_value();
 
     LOGMAX("Runtime call finished");
@@ -89,7 +96,9 @@ static opcode::StringConst to_string(Interpreter *vm, Value *v) {
         if (string_fun) {
             // We need to have a runtime call to the function that executes
             // right now
-            return runtime_method_call(vm, string_fun, {v})->as_string();
+            auto r_val = runtime_method_call(vm, string_fun, {v});
+            assert(r_val && "Runtime call did not return any value");
+            return r_val->as_string();
         }
     }
     return v->as_string();
@@ -137,11 +146,6 @@ void LoadAttr::exec(Interpreter *vm) {
             if (attr)
                 break;
         }
-    } else if (isa<ModuleValue>(v) && (isa<FunValue>(attr) || isa<FunValueList>(attr))) {
-        // If we're loading an attribute from a module, then set the value's
-        // owner to that module so it can be correctly called, this is needed
-        // only for functions and lambdas
-        attr->set_external_module_owner(v);
     }
     assert(attr && "TODO: Nonexistent attr raise exception");
     vm->store(this->dst, attr);
@@ -426,7 +430,6 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     assert(funV && "TODO: Raise function not found");
 
     ClassValue *constructor_of = nullptr;
-    Value *called_fun_owner = nullptr;
     // Class constructor call
     if (auto cls = dyn_cast<ClassValue>(funV)) {
         constructor_of = cls;
@@ -454,7 +457,6 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         // this argument is set for all attribute calls (as we don't know the
         // type in bytecodegen), so remove it if the value should not know it
         LOGMAX("Removing this from non-object call");
-        called_fun_owner = cf->get_args().back().value;
         cf->get_args().pop_back();
     }
     FunValue *fun = dyn_cast<FunValue>(funV);
@@ -480,19 +482,6 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
 
-    // Lets try to get owner if this is a dot imported function
-    if (!called_fun_owner)
-        called_fun_owner = fun->get_external_module_owner();
-    // We can call the function, but it might be external module/space call
-    // So lets load it again and extract owner
-    if (!called_fun_owner)
-        vm->load_name(fun->get_name(), &called_fun_owner);
-#ifndef NDEBUG
-    if (called_fun_owner) {
-        LOGMAX("Function detected to be from other module");
-    }
-#endif
-
     // Set this object if constructor is being called
     if (constructor_of) {
         auto obj = new ObjectValue(constructor_of);
@@ -510,22 +499,22 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             return;
         }
     }
-    else if (called_fun_owner && isa<ModuleValue>(called_fun_owner)) {
+    else if (fun->get_vm() != vm) {
+        LOGMAX("Function detected to be from other module");
         LOGMAX("Setting up module for its function call");
-        auto mod = dyn_cast<ModuleValue>(called_fun_owner);
         // This calls the function
         LOGMAX("Calling different module's function");
         cf->set_extern_module_call(true);
-        mod->get_vm()->cross_module_call(fun, vm->get_call_frame());
+        fun->get_vm()->cross_module_call(fun, vm->get_call_frame());
         LOGMAX("External function has handed over control to original module");
         // This is after return from the function
         vm->store(cf->get_return_reg(), cf->get_extern_return_value());
         vm->set_bci(cf->get_caller_addr());
         // Remove already pushed in call frame
         vm->pop_call_frame();
-        if (mod->get_vm()->get_exit_code() != 0) {
+        if (fun->get_vm()->get_exit_code() != 0) {
             LOGMAX("Delagating exit code from external module");
-            vm->set_exit_code(mod->get_vm()->get_exit_code());
+            vm->set_exit_code(fun->get_vm()->get_exit_code());
         }
     }
     else {
@@ -670,7 +659,7 @@ void PushNamedArg::exec(Interpreter *vm) {
 }
 
 void CreateFun::exec(Interpreter *vm) {
-    FunValue *funval = new FunValue(name, arg_names);
+    FunValue *funval = new FunValue(name, arg_names, vm);
     for (auto riter = vm->get_frames().rbegin(); riter != vm->get_frames().rend(); ++riter) {
         // Push all latest local frames as closures of current function
         if ((*riter)->is_global())

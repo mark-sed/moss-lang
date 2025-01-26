@@ -28,3 +28,9 @@ fun call_inner() {
 import mod3.sum3
 sum3(1,2,3)
 "\n"
+
+a = mod2.Sum(-1)
+// TODO: Remove once this is fixed
+a.x = -1
+a.sum(5, 5)
+"\n"

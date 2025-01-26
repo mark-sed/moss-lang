@@ -10,3 +10,6 @@ v9 = Int(base=10, v="-8")
 
 v++"\n"++v2++"\n"++v3++"\n"++v4++"\n"
 v5++"\n"++v6++"\n"++v7++"\n"++v8++"\n"++v9++"\n"
+
+e1 = Exception("Some exception")
+e1 ++ "\n"

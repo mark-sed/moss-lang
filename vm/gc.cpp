@@ -107,7 +107,6 @@ void TracingGC::mark_value(Value *v) {
     if (!v || v->is_marked())
         return;
     v->set_marked(true);
-    mark_value(v->get_external_module_owner());
     gray_list.push_back(v);
     LOGMAX("Marked: " << v->get_name() << " = " << *v)
 }

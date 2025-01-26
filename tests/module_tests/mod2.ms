@@ -17,4 +17,14 @@ fun const_val(v) {
 fun exit_mod3(code) {
     import mod3
     mod3.exit_me(code)
-} 
+}
+
+class Sum {
+    fun Sum(x) {
+        this.x = x
+    }
+
+    fun sum(a, b) {
+        return a + b + this.x
+    }
+}

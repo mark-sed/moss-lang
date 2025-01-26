@@ -40,4 +40,8 @@ fun exit(code=0) {}
 class __Exception {
     @internal
     fun Exception(msg:String) {}
+
+    fun __String() {
+        return this.msg
+    }
 }
