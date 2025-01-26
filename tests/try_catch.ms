@@ -59,4 +59,13 @@ try {
     "Caught: " ++ d ++ "\n"
 }
 
+@internal
+fun foo_int() { "Should not be called\n"; }
+
+try {
+    foo_int()
+} catch (e:NameError) {
+    "foo_int is not internal\n"
+}
+
 "module end\n"

@@ -273,7 +273,8 @@ function test_whiles {
 function test_try_catch {
     expect_pass "try_catch.ms" $1
     expect_out_eq "Success\nfinally end\nCaught NameError: Unkown name!\nfinally end
-Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8\nmodule end\n" $1
+Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
+foo_int is not internal\nmodule end\n" $1
 }
 
 function test_classes {

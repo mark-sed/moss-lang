@@ -57,17 +57,27 @@ int Repl::run() {
 #ifndef NDEBUG
         if (!clopts::parse_only && !clopts::output_only) {
             //LOGMAX(*bc);
-            interpreter->run();
-            // TODO: Also dont print if line is silent
-            if (line_irs.size() != 0)
-                outs << "\n";
+            try {
+                interpreter->run();
+                // TODO: Also dont print if line is silent
+                if (line_irs.size() != 0)
+                    outs << "\n";
+            } catch (Value *v) {
+                errs << opcode::to_string(interpreter, v);
+                interpreter->set_bci(interpreter->get_code()->get_code().size());
+            }
         }
 #else
         if (!clopts::output_only) {
-            interpreter->run();
-            // TODO: Also dont print if line is silent
-            if (line_irs.size() != 0)
-                outs << "\n";
+            try {
+                interpreter->run();
+                // TODO: Also dont print if line is silent
+                if (line_irs.size() != 0)
+                    outs << "\n";
+            } catch (Value *v) {
+                errs << opcode::to_string(interpreter, v);
+                interpreter->set_bci(interpreter->get_bci());
+            }
         }
 #endif
 
