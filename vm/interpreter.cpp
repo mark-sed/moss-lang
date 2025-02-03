@@ -87,6 +87,7 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Function", BuiltIns::Function, gf);
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
     store_glob_val(reg++, "Module", BuiltIns::Module, gf);
+    store_glob_val(reg++, "Space", BuiltIns::Space, gf);
 
     store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
     store_glob_val(reg++, "NameError", BuiltIns::NameError, gf);

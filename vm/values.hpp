@@ -174,6 +174,7 @@ namespace BuiltIns {
     extern Value *FunctionList;// = new ClassValue("FunctionList");
     extern Value *Function;// = new ClassValue("Function");
     extern Value *Module;
+    extern Value *Space;
 
     extern Value *Exception;
     extern Value *NameError;
@@ -425,6 +426,28 @@ public:
 
     virtual opcode::StringConst as_string() const override {
         return "<object of class " + this->type->get_name() + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override;
+};
+
+class SpaceValue : public Value {
+public:
+    static const TypeKind ClassType = TypeKind::SPACE;
+
+    SpaceValue(ustring name) : Value(ClassType, name, BuiltIns::Space) {}
+    SpaceValue(ustring name, MemoryPool *frm) : Value(ClassType, name, BuiltIns::Space, frm) {}
+    ~SpaceValue() {}
+
+    virtual Value *clone() {
+        auto cpy = new SpaceValue(this->name);
+        cpy->set_attrs(this->attrs);
+        cpy->annotations = this->annotations;
+        return cpy;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        return "<space " + name + ">";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override;

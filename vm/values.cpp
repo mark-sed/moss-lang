@@ -119,6 +119,20 @@ std::ostream& ObjectValue::debug(std::ostream& os) const {
     return os;
 }
 
+std::ostream& SpaceValue::debug(std::ostream& os) const {
+    // TODO: Output all needed debug info
+    os << "Space : " << name << " {"; 
+    if (!attrs || attrs->is_empty_sym_table()) {
+        os << "}";
+    }
+    else {
+        attrs->debug_sym_table(os, tab_depth);
+        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+    }
+
+    return os;
+}
+
 std::ostream& ModuleValue::debug(std::ostream& os) const {
     // TODO: Output all attributes and so on
     os << "(Module)" << name;
@@ -168,6 +182,7 @@ Value *BuiltIns::Function = new ClassValue("Function");
 Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 
 Value *BuiltIns::Module = new ClassValue("Module");
+Value *BuiltIns::Space = new ClassValue("Space");
 
 Value *BuiltIns::Exception = new ClassValue("Exception");
 Value *BuiltIns::NameError = new ClassValue("NameError");
