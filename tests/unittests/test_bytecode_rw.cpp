@@ -183,6 +183,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
 
     bc->push_back(new opcode::BuildEnum(5, 19, "MyEnum"));
 
+    bc->push_back(new opcode::BuildSpace(9, "MySpace"));
+
     bc->push_back(new opcode::CreateRange(1, 2, 3, 4));
     bc->push_back(new opcode::CreateRange2(1, 2, 3, 4));
     bc->push_back(new opcode::CreateRange3(1, 2, 3, 4));

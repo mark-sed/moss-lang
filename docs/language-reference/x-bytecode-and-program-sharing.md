@@ -193,7 +193,8 @@ xxh - LIST_PUSH_CONST   %dst, #val
 xxh - BUILD_LIST        %dst
 
 xxh - BUILD_DICT        %keys, %vals
-xxx - BUILD_ENUM        %dst, %vals, "name"
+xxh - BUILD_ENUM        %dst, %vals, "name"
+xxh - BUILD_SPACE       %dst, "name"
 
 xxh - CREATE_RANGE      %dst, %start, %step, %end
 xxh - CREATE_RANGE2     %dst, #start, %step, %end
@@ -506,4 +507,28 @@ x   STORE_CONST     %3, #2
 x   OUTPUT %3 
 
 x   POP_CATCH
+```
+
+### Spaces
+
+```cpp
+space Foo {
+    NAME = "Foo"
+
+    space {
+
+    }
+}
+```
+
+```
+x   BUILD_SPACE %0, "Foo"
+x   STORE_STR_CONST #0, "Foo"
+x   STORE_CONST %0, #1
+x   STORE_NAME  %0, "NAME"
+
+x   BUILD_SPACE %1 "0s"
+x   POP_FRAME
+
+x   POP_FRAME
 ```

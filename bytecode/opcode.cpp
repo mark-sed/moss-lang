@@ -1779,6 +1779,14 @@ void BuildEnum::exec(Interpreter *vm) {
     vm->store_name(dst, name);
 }
 
+void BuildSpace::exec(Interpreter *vm) {
+    auto spc = new SpaceValue(name);
+    vm->store(dst, spc);
+    vm->store_name(dst, name);
+    vm->push_frame();
+    spc->set_attrs(vm->get_top_frame());
+}
+
 static Value *range(Value *start, Value *step, Value *end, Interpreter *vm) {
     Value *res = nullptr;
     assert(false && "TODO: Unimplemented range generation");

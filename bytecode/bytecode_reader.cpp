@@ -681,6 +681,11 @@ Bytecode *BytecodeReader::read() {
                 auto str = read_string();
                 bc->push_back(new BuildEnum(reg1, reg2, str));
             } break;
+            case opcode::OpCodes::BUILD_SPACE: {
+                auto reg1 = read_register();
+                auto str = read_string();
+                bc->push_back(new BuildSpace(reg1, str));
+            } break;
             case opcode::OpCodes::CREATE_RANGE: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();

@@ -3,6 +3,8 @@
 using namespace moss;
 using namespace ir;
 
+unsigned long ir::Space::annonymous_id = 0;
+
 std::ostream& Module::debug(std::ostream& os) const {
     for (Annotation *a: this->annotations) {
         os << *a << "\n";

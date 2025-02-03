@@ -276,6 +276,10 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->vals);
             write_string(o->name);
         }
+        else if (auto o = dyn_cast<opcode::BuildSpace>(op_gen)){
+            write_register(o->dst);
+            write_string(o->name);
+        }
         else if (auto o = dyn_cast<opcode::CreateRange>(op_gen)){
             write_register(o->dst);
             write_register(o->start);

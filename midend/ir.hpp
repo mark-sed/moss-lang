@@ -200,10 +200,15 @@ public:
 };
 
 class Space : public Construct {
+private:
+    static unsigned long annonymous_id;
 public:
     static const IRType ClassType = IRType::SPACE;
 
     Space(ustring name, std::list<IR *> spbody) : Construct(ClassType, name) {
+        if (name.empty()) {
+            this->name = std::to_string(annonymous_id++) + "s";
+        }
         this->body = spbody;
     }
 

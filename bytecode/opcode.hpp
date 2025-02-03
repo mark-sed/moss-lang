@@ -181,6 +181,7 @@ enum OpCodes : opcode_t {
 
     BUILD_DICT, //        %dst, %keys, %vals
     BUILD_ENUM, //        %dst, %vals, %name
+    BUILD_SPACE,  //      %dst, "name"
 
     CREATE_RANGE, //      %dst, %start, %step, %end
     CREATE_RANGE2, //     %dst, #start, %step, %end
@@ -1868,6 +1869,29 @@ public:
         auto casted = dyn_cast<BuildEnum>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->name == name && casted->vals == vals;
+    }
+};
+
+class BuildSpace : public OpCode {
+public:
+    Register dst;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::BUILD_SPACE;
+
+    BuildSpace(Register dst, StringConst name)
+        : OpCode(ClassType, "BUILD_SPACE"), dst(dst), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<BuildSpace>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name;
     }
 };
 

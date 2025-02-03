@@ -319,6 +319,12 @@ function test_enums {
 }\n" $1
 }
 
+function test_space {
+    expect_pass "spaces.ms" $1
+    expect_out_eq "In FooSpace\nIn BarSpace\nI can see: FooSpace\nFooSpace\nFooSpace
+BarSpace\nBarSpace\nFoo\nFoo\nAnonymous space\n<space Foo>\n" $1
+}
+
 function test_optional_typing {
     expect_pass "optional_typing.ms" $1
     expect_out_eq "Int first\nString first\nAll other types
@@ -543,6 +549,7 @@ function run_all_tests {
     run_test operator_funs
     run_test lists
     run_test enums
+    run_test space
     run_test optional_typing
 
     run_test basic_import

@@ -845,6 +845,23 @@ void BytecodeGen::emit(ir::Class *cls) {
     comment("class " + cls->get_name() + " end");
 }
 
+void BytecodeGen::emit(ir::Space *spc) {
+    comment("space " + spc->get_name() + " start");
+    append(new BuildSpace(next_reg(), spc->get_name()));
+    // Add annotations
+    // Since BuildSpace will push a new frame we need to load the space by name
+    auto spc_reg = next_reg();
+    append(new Load(spc_reg, spc->get_name()));
+    for (auto annt : spc->get_annotations()) {
+        auto annot_val = emit(annt->get_value(), true);
+        append(new Annotate(spc_reg, annt->get_name(), free_reg(annot_val)));
+    }
+    emit(spc->get_body());
+
+    append(new PopFrame());
+    comment("space " + spc->get_name() + " end");
+}
+
 void BytecodeGen::emit(ir::Enum *enm) {
     comment("enum " + enm->get_name());
     auto list_reg = next_reg();
@@ -946,6 +963,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto c = dyn_cast<ir::Class>(decl)) {
         emit(c);
+    }
+    else if (auto s = dyn_cast<ir::Space>(decl)) {
+        emit(s);
     }
     else if (auto e = dyn_cast<ir::Enum>(decl)) {
         emit(e);
