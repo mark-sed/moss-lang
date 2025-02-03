@@ -102,6 +102,7 @@ enum DiagID {
     INTERNAL_WITHOUT_BODY,  ///< Internally marked function is not internal or has not been implemented
     SET_EXPECTED_FOR_MULTIVAL, ///< a,b,c = val but missing =
     EXPR_CANNOT_BE_ASSIGN_TO, /// a+1, b = 2
+    NAME_NOT_DEFINED,       ///< When name is not found
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -184,6 +185,7 @@ static const char * DIAG_MSGS[] = {
     "Function '%s' is marked as '@internal', but does not have an internal body",
     "Expecting '=' for multivalue asignment",
     "Found non-assignable expression",
+    "Name '%s' is not defined",
 };
 
 /// \brief Diagnostic message for error reporting

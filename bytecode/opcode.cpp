@@ -115,16 +115,18 @@ void End::exec(Interpreter *vm) {
 
 void Load::exec(Interpreter *vm) {
     auto v = vm->load_name(this->name);
-    if (!v) {
+    /*if (!v) {
         // The refered value could possibly be method or attribute in the
         // class or object. Look if "this" is set
         auto ths = vm->load_name("this");
         if (ths) {
             v = ths->get_attr(this->name);
         }
+    }*/
+    if (!v) {
+        auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, this->name.c_str()));
+        raise(vm, mslib::create_name_error(msg));
     }
-    // FIXME:
-    assert(v && "TODO: Nonexistent name raise exception");
     vm->store(this->dst, v);
 }
 

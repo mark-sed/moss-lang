@@ -280,7 +280,8 @@ foo_int is not internal\nmodule end\n" $1
 function test_classes {
     expect_pass "classes.ms" $1
     expect_out_eq "42\n<class Cat>\n<object of class Cat>
-Vilda\nmeow\n<object of class Animal>\n" $1
+Vilda\nmeow\n<object of class Animal>
+foo1\nfoo1\n" $1
 }
 
 function test_attributes {

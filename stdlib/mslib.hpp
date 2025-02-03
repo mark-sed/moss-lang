@@ -35,6 +35,8 @@ Value *Exception(Interpreter *vm, Value *ths, Value *msg);
 /// \param err Possible exception from execution
 void dispatch(Interpreter *vm, ustring name, Value *&err);
 
+Value *create_name_error(ustring msg);
+
 }
 
 }

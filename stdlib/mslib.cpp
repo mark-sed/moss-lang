@@ -85,6 +85,12 @@ Value *mslib::Exception(Interpreter *vm, Value *ths, Value *msg) {
     return ths;
 }
 
+Value *mslib::create_name_error(ustring msg) {
+    auto err = new ObjectValue(dyn_cast<ClassValue>(BuiltIns::NameError));
+    err->set_attr("msg", new StringValue(msg));
+    return err;
+}
+
 void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     auto cf = vm->get_call_frame();
     auto args = cf->get_args();
@@ -119,8 +125,7 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     }
     else {
         auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
-        err = new ObjectValue(dyn_cast<ClassValue>(BuiltIns::NameError));
-        err->set_attr("msg", new StringValue(msg));
+        err = create_name_error(msg);
     }
 
     auto return_reg = vm->get_call_frame()->get_return_reg();

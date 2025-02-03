@@ -39,3 +39,18 @@ vilda.sound()
 anm = Animal()
 anm
 "\n"
+
+class Foo1 {
+    NAME = "foo1"
+
+    fun goo() {
+        return NAME
+    }
+
+    fun Foo1() {
+        goo() ++ "\n"
+    }
+}
+
+foo1 = Foo1()
+foo1.NAME ++ "\n"

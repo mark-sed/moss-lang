@@ -68,6 +68,8 @@ void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
     bool first = true;
     ++tab_depth;
     for (auto [k, v]: sym_table) {
+        if (!v)
+            continue;
         if (!first) {
             os << ",";
         }
