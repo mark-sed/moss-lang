@@ -133,6 +133,7 @@ public:
     /// \param name Attribute name
     /// \return Value of attribute or nullptr if not set
     Value *get_attr(ustring name);
+    bool has_attr(ustring name) { return get_attr(name) != nullptr; }
 
     /// Sets (new or overrides) attribute name to value v
     void set_attr(ustring name, Value *v);

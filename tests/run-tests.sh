@@ -531,6 +531,14 @@ function test_bc_read_write {
     rm -f ${TEST_DIR}/bc_read_write.txt
 }
 
+function test_exceptions_catch {
+    expect_pass "exceptions_catch.ms" $1
+    expect_out_eq "NameError: a\nNameError: foo()\n" $1
+
+    expect_fail_exec "some_name" "Name 'some_name' is not defined" $1
+    expect_retcode 1 $1
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -557,6 +565,7 @@ function run_all_tests {
     run_test import_calls
     run_test closures
     run_test implicit_calls
+    run_test exceptions_catch
 
     run_test fibonacci
     run_test factorial
@@ -573,8 +582,6 @@ function run_all_tests {
     run_test gc_local_vars
     run_test gc_recursion
     run_test gc_global_dependency
-
-    # xfails
 }
 
 # Count all functions starting with test_ 

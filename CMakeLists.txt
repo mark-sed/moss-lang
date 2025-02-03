@@ -75,6 +75,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/test_bytecode_rw.cpp
         tests/unittests/test_bytecode.cpp
         tests/unittests/test_clopts.cpp
+        tests/unittests/test_interpreter.cpp
         tests/unittests/test_ir.cpp
         tests/unittests/test_memory.cpp
         tests/unittests/test_parser_examples.cpp
