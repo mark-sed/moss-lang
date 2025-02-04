@@ -168,6 +168,8 @@ int main(int argc, const char *argv[]) {
         try {
             interpreter->run();
         } catch (Value *v) {
+            // Print call stack
+            interpreter->report_call_stack(errs);
             errs << opcode::to_string(interpreter, v);
             interpreter->set_exit_code(1);
         }

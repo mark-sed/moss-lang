@@ -61,7 +61,7 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \return Value returned by the function
 Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
     LOGMAX("Doing a runtime call to " << *funV);
-    vm->push_call_frame();
+    vm->push_call_frame(funV);
     auto cf = vm->get_call_frame();
     for (auto v: args) {
         cf->push_back(v);
@@ -492,6 +492,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
 
+    cf->set_function(fun);
+
     // Set this object if constructor is being called
     if (constructor_of) {
         auto obj = new ObjectValue(constructor_of);
@@ -534,7 +536,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
 }
 
 void call(Interpreter *vm, Register dst, Value *funV, std::initializer_list<Value *> args) {
-    vm->push_call_frame();
+    vm->push_call_frame(funV);
     for (auto v: args) {
         vm->get_call_frame()->push_back(v);
     }
@@ -542,7 +544,7 @@ void call(Interpreter *vm, Register dst, Value *funV, std::initializer_list<Valu
 }
 
 void call_method(Interpreter *vm, Register dst, Value *funV, std::initializer_list<Value *> args) {
-    vm->push_call_frame();
+    vm->push_call_frame(funV);
     for (auto v: args) {
         vm->get_call_frame()->push_back(v);
     }

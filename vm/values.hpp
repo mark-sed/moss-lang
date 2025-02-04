@@ -564,6 +564,31 @@ public:
 
     Interpreter *get_vm() { return this->vm; }
 
+    ustring get_args_as_str() {
+        std::stringstream os;
+        bool first = true;
+        for (auto a: args) {
+            if (!first) {
+                os << ", ";
+            }
+            first = false;
+            os << a->name;
+            auto types = a->types;
+            if (!types.empty()) {
+                os << ":[";
+                bool first_type = true;
+                for (auto t : types) {
+                    if (!first_type)
+                        os << ", ";
+                    first_type = false;
+                    os << t->get_name();
+                }
+                os << "]";
+            }
+        }
+        return os.str();
+    }
+
     virtual opcode::StringConst as_string() const override {
         std::stringstream ss;
         ss << "<function " << name << " at " << std::hex << static_cast<const void*>(this) << ">";

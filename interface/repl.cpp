@@ -63,6 +63,7 @@ int Repl::run() {
                 if (line_irs.size() != 0)
                     outs << "\n";
             } catch (Value *v) {
+                interpreter->report_call_stack(errs);
                 errs << opcode::to_string(interpreter, v);
                 interpreter->set_bci(interpreter->get_code()->get_code().size());
             }
@@ -75,6 +76,7 @@ int Repl::run() {
                 if (line_irs.size() != 0)
                     outs << "\n";
             } catch (Value *v) {
+                interpreter->report_call_stack(errs);
                 errs << opcode::to_string(interpreter, v);
                 interpreter->set_bci(interpreter->get_bci());
             }

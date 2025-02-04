@@ -56,6 +56,7 @@ inline std::ostream& operator<< (std::ostream& os, CallFrameArg &cf) {
 /// The arguments, return register and argument type (const, addr, val) 
 class CallFrame {
 private:
+    Value *function;
     std::vector<CallFrameArg> args;
     opcode::Register return_reg;
     opcode::Address caller_addr;
@@ -64,17 +65,19 @@ private:
     bool runtime_call;
     Value *extern_return_value;
 public:
-    CallFrame() : return_reg(0),
-                  constructor_call(false),
-                  extern_module_call(false),
-                  runtime_call(false),
-                  extern_return_value(nullptr) {}
+    CallFrame(Value *function=nullptr) : function(function),
+                                         return_reg(0),
+                                         constructor_call(false),
+                                         extern_module_call(false),
+                                         runtime_call(false),
+                                         extern_return_value(nullptr) {}
 
     void push_back(Value *v) { args.push_back(CallFrameArg(v)); }
     void push_back(ustring name, Value *v) { args.push_back(CallFrameArg(name, v)); }
     void push_back(ustring name, Value *v, opcode::Register dst) {
         args.push_back(CallFrameArg(name, v, dst)); 
     }
+    void set_function(Value *function) { this->function = function; }
     void set_return_reg(opcode::Register r) { this->return_reg = r; }
     void set_caller_addr(opcode::Address addr) { this->caller_addr = addr; }
     void set_args(std::vector<CallFrameArg> args) { this->args = args; }
@@ -83,6 +86,7 @@ public:
     void set_runtime_call(bool b) { this->runtime_call = b; }
     void set_extern_return_value(Value *v) { this->extern_return_value = v; }
 
+    Value *get_function() { return this->function; }
     std::vector<CallFrameArg> &get_args() { return this->args; }
     opcode::Register get_return_reg() { return this->return_reg; }
     opcode::Address get_caller_addr() { return this->caller_addr; }
@@ -101,21 +105,7 @@ public:
         return nullptr;
     }
 
-    std::ostream& debug(std::ostream& os) const {
-        os << "CallFrame:\n"
-           << "\treturn_reg: " << return_reg << "\n"
-           << "\tcaller_addr: " << caller_addr << "\n"
-           << "\textern_module_call: " << extern_module_call << "\n"
-           << "\truntime_call: " << runtime_call << "\n"
-           << "\targs:\n";
-        unsigned index = 0;
-        for(auto a: args) {
-            os << "\t\t" << index << ": " << a << "\n";
-            ++index;
-        }
-           
-        return os;
-    }
+    std::ostream& debug(std::ostream& os) const;
 };
 
 inline std::ostream& operator<< (std::ostream& os, CallFrame &cf) {
@@ -239,9 +229,12 @@ public:
     bool has_call_frame() {
         return !this->call_frames.empty();
     }
+    std::ostream& report_call_stack(std::ostream& os);
 
     /// Pushes a new empty call frame into call frame stack
-    void push_call_frame() { call_frames.push_back(new CallFrame()); }
+    void push_call_frame(Value *fun=nullptr) {
+        call_frames.push_back(new CallFrame(fun));
+    }
     /// Pops top (most recent) frame from call frame stack and deletes it
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");

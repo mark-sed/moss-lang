@@ -132,6 +132,54 @@ std::ostream& CallFrameArg::debug(std::ostream& os) const {
     return os;
 }
 
+std::ostream& CallFrame::debug(std::ostream& os) const {
+    os << "CallFrame:\n";
+    if (function)
+        os << "\tfunction: " << *function << "\n";
+    else
+        os << "\tfunction: unknown\n";
+    os << "\treturn_reg: " << return_reg << "\n"
+        << "\tcaller_addr: " << caller_addr << "\n"
+        << "\textern_module_call: " << extern_module_call << "\n"
+        << "\truntime_call: " << runtime_call << "\n"
+        << "\targs:\n";
+    unsigned index = 0;
+    for(auto a: args) {
+        os << "\t\t" << index << ": " << a << "\n";
+        ++index;
+    }
+        
+    return os;
+}
+
+std::ostream& Interpreter::report_call_stack(std::ostream& os) {
+    // TODO: Color output
+    os << "Stacktrace:\n";
+    for (auto riter = call_frames.rbegin(); riter != call_frames.rend(); ++riter) {
+        CallFrame *cf = *riter;
+        Value *fun_val = cf->get_function();
+        os << "  ";
+        if (!fun_val) {
+            os << "untraced function\n";
+        } else {
+            FunValue *fun = dyn_cast<FunValue>(fun_val);
+            if (!fun) {
+                // Can this happen?
+                os << fun_val->get_name() << "\n";
+            } else {
+                os << fun->get_name() << "(" << fun->get_args_as_str() << ") at ";
+                if (fun->get_vm()) {
+                    os << fun->get_vm()->get_src_file()->get_name() << "\n";
+                } else {
+                    os << "??\n";
+                }
+            }
+        }
+    }
+    os << "  top-level scope at " << src_file->get_name() << "\n";
+    return os;
+}
+
 void Interpreter::store(opcode::Register reg, Value *v) {
     get_local_frame()->store(reg, v);
 }
