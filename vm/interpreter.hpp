@@ -303,6 +303,8 @@ public:
 
     void handle_exception(ExceptionCatch ec, Value *v);
 
+    void restore_to_global_frame();
+
     opcode::Register get_free_reg(MemoryPool *fr);
 
     size_t get_code_size();

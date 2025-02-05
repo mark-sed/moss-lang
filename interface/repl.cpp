@@ -65,6 +65,7 @@ int Repl::run() {
             } catch (Value *v) {
                 interpreter->report_call_stack(errs);
                 errs << opcode::to_string(interpreter, v);
+                interpreter->restore_to_global_frame();
                 interpreter->set_bci(interpreter->get_code()->get_code().size());
             }
         }
@@ -78,6 +79,7 @@ int Repl::run() {
             } catch (Value *v) {
                 interpreter->report_call_stack(errs);
                 errs << opcode::to_string(interpreter, v);
+                interpreter->restore_to_global_frame();
                 interpreter->set_bci(interpreter->get_bci());
             }
         }

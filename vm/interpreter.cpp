@@ -317,6 +317,18 @@ void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
     store_name(reg, ec.name);
 }
 
+void Interpreter::restore_to_global_frame() {
+    LOG1("Restoring interpreter to global frame position");
+    // clear() should be calling destructors as well
+    call_frames.clear();
+    catches.clear();
+
+    assert(!frames.empty() && "sanity check");
+    assert(!const_pools.empty() && "sanity check");
+    frames.erase(std::next(frames.begin()), frames.end());
+    const_pools.erase(std::next(frames.begin()), frames.end());    
+}
+
 void Interpreter::run() {
     LOG1("Running interpreter of " << (src_file ? src_file->get_name() : "??") << "\n----- OUTPUT: -----");
 
