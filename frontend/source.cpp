@@ -50,12 +50,13 @@ std::optional<ustring> moss::get_file_path(ustring file) {
     auto filep = std::filesystem::path(file);
     if (std::filesystem::exists(global_controls::pwd / filep))
         return (global_controls::pwd / filep).string();
-    // TODO: Remove and have actual lib dir
-    if (std::filesystem::exists(std::filesystem::path("/home/marek/Desktop/Programming/moss-lang/stdlib") / filep)) {
-        LOGMAX("Using hardcoded libms path");
-        return (std::filesystem::path("/home/marek/Desktop/Programming/moss-lang/stdlib") / filep).string();
+#ifdef __linux__
+    if (std::filesystem::exists(std::filesystem::path("/lib/moss") / filep)) {
+        return (std::filesystem::path("/lib/moss") / filep).string();
     }
-    // TODO: Search lib directories
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+    // TODO: Search Windows lib directories
+#endif
 
     return std::nullopt;
 }

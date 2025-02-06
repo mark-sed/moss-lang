@@ -14,8 +14,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 if (MSVC)
     #add_compile_options(/W4 /WX)
     add_compile_options(/MD)
+    # TODO: Add moss directory to windows
 else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete)
+    set(LIBMS_PATH "/lib/moss")
+    set(MOSS_PATH "/usr/bin/moss")
+    file(MAKE_DIRECTORY ${LIBMS_PATH})
 endif()
 
 # Includes for headers
@@ -59,6 +63,33 @@ add_executable(
     moss.cpp
     ${SOURCES}
 )
+
+# Standard moss library modules
+add_custom_command(
+    OUTPUT libms.msb
+    COMMAND ${PROJECT_NAME} --output-only -o ${LIBMS_PATH}/libms.msb ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/libms.ms
+    COMMENT "Building libms"
+    VERBATIM
+)
+
+add_custom_target(
+    libms
+    DEPENDS libms.msb
+)
+
+# Making moss a command
+add_custom_command(
+    OUTPUT binmoss
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_BINARY_DIR}/moss
+            ${MOSS_PATH}
+)
+
+add_custom_target(
+    installation
+    DEPENDS binmoss
+)
+
 
 if (WIN32)
     target_link_libraries(${PROJECT_NAME} msvcrt)
