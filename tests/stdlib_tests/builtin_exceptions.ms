@@ -31,7 +31,7 @@ try {
 try {
     raise AssertionError("")
 } catch (e:AssertionError) {
-    "Caught: "++e++"\n"
+    "Caught: "++e
 }
 
 try {

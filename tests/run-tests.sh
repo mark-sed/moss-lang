@@ -348,16 +348,8 @@ greet.ms
 Ending module.ms\n" $1
 
     # Check that import spill stays in its scope
-# TODO: Uncomment once assertion is replaced with raise
-#    expect_fail_exec "
-#fun foo() {
-#    import greet.*
-#    NAME ++ \"\n\"
-#}
-#~foo()
-#NAME++\"\n\"
-#" "" $1
-#    expect_out_eq "Hello, from greet.ms\ngreet.ms\n" $1
+    expect_fail "module_tests/local_import.ms" "'NAME' is not defined" $1
+    expect_out_eq "Hello, from greet.ms\ngreet.ms\n" $1
 
     rm -f ${TEST_DIR}module_tests/greet_compiled.msb
 }
@@ -554,6 +546,11 @@ function test_exceptions_catch {
     expect_retcode 1 $1
 }
 
+function test_runtime_errors {
+    expect_pass "runtime_errors.ms" $1
+    expect_out_eq "OK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n" $1
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -581,6 +578,7 @@ function run_all_tests {
     run_test closures
     run_test implicit_calls
     run_test exceptions_catch
+    run_test runtime_errors
 
     run_test fibonacci
     run_test factorial

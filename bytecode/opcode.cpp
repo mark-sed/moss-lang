@@ -132,6 +132,7 @@ void Load::exec(Interpreter *vm) {
 
 void LoadAttr::exec(Interpreter *vm) {
     auto *v = vm->load(this->src);
+    // TODO: Raise type error if type cannot have attributes, such as function
     auto attr = v->get_attr(this->name);
     // This could possibly be an object or a class
     if (!attr && (isa<ObjectValue>(v) || isa<ClassValue>(v))) {
@@ -148,14 +149,15 @@ void LoadAttr::exec(Interpreter *vm) {
                 break;
         }
     }
-    assert(attr && "TODO: Nonexistent attr raise exception");
+    op_assert(attr, mslib::create_attribute_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED,
+            v->get_name().c_str(), this->name.c_str())));
     vm->store(this->dst, attr);
 }
 
 void LoadGlobal::exec(Interpreter *vm) {
     auto *v = vm->load_global_name(this->name);
-    // FIXME:
-    assert(v && "TODO: Nonexistent name raise exception");
+    op_assert(v, mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::GLOB_NAME_NOT_DEFINED, this->name.c_str())));
     vm->store(this->dst, v);
 }
 
@@ -217,10 +219,7 @@ void Jmp::exec(Interpreter *vm) {
 void JmpIfTrue::exec(Interpreter *vm) {
     auto *v = vm->load(src);
     auto bc = dyn_cast<BoolValue>(v);
-    if (!bc) {
-        auto msg = err_mgs("Expected Bool value, but got "+v->get_name(), vm);
-        error::error(error::ErrorCode::BYTECODE, msg.c_str(), vm->get_src_file(), true);
-    }
+    op_assert(bc, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, v->get_name().c_str())));
 
     if (bc->get_value())
         vm->set_bci(this->addr);
@@ -229,10 +228,7 @@ void JmpIfTrue::exec(Interpreter *vm) {
 void JmpIfFalse::exec(Interpreter *vm) {
     auto *v = vm->load(src);
     auto bc = dyn_cast<BoolValue>(v);
-    if (!bc) {
-        auto msg = err_mgs("Expected Bool value, but got "+v->get_name(), vm);
-        error::error(error::ErrorCode::BYTECODE, msg.c_str(), vm->get_src_file(), true);
-    }
+    op_assert(bc, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, v->get_name().c_str())));
 
     if (!bc->get_value())
         vm->set_bci(this->addr);
@@ -428,7 +424,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     cf->set_return_reg(dst);
     cf->set_caller_addr(vm->get_bci()+1);
 
-    assert(funV && "TODO: Raise function not found");
+    assert(funV && "nullptr function passed in");
 
     ClassValue *constructor_of = nullptr;
     // Class constructor call
@@ -472,9 +468,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     FunValue *fun = dyn_cast<FunValue>(funV);
     if (!fun) {
         auto fvl = dyn_cast<FunValueList>(funV);
-        if (!fvl) {
-            assert(false && "TODO: Raise value not callable");
-        }
+        op_assert(fvl, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CALLABLE, funV->get_name().c_str())));
+        
         // Walk functions and check if it can be called
         for (auto f: fvl->get_funs()) {
             if (can_call(f, cf)) {
@@ -482,13 +477,13 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 break;
             }
         }
-        if (!fun) {
-            assert(false && "TODO: Raise incorrect function call");
-        }
+        // TODO: output exception returned by can_call
+        op_assert(fun, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fvl->back()->get_name().c_str())));
     }
     else {
         if (!can_call(fun, cf)) {
-            assert(false && "TODO: Raise incorrect function call");
+            // TODO: output exception returned by can_call
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fun->get_name().c_str())));
         }
     }
 
@@ -555,19 +550,23 @@ void call_method(Interpreter *vm, Register dst, Value *funV, std::initializer_li
 
 void call_operator(Interpreter *vm, ustring op, Value *s1, Value *s2, Register dst) {
     auto v = s1->get_attr(op);
-    assert(v && "TODO: Operator function not found for object error");
+    op_assert(v, mslib::create_type_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
+            s1->get_type()->get_name().c_str(), op.c_str())));
     call_method(vm, dst, v, {s2, s1});
 }
 
 void call_operator_unary(Interpreter *vm, ustring op, Value *s1, Register dst) {
     auto v = s1->get_attr(op);
-    assert(v && "TODO: Operator function not found for object error");
+    op_assert(v, mslib::create_type_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
+            s1->get_type()->get_name().c_str(), op.c_str())));
     call_method(vm, dst, v, {s1});
 }
 
 void Call::exec(Interpreter *vm) {
     auto v = vm->load(src);
-    assert(v && "TODO: Raise error function not found");
+    assert(v && "register does not contain a value");
     call(vm, dst, v);
 }
 
@@ -732,7 +731,7 @@ void SetDefaultConst::exec(Interpreter *vm) {
 void SetType::exec(Interpreter *vm) {
     auto fv = load_last_fun(fun, vm);
     auto type = vm->load_type(name);
-    assert(type && "TODO: Raise unknown type exception for type");
+    op_assert(type, mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_A_TYPE, name.c_str())));
     fv->set_type(index, type);
 }
 
@@ -796,15 +795,15 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
 
 void Import::exec(Interpreter *vm) {
     auto mod = load_module(vm, name);
-    assert(mod && "TODO: Raise module not found error");
+    op_assert(mod, mslib::create_module_not_found_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_MODULE, name.c_str())));
     vm->store(dst, mod);
 }
 
 void ImportAll::exec(Interpreter *vm) {
     auto mod = vm->load(src);
     assert(mod && "Non existent module for import all");
-    // TODO: Uncomment
-    //assert(isa<ModuleValue>(mod) || isa<SpaceValue>(mod) && "Spilling something else than module or space");
+    assert(isa<ModuleValue>(mod) || isa<SpaceValue>(mod) && "TODO: raise spilling something else than module or space");
     vm->push_spilled_value(mod);
 }
 
@@ -856,13 +855,20 @@ void Annotate::exec(Interpreter *vm) {
     if (name == "internal_bind") {
         LOGMAX("Internal binding");
         auto bind_name = dyn_cast<StringValue>(v);
-        assert(bind_name && "TODO: Raise missing bind name");
+        op_assert(bind_name, mslib::create_type_error(
+            diags::Diagnostic(*vm->get_src_file(), diags::MISSING_ANNOT_TYPE_ARGUMENT,
+                "internal_bind", "String")));
         auto bind_val = vm->load_name(bind_name->get_value());
-        assert(bind_val && "TODO: Raise name error");
+        op_assert(bind_val, mslib::create_name_error(
+            diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, bind_name->get_value().c_str())));
         auto bind_class = dyn_cast<ClassValue>(bind_val);
-        assert(bind_class && "TODO: Raise type error");
+        op_assert(bind_class, mslib::create_type_error(
+            diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
+                "Type", bind_val->get_type()->get_name().c_str())));
         auto ref_class = dyn_cast<ClassValue>(d);
-        assert(ref_class && "TODO: Raise type error for ref");
+        op_assert(ref_class, mslib::create_type_error(
+            diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
+                "Type", d->get_type()->get_name().c_str())));
         bind_class->bind(ref_class);
         // Remove the bound class
         vm->remove_global_name(ref_class->get_name());
@@ -881,10 +887,6 @@ static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpr
     (void)vm;
     assert(s1 && "Value or nil should have been loaded");
     assert(s2 && "Value or nil should have been loaded");
-
-    // TODO: Check if s1 is object and if it has ++ method to be called
-    // if so then call it and return it `as_string` if its not
-    // if it does not then do as for all other
 
     ustring s1_str = to_string(vm, s1);
     ustring s2_str = to_string(vm, s2);
@@ -907,8 +909,17 @@ void Concat3::exec(Interpreter *vm) {
     vm->store(dst, res);
 }
 
+static void raise_operand_exc(Interpreter *vm, char *op, Value *s1, Value *s2) {
+    raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNSUPPORTED_OPERAND_TYPE,
+                op, s1->get_type()->get_name().c_str(), s2->get_type()->get_name().c_str())));
+}
+
+static void raise_operand_exc(Interpreter *vm, char *op, Value *s1) {
+    raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNSUPPORTED_UN_OPERAND_TYPE,
+                op, s1->get_type()->get_name().c_str())));
+}
+
 // TODO: For most exprs is to check over/underflow when check is enabled
-// TODO: Call user defined method for non native type
 static Value *exp(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void)vm;
     Value *res = nullptr;
@@ -924,8 +935,7 @@ static Value *exp(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "^", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "^", s1, s2);
     }
     return res;
 }
@@ -963,8 +973,7 @@ static Value *add(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "+", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "+", s1, s2);
     }
     return res;
 }
@@ -1002,8 +1011,7 @@ static Value *sub(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "-", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "-", s1, s2);
     }
     return res;
 }
@@ -1049,8 +1057,7 @@ static Value *div(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "/", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "/", s1, s2);
     }
     return res;
 }
@@ -1088,8 +1095,7 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "*", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "*", s1, s2);
     }
     return res;
 }
@@ -1135,8 +1141,7 @@ static Value *mod(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "%", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "%", s1, s2);
     }
     return res;
 }
@@ -1197,8 +1202,7 @@ static Value *eq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     }
     // TODO compare class values and enum values and such
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "==", s1, s2);
     }
     return res;
 }
@@ -1278,8 +1282,7 @@ static Value *bt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, ">", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, ">", s1, s2);
     }
     return res;
 }
@@ -1322,8 +1325,7 @@ static Value *lt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "<", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "<", s1, s2);
     }
     return res;
 }
@@ -1366,8 +1368,7 @@ static Value *beq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, ">=", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, ">=", s1, s2);
     }
     return res;
 }
@@ -1410,8 +1411,7 @@ static Value *leq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "<=", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "<=", s1, s2);
     }
     return res;
 }
@@ -1448,8 +1448,7 @@ static Value *in(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "in", s2, s1, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "in", s1, s2);
     }
     return res;
 }
@@ -1489,8 +1488,7 @@ static Value *andOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "and", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "and", s1, s2);
     }
     return res;
 }
@@ -1530,8 +1528,7 @@ static Value *orOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "or", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "or", s1, s2);
     }
     return res;
 }
@@ -1571,8 +1568,7 @@ static Value *xorOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         call_operator(vm, "xor", s1, s2, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "xor", s1, s2);
     }
     return res;
 }
@@ -1610,8 +1606,7 @@ static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
         res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "[]", s1, s2);
     }
     return res;
 }
@@ -1666,8 +1661,7 @@ void Not::exec(Interpreter *vm) {
         call_operator_unary(vm, "not", s1, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "not", s1);
     }
     if (res)
         vm->store(dst, res);
@@ -1686,8 +1680,7 @@ void Neg::exec(Interpreter *vm) {
         call_operator_unary(vm, "-", s1, dst);
     }
     else {
-        // FIXME: Raise unsupported operator type exception
-        assert(false && "TODO: unsupported operator type raise exception");
+        raise_operand_exc(vm, "-", s1);
     }
     if (res)
         vm->store(dst, res);
@@ -1696,14 +1689,15 @@ void Neg::exec(Interpreter *vm) {
 void Assert::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
     auto *assert_msg = vm->load(msg);
+    assert(s1 && "Nonexistent value");
+    assert(assert_msg && "Nonexistent value msg");
     
     auto *check = dyn_cast<BoolValue>(s1);
-    assert(check && "Assertion value is not a boolean");
-    auto *str_msg = dyn_cast<StringValue>(assert_msg);
-    assert(str_msg && "Assertion message is not a string");
+    op_assert(check, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, s1->get_type()->get_name().c_str())));
+    auto str_msg = to_string(vm, assert_msg);
 
     if (!check->get_value()) {
-        assert(false && "TODO: Raise assertion exception");
+        raise(mslib::create_assertion_error(str_msg));
     }
 }
 

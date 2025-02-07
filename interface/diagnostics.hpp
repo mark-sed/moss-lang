@@ -103,6 +103,18 @@ enum DiagID {
     SET_EXPECTED_FOR_MULTIVAL, ///< a,b,c = val but missing =
     EXPR_CANNOT_BE_ASSIGN_TO, /// a+1, b = 2
     NAME_NOT_DEFINED,       ///< When name is not found
+    GLOB_NAME_NOT_DEFINED,  ///< When name is not found
+    ATTRIB_NOT_DEFINED,     ///< When attr is not 
+    BOOL_EXPECTED,          ///< Got other type than bool
+    NOT_CALLABLE,           ///< Calling non function type
+    INCORRECT_CALL,         ///< Cannot call it like this
+    OPERATOR_NOT_DEFINED,   ///< Operator was not created for this class
+    NOT_A_TYPE,             ///< Name is not a type or does not exist
+    CANNOT_FIND_MODULE,     ///< Module cannot be found on known paths
+    MISSING_ANNOT_TYPE_ARGUMENT, ///< Annotation has Nil or incorrect type argument
+    UNEXPECTED_TYPE,        ///< Got unexpected type
+    UNSUPPORTED_OPERAND_TYPE, ///< Operator used on incorrect type
+    UNSUPPORTED_UN_OPERAND_TYPE, ///< Unary operator used on incorrect type
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -186,6 +198,18 @@ static const char * DIAG_MSGS[] = {
     "Expecting '=' for multivalue asignment",
     "Found non-assignable expression",
     "Name '%s' is not defined",
+    "Global name '%s' is not defined",
+    "'%s' has no attribute '%s'",
+    "Expected Bool value, but got '%s'",
+    "Type '%s' is not callable",
+    "Incorrect call to function '%s'",
+    "'%s' has no operator '%s'",
+    "'%s' does not name a type",
+    "Cannot find module '%s'",
+    "Annotation '%s' expects '%s' argument",
+    "Expecting type '%s', but got '%s'",
+    "Unsupported operand type for operator '%s' — '%s' and '%s'",
+    "Unsupported operand type for unary operator '%s' — '%s'",
 };
 
 /// \brief Diagnostic message for error reporting

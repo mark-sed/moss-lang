@@ -79,7 +79,7 @@ class __TypeError : Exception {
 @internal_bind("AssertionError")
 class __AssertionError : Exception {
     fun __String() {
-        return "AssertionError: " ++ this.msg
+        return "AssertionError: " ++ this.msg ++ "\n"
     }
 }
 

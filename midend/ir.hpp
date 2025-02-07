@@ -723,6 +723,9 @@ public:
             delete msg;
     }
 
+    Expression *get_cond() { return this->cond; }
+    Expression *get_msg() { return this->msg; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "assert(" << *cond;
         if (msg)

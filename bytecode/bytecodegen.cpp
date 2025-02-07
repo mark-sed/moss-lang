@@ -633,7 +633,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
     }
     else if (auto val = dyn_cast<ir::Call>(expr)) {
         append(new PushCallFrame());
-        auto fun = emit(val->get_fun());
+        auto fun = emit(val->get_fun(), true);
         for (auto a: val->get_args()) {
             RegValue *a_val = nullptr;
             auto be = dyn_cast<BinaryExpr>(a);
@@ -945,6 +945,12 @@ void BytecodeGen::emit(ir::Try *tcf) {
     }
 }
 
+void BytecodeGen::emit(ir::Assert *asr) {
+    auto cnd = emit(asr->get_cond(), true);
+    auto msg = emit(asr->get_msg(), true);
+    append(new opcode::Assert(free_reg(cnd), free_reg(msg)));
+}
+
 void BytecodeGen::emit(ir::IR *decl) {
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
@@ -984,6 +990,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto t = dyn_cast<ir::Try>(decl)) {
         emit(t);
+    }
+    else if (auto a = dyn_cast<ir::Assert>(decl)) {
+        emit(a);
     }
     else if (isa<EndOfFile>(decl)) {
         append(new End());

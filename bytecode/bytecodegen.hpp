@@ -73,6 +73,7 @@ private:
     void emit(ir::Class *cls);
     void emit(ir::Space *spc);
     void emit(ir::Enum *enm);
+    void emit(ir::Assert *asr);
     void emit(ir::IR *decl);
     void emit(std::list<ir::IR *> block);
 
