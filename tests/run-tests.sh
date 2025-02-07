@@ -470,6 +470,21 @@ function test_lib_type_constructors {
 Exception: Some exception\n' $1
 }
 
+function test_lib_builtin_exceptions {
+    expect_pass "stdlib_tests/builtin_exceptions.ms" $1
+    expect_out_eq "Caught: Exception: 
+Caught: NameError: 
+Caught: AttributeError: 
+Caught: ModuleNotFoundError: 
+Caught: TypeError: 
+Caught: AssertionError: 
+Caught: NotImplementedError: 
+Caught: ParserError: 
+Caught: SyntaxError: 
+Caught: NameError: 
+Caught: SyntaxError: \n" $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -577,6 +592,7 @@ function run_all_tests {
     run_test lib_vardump
     run_test lib_print
     run_test lib_type_constructors
+    run_test lib_builtin_exceptions
 
     # gc tests
     run_test gc_local_vars

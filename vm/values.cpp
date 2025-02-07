@@ -186,6 +186,13 @@ Value *BuiltIns::Space = new ClassValue("Space");
 
 Value *BuiltIns::Exception = new ClassValue("Exception");
 Value *BuiltIns::NameError = new ClassValue("NameError");
+Value *BuiltIns::AttributeError = new ClassValue("AttributeError");
+Value *BuiltIns::ModuleNotFoundError = new ClassValue("ModuleNotFoundError");
+Value *BuiltIns::TypeError = new ClassValue("TypeError");
+Value *BuiltIns::AssertionError = new ClassValue("AssertionError");
+Value *BuiltIns::NotImplementedError = new ClassValue("NotImplementedError");
+Value *BuiltIns::ParserError = new ClassValue("ParserError");
+Value *BuiltIns::SyntaxError = new ClassValue("SyntaxError");
 
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {

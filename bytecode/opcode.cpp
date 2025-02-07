@@ -17,6 +17,10 @@
 using namespace moss;
 using namespace moss::opcode;
 
+
+/// This macro asserts that condition is true otherwise it raises passed value 
+#define op_assert(cond, msg) do { if(!(cond)) raise(msg); } while(0)
+
 std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
     std::stringstream ss;
     ss << vm->get_bci() << "\t" << *this << " :: " << msg;
@@ -103,8 +107,7 @@ opcode::StringConst opcode::to_string(Interpreter *vm, Value *v) {
     return v->as_string();
 }
 
-void opcode::raise(Interpreter *vm, Value *exc) {
-    (void) vm;
+void opcode::raise(Value *exc) {
     throw exc;
 }
 
@@ -123,10 +126,7 @@ void Load::exec(Interpreter *vm) {
             v = ths->get_attr(this->name);
         }
     }*/
-    if (!v) {
-        auto msg = error::format_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, this->name.c_str()));
-        raise(vm, mslib::create_name_error(msg));
-    }
+    op_assert(v, mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, this->name.c_str())));
     vm->store(this->dst, v);
 }
 
@@ -507,7 +507,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         Value *err = nullptr;
         mslib::dispatch(vm, fun->get_name(), err);
         if (err) {
-            raise(vm, err);
+            raise(err);
             return;
         }
     }
@@ -1714,7 +1714,7 @@ void CopyArgs::exec(Interpreter *vm) {
 void Raise::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
     assert(s1 && "sanity check");
-    raise(vm, s1);
+    raise(s1);
 }
 
 static void catch_op(Interpreter *vm, Value *type, ustring name, Address addr) {
@@ -1852,3 +1852,5 @@ void Switch::exec(Interpreter *vm) {
 void For::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
+
+#undef op_assert

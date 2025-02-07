@@ -44,7 +44,7 @@ elif [ "${TARGET}" = "debug" ]; then
     cmake --build $BUILD_DIR -j $(nproc) --target moss libms installation
 elif [ "${TARGET}" = "tests" ]; then
     cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
-    cmake --build $BUILD_DIR -j $(nproc) --target moss libms installation || exit 1
+    cmake --build $BUILD_DIR -j $(nproc) --target moss libms installation testsmoss || exit 1
     # Run tests
     echo "Running unit tests"
     sudo -u $SUDO_USER ./$BUILD_DIR/testsmoss || exit 1

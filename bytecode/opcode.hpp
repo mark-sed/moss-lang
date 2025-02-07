@@ -198,7 +198,7 @@ enum OpCodes : opcode_t {
     OPCODES_AMOUNT
 };
 
-void raise(Interpreter *vm, Value *exc);
+void raise(Value *exc);
 ModuleValue *load_module(Interpreter *vm, ustring name);
 StringConst to_string(Interpreter *vm, Value *v);
 

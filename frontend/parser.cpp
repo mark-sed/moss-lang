@@ -6,11 +6,9 @@
 #include "clopts.hpp"
 #include <cassert>
 
-/**
- * This macro asserts that condition is true otherwise it raises a parser_error
- * This macro REQUIRES to be called withing Parser class as it calls its
- * method.
- */ 
+/// This macro asserts that condition is true otherwise it raises a parser_error
+/// This macro REQUIRES to be called withing Parser class as it calls its
+/// method. 
 #define parser_assert(cond, msg) do { if(!(cond)) parser_error(msg); } while(0)
 
 using namespace moss;

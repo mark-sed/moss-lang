@@ -91,6 +91,13 @@ void Interpreter::init_global_frame() {
 
     store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
     store_glob_val(reg++, "NameError", BuiltIns::NameError, gf);
+    store_glob_val(reg++, "AttributeError", BuiltIns::AttributeError, gf);
+    store_glob_val(reg++, "ModuleNotFoundError", BuiltIns::ModuleNotFoundError, gf);
+    store_glob_val(reg++, "TypeError", BuiltIns::TypeError, gf);
+    store_glob_val(reg++, "AssertionError", BuiltIns::AssertionError, gf);
+    store_glob_val(reg++, "NotImplementedError", BuiltIns::NotImplementedError, gf);
+    store_glob_val(reg++, "ParserError", BuiltIns::ParserError, gf);
+    store_glob_val(reg++, "SyntaxError", BuiltIns::SyntaxError, gf);
 
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }
@@ -341,7 +348,7 @@ void Interpreter::run() {
             // or interpreter owner to print or exit or both
             bool handled = false;
             for (auto ec: catches) {
-                if (!ec.type || opcode::is_type_eq_or_subtype(ec.type, v->get_type())) {
+                if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
                     LOGMAX("Caught exception");
                     handle_exception(ec, v);
                     handled = true;

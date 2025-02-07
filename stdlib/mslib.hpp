@@ -16,6 +16,7 @@
 #include "commons.hpp"
 #include "memory.hpp"
 #include "values.hpp"
+#include "diagnostics.hpp"
 #include <cassert>
 
 namespace moss {
@@ -35,7 +36,40 @@ Value *Exception(Interpreter *vm, Value *ths, Value *msg);
 /// \param err Possible exception from execution
 void dispatch(Interpreter *vm, ustring name, Value *&err);
 
-Value *create_name_error(ustring msg);
+Value *create_exception(Value *type, ustring msg);
+Value *create_exception(Value *type, diags::Diagnostic dmsg);
+
+inline Value *create_name_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::NameError, dmsg);
+}
+
+inline Value *create_attribute_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::AttributeError, dmsg);
+}
+
+inline Value *create_module_not_found_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::ModuleNotFoundError, dmsg);
+}
+
+inline Value *create_type_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::TypeError, dmsg);
+}
+
+inline Value *create_assertion_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::AssertionError, dmsg);
+}
+
+inline Value *create_not_implemented_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::NotImplementedError, dmsg);
+}
+
+inline Value *create_parser_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::ParserError, dmsg);
+}
+
+inline Value *create_syntax_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::SyntaxError, dmsg);
+}
 
 }
 
