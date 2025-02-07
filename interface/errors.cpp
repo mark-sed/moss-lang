@@ -68,8 +68,7 @@ void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit
 ustring error::format_error(diags::Diagnostic msg) {
     std::stringstream ss;
     if (!msg.scanner) {
-        ss << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
-            << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
+        ss << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
             << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ": "
             << msg.msg << (msg.msg.back() != '?' ? "." : "") << error::colors::colorize(error::colors::GRAY) 
             << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
@@ -80,8 +79,7 @@ ustring error::format_error(diags::Diagnostic msg) {
         
         SourceInfo info = msg.token->get_src_info();
 
-        ss << error::colors::colorize(error::colors::WHITE) << "moss: " << error::colors::reset()
-        << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
+        ss << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
         << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
         << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
 
