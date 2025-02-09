@@ -23,13 +23,6 @@ namespace moss {
 
 namespace mslib {
 
-void exit(Interpreter *vm, Value *code);
-Value *vardump(Interpreter *vm, Value *v);
-Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator);
-
-Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base);
-Value *Exception(Interpreter *vm, Value *ths, Value *msg);
-
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources
 /// \param name Name of the function to execute

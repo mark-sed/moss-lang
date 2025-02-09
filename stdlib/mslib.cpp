@@ -9,7 +9,7 @@
 using namespace moss;
 using namespace mslib;
 
-void mslib::exit(Interpreter *vm, Value *code) {
+void exit(Interpreter *vm, Value *code) {
     if (auto i = dyn_cast<IntValue>(code)) {
         vm->set_exit_code(i->get_value());
     }
@@ -25,14 +25,14 @@ void mslib::exit(Interpreter *vm, Value *code) {
     // No need to set any return as we jump to the end
 }
 
-Value *mslib::vardump(Interpreter *vm, Value *v) {
+Value *vardump(Interpreter *vm, Value *v) {
     (void)vm;
     std::stringstream ss;
     ss << *v << "\n";
     return new StringValue(ss.str());
 }
 
-Value *mslib::print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
+Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
     (void)vm;
     auto msgs_list = dyn_cast<ListValue>(msgs);
     assert(msgs_list && "msgs is not a vararg?");
@@ -50,7 +50,7 @@ Value *mslib::print(Interpreter *vm, Value *msgs, Value *end, Value *separator) 
     return BuiltIns::Nil;
 }
 
-Value *mslib::Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
+Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
     (void)vm;
     (void)ths;
     IntValue *base_int = nullptr;
@@ -77,12 +77,6 @@ Value *mslib::Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
     }
     
     assert(false && "Incorrect arg type");
-}
-
-Value *mslib::Exception(Interpreter *vm, Value *ths, Value *msg) {
-    (void)vm;
-    ths->set_attr("msg", msg);
-    return ths;
 }
 
 Value *mslib::create_exception(Value *type, ustring msg) {
@@ -124,10 +118,6 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");
         // Base might not be set as this is only for string argument
         ret_v = Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
-    }
-    else if (name == "Exception") {
-        assert(arg_size == 2 && "Mismatch of args");
-        ret_v = Exception(vm, cf->get_arg("this"), cf->get_arg("msg"));
     }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));

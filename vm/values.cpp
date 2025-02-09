@@ -176,13 +176,14 @@ Value *BuiltIns::NilType = new ClassValue("NilType");
 Value *BuiltIns::String = new ClassValue("String");
 Value *BuiltIns::List = new ClassValue("List");
 
-Value *BuiltIns::Address = new ClassValue("Address");
-
 Value *BuiltIns::Function = new ClassValue("Function");
 Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 
 Value *BuiltIns::Module = new ClassValue("Module");
 Value *BuiltIns::Space = new ClassValue("Space");
+
+Value *BuiltIns::StopIteration = new ClassValue("StopIteration");
+Value *BuiltIns::Range = new ClassValue("Range");
 
 Value *BuiltIns::Exception = new ClassValue("Exception");
 Value *BuiltIns::NameError = new ClassValue("NameError");

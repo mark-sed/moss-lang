@@ -477,6 +477,12 @@ Caught: NameError:
 Caught: SyntaxError: \n" $1
 }
 
+function test_lib_ranges {
+    expect_pass "stdlib_tests/ranges.ms" $1
+    expect_out_eq '1\n3\n5\n100\n99\n98\n-2\n3\n8
+0\n1\n2\n' $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -591,6 +597,7 @@ function run_all_tests {
     run_test lib_print
     run_test lib_type_constructors
     run_test lib_builtin_exceptions
+    run_test lib_ranges
 
     # gc tests
     run_test gc_local_vars

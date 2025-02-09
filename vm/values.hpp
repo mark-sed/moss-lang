@@ -170,12 +170,14 @@ namespace BuiltIns {
     extern Value *NilType;// = new ClassValue("NilType");
     extern Value *String;// = new ClassValue("String");
     extern Value *List;
-    extern Value *Address;// = new ClassValue("Address");
     extern Value *Function;// = new ClassValue("Function");
     extern Value *FunctionList;// = new ClassValue("FunctionList");
     extern Value *Function;// = new ClassValue("Function");
     extern Value *Module;
     extern Value *Space;
+    
+    extern Value *Range;
+    extern Value *StopIteration;
 
     extern Value *Exception;
     extern Value *NameError;

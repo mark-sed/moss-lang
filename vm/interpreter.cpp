@@ -83,11 +83,13 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "List", BuiltIns::List, gf);
     store_glob_val(reg++, "NilType", BuiltIns::NilType, gf);
     store_glob_val(reg++, "String", BuiltIns::String, gf);
-    store_glob_val(reg++, "Address", BuiltIns::Address, gf);
     store_glob_val(reg++, "Function", BuiltIns::Function, gf);
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
     store_glob_val(reg++, "Module", BuiltIns::Module, gf);
     store_glob_val(reg++, "Space", BuiltIns::Space, gf);
+
+    store_glob_val(reg++, "Range", BuiltIns::Range, gf);
+    store_glob_val(reg++, "StopIteration", BuiltIns::StopIteration, gf);
 
     store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
     store_glob_val(reg++, "NameError", BuiltIns::NameError, gf);

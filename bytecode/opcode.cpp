@@ -1200,9 +1200,12 @@ static Value *eq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "==", s1, s2, dst);
     }
-    // TODO compare class values and enum values and such
-    else {
-        raise_operand_exc(vm, "==", s1, s2);
+    else if (isa<EnumValue>(s1)) {
+        assert(false && "TODO: Unimplemented enum comparison");
+    } else if (isa<EnumValue>(s1)) {
+        assert(false && "TODO: Unimplemented class comparison");
+    } else {
+        res = new BoolValue(false);
     }
     return res;
 }
@@ -1594,16 +1597,19 @@ void Xor3::exec(Interpreter *vm) {
 static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
-    if (isa<StringValue>(s1) && isa<IntValue>(s2)) {
-        StringValue *st1 = dyn_cast<StringValue>(s1);
-        IntValue *i2 = dyn_cast<IntValue>(s2);
-        if (i2->get_value() < 0) {
-            assert(false && "TODO: negative index");
+    // "txt"[0]
+    if (auto st1 = dyn_cast<StringValue>(s1)) {
+        if (auto i2 = dyn_cast<IntValue>(s2)) {
+            if (i2->get_value() < 0) {
+                assert(false && "TODO: negative index");
+            }
+            else if (static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size()) {
+                assert(false && "TODO: out of bounds exception");
+            }
+            res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
+        } else {
+            raise_operand_exc(vm, "[]", s1, s2);
         }
-        else if (static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size()) {
-            assert(false && "TODO: out of bounds exception");
-        }
-        res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
     }
     else {
         raise_operand_exc(vm, "[]", s1, s2);

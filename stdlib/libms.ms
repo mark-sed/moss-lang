@@ -16,6 +16,40 @@ class __Int {
     fun Int(v:[Int, Float]=0) {}
 }
 
+@internal_bind("Range")
+class __Range {
+
+    fun Range(start:Int, end:Int, step:Int=nil) {
+        this.start = start
+        this.end = end
+        if (step != nil)
+            this.step = step
+        else if (start <= end)
+            this.step = 1
+        else
+            this.step = -1
+        this.i = start
+    }
+
+    fun Range(end:Int) {
+        this.start = 0
+        this.end = end
+        if (start < end)
+            this.step = 1
+        else
+            this.step = -1
+        this.i = start
+    }
+
+    fun __next() {
+        if (this.step >= 0 and this.i >= this.end) return StopIteration()
+        if (this.step < 0 and this.i <= this.end) return StopIteration()
+        r = this.i
+        this.i = this.i + this.step
+        return r
+    }
+}
+
 /*@internal_bind("Float")
 class __Float {
     @internal
@@ -35,11 +69,12 @@ fun print(... msgs, end="\n", separator=" ") {}
 fun exit(code=0) {}
 
 /// Exceptions
-// TODO: Place into space
 @internal_bind("Exception")
 class __Exception {
-    @internal
-    fun Exception(msg:String) {}
+
+    fun Exception(msg) {
+        this.msg = msg
+    }
 
     fun __String() {
         return "Exception: "++this.msg
@@ -102,4 +137,8 @@ class __SyntaxError : ParserError {
     fun __String() {
         return "SyntaxError: " ++ this.msg
     }
+}
+
+@internal_bind("StopIteration")
+class __StopIteration {
 }
