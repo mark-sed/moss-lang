@@ -65,3 +65,26 @@ c.id
 // We can use ducktyping
 B.get_id(c)
 "\n"
+
+// Check that store attr is correct
+class FooAtt {
+    fun FooAtt() {
+        this.a = 4
+        this.a
+    }
+
+    fun att() {
+        this.b = this.a + 1
+        this.b
+        "\n"
+        this.a
+        "\n"
+    }
+}
+
+f = FooAtt()
+"\n"
+FooAtt.att(f)
+"\n"
+f.att()
+"\n"

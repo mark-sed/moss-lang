@@ -181,7 +181,10 @@ void StoreConst::exec(Interpreter *vm) {
 
 void StoreAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
+    assert(dstobj && "non existent register");
     auto *v = vm->load(this->src);
+    assert(v && "non existent register");
+    LOGMAX(*dstobj << " . " << name << " = " << *v);
     dstobj->set_attr(this->name, v);
 }
 

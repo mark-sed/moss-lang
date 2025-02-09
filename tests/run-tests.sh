@@ -287,7 +287,8 @@ foo1\nfoo1\n" $1
 function test_attributes {
     expect_pass "attributes.ms" $1
     expect_out_eq "constructed\n56\n56\n56\n<object of class Foo>
-<object of class B>\n91\n91\n91 != 65\n-1 == -1\n" $1
+<object of class B>\n91\n91\n91 != 65\n-1 == -1
+4\n5\n4\nnil\n5\n4\nnil\n" $1
 }
 
 function test_inheritance {

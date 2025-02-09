@@ -173,7 +173,11 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 auto rightE = dyn_cast<Variable>(be->get_right());
                 assert(rightE && "Non assignable access");
-                auto rval = last_reg();
+                auto rval = right;
+                if (right->is_const()) {
+                    append(new StoreConst(next_reg(), free_reg(right)));
+                    rval = last_reg();
+                }
                 auto leftE = emit(be->get_left(), true);
                 rval->set_silent(true);
                 append(new StoreAttr(rval->reg(), free_reg(leftE), rightE->get_name()));
