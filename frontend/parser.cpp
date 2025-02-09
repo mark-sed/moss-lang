@@ -75,7 +75,6 @@ IR *Parser::parse(bool is_main) {
             decl = raise;
             StringLiteral *err_msg = dyn_cast<StringLiteral>(raise->get_exception());
             assert(err_msg && "Error message from parser is not a String literal");
-            errs << err_msg->get_value();
             if (is_main) {
                 error::exit(error::ErrorCode::RUNTIME);
             }
