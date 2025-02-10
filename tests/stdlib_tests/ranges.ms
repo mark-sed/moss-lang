@@ -22,7 +22,6 @@ r3.__next()
 r3.__next()
 "\n"
 
-/* Uncomment once fixed
 r4 = Range(0, 30)
 r4.__next()
 "\n"
@@ -30,9 +29,10 @@ r4.__next()
 "\n"
 r4.__next()
 "\n"
-*/
 
 r5 = Range(0, 3, 1)
+r5.__next()
+"\n"
 r5.__next()
 "\n"
 r5.__next()
@@ -40,7 +40,37 @@ r5.__next()
 try {
     r5.__next()
 } catch (e:StopIteration) {
-    
+    "end"
 } finally {
     "\n"
 }
+
+r6 = Range(0, -5, 2)
+try {
+    r6.__next()
+} catch (e:StopIteration) {
+    "end\n"
+}
+
+r6 = Range(0, -5, 2)
+try {
+    r6.__next()
+} catch (e:StopIteration) {
+    "end\n"
+}
+
+r7 = Range(5)
+r7.__next()
+"\n"
+r7.__next()
+"\n"
+r7.__next()
+"\n"
+
+r8 = Range(-5)
+r8.__next()
+"\n"
+r8.__next()
+"\n"
+r8.__next()
+"\n"

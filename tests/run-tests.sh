@@ -480,8 +480,8 @@ Caught: SyntaxError: \n" $1
 
 function test_lib_ranges {
     expect_pass "stdlib_tests/ranges.ms" $1
-    expect_out_eq '1\n3\n5\n100\n99\n98\n-2\n3\n8
-0\n1\n2\n' $1
+    expect_out_eq '1\n3\n5\n100\n99\n98\n-2\n3\n8\n0\n1\n2
+0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n' $1
 }
 
 function test_gc_local_vars {

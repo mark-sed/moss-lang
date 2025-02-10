@@ -42,8 +42,8 @@ class __Range {
     }
 
     fun __next() {
-        if (this.step >= 0 and this.i >= this.end) return StopIteration()
-        if (this.step < 0 and this.i <= this.end) return StopIteration()
+        if (this.step >= 0 and this.i >= this.end) raise StopIteration()
+        if (this.step < 0 and this.i <= this.end) raise StopIteration()
         r = this.i
         this.i = this.i + this.step
         return r
