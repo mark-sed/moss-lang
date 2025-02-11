@@ -60,8 +60,8 @@ inline Value *create_parser_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::ParserError, dmsg);
 }
 
-inline Value *create_syntax_error(diags::Diagnostic dmsg) {
-    return create_exception(BuiltIns::SyntaxError, dmsg);
+inline Value *create_syntax_error(ustring msg) {
+    return create_exception(BuiltIns::SyntaxError, msg);
 }
 
 }

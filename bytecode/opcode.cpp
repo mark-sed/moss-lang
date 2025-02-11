@@ -767,13 +767,22 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
         input_file = ibf;
         BytecodeReader bcreader(*ibf);
         bc = bcreader.read();
+        // TODO: Allow for incorrect read, but raise an exception
         LOGMAX("Read bytecode: \n" << *bc);
     } else {
         auto module_file = new SourceFile(path, SourceFile::SourceType::FILE);
         input_file = module_file;
         Parser parser(*module_file);
         auto module_ir = parser.parse(false);
-
+        if (auto exc = dyn_cast<ir::Raise>(module_ir)) {
+            // Parser error... there is not VM so it is returned as a StringValue
+            // place it into an exception and raise it correctly
+            auto msg = dyn_cast<ir::StringLiteral>(exc->get_exception());
+            assert(msg && "Raise from parser should be string value");
+            auto v = mslib::create_syntax_error(msg->get_value());
+            delete module_ir;
+            raise(v);
+        }
         bc = new Bytecode();
         bcgen::BytecodeGen cgen(bc);
         cgen.generate(module_ir);
