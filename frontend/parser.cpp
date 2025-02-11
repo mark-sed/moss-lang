@@ -72,15 +72,8 @@ IR *Parser::parse(bool is_main) {
         try {
             decl = declaration();
         } catch (Raise *raise) {
-            decl = raise;
-            StringLiteral *err_msg = dyn_cast<StringLiteral>(raise->get_exception());
-            assert(err_msg && "Error message from parser is not a String literal");
-            if (is_main) {
-                error::exit(error::ErrorCode::RUNTIME);
-            }
-            else {
-                return raise;
-            }
+            delete m;
+            return raise;
         }
         assert(decl && "Declaration in parser is nullptr");
         m->push_back(decl);
@@ -1057,6 +1050,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
     std::vector<ir::Expression *> vars = {first, second};
     Expression *expr = nullptr;
     lower_range_prec = true;
+    bool found_eq = false;
     do {
         skip_nls();
         expr = expression(true);
@@ -1068,6 +1062,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
                     expr = be->get_right();
                     be->set_left(nullptr);
                     be->set_right(nullptr);
+                    found_eq = true;
                     break;
                 }
                 else {
@@ -1080,6 +1075,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
             }
         }
     } while (match(TokenType::COMMA) && expr);
+    parser_assert(found_eq, create_diag(diags::SET_EXPECTED_FOR_MULTIVAL));
     lower_range_prec = false;
     return new BinaryExpr(new Multivar(vars), expr, Operator(OperatorKind::OP_SET));
 }

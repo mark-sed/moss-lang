@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <sstream>
+#include "logging.hpp"
 
 namespace moss {
 
@@ -952,8 +953,9 @@ public:
         // binexpr is deleted and left and right is nullptr
         if (left)
             delete left;
-        if (right)
+        if (right) {
             delete right;
+        }
     }
 
     Expression *get_left() { return this->left; }

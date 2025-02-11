@@ -96,6 +96,12 @@ int main(int argc, const char *argv[]) {
 
         Parser parser(*main_file);
         main_mod = parser.parse(true);
+        if (auto exc = dyn_cast<ir::Raise>(main_mod)) {
+            // An exception was raised in the parser, lets report it straight away
+            ir::StringLiteral *err_msg = dyn_cast<ir::StringLiteral>(exc->get_exception());
+            errs << err_msg->get_value();
+            error::exit(error::ErrorCode::RUNTIME);
+        }
 
 #ifndef NDEBUG
         // When --parse-only is set, then let's not interpret this
