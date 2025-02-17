@@ -52,6 +52,18 @@ try {
     "Caught: "++e++"\n"
 }
 
+try {
+    raise LookupError("")
+} catch (e:LookupError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise IndexError("")
+} catch (e:IndexError) {
+    "Caught: "++e++"\n"
+}
+
 // Inheritance tests
 
 try {
@@ -63,5 +75,11 @@ try {
 try {
     raise SyntaxError("")
 } catch (e:ParserError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise IndexError("")
+} catch (e:LookupError) {
     "Caught: "++e++"\n"
 }

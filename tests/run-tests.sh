@@ -240,7 +240,7 @@ function test_output {
 function test_expressions {
     expect_pass "expressions.ms" $1
     expect_out_eq "27\n13\n261\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue
-true\nfalse\n9\n255\n0\n6699\n-42\nfalse\n" $1
+true\nfalse\n9\n255\n0\n6699\n-42\nfalse\nacfc\n" $1
 }
 
 function test_variables {
@@ -331,6 +331,11 @@ function test_optional_typing {
     expect_pass "optional_typing.ms" $1
     expect_out_eq "Int first\nString first\nAll other types
 1\n2\n" $1
+}
+
+function test_indexing {
+    expect_pass "indexing.ms" $1
+    expect_out_eq "s\nab\noob\noob\n23true\nnil\noob\n" $1
 }
 
 function test_basic_import {
@@ -474,8 +479,11 @@ Caught: AssertionError:
 Caught: NotImplementedError: 
 Caught: ParserError: 
 Caught: SyntaxError: 
+Caught: LookupError: 
+Caught: IndexError: 
 Caught: NameError: 
-Caught: SyntaxError: \n" $1
+Caught: SyntaxError: 
+Caught: IndexError: \n" $1
 }
 
 function test_lib_ranges {
@@ -580,6 +588,7 @@ function run_all_tests {
     run_test enums
     run_test space
     run_test optional_typing
+    run_test indexing
 
     run_test basic_import
     run_test import_calls

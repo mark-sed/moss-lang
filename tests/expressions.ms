@@ -32,3 +32,8 @@ true and true
 a = 1
 not (a < 42)
 "\n"
+"abcdefg"[0]
+"abc"[2]
+"abcdef"[-1]
+"abcdef"[-4]
+"\n"[0]

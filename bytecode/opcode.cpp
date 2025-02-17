@@ -815,7 +815,7 @@ void Import::exec(Interpreter *vm) {
 void ImportAll::exec(Interpreter *vm) {
     auto mod = vm->load(src);
     assert(mod && "Non existent module for import all");
-    assert(isa<ModuleValue>(mod) || isa<SpaceValue>(mod) && "TODO: raise spilling something else than module or space");
+    assert((isa<ModuleValue>(mod) || isa<SpaceValue>(mod)) && "TODO: raise spilling something else than module or space");
     vm->push_spilled_value(mod);
 }
 
@@ -1606,19 +1606,73 @@ void Xor3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+static void extract_range(Value *r, opcode::IntConst &start, opcode::IntConst &end, opcode::IntConst &step) {
+    // TODO: Raise exception if asserted
+    auto rngobj = dyn_cast<ObjectValue>(r);
+    assert(rngobj && "sanity check");
+    auto start_v = rngobj->get_attr("start");
+    assert(start_v && "range does not have a start attribute");
+    auto step_v = rngobj->get_attr("step");
+    assert(step_v && "range does not have a step attribute");
+    auto end_v = rngobj->get_attr("end");
+    assert(end_v && "range does not have a end attribute");
+
+    auto start_i = dyn_cast<IntValue>(start_v);
+    assert(start_i && "start in range is not an int");
+    auto step_i = dyn_cast<IntValue>(step_v);
+    assert(step_i && "step in range is not an int");
+    auto end_i = dyn_cast<IntValue>(end_v);
+    assert(end_i && "end in range is not an int");
+
+    start = start_i->get_value();
+    end = end_i->get_value();
+    step = step_i->get_value();
+}
+
 static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     // "txt"[0]
     if (auto st1 = dyn_cast<StringValue>(s1)) {
         if (auto i2 = dyn_cast<IntValue>(s2)) {
+            if ((i2->get_value() < 0 && static_cast<unsigned long>(i2->get_value()*-1) > st1->get_value().size()) || 
+              (i2->get_value() > 0 && static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size())) {
+                raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str())));
+            }
             if (i2->get_value() < 0) {
-                assert(false && "TODO: negative index");
+                res = new StringValue(ustring(1, st1->get_value()[st1->get_value().size()+i2->get_value()]));
+            } else {
+                res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
             }
-            else if (static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size()) {
-                assert(false && "TODO: out of bounds exception");
+        } else if (s2->get_type() == BuiltIns::Range) {
+            opcode::IntConst start;
+            opcode::IntConst end;
+            opcode::IntConst step;
+            extract_range(s2, start, end, step);
+            // Check bounds
+            assert(false && "TODO");
+        } else {
+            raise_operand_exc(vm, "[]", s1, s2);
+        }
+    }
+    else if (auto lt1 = dyn_cast<ListValue>(s1)) {
+        if (auto i2 = dyn_cast<IntValue>(s2)) {
+            if ((i2->get_value() < 0 && static_cast<unsigned long>(i2->get_value()*-1) > lt1->get_vals().size()) || 
+              (i2->get_value() > 0 && static_cast<unsigned long>(i2->get_value()) >= lt1->get_vals().size())) {
+                raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str())));
             }
-            res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
+            if (i2->get_value() < 0) {
+                res = lt1->get_vals()[lt1->get_vals().size()+i2->get_value()];
+            } else {
+                res = lt1->get_vals()[i2->get_value()];
+            }
+        } else if (s2->get_type() == BuiltIns::Range) {
+            opcode::IntConst start;
+            opcode::IntConst end;
+            opcode::IntConst step;
+            extract_range(s2, start, end, step);
+            // Check bounds
+            assert(false && "TODO");
         } else {
             raise_operand_exc(vm, "[]", s1, s2);
         }

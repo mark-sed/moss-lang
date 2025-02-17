@@ -115,6 +115,7 @@ enum DiagID {
     UNEXPECTED_TYPE,        ///< Got unexpected type
     UNSUPPORTED_OPERAND_TYPE, ///< Operator used on incorrect type
     UNSUPPORTED_UN_OPERAND_TYPE, ///< Unary operator used on incorrect type
+    OUT_OF_BOUNDS,          /// Outside of range
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -210,6 +211,7 @@ static const char * DIAG_MSGS[] = {
     "Expecting type '%s', but got '%s'",
     "Unsupported operand type for operator '%s' — '%s' and '%s'",
     "Unsupported operand type for unary operator '%s' — '%s'",
+    "'%s' index out of bounds",
 };
 
 /// \brief Diagnostic message for error reporting

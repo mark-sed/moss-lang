@@ -100,6 +100,8 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "NotImplementedError", BuiltIns::NotImplementedError, gf);
     store_glob_val(reg++, "ParserError", BuiltIns::ParserError, gf);
     store_glob_val(reg++, "SyntaxError", BuiltIns::SyntaxError, gf);
+    store_glob_val(reg++, "LookupError", BuiltIns::LookupError, gf);
+    store_glob_val(reg++, "IndexError", BuiltIns::IndexError, gf);
 
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }

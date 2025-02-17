@@ -188,6 +188,8 @@ namespace BuiltIns {
     extern Value *NotImplementedError;
     extern Value *ParserError;
     extern Value *SyntaxError;
+    extern Value *LookupError;
+    extern Value *IndexError;
 
     extern Value *Nil;
     #define BUILT_INS_INT_CONSTANTS_AM 262

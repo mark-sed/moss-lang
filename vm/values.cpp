@@ -194,6 +194,8 @@ Value *BuiltIns::AssertionError = new ClassValue("AssertionError");
 Value *BuiltIns::NotImplementedError = new ClassValue("NotImplementedError");
 Value *BuiltIns::ParserError = new ClassValue("ParserError");
 Value *BuiltIns::SyntaxError = new ClassValue("SyntaxError");
+Value *BuiltIns::LookupError = new ClassValue("LookupError");
+Value *BuiltIns::IndexError = new ClassValue("IndexError");
 
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {

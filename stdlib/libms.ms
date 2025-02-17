@@ -139,6 +139,20 @@ class __SyntaxError : ParserError {
     }
 }
 
+@internal_bind("LookupError")
+class __LookupError : Exception {
+    fun __String() {
+        return "LookupError: " ++ this.msg
+    }
+}
+
+@internal_bind("IndexError")
+class __IndexError : LookupError {
+    fun __String() {
+        return "IndexError: " ++ this.msg
+    }
+}
+
 @internal_bind("StopIteration")
 class __StopIteration {
 }
