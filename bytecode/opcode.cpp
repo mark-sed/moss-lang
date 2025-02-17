@@ -1606,7 +1606,7 @@ void Xor3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
-static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
+static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     // "txt"[0]
@@ -1623,6 +1623,9 @@ static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
             raise_operand_exc(vm, "[]", s1, s2);
         }
     }
+    else if (isa<ObjectValue>(s1)) {
+        call_operator(vm, "[]", s1, s2, dst);
+    }
     else {
         raise_operand_exc(vm, "[]", s1, s2);
     }
@@ -1630,19 +1633,19 @@ static Value *subsc(Value *s1, Value *s2, Interpreter *vm) {
 }
 
 void Subsc::exec(Interpreter *vm) {
-    auto res = subsc(vm->load(src1), vm->load(src2), vm);
+    auto res = subsc(vm->load(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Subsc2::exec(Interpreter *vm) {
-    auto res = subsc(vm->load_const(src1), vm->load(src2), vm);
+    auto res = subsc(vm->load_const(src1), vm->load(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }
 
 void Subsc3::exec(Interpreter *vm) {
-    auto res = subsc(vm->load(src1), vm->load_const(src2), vm);
+    auto res = subsc(vm->load(src1), vm->load_const(src2), dst, vm);
     if (res)
         vm->store(dst, res);
 }

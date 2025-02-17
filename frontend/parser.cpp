@@ -1298,6 +1298,14 @@ Expression *Parser::scope() {
 }
 
 ir::OperatorLiteral *Parser::operator_name() {
+    // []
+    if (match(TokenType::LEFT_SQUARE)) {
+        if (match(TokenType::RIGHT_SQUARE)) {
+            return new OperatorLiteral(Operator(OperatorKind::OP_SUBSC));
+        } else {
+            put_back();
+        }
+    }
     if (check({TokenType::CONCAT, TokenType::EXP, TokenType::PLUS,
           TokenType::MINUS, TokenType::DIV, TokenType::MUL,
           TokenType::MOD, TokenType::EQ, TokenType::NEQ,

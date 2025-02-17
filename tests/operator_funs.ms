@@ -74,6 +74,10 @@ class NumOffset {
     fun (not)() {
         return not (this.x + this.off) 
     }
+
+    fun ([])(i) {
+        return ((this.x + this.off)++"")[i]
+    }
 }
 
 no = NumOffset(10, 1000)
@@ -145,3 +149,18 @@ no ^ 0
 "\n"
 no ^ 2
 "\n"
+no[0]++no[1]++"\n"
+
+class NlText {
+
+    fun NlText(txt) {
+        this.txt = txt ++ "\n"
+    }
+
+    fun ([])(i) {
+        return this.txt[i]
+    }
+}
+
+t = NlText("Hi all!")
+t[3]++t[0]++t[7]
