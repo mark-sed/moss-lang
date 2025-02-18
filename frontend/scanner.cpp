@@ -501,6 +501,9 @@ Token *Scanner::next_token() {
                     while(next_c.is_utf || (next_c.c != '\n' && next_c.c != EOF)) {
                         next_c = advance();
                     }
+                    ++this->line;
+                    this->col = 0;
+                    this->len = 0;
                     if (next_c.c == EOF)
                         return tokenize("\n", TokenType::END_OF_FILE);
                     return tokenize("\n", TokenType::END_NL);
