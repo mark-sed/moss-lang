@@ -1137,6 +1137,10 @@ public:
             delete second;
     }
 
+    Expression *get_start() { return start; }
+    Expression *get_end() { return end; }
+    Expression *get_second() { return second; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         if (second)
             os << "(" << *start << ", " << *second << ".." << *end << ")";

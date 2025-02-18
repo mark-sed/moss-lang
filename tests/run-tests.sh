@@ -338,6 +338,22 @@ function test_indexing {
     expect_out_eq "s\nab\noob\noob\n23true\nnil\noob\n" $1
 }
 
+function test_range_expr {
+    expect_pass "range_expr.ms" $1
+    expect_out_eq "[0, 1, 2]
+[0, 2, 4, 6]
+[]
+[-2, -1, 0, 1]
+[-2, 0]
+[-4, -2, 0, 2]
+[1, 0, -1, -2, -3]
+[1]
+[]
+[2, 4, 6]
+[0, 2, 4]
+[-100, -101, -102, -103]\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -589,6 +605,7 @@ function run_all_tests {
     run_test space
     run_test optional_typing
     run_test indexing
+    run_test range_expr
 
     run_test basic_import
     run_test import_calls

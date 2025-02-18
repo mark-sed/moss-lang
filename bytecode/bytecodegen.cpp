@@ -667,6 +667,60 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new opcode::Call(next_reg(), free_reg(fun)));
         bcv = last_reg();
     }
+    else if (auto rng = dyn_cast<ir::Range>(expr)) {
+        auto start = rng->get_start();
+        auto second = rng->get_second();
+        auto end = rng->get_end();
+        assert(start && "sanity check");
+        assert(end && "sanity check");
+
+        auto start_reg = emit(start);
+        auto end_reg = emit(end);
+        RegValue *step_reg = nullptr;
+        // Step has to be calculated from start and second
+        if (second) {
+            auto sec_reg = emit(second);
+            if (start_reg->is_const()) {
+                if (sec_reg->is_const()) {
+                    append(new StoreConst(next_reg(), free_reg(sec_reg)));
+                    sec_reg = last_reg();
+                }
+                append(new Sub3(next_reg(), free_reg(sec_reg), start_reg->reg()));
+            } else {
+                if (sec_reg->is_const()) {
+                    append(new Sub2(next_reg(), free_reg(sec_reg), start_reg->reg()));
+                } else {
+                    append(new Sub(next_reg(), free_reg(sec_reg), start_reg->reg()));
+                }
+            }
+            step_reg = last_reg();
+        } else {
+            // If step is not set, then set it to nil
+            append(new StoreNilConst(next_creg()));
+            step_reg = last_creg();
+        }
+
+        if (!start_reg->is_const() && !step_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && !step_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange2(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (!start_reg->is_const() && step_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange3(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (!start_reg->is_const() && !step_reg->is_const() && end_reg->is_const())
+            append(new CreateRange4(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && step_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange5(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && !step_reg->is_const() && end_reg->is_const())
+            append(new CreateRange6(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (!start_reg->is_const() && step_reg->is_const() && end_reg->is_const())
+            append(new CreateRange7(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && step_reg->is_const() && end_reg->is_const())
+            append(new CreateRange8(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        else {
+            assert(false && "unreachable");
+        }
+        bcv = last_reg();
+    }
     else {
         LOGMAX("MISSING EXPR ENUM: " << static_cast<int>(expr->get_type()));
         assert(false && "Missing Expression generation");
