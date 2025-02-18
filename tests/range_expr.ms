@@ -41,3 +41,7 @@ c = v1,v2..v3
 ~print_range((0,v3..v3*3))
 v4 = -104
 ~print_range((-100,-101..v4))
+
+fun get_v(i) { return i; }
+
+~print_range((get_v(0), get_v(1)..5))

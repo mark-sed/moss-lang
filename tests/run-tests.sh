@@ -335,7 +335,23 @@ function test_optional_typing {
 
 function test_indexing {
     expect_pass "indexing.ms" $1
-    expect_out_eq "s\nab\noob\noob\n23true\nnil\noob\n" $1
+    expect_out_eq "s\nab\noob\noob\n23true\nnil\noob
+bcd
+edc
+fed
+defabc
+dcbafe\n
+abv
+vbavba
+a\n\n
+[1, 2, 3, 4, 5]
+[6, 5, 4, 3, 2]
+[1, 3, 5]
+[6, 4, 2]
+[]
+[]
+[1, 2, 3, 4, 5, 6]
+[6, 5, 4, 3, 2, 1]\n" $1
 }
 
 function test_range_expr {
@@ -351,7 +367,8 @@ function test_range_expr {
 []
 [2, 4, 6]
 [0, 2, 4]
-[-100, -101, -102, -103]\n" $1
+[-100, -101, -102, -103]
+[0, 1, 2, 3, 4]\n" $1
 }
 
 function test_basic_import {

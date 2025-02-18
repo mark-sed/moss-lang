@@ -1629,28 +1629,57 @@ static void extract_range(Value *r, opcode::IntConst &start, opcode::IntConst &e
     step = step_i->get_value();
 }
 
+static inline ustring str_index(StringValue *s, IntConst i) {
+    auto st = s->get_value();
+    if (i < 0) {
+        return ustring(1, st[st.size()+i]);
+    }
+    return ustring(1, st[i]);
+}
+
+static inline bool is_oob(StringValue *s, IntConst i) {
+    ustring st = s->get_value();
+    return (i < 0 && static_cast<unsigned long>(i*-1) > st.size()) || 
+              (i > 0 && static_cast<unsigned long>(i) >= st.size());
+}
+
+static inline bool is_oob(ListValue *s, IntConst i) {
+    auto st = s->get_vals();
+    return (i < 0 && static_cast<unsigned long>(i*-1) > st.size()) || 
+              (i > 0 && static_cast<unsigned long>(i) >= st.size());
+}
+
+static inline Value *list_index(ListValue *s, IntConst i) {
+    auto lt = s->get_vals();
+    if (i < 0) {
+        return lt[lt.size()+i];
+    }
+    return lt[i];
+}
+
 static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     (void) vm;
     Value *res = nullptr;
     // "txt"[0]
     if (auto st1 = dyn_cast<StringValue>(s1)) {
         if (auto i2 = dyn_cast<IntValue>(s2)) {
-            if ((i2->get_value() < 0 && static_cast<unsigned long>(i2->get_value()*-1) > st1->get_value().size()) || 
-              (i2->get_value() > 0 && static_cast<unsigned long>(i2->get_value()) >= st1->get_value().size())) {
-                raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str())));
+            if (is_oob(st1, i2->get_value())) {
+                raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str(), i2->get_value())));
             }
-            if (i2->get_value() < 0) {
-                res = new StringValue(ustring(1, st1->get_value()[st1->get_value().size()+i2->get_value()]));
-            } else {
-                res = new StringValue(ustring(1, st1->get_value()[i2->get_value()]));
-            }
+            res = new StringValue(str_index(st1, i2->get_value()));
         } else if (s2->get_type() == BuiltIns::Range) {
             opcode::IntConst start;
             opcode::IntConst end;
             opcode::IntConst step;
             extract_range(s2, start, end, step);
-            // Check bounds
-            assert(false && "TODO");
+            std::stringstream ss;
+            // Here we don't do oob check
+            // Note: this is not in line with Python's slice, but does not raise exception on oob
+            for (IntConst i = start; (step < 0 && i > end) || (step >= 0 && i < end); i += step) {
+                if (is_oob(st1, i)) break;
+                ss << str_index(st1, i);
+            }
+            res = new StringValue(ss.str());
         } else {
             raise_operand_exc(vm, "[]", s1, s2);
         }
@@ -1671,8 +1700,12 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
             opcode::IntConst end;
             opcode::IntConst step;
             extract_range(s2, start, end, step);
-            // Check bounds
-            assert(false && "TODO");
+            std::vector<Value *> vals;
+            for (IntConst i = start; (step < 0 && i > end) || (step >= 0 && i < end); i += step) {
+                if (is_oob(lt1, i)) break;
+                vals.push_back(list_index(lt1, i));
+            }
+            res = new ListValue(vals);
         } else {
             raise_operand_exc(vm, "[]", s1, s2);
         }
