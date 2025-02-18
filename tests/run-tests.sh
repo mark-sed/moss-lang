@@ -371,6 +371,11 @@ function test_range_expr {
 [0, 1, 2, 3, 4]\n" $1
 }
 
+function test_compound_assignment {
+    expect_pass "compound_assignment.ms" $1
+    expect_out_eq "I say hi\nI say hi!\nI say hi!?\n2\n4\n14\n9\n3\n6\n2\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -623,6 +628,7 @@ function run_all_tests {
     run_test optional_typing
     run_test indexing
     run_test range_expr
+    run_test compound_assignment
 
     run_test basic_import
     run_test import_calls

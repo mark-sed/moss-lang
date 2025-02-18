@@ -187,126 +187,228 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
         }
         case OperatorKind::OP_SET_CONCAT: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Concat3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Concat(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Concat3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Concat(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Concat3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Concat(left->reg(), left->reg(), free_reg(right)));
-            }
-            // TODO: We need to store the name as the value was copied into a
-            // new register and that was modified. If we don't generate load,
-            // we could use just the original register and get rid of 
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_SET_EXP: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Exp3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Exp(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Exp3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Exp(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Exp3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Exp(left->reg(), left->reg(), free_reg(right)));
-            }
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_SET_PLUS: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Add3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Add(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Add3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Add(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Add3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Add(left->reg(), left->reg(), free_reg(right)));
-            }
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_SET_MINUS: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Sub3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Sub(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Sub3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Sub(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Sub3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Sub(left->reg(), left->reg(), free_reg(right)));
-            }
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_SET_DIV: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Div3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Div(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Div3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Div(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Div3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Div(left->reg(), left->reg(), free_reg(right)));
-            }
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_SET_MUL: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Mul3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Mul(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Mul3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Mul(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Mul3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Mul(left->reg(), left->reg(), free_reg(right)));
-            }
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_SET_MOD: {
-            auto irvar = dyn_cast<Variable>(expr->get_left());
-            assert(irvar && "Assigning to non-variable");
-            if (irvar->is_non_local()) {
-                // TODO:
-                assert(false && "TODO: Storing to a non-local variable");
+            if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
+                assert(irvar && "Assigning to non-variable");
+                if (irvar->is_non_local()) {
+                    // TODO:
+                    assert(false && "TODO: Storing to a non-local variable");
+                }
+                if (right->is_const()) {
+                    append(new Mod3(left->reg(), left->reg(), free_reg(right)));
+                }
+                else {
+                    append(new Mod(left->reg(), left->reg(), free_reg(right)));
+                }
+                append(new StoreName(left->reg(), irvar->get_name()));
+                left->set_silent(true);
+                return left;
+            } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
+                auto rightE = dyn_cast<Variable>(be->get_right());
+                assert(rightE && "Non assignable access");
+                auto leftE = emit(be->get_left(), true);
+                if (right->is_const())
+                    append(new Mod3(next_reg(), free_reg(left), free_reg(right)));
+                else
+                    append(new Mod(next_reg(), free_reg(left), free_reg(right)));
+                auto retv = last_reg();
+                retv->set_silent(true);
+                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                return retv;
+            } else {
+                assert(false && "Missing assignment type");
             }
-            if (right->is_const()) {
-                append(new Mod3(left->reg(), left->reg(), free_reg(right)));
-            }
-            else {
-                append(new Mod(left->reg(), left->reg(), free_reg(right)));
-            }
-            append(new StoreName(left->reg(), irvar->get_name()));
-            left->set_silent(true);
-            return left;
         }
         case OperatorKind::OP_EQ: {
             if (left->is_const() && right->is_const()) {
