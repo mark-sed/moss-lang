@@ -50,6 +50,9 @@ inline args::ValueFlag<std::string> verbose5(debugging_group, "<csv file::method
 inline args::Flag parse_only(debugging_group, "parse-only", "Runs only the parser and does not execute any code", {"parse-only"});
 
 inline args::Flag stress_test_gc(debugging_group, "stress-test-gc", "Runs GC after every allocation", {"stress-test-gc"});
+
+inline args::Flag use_repl_mode(debugging_group, "use-repl-mode", "Runs moss as if it was repl, allowing for redirected input", {"use-repl-mode"});
+
 #endif
 
 inline args::Group interface_group(arg_parser, "Interface options:");

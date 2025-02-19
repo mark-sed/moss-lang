@@ -23,6 +23,12 @@
 using namespace moss;
 
 static SourceFile *get_input() {
+#ifndef NDEBUG
+    if (clopts::use_repl_mode) {
+        LOGMAX("Forcing input into repl since --use-repl-mode was used");
+        return new SourceFile(SourceFile::SourceType::REPL);
+    }
+#endif
     if (clopts::file_name)
         return new SourceFile(args::get(clopts::file_name), SourceFile::SourceType::FILE);
     if (clopts::code)

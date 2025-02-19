@@ -76,3 +76,19 @@ try {
 "\n"
 [1,2,3,4,5,6][-1..-7]
 "\n"
+
+class MyList {
+    fun MyList(lst) {
+        this.lst = lst
+    }
+
+    fun ([])(i) {
+        return this.lst[i]
+    }
+}
+
+ml = MyList([1,2,3,true,nil,5])
+ml[0]++ml[-1]++"\n"
+lst_rev = ml[-1..-10]
+lst_rev ++ "\n"
+ml[0,2..10]++"\n"

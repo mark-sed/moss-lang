@@ -110,7 +110,7 @@ std::vector<ir::IR *> Parser::parse_line() {
     // Scan one line (this fills up tokens)
     scan_line();
 
-    while (!check(TokenType::END_NL)) {
+    while (!check({TokenType::END_NL,TokenType::END})) {
         IR *decl;
         try {
             decl = declaration();

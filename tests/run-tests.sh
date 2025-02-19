@@ -67,6 +67,12 @@ function run_log {
     RETCODE=$(echo $?)
 }
 
+function run_repl {
+    CMD="$MOSS --use-repl-mode < ${TEST_DIR}$1"
+    $MOSS --use-repl-mode < ${TEST_DIR}$1 2>$OUTP_ERR 1>$OUTP_STD
+    RETCODE=$(echo $?)
+}
+
 function run_compile {
     CMD="$MOSS -o ${TEST_DIR}$2 ${TEST_DIR}$1"
     $MOSS -o ${TEST_DIR}$2 ${TEST_DIR}$1 2>$OUTP_ERR 1>$OUTP_STD
@@ -87,6 +93,18 @@ function expect_pass {
 
 function expect_pass_exec {
     run_exec "${@:1:$#-1}"
+    if [[ $RETCODE -ne 0 ]]; then
+        failed "${@: -1}" "Program failed."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+        printf "Error output:\n-------------\n"
+        cat $OUTP_ERR
+    fi
+}
+
+function expect_pass_repl {
+    run_repl "${@:1:$#-1}"
     if [[ $RETCODE -ne 0 ]]; then
         failed "${@: -1}" "Program failed."
         printf "Command:\n--------\n$CMD\n"
@@ -190,6 +208,16 @@ function expect_out_eq_rx {
     cat $OUTP_STD | grep -zoP "$1" &>/dev/null
     if [[ $? -ne 0 ]]; then
         failed $2 "Output differs"
+        printf "Expected:\n-------\n${1}\n"
+        printf "Got:\n----\n${outstr}\n"
+    fi
+}
+
+function expect_err_eq_rx {
+    outstr=$(cat $OUTP_ERR)
+    cat $OUTP_ERR | grep -zoP "$1" &>/dev/null
+    if [[ $? -ne 0 ]]; then
+        failed $2 "Error output differs"
         printf "Expected:\n-------\n${1}\n"
         printf "Got:\n----\n${outstr}\n"
     fi
@@ -351,7 +379,10 @@ a\n\n
 []
 []
 [1, 2, 3, 4, 5, 6]
-[6, 5, 4, 3, 2, 1]\n" $1
+[6, 5, 4, 3, 2, 1]
+15
+[5, nil, true, 3, 2, 1]
+[1, 3, nil]\n" $1
 }
 
 function test_range_expr {
@@ -610,6 +641,16 @@ function test_runtime_errors {
     expect_out_eq "OK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n" $1
 }
 
+function test_repl_output {
+    expect_pass_repl "repl_output.ms" $1
+    expect_out_eq_rx ".*moss> moss> moss> 5\nmoss> hi\n.*\n.*\n.*<object of class Cls1>\nmoss> 5\nmoss> moss> moss> moss> moss> moss>" $1
+}
+
+function test_repl_exceptions {
+    expect_pass_repl "repl_exceptions.ms" $1
+    expect_err_eq_rx "Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo\(a\) at <repl>\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*\n" $1
+}
+
 ###--- Running tests ---###
 
 function run_all_tests {
@@ -660,6 +701,10 @@ function run_all_tests {
     run_test gc_local_vars
     run_test gc_recursion
     run_test gc_global_dependency
+
+    #repl tests
+    run_test repl_output
+    run_test repl_exceptions
 }
 
 # Count all functions starting with test_ 
