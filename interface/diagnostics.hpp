@@ -115,7 +115,10 @@ enum DiagID {
     UNEXPECTED_TYPE,        ///< Got unexpected type
     UNSUPPORTED_OPERAND_TYPE, ///< Operator used on incorrect type
     UNSUPPORTED_UN_OPERAND_TYPE, ///< Unary operator used on incorrect type
-    OUT_OF_BOUNDS,          /// Outside of range
+    OUT_OF_BOUNDS,          ///< Outside of range
+    CLASS_CALL_NEEDS_THIS,  ///< Calling class method without this arg
+    PASSED_MORE_ARGS,       ///< Function takes less args
+    ARG_MISMATCH,           ///< Argument were not matched to params
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -203,7 +206,7 @@ static const char * DIAG_MSGS[] = {
     "'%s' has no attribute '%s'",
     "Expected Bool value, but got '%s'",
     "Type '%s' is not callable",
-    "Incorrect call to function '%s'",
+    "Incorrect call to function '%s' — %s",
     "'%s' has no operator '%s'",
     "'%s' does not name a type",
     "Cannot find module '%s'",
@@ -212,6 +215,9 @@ static const char * DIAG_MSGS[] = {
     "Unsupported operand type for operator '%s' — '%s' and '%s'",
     "Unsupported operand type for unary operator '%s' — '%s'",
     "'%s' index '%ld' is out of bounds",
+    "calling class method requires object as the last argument",
+    "passed more arguments than the function accepts",
+    "could not match arguments",
 };
 
 /// \brief Diagnostic message for error reporting

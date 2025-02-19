@@ -255,7 +255,8 @@ void JmpIfFalse::exec(Interpreter *vm) {
 //   though function arguments and if the argument is a vararg it is set to empty list
 //   and if it has a default value then we set it to it (clone of the value)
 // Finally we just check if fun and call arg size match
-static bool can_call(FunValue *f, CallFrame *cf) {
+/// \return nullptr on success or diagnostic on error
+static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
     LOGMAX("Checking if can call " << *f);
     auto &og_call_args = cf->get_args();
     const auto fun_args = f->get_args();
@@ -272,15 +273,11 @@ static bool can_call(FunValue *f, CallFrame *cf) {
         // When class method is called then this is set to the class
         if (dyn_cast<ClassValue>(og_call_args.back().value)) {
             // In such case we use the last arg as this
-            if (!og_call_args[og_call_args.size()-2].name.empty()) {
+            if (og_call_args.size() < 2 || !og_call_args[og_call_args.size()-2].name.empty()) {
                 LOGMAX("Cannot call, no this argument provided");
-                return false;
+                return diags::CLASS_CALL_NEEDS_THIS;
             }
             ths = &(og_call_args[og_call_args.size()-2]);
-            if (!ths->name.empty()) {
-                LOGMAX("Cannot call, last argument has set name");
-                return false;
-            }
             ths->name = "this";
             call_args.assign(og_call_args.begin(), og_call_args.end()-2);
             LOGMAX("Set this argument to the last one passed in: " << *ths);
@@ -303,7 +300,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
         }
         if (!is_vararg) {
             LOGMAX("Passed more arguments that the function has parameters");
-            return false;
+            return diags::PASSED_MORE_ARGS;
         }
     }
 
@@ -329,7 +326,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
                 }
             }
             if (!matched)
-                return false;
+                return diags::ARG_MISMATCH;
             // Once first named argument is encountered then all have to be named
             named_args = true;
         }
@@ -364,7 +361,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
                     }
                 }
                 if (!matched)
-                    return false;
+                    return diags::ARG_MISMATCH;
                 arg.dst = i;
                 arg.name = fa->name;
             }
@@ -402,7 +399,7 @@ static bool can_call(FunValue *f, CallFrame *cf) {
                 }
                 else {
                     LOGMAX("Argument does not have a default value and is not set: " << fa->name);
-                    return false;
+                    return diags::ARG_MISMATCH;
                 }
             }
         }
@@ -417,9 +414,9 @@ static bool can_call(FunValue *f, CallFrame *cf) {
         }
         cf->set_args(call_args);
         LOGMAX("Call frame set -- function callable: " << *f << " with:\n" << *cf);
-        return true;
+        return std::nullopt;
     }
-    return false;
+    return diags::ARG_MISMATCH;
 }
 
 void call(Interpreter *vm, Register dst, Value *funV) {
@@ -473,20 +470,23 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         auto fvl = dyn_cast<FunValueList>(funV);
         op_assert(fvl, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CALLABLE, funV->get_name().c_str())));
         
+        std::optional<diags::DiagID> err_id;
         // Walk functions and check if it can be called
         for (auto f: fvl->get_funs()) {
-            if (can_call(f, cf)) {
+            err_id = can_call(f, cf);
+            if (!err_id) {
                 fun = f;
                 break;
             }
         }
-        // TODO: output exception returned by can_call
-        op_assert(fun, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fvl->back()->get_name().c_str())));
+        op_assert(fun, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, 
+            fvl->back()->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
     }
     else {
-        if (!can_call(fun, cf)) {
-            // TODO: output exception returned by can_call
-            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fun->get_name().c_str())));
+        std::optional<diags::DiagID> err_id = can_call(fun, cf);
+        if (err_id) {
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                fun->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
         }
     }
 
@@ -551,11 +551,11 @@ void call_method(Interpreter *vm, Register dst, Value *funV, std::initializer_li
     call(vm, dst, funV);
 }
 
-void call_operator(Interpreter *vm, ustring op, Value *s1, Value *s2, Register dst) {
+void call_operator(Interpreter *vm, const char * op, Value *s1, Value *s2, Register dst) {
     auto v = s1->get_attr(op);
     op_assert(v, mslib::create_type_error(
         diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
-            s1->get_type()->get_name().c_str(), op.c_str())));
+            s1->get_type()->get_name().c_str(), op)));
     call_method(vm, dst, v, {s2, s1});
 }
 
@@ -921,12 +921,12 @@ void Concat3::exec(Interpreter *vm) {
     vm->store(dst, res);
 }
 
-static void raise_operand_exc(Interpreter *vm, char *op, Value *s1, Value *s2) {
+static void raise_operand_exc(Interpreter *vm, const char *op, Value *s1, Value *s2) {
     raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNSUPPORTED_OPERAND_TYPE,
                 op, s1->get_type()->get_name().c_str(), s2->get_type()->get_name().c_str())));
 }
 
-static void raise_operand_exc(Interpreter *vm, char *op, Value *s1) {
+static void raise_operand_exc(Interpreter *vm, const char *op, Value *s1) {
     raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNSUPPORTED_UN_OPERAND_TYPE,
                 op, s1->get_type()->get_name().c_str())));
 }
