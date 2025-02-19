@@ -169,21 +169,22 @@ std::ostream& Interpreter::report_call_stack(std::ostream& os) {
     for (auto riter = call_frames.rbegin(); riter != call_frames.rend(); ++riter) {
         CallFrame *cf = *riter;
         Value *fun_val = cf->get_function();
-        os << "  ";
         if (!fun_val) {
-            os << "untraced function\n";
+            // This is a case where the exception was raised while calling a
+            // function, so we skip this
+            continue;
+        }
+        os << "  ";
+        FunValue *fun = dyn_cast<FunValue>(fun_val);
+        if (!fun) {
+            // Can this happen?
+            os << fun_val->get_name() << "\n";
         } else {
-            FunValue *fun = dyn_cast<FunValue>(fun_val);
-            if (!fun) {
-                // Can this happen?
-                os << fun_val->get_name() << "\n";
+            os << fun->get_name() << "(" << fun->get_args_as_str() << ") at ";
+            if (fun->get_vm()) {
+                os << fun->get_vm()->get_src_file()->get_name() << "\n";
             } else {
-                os << fun->get_name() << "(" << fun->get_args_as_str() << ") at ";
-                if (fun->get_vm()) {
-                    os << fun->get_vm()->get_src_file()->get_name() << "\n";
-                } else {
-                    os << "??\n";
-                }
+                os << "??\n";
             }
         }
     }
@@ -277,6 +278,7 @@ void Interpreter::runtime_call(FunValue *fun) {
     auto pre_stop = this->stop;
 
     push_frame();
+    get_call_frame()->set_function(fun);
     set_bci(fun->get_body_addr());
     run();
 

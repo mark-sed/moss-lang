@@ -67,6 +67,7 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
     LOGMAX("Doing a runtime call to " << *funV);
     vm->push_call_frame(funV);
     auto cf = vm->get_call_frame();
+    cf->set_function(funV);
     for (auto v: args) {
         cf->push_back(v);
     }
@@ -479,12 +480,17 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 break;
             }
         }
-        op_assert(fun, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, 
-            fvl->back()->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
+        if (!fun) {
+            vm->pop_call_frame();
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, 
+                fvl->back()->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
+        }
     }
     else {
         std::optional<diags::DiagID> err_id = can_call(fun, cf);
         if (err_id) {
+            // Pop frame so that call stack is correct
+            vm->pop_call_frame();
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
                 fun->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
         }
