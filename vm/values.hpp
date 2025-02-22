@@ -117,7 +117,7 @@ public:
         assert(false && "as_float requested on non numerical value");
         return 0.0;
     }
-    virtual void reset_iter(Interpreter *vm);
+    virtual Value *iter(Interpreter *vm);
     virtual Value *next(Interpreter *vm);
 
     void annotate(ustring name, Value *val);
@@ -296,8 +296,9 @@ public:
         return value;
     }
 
-    virtual void reset_iter(Interpreter *vm) override {
+    virtual Value *iter(Interpreter *vm) override {
         iterator = 0;
+        return this;
     }
 
     virtual Value *next(Interpreter *vm) override;
@@ -369,8 +370,9 @@ public:
         return ss.str();
     }
 
-    virtual void reset_iter(Interpreter *vm) override {
+    virtual Value *iter(Interpreter *vm) override {
         iterator = 0;
+        return this;
     }
 
     virtual Value *next(Interpreter *vm) override;

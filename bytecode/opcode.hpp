@@ -193,8 +193,8 @@ enum OpCodes : opcode_t {
     CREATE_RANGE8, //     %dst, #start, #step, #end
 
     SWITCH, //    %src, %listvals, %listaddr, addr_def
-    FOR, //       %i, %collection, addr
-    RESET_ITER, // %collection
+    FOR, //       %i, %iterator, addr
+    ITER, // %iterator, %collection
 
     OPCODES_AMOUNT
 };
@@ -2146,26 +2146,27 @@ public:
     }
 };
 
-class ResetIter : public OpCode {
-    public:
-        Register collection;
+class Iter : public OpCode {
+public:
+    Register iterator;
+    Register collection;
+
+    static const OpCodes ClassType = OpCodes::ITER;
+
+    Iter(Register iterator, Register collection) : OpCode(ClassType, "ITER"), iterator(iterator), collection(collection) {}
     
-        static const OpCodes ClassType = OpCodes::RESET_ITER;
+    void exec(Interpreter *vm) override;
     
-        ResetIter(Register collection) : OpCode(ClassType, "RESET_ITER"), collection(collection) {}
-        
-        void exec(Interpreter *vm) override;
-        
-        virtual inline std::ostream& debug(std::ostream& os) const override {
-            os << mnem << " %" << collection;
-            return os;
-        }
-        bool equals(OpCode *other) override {
-            auto casted = dyn_cast<ResetIter>(other);
-            if (!casted) return false;
-            return casted->collection == collection;
-        }
-    };
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << " %" << iterator << ", %" << collection;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Iter>(other);
+        if (!casted) return false;
+        return casted->collection == collection, casted->iterator == iterator;
+    }
+};
 
 }
 

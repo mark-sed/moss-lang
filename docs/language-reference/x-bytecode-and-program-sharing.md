@@ -207,7 +207,7 @@ xxh - CREATE_RANGE8     %dst, #start, #step, #end
 
 xxh - SWITCH        %listvals, %listaddr, addr_def
 xxh - FOR           %i, %iterator, addr
-xxh - RESET_ITER    %collection
+xxh - ITER          %iterator, %collection
 ```
 
 ## Examples

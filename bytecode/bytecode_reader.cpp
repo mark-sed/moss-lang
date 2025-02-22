@@ -755,8 +755,10 @@ Bytecode *BytecodeReader::read() {
                 auto addr = read_address();
                 bc->push_back(new For(reg1, reg2, addr));
             } break;
-            case opcode::OpCodes::RESET_ITER: {
-                bc->push_back(new ResetIter(read_address()));
+            case opcode::OpCodes::ITER: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                bc->push_back(new Iter(reg1, reg2));
             } break;
             default: 
                 std::string msg = "unknown opcode in bytecode reader: "+std::to_string(opcode);

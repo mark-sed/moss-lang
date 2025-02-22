@@ -196,7 +196,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
 
     bc->push_back(new opcode::Switch(0, 4, 5, -3));
     bc->push_back(new opcode::For(10, 11, 55));
-    bc->push_back(new opcode::ResetIter(11));
+    bc->push_back(new opcode::Iter(11, 14));
 
 #ifdef __linux__
     auto file_path = "/tmp/mosstest_all.msb";

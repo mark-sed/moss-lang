@@ -1957,10 +1957,13 @@ void For::exec(Interpreter *vm) {
     }
 }
 
-void ResetIter::exec(Interpreter *vm) {
+void Iter::exec(Interpreter *vm) {
     auto coll = vm->load(this->collection);
     assert(coll && "sanity check");
-    coll->reset_iter(vm);
+    // TODO: For object call __iter and __next using call
+    // or maybe give access to call for value.hpp and call it from there?
+    auto new_iter = coll->iter(vm);
+    vm->store(iterator, new_iter);
 }
 
 #undef op_assert

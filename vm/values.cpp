@@ -27,12 +27,14 @@ Value::~Value() {
         delete attrs;
 }
 
-void Value::reset_iter(Interpreter *vm) {
+Value *Value::iter(Interpreter *vm) {
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
+    return nullptr;
 }
 
 Value *Value::next(Interpreter *vm) {
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
+    return nullptr;
 }
 
 Value *Value::get_attr(ustring name) {

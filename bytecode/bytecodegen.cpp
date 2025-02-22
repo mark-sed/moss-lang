@@ -889,9 +889,10 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     }
     append(new StoreName(iter, forlp->get_iterator()->get_name()));
     auto collection = emit(forlp->get_collection(), true);
-    append(new opcode::ResetIter(collection->reg()));
+    auto new_iter = next_reg();
+    append(new opcode::Iter(new_iter, free_reg(collection)));
     auto pre_for_bc = get_curr_address() + 1;
-    auto for_op = new opcode::For(iter, free_reg(collection), 0);
+    auto for_op = new opcode::For(iter, new_iter, 0);
     append(for_op);
     emit(forlp->get_body());
     append(new Jmp(pre_for_bc));
