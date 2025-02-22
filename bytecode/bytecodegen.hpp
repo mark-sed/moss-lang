@@ -65,6 +65,7 @@ private:
     void emit(ir::Return *r);
     void emit(ir::Module *mod);
     void emit(ir::If *ifstmt);
+    void emit(ir::ForLoop *forpl);
     void emit(ir::While *whstmt);
     void emit(ir::Import *im);
     void emit(ir::DoWhile *whstmt);

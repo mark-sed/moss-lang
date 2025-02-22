@@ -193,7 +193,8 @@ enum OpCodes : opcode_t {
     CREATE_RANGE8, //     %dst, #start, #step, #end
 
     SWITCH, //    %src, %listvals, %listaddr, addr_def
-    FOR, //       %i, %iterator
+    FOR, //       %i, %collection, addr
+    RESET_ITER, // %collection
 
     OPCODES_AMOUNT
 };
@@ -2124,24 +2125,47 @@ public:
 class For : public OpCode {
 public:
     Register index;
-    Register iterator;
+    Register collection;
+    Address  addr;
 
     static const OpCodes ClassType = OpCodes::FOR;
 
-    For(Register index, Register iterator) : OpCode(ClassType, "FOR"), index(index), iterator(iterator) {}
+    For(Register index, Register collection, Address addr)
+        : OpCode(ClassType, "FOR"), index(index), collection(collection), addr(addr) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << index << ", %" << iterator;
+        os << mnem << "  %" << index << ", %" << collection << ", " << addr;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<For>(other);
         if (!casted) return false;
-        return casted->index == index && casted->iterator == iterator;
+        return casted->index == index && casted->collection == collection && casted->addr == addr;
     }
 };
+
+class ResetIter : public OpCode {
+    public:
+        Register collection;
+    
+        static const OpCodes ClassType = OpCodes::RESET_ITER;
+    
+        ResetIter(Register collection) : OpCode(ClassType, "RESET_ITER"), collection(collection) {}
+        
+        void exec(Interpreter *vm) override;
+        
+        virtual inline std::ostream& debug(std::ostream& os) const override {
+            os << mnem << " %" << collection;
+            return os;
+        }
+        bool equals(OpCode *other) override {
+            auto casted = dyn_cast<ResetIter>(other);
+            if (!casted) return false;
+            return casted->collection == collection;
+        }
+    };
 
 }
 

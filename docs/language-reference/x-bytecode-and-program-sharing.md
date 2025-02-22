@@ -205,8 +205,9 @@ xxh - CREATE_RANGE6     %dst, #start, %step, #end
 xxh - CREATE_RANGE7     %dst, %start, #step, #end
 xxh - CREATE_RANGE8     %dst, #start, #step, #end
 
-xxh - SWITCH    %listvals, %listaddr, addr_def
-xxh - FOR       %i, %iterator
+xxh - SWITCH        %listvals, %listaddr, addr_def
+xxh - FOR           %i, %iterator, addr
+xxh - RESET_ITER    %collection
 ```
 
 ## Examples
@@ -531,4 +532,22 @@ x   BUILD_SPACE %1 "0s"
 x   POP_FRAME
 
 x   POP_FRAME
+```
+
+### For loops
+
+```cpp
+for (i: lst) {
+    i
+}
+```
+
+```
+x   SET_NAME    %0, "i"
+x   LOAD_NAME   %1, "lst"
+x   RESET_ITER  %1
+4   FOR         %0, %1, <addr_after for>
+x   LOAD_NAME   %2, "i"
+x   OUTPUT      %2
+x   JMP         4
 ```

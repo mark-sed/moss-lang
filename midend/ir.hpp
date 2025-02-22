@@ -631,6 +631,9 @@ public:
         delete collection;
     }
 
+    Expression *get_iterator() { return this->iterator; }
+    Expression *get_collection() { return this->collection; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "for (" << *iterator << ": " << *collection << ") {\n";
         for (auto d: body) {

@@ -117,6 +117,8 @@ public:
         assert(false && "as_float requested on non numerical value");
         return 0.0;
     }
+    virtual void reset_iter(Interpreter *vm);
+    virtual Value *next(Interpreter *vm);
 
     void annotate(ustring name, Value *val);
     std::map<ustring, Value *> get_annotations() { return this->annotations; }
@@ -279,6 +281,7 @@ public:
 class StringValue : public Value {
 private:
     opcode::StringConst value;
+    size_t iterator;
 public:
     static const TypeKind ClassType = TypeKind::STRING;
 
@@ -292,6 +295,12 @@ public:
     virtual opcode::StringConst as_string() const override {
         return value;
     }
+
+    virtual void reset_iter(Interpreter *vm) override {
+        iterator = 0;
+    }
+
+    virtual Value *next(Interpreter *vm) override;
 
     virtual opcode::StringConst dump() override {
         return "\"" + value + "\"";
@@ -326,6 +335,7 @@ public:
 class ListValue : public Value {
 private:
     std::vector<Value *> vals;
+    size_t iterator;
 public:
     static const TypeKind ClassType = TypeKind::LIST;
 
@@ -358,6 +368,12 @@ public:
 
         return ss.str();
     }
+
+    virtual void reset_iter(Interpreter *vm) override {
+        iterator = 0;
+    }
+
+    virtual Value *next(Interpreter *vm) override;
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "List(" << vals.size() << ") [";

@@ -1,5 +1,6 @@
 #include "values.hpp"
 #include "logging.hpp"
+#include "mslib.hpp"
 
 using namespace moss;
 
@@ -24,6 +25,14 @@ Value::~Value() {
     // Values will be deleted by gc
     if (attrs)
         delete attrs;
+}
+
+void Value::reset_iter(Interpreter *vm) {
+    opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
+}
+
+Value *Value::next(Interpreter *vm) {
+    opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
 }
 
 Value *Value::get_attr(ustring name) {
@@ -78,6 +87,24 @@ void *Value::operator new(size_t size) {
 void Value::operator delete(void * p, size_t size) {
     Value::allocated_bytes -= size;
     ::operator delete(p, size);
+}
+
+Value *StringValue::next(Interpreter *vm) {
+    if (this->iterator >= this->value.size()) {
+        opcode::raise(mslib::create_stop_iteration());
+    }
+    auto chr = this->value[iterator];
+    this->iterator++;
+    return new StringValue(ustring(1, chr));
+}
+
+Value *ListValue::next(Interpreter *vm) {
+    if (this->iterator >= this->vals.size()) {
+        opcode::raise(mslib::create_stop_iteration());
+    }
+    auto val = this->vals[iterator];
+    this->iterator++;
+    return val;
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {

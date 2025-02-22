@@ -336,7 +336,11 @@ void BytecodeWriter::write(Bytecode *code) {
         }
         else if (auto o = dyn_cast<opcode::For>(op_gen)){
             write_register(o->index);
-            write_register(o->iterator);
+            write_register(o->collection);
+            write_address(o->addr);
+        }
+        else if (auto o = dyn_cast<opcode::ResetIter>(op_gen)){
+            write_register(o->collection);
         }
         else {
             std::string msg = "unknown opcode in bytecode writer: "+std::to_string(opc);

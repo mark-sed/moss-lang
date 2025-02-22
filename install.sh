@@ -37,21 +37,24 @@ echo "Running installation target: ${TARGET}"
 if [ "${TARGET}" = "release" ]; then
     # Default builds moss, moss library and installs it as a command.
     # This requires sudo privileges.
-    cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release || exit 1
-    cmake --build $BUILD_DIR -j $(nproc) --target moss libms installation
+    sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release || exit 1
+    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss
+    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target libms installation
 elif [ "${TARGET}" = "debug" ]; then
-    cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
-    cmake --build $BUILD_DIR -j $(nproc) --target moss libms installation
+    sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
+    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss
+    cmake --build $BUILD_DIR -j $(nproc) --target libms installation
 elif [ "${TARGET}" = "tests" ]; then
-    cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
-    cmake --build $BUILD_DIR -j $(nproc) --target moss libms installation testsmoss || exit 1
+    sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
+    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss testsmoss || exit 1
+    cmake --build $BUILD_DIR -j $(nproc) --target libms installation || exit 1
     # Run tests
     echo "Running unit tests"
     sudo -u $SUDO_USER ./$BUILD_DIR/testsmoss || exit 1
     echo "Running moss tests"
     sudo -u $SUDO_USER bash tests/run-tests.sh -test-dir tests/ || exit 1
 elif [ "${TARGET}" = "all" ]; then
-    cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
-    cmake --build $BUILD_DIR -j $(nproc) || exit 1
+    sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
+    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) || exit 1
     cmake --build $BUILD_DIR -j $(nproc) --target libms installation
 fi

@@ -68,6 +68,12 @@ inline Value *create_index_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::IndexError, dmsg);
 }
 
+inline Value *create_stop_iteration() {
+    auto clt = dyn_cast<ClassValue>(BuiltIns::StopIteration);
+    assert(clt && "Passed non class type value");
+    return new ObjectValue(clt);
+}
+
 }
 
 }

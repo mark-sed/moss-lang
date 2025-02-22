@@ -119,6 +119,8 @@ enum DiagID {
     CLASS_CALL_NEEDS_THIS,  ///< Calling class method without this arg
     PASSED_MORE_ARGS,       ///< Function takes less args
     ARG_MISMATCH,           ///< Argument were not matched to params
+    NOT_ITERABLE_TYPE,      ///< Cannot iterate over this type
+    NO_NEXT_DEFINED,        ///< Object does not have __next for for
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -218,6 +220,8 @@ static const char * DIAG_MSGS[] = {
     "calling class method requires object as the last argument",
     "passed more arguments than the function accepts",
     "could not match arguments",
+    "Type '%s' is not iterable",
+    "Object of class '%s' is not iterable — __next method has to be defined",
 };
 
 /// \brief Diagnostic message for error reporting

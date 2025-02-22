@@ -1943,7 +1943,24 @@ void Switch::exec(Interpreter *vm) {
 }
 
 void For::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto coll = vm->load(this->collection);
+    assert(coll && "sanity check");
+    try {
+        auto v = coll->next(vm);
+        assert(v && "sanity check");
+        vm->store(this->index, v);
+    } catch (Value *v) {
+        if (v->get_type() == BuiltIns::StopIteration)
+            vm->set_bci(this->addr);
+        else
+            throw v;
+    }
+}
+
+void ResetIter::exec(Interpreter *vm) {
+    auto coll = vm->load(this->collection);
+    assert(coll && "sanity check");
+    coll->reset_iter(vm);
 }
 
 #undef op_assert

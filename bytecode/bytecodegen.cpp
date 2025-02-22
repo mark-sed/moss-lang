@@ -878,6 +878,26 @@ void BytecodeGen::emit(ir::While *whstmt) {
     jmp_end->addr = get_curr_address() + 1;
 }
 
+void BytecodeGen::emit(ir::ForLoop *forlp) {
+    Register iter = 0;
+    auto i_expr = forlp->get_iterator();
+    if (isa<Variable>(i_expr)) {
+        iter = next_reg();
+    } else {
+        auto iter_reg = emit(i_expr, true);
+        iter = free_reg(iter_reg);
+    }
+    append(new StoreName(iter, forlp->get_iterator()->get_name()));
+    auto collection = emit(forlp->get_collection(), true);
+    append(new opcode::ResetIter(collection->reg()));
+    auto pre_for_bc = get_curr_address() + 1;
+    auto for_op = new opcode::For(iter, free_reg(collection), 0);
+    append(for_op);
+    emit(forlp->get_body());
+    append(new Jmp(pre_for_bc));
+    for_op->addr = get_curr_address() + 1;
+}
+
 void BytecodeGen::emit_import_expr(ir::Expression *e) {
     if (isa<ir::Variable>(e)) {
         append(new opcode::Import(next_reg(), e->get_name()));
@@ -1138,6 +1158,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto i = dyn_cast<ir::If>(decl)) {
         emit(i);
+    }
+    else if (auto f = dyn_cast<ir::ForLoop>(decl)) {
+        emit(f);
     }
     else if (auto w = dyn_cast<ir::While>(decl)) {
         emit(w);
