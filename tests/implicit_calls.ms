@@ -37,3 +37,25 @@ class MyNumber {
 // MyString will be returned but as string wihout calling __String
 // this is to avoid recursive issues
 MyNumber()++"\n"
+
+class MyList {
+    fun MyList(lst) {
+        this.lst = lst
+    }
+
+    fun __String(a) {
+        return "bbb - "++this.lst
+    }
+
+    fun __String() {
+        return "AAA - "++this.lst
+    }
+
+    fun __String(c) {
+        return "cc - "++this.lst
+    }
+}
+
+lst = MyList([1,2,3])
+lst
+"\n"

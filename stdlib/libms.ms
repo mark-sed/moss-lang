@@ -34,11 +34,16 @@ class __Range {
     fun Range(end:Int) {
         this.start = 0
         this.end = end
-        if (start < end)
+        if (this.start < end)
             this.step = 1
         else
             this.step = -1
-        this.i = start
+        this.i = this.start
+    }
+
+    fun __iter() {
+        this.i = this.start
+        return this
     }
 
     fun __next() {

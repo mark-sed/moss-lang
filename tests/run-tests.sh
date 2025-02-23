@@ -300,7 +300,7 @@ function test_whiles {
 
 function test_fors {
     expect_pass "fors.ms" $1
-    expect_out_eq "Hello\nhi\nhi\n123\n2688\n" $1
+    expect_out_eq "Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579\n" $1
 }
 
 function test_try_catch {
@@ -453,7 +453,8 @@ function test_closures {
 
 function test_implicit_calls {
     expect_pass "implicit_calls.ms" $1
-    expect_out_eq "hello is my string\nbye is my string\n42\n<object of class MyNumber>\n" $1
+    expect_out_eq "hello is my string\nbye is my string\n42\n<object of class MyNumber>
+AAA - [1, 2, 3]\n" $1
 }
 
 function test_fibonacci {

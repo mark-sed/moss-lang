@@ -887,6 +887,8 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
         auto iter_reg = emit(i_expr, true);
         iter = free_reg(iter_reg);
     }
+    append(new StoreNilConst(next_creg()));
+    append(new StoreConst(iter, val_last_creg()));
     append(new StoreName(iter, forlp->get_iterator()->get_name()));
     auto collection = emit(forlp->get_collection(), true);
     auto new_iter = next_reg();

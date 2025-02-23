@@ -95,8 +95,17 @@ opcode::StringConst opcode::to_string(Interpreter *vm, Value *v) {
     if (auto ov = dyn_cast<ObjectValue>(v)) {
         auto string_attr = ov->get_attr(known_names::TO_STRING_METHOD);
         FunValue *string_fun = nullptr;
-        if (string_attr)
+        if (string_attr && isa<FunValue>(string_attr))
             string_fun = dyn_cast<FunValue>(string_attr);
+        else if (string_attr && isa<FunValueList>(string_attr)) {
+            auto string_funs = dyn_cast<FunValueList>(string_attr);
+            for (auto f : string_funs->get_funs()) {
+                if (f->get_args().size() == 0) {
+                    string_fun = f;
+                    break;
+                }
+            }
+        }
         if (string_fun) {
             // We need to have a runtime call to the function that executes
             // right now
@@ -622,6 +631,7 @@ void Return::exec(Interpreter *vm) {
         // pop_call_frame deletes the frame, so we cannot call it here
         // the original owner will delete it.
         vm->drop_call_frame();
+        vm->pop_frame();
     } else {
         vm->pop_frame();
         vm->store(return_reg, ret_v);
@@ -652,6 +662,7 @@ void ReturnConst::exec(Interpreter *vm) {
         // pop_call_frame deletes the frame, so we cannot call it here
         // the original owner will delete it.
         vm->drop_call_frame();
+        vm->pop_frame();
     } else {
         vm->pop_frame();
         vm->store(return_reg, ret_v);
@@ -1945,25 +1956,89 @@ void Switch::exec(Interpreter *vm) {
 void For::exec(Interpreter *vm) {
     auto coll = vm->load(this->collection);
     assert(coll && "sanity check");
-    try {
-        auto v = coll->next(vm);
-        assert(v && "sanity check");
-        vm->store(this->index, v);
-    } catch (Value *v) {
-        if (v->get_type() == BuiltIns::StopIteration)
-            vm->set_bci(this->addr);
-        else
-            throw v;
+    if (isa<ObjectValue>(coll)) {
+        auto nextv = coll->get_attr("__next");
+        if (nextv) {
+            FunValue *nextf = dyn_cast<FunValue>(nextv);
+            if (!nextf && isa<FunValueList>(nextv)) {
+                auto nextlist = dyn_cast<FunValueList>(nextv);
+                for (auto f : nextlist->get_funs()) {
+                    if (f->get_args().size() == 0) {
+                        nextf = f;
+                        break;
+                    }
+                }
+            }
+            // If it cannot be called, then don't call it
+            if (nextf) {
+                try {
+                    auto v = runtime_method_call(vm, nextf, {coll});
+                    assert(v && "sanity check");
+                    vm->store(this->index, v);
+                } catch (Value *v) {
+                    if (v->get_type() == BuiltIns::StopIteration)
+                        vm->set_bci(this->addr);
+                    else
+                        throw v;
+                }
+            } else {
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, coll->get_type()->get_name().c_str())));
+            }
+        } else {
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, coll->get_type()->get_name().c_str())));
+        }
+    } else {
+        try {
+            auto v = coll->next(vm);
+            assert(v && "sanity check");
+            vm->store(this->index, v);
+        } catch (Value *v) {
+            if (v->get_type() == BuiltIns::StopIteration)
+                vm->set_bci(this->addr);
+            else
+                throw v;
+        }
     }
 }
 
 void Iter::exec(Interpreter *vm) {
     auto coll = vm->load(this->collection);
     assert(coll && "sanity check");
-    // TODO: For object call __iter and __next using call
-    // or maybe give access to call for value.hpp and call it from there?
-    auto new_iter = coll->iter(vm);
-    vm->store(iterator, new_iter);
+    // For object call __iter because value does not have access to all
+    // this data
+    if (isa<ObjectValue>(coll)) {
+        // Call __iter only if it exists otherwise use this object
+        auto iterv = coll->get_attr("__iter");
+        if (iterv) {
+            FunValue *iterf = dyn_cast<FunValue>(iterv);
+            if (!iterf && isa<FunValueList>(iterv)) {
+                auto iterlist = dyn_cast<FunValueList>(iterv);
+                for (auto f : iterlist->get_funs()) {
+                    if (f->get_args().size() == 0) {
+                        iterf = f;
+                        break;
+                    }
+                }
+            }
+            if (iterf) {
+                LOGMAX("Calling object iterator");
+                auto new_iter = runtime_method_call(vm, iterf, {coll});
+                if (!isa<ObjectValue>(new_iter))
+                    new_iter->iter(vm);
+                vm->store(iterator, new_iter);
+            } else {
+                // If it cannot be called, then don't call 
+                LOGMAX("No object iterator found, using the object");
+                vm->store(iterator, coll);
+            }
+        } else {
+            LOGMAX("No object iterator found, using the object");
+            vm->store(iterator, coll);
+        }
+    } else {
+        auto new_iter = coll->iter(vm);
+        vm->store(iterator, new_iter);
+    }
 }
 
 #undef op_assert

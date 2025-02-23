@@ -21,4 +21,71 @@ class MyList {
 }
 
 lst = MyList([1,2,3])
-// TODO
+
+try {
+    for (l: lst) l
+} catch (e:TypeError) {
+    "no __next\n"
+}
+
+
+class MyIterable {
+    fun MyIterable(lst) {
+        this.lst = lst
+    }
+
+    fun __iter() {
+        return this.lst
+    }
+}
+
+lst2 = MyIterable([1,2,3,4,5])
+for (i1: lst2) i1
+"\n"
+for (i2:lst2) i2
+"\n"
+
+
+class MyIterator {
+    fun MyIterator(lst) {
+        this.lst = lst
+        this.i = 0
+    }
+
+    fun __iter() {
+        this.i = 0
+        return this
+    }
+
+    fun __next() {
+        if (this.i > 3)
+            raise StopIteration()
+        v = this.lst[this.i]
+        this.i += 1
+        return v
+    }
+}
+
+lst3 = MyIterator([1,2,3,4])
+for (v: lst3) {
+    v
+}
+"\n"
+
+// Ranges
+
+for (i: 1..5) i
+"\n"
+
+c = 0
+for (c : -10,-8..0) c
+"\n"
+
+some_range = 1,3..10
+for(i: some_range) {
+    i
+}
+"\n"
+for (j: some_range)
+    j
+"\n"
