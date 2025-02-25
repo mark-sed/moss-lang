@@ -417,6 +417,15 @@ function test_calls {
     expect_out_eq_rx "called.*.*\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\nhi\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\n" $1
 }
 
+function test_continues_and_breaks {
+    expect_pass "continues_and_breaks.ms" $1
+    expect_out_eq "hi\n13579\n13579
+d1 d3 c1d1 d3 c2d1 d3 c3d1 d3 c4d1 d3 c5d1 d3 c6d1 d3 c7d1 d3 c8d1 d3 c9
+Hi\n2468\n43210
+2 + (3 [5], 5 [7], 7 [9], 9 [11], )|3 + ()|4 + ()|5 + ()|6 + ()|7 + ()|\n" $1
+}
+
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -683,6 +692,7 @@ function run_all_tests {
     run_test range_expr
     run_test compound_assignment
     run_test calls
+    run_test continues_and_breaks
 
     run_test basic_import
     run_test import_calls

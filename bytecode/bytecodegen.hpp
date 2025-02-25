@@ -60,6 +60,12 @@ private:
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
     void emit_import_expr(ir::Expression *e);
+    /// Updates all break and continue jumps to proper addresses
+    /// @param start Address where loop starts (start search)
+    /// @param end Address where loop ends (end of search)
+    /// @param brk Address where to jump on break
+    /// @param cont Address where to jump on continue
+    void update_jmps(opcode::Address start, opcode::Address end, opcode::Address brk, opcode::Address cont);
 
     void emit(ir::Raise *r);
     void emit(ir::Return *r);
@@ -75,6 +81,8 @@ private:
     void emit(ir::Space *spc);
     void emit(ir::Enum *enm);
     void emit(ir::Assert *asr);
+    void emit(ir::Break *br);
+    void emit(ir::Continue *br);
     void emit(ir::IR *decl);
     void emit(std::list<ir::IR *> block);
 

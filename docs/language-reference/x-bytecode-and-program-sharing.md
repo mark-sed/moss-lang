@@ -551,3 +551,22 @@ x   LOAD_NAME   %2, "i"
 x   OUTPUT      %2
 x   JMP         4
 ```
+
+### Break and Continue
+
+```cpp
+while(true) {
+    break
+    continue
+}
+```
+
+```
+x       STORE_BOOL_CONST  #300, true
+x       STORE_CONST  %30,  #300
+x       JMP_IF_FALSE  %30, 4
+x       JMP  <end of while>
+x       JMP  <start of while or end of while-1>
+x       JMP  1
+x       END
+```

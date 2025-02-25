@@ -585,10 +585,15 @@ public:
 class Jmp : public OpCode {
 public:
     Address addr;
+    enum class JMPState {
+        SET,
+        NOT_SET_BREAK,
+        NOT_SET_CONTINUE
+    } state;
 
     static const OpCodes ClassType = OpCodes::JMP;
 
-    Jmp(Address addr) : OpCode(ClassType, "JMP"), addr(addr) {}
+    Jmp(Address addr, JMPState state=JMPState::SET) : OpCode(ClassType, "JMP"), addr(addr), state(state) {}
     
     void exec(Interpreter *vm) override;
     
