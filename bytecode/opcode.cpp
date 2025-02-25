@@ -226,6 +226,7 @@ void StoreNilConst::exec(Interpreter *vm) {
 }
 
 void Jmp::exec(Interpreter *vm) {
+    assert(state == JMPState::SET && "Break/continue jmp was not setup or break/continue is outside of loop");
     vm->set_bci(this->addr);
 }
 
@@ -750,9 +751,25 @@ void SetDefaultConst::exec(Interpreter *vm) {
 
 void SetType::exec(Interpreter *vm) {
     auto fv = load_last_fun(fun, vm);
-    auto type = vm->load_type(name);
-    op_assert(type, mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_A_TYPE, name.c_str())));
-    fv->set_type(index, type);
+    assert(fv && "Could not load fun");
+    auto tv = vm->load(type);
+    assert(tv && "No longer exists?");
+    if (!isa<ClassValue>(tv)) {
+        // When using the same type as is the class we are in, there might be
+        // constructor first found, in that case find the type by the name
+        ustring name;
+        if (auto tvf = dyn_cast<FunValue>(tv)) {
+            name = tvf->get_name();
+        } else if (auto tvf = dyn_cast<FunValueList>(tv)) {
+            name = tvf->back()->get_name();
+        }
+        if (!name.empty()) {
+            tv = vm->load_type(name);
+        }
+
+        op_assert(tv && isa<ClassValue>(tv), mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_A_TYPE, tv->as_string().c_str())));
+    }
+    fv->set_type(index, tv);
 }
 
 void SetVararg::exec(Interpreter *vm) {

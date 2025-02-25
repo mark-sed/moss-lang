@@ -283,7 +283,8 @@ function test_functions {
 0\n1\n123\n125\n123\n1trueanil[]1\n<function fooa with 3 overloads>
 12[3, 4, 5]67\n12[3, 4, 5]67\n12[]false97\n12[3, 4, 5]false97
 []\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, \"ok\", false, nil]\ntrue[1]
-1\n0\n0\n42\nhello from greet\ngoo inner fun\n" $1
+1\n0\n0\n42\nhello from greet\ngoo inner fun
+2\nhi!\ntrue\n" $1
 }
 
 function test_ifs {
@@ -515,6 +516,8 @@ exit(\"la fin\", 2)" "" $1
     expect_retcode 5 $1
 }
 
+# Note: This test is sensitive to bytecodegen changes because it uses
+# hardcoded addresses
 function test_lib_vardump {
     expect_pass "stdlib_tests/vardump.ms" $1
     expect_out_eq 'Int(42)
@@ -540,9 +543,9 @@ List(1) [
   ]
 ]\nEnum {}
 Class MyClass : Int, Float {
-  \"MyClass\": Fun(MyClass @102),
+  \"MyClass\": Fun(MyClass @104),
   \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n @112)
+  \"get_n\": Fun(get_n @114)
 }\n' $1
 }
 

@@ -230,10 +230,10 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new SetDefaultConst(reg1, index, reg2));
             } break;
             case opcode::OpCodes::SET_TYPE: {
-                auto reg = read_register();
+                auto reg1 = read_register();
                 auto index = read_const_int();
-                auto str = read_string();
-                bc->push_back(new SetType(reg, index, str));
+                auto reg2 = read_register();
+                bc->push_back(new SetType(reg1, index, reg2));
             } break;
             case opcode::OpCodes::SET_VARARG: {
                 auto reg = read_register();

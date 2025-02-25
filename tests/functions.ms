@@ -123,3 +123,27 @@ fun outterf(a) {
 }
 
 outterf("inner fun\n")
+
+// We allow for types to be inside of variables and
+// even expressions
+
+types = [Int, String, Bool]
+
+fun vared_type(a:types[0]) {
+    return a + 4
+}
+
+fun vared_type(a:types[1]) {
+    return a ++ "!"
+}
+
+fun vared_type(a:types[2]) {
+    return not a
+}
+
+vared_type(-2)
+"\n"
+vared_type("hi")
+"\n"
+vared_type(false)
+"\n"

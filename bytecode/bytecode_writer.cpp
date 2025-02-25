@@ -174,7 +174,7 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::SetType>(op_gen)){
             write_register(o->fun);
             write_int(o->index);
-            write_string(o->name);
+            write_register(o->type);
         }
         else if (auto o = dyn_cast<opcode::SetVararg>(op_gen)){
             write_register(o->fun);

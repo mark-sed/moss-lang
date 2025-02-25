@@ -988,7 +988,8 @@ void BytecodeGen::emit(ir::Function *fun) {
                 }
             }
             for (auto t: a->get_types()) {
-                append(new SetType(fun_reg, arg_i, t->get_name()));    
+                auto t_reg = emit(t, true);
+                append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
             }
         }
         ++arg_i;
@@ -1154,10 +1155,12 @@ void BytecodeGen::emit(ir::Assert *asr) {
 }
 
 void BytecodeGen::emit(ir::Break *br) {
+    (void)br;
     append(new opcode::Jmp(0, opcode::Jmp::JMPState::NOT_SET_BREAK));
 }
 
-void BytecodeGen::emit(ir::Continue *br) {
+void BytecodeGen::emit(ir::Continue *ct) {
+    (void)ct;
     append(new opcode::Jmp(0, opcode::Jmp::JMPState::NOT_SET_CONTINUE));
 }
 

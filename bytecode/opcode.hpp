@@ -81,7 +81,7 @@ enum OpCodes : opcode_t {
     FUN_BEGIN,  //        %fun
     SET_DEFAULT, //       %fun, int, %src
     SET_DEFAULT_CONST, // %fun, int, #src
-    SET_TYPE, //          %fun, int, "name"
+    SET_TYPE, //          %fun, int, %type
     SET_VARARG, //        %fun, int
 
     IMPORT, //        %dst, "name"
@@ -945,23 +945,23 @@ class SetType : public OpCode {
 public:
     Register fun;
     IntConst index;
-    StringConst name;
+    Register type;
 
     static const OpCodes ClassType = OpCodes::SET_TYPE;
 
-    SetType(Register fun, IntConst index, StringConst name) 
-                : OpCode(ClassType, "SET_TYPE"), fun(fun), index(index), name(name) {}
+    SetType(Register fun, IntConst index, Register type) 
+                : OpCode(ClassType, "SET_TYPE"), fun(fun), index(index), type(type) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << fun << ", " << index << ", \"" << name << "\"";
+        os << mnem << "  %" << fun << ", " << index << ", %" << type << "";
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<SetType>(other);
         if (!casted) return false;
-        return casted->fun == fun && casted->name == name && casted->index == index;
+        return casted->fun == fun && casted->type == type && casted->index == index;
     }
 };
 
@@ -2169,7 +2169,7 @@ public:
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Iter>(other);
         if (!casted) return false;
-        return casted->collection == collection, casted->iterator == iterator;
+        return casted->collection == collection && casted->iterator == iterator;
     }
 };
 

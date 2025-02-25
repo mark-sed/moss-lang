@@ -5,12 +5,11 @@
 using namespace moss;
 
 void MemoryPool::store(opcode::Register reg, Value *v) {
-    if (reg >= static_cast<opcode::Register>(pool.size())) {
+    while (reg >= static_cast<opcode::Register>(pool.size())) {
         LOGMAX("No more space, resizing pool from: " << pool.size() << " to " << pool.size()+(pool.size()/4));
         // TODO: Find some nice heuristic for this number
         pool.resize(pool.size()+(pool.size()/4), nullptr);
     }
-
     pool[reg] = v;
 }
 
@@ -18,11 +17,8 @@ Value *MemoryPool::load(opcode::Register reg) {
     // FIXME
     assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Pool access out of bounds, handle");
     Value *v = pool[reg];
-    if (v)
-        return v;
-    // FIXME: return nil
-    assert(false && "TODO: Nil return for no value");
-    return nullptr;
+    assert(v && "Loading non-existent value");
+    return v;
 }
 
 void MemoryPool::store_name(opcode::Register reg, ustring name) {

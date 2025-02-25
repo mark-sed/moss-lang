@@ -13,7 +13,7 @@ class __Int {
     fun Int(v:String, base=10) {}
 
     @internal
-    fun Int(v:[Int, Float]=0) {}
+    fun Int(v=0) {}
 }
 
 @internal_bind("Range")

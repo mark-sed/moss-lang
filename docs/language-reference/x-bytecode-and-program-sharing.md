@@ -95,7 +95,7 @@ xxh - CREATE_FUN        %fun, "name" "arg csv" // eg: "foo" "a,b,c,d"
 xxh - FUN_BEGIN         %fun
 xxh - SET_DEFAULT       %fun, int, %src
 xxh - SET_DEFAULT_CONST %fun, int, #src
-xxh - SET_TYPE          %fun, int, "name"
+xxh - SET_TYPE          %fun, int, %type
 xxh - SET_VARARG        %fun, int
 
 xxh - IMPORT        %dst, "name"

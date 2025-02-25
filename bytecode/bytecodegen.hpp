@@ -82,7 +82,7 @@ private:
     void emit(ir::Enum *enm);
     void emit(ir::Assert *asr);
     void emit(ir::Break *br);
-    void emit(ir::Continue *br);
+    void emit(ir::Continue *ct);
     void emit(ir::IR *decl);
     void emit(std::list<ir::IR *> block);
 
