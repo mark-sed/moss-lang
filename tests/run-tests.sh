@@ -352,7 +352,9 @@ function test_enums {
   Red,
   Green,
   Purple
-}\n" $1
+}
+Red\nPurple\ncaught\nfalse\ntrue\nfalse\nfalse\ntrue\nfalse\nfalse\ncaught\ncaught
+OLD\nold\n" $1
 }
 
 function test_space {

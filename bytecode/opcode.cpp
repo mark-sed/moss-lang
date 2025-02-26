@@ -158,6 +158,14 @@ void LoadAttr::exec(Interpreter *vm) {
             if (attr)
                 break;
         }
+    } else if (!attr && isa<EnumTypeValue>(v)) {
+        auto etv = dyn_cast<EnumTypeValue>(v);
+        for (auto ev: etv->get_values()) {
+            if (ev->get_name() == this->name) {
+                attr = ev;
+                break;
+            }
+        }
     }
     op_assert(attr, mslib::create_attribute_error(
         diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED,
@@ -1233,6 +1241,10 @@ static Value *eq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         else if (isa<NilValue>(s1)) {
             res = new BoolValue(true);
         }
+        else if (EnumValue *ev1 = dyn_cast<EnumValue>(s1)) {
+            EnumValue *ev2 = dyn_cast<EnumValue>(s2);
+            res = new BoolValue(ev1 == ev2);
+        }
         else {
             call_operator(vm, "==", s1, s2, dst);
         }
@@ -1245,11 +1257,6 @@ static Value *eq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "==", s1, s2, dst);
-    }
-    else if (isa<EnumValue>(s1)) {
-        assert(false && "TODO: Unimplemented enum comparison");
-    } else if (isa<EnumValue>(s1)) {
-        assert(false && "TODO: Unimplemented class comparison");
     } else {
         res = new BoolValue(false);
     }
