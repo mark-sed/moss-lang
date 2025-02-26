@@ -32,6 +32,14 @@ Value *vardump(Interpreter *vm, Value *v) {
     return new StringValue(ss.str());
 }
 
+Value *open(Interpreter *vm, Value *ths) {
+    (void)vm;
+    // TODO:
+    assert(false && "TODO: Open file");
+    //ths->set_attr("__file_handle", new IntValue());
+    return BuiltIns::Nil;
+}
+
 Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
     (void)vm;
     auto msgs_list = dyn_cast<ListValue>(msgs);
@@ -118,6 +126,11 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");
         // Base might not be set as this is only for string argument
         ret_v = Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
+    }
+    else if (name == "open") {
+        assert(arg_size == 1 && "Mismatch of args");
+        assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
+        ret_v = open(vm, args[0].value);
     }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));

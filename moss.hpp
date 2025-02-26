@@ -20,9 +20,9 @@
 /// Macro to convert INT macro value into string value
 #define MACRO_TO_STR(x) MACRO_TO_STR_HELPER(x)
 
-#define MOSS_VERSION_MAJOR 0  ///< Compiler's major version
-#define MOSS_VERSION_MINOR 5  ///< Compiler's minor version
-#define MOSS_VERSION_PATCH 1  ///< Compiler's patch
+#define MOSS_VERSION_MAJOR 0  ///< Interpreter's major version
+#define MOSS_VERSION_MINOR 5  ///< Interpreter's minor version
+#define MOSS_VERSION_PATCH 2  ///< Interpreter's patch
 
 /// Moss version as a string
 #define MOSS_VERSION MACRO_TO_STR(MOSS_VERSION_MAJOR) "." MACRO_TO_STR(MOSS_VERSION_MINOR) "." MACRO_TO_STR(MOSS_VERSION_PATCH)

@@ -216,9 +216,10 @@ Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 Value *BuiltIns::Module = new ClassValue("Module");
 Value *BuiltIns::Space = new ClassValue("Space");
 
-Value *BuiltIns::StopIteration = new ClassValue("StopIteration");
 Value *BuiltIns::Range = new ClassValue("Range");
+Value *BuiltIns::File = new ClassValue("File");
 
+Value *BuiltIns::StopIteration = new ClassValue("StopIteration");
 Value *BuiltIns::Exception = new ClassValue("Exception");
 Value *BuiltIns::NameError = new ClassValue("NameError");
 Value *BuiltIns::AttributeError = new ClassValue("AttributeError");

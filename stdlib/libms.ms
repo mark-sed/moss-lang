@@ -73,6 +73,58 @@ fun print(... msgs, end="\n", separator=" ") {}
 @internal
 fun exit(code=0) {}
 
+@internal_bind("File")
+class __File {
+    enum FileMode {
+        READ        // "r"
+        WRITE       // "w"
+        CREATE      // "x"
+        APPEND      // "a"
+        READ_WRITE  // "+"
+    }
+
+    fun File(path:String, mode:String="r") {
+        this.path = path
+        this.mode = mode
+    }
+
+    //fun File(path:String, mode:FileMode) {
+    //    //this.path = path
+    //    //this.mode = this.mode2str(mode)
+    //}
+
+    //fun mode2str(mode:FileMode) {
+    //    if(mode == FileMode.READ) return "r"
+    //    if(mode == FileMode.WRITE) return "w"
+    //    if(mode == FileMode.CREATE) return "x"
+    //    if(mode == FileMode.APPEND) return "a"
+    //    if(mode == FileMode.READ_WRITE) return "+"
+    //    assert(false, "missing file mode")
+    //}
+
+    //fun str2mode(mode:String) {
+    //    if(mode == "r") return FileMode.READ
+    //    if(mode == "w") return FileMode.WRITE
+    //    if(mode == "x") return FileMode.CREATE
+    //    if(mode == "a") return FileMode.APPEND
+    //    if(mode == "+") return FileMode.READ_WRITE
+    //    assert(false, "unknown file mode")
+    //}
+
+    //fun write(content:String)
+
+    //fun read(size:Int=-1)
+
+    //fun readln()
+
+    //fun readlines()
+
+    @internal
+    fun open() {}
+
+    //fun close()*/
+}
+
 /// Exceptions
 @internal_bind("Exception")
 class __Exception {

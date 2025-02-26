@@ -89,8 +89,9 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "Space", BuiltIns::Space, gf);
 
     store_glob_val(reg++, "Range", BuiltIns::Range, gf);
-    store_glob_val(reg++, "StopIteration", BuiltIns::StopIteration, gf);
+    store_glob_val(reg++, "File", BuiltIns::File, gf);
 
+    store_glob_val(reg++, "StopIteration", BuiltIns::StopIteration, gf);
     store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
     store_glob_val(reg++, "NameError", BuiltIns::NameError, gf);
     store_glob_val(reg++, "AttributeError", BuiltIns::AttributeError, gf);

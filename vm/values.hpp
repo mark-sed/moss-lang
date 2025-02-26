@@ -182,8 +182,9 @@ namespace BuiltIns {
     extern Value *Space;
     
     extern Value *Range;
-    extern Value *StopIteration;
+    extern Value *File;
 
+    extern Value *StopIteration;
     extern Value *Exception;
     extern Value *NameError;
     extern Value *AttributeError;
