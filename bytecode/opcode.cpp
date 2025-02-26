@@ -1094,17 +1094,11 @@ static Value *div(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        if (i2->get_value() == 0) {
-            // FIXME: Raise division by 0 exception
-            assert(false && "TODO: division by 0 exception raise");
-        }
+        op_assert(i2->get_value() != 0, mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::DIV_BY_ZERO)));
         res = new IntValue(i1->get_value() / i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        if (s2->as_float() == 0.0) {
-            // FIXME: Raise division by 0 exception
-            assert(false && "TODO: division by 0.0 exception raise");
-        }
+        op_assert(s2->as_float() != 0.0,  mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO)));
         res = new FloatValue(s1->as_float() / s2->as_float());
     }
     else if (isa<ObjectValue>(s1)) {
@@ -1178,17 +1172,11 @@ static Value *mod(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        if (i2->get_value() == 0) {
-            // FIXME: Raise division by 0 exception
-            assert(false && "TODO: division by 0 exception raise");
-        }
+        op_assert(i2->get_value() != 0, mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::DIV_BY_ZERO)));
         res = new IntValue(i1->get_value() % i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        if (s2->as_float() == 0.0) {
-            // FIXME: Raise division by 0 exception
-            assert(false && "TODO: division by 0.0 exception raise");
-        }
+        op_assert(s2->as_float() != 0.0,  mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO)));
         res = new FloatValue(std::fmod(s1->as_float(), s2->as_float()));
     }
     else if (isa<ObjectValue>(s1)) {

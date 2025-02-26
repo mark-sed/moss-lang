@@ -225,6 +225,8 @@ Value *BuiltIns::ParserError = new ClassValue("ParserError");
 Value *BuiltIns::SyntaxError = new ClassValue("SyntaxError");
 Value *BuiltIns::LookupError = new ClassValue("LookupError");
 Value *BuiltIns::IndexError = new ClassValue("IndexError");
+Value *BuiltIns::MathError = new ClassValue("MathError");
+Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");
 
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {

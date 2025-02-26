@@ -575,9 +575,12 @@ Caught: ParserError:
 Caught: SyntaxError: 
 Caught: LookupError: 
 Caught: IndexError: 
+Caught: MathError: 
+Caught: DivisionByZeroError: 
 Caught: NameError: 
 Caught: SyntaxError: 
-Caught: IndexError: \n" $1
+Caught: IndexError: 
+Caught: DivisionByZeroError: \n" $1
 }
 
 function test_lib_ranges {
@@ -650,7 +653,8 @@ function test_bc_read_write {
 function test_exceptions_catch {
     expect_pass "exceptions_catch.ms" $1
     expect_out_eq "NameError: a\nNameError: foo()\nModule not found
-Assertion error\nType error\nAttribute error\nName error\n" $1
+Assertion error\nType error\nAttribute error\nName error
+Division by zero error\nFloat division by zero error\nDBZ\nFDBZ\n" $1
 
     expect_fail_exec "some_name" "Name 'some_name' is not defined" $1
     expect_retcode 1 $1

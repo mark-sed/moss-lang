@@ -74,6 +74,14 @@ inline Value *create_stop_iteration() {
     return new ObjectValue(clt);
 }
 
+inline Value *create_math_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::MathError, dmsg);
+}
+
+inline Value *create_division_by_zero_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::DivisionByZeroError, dmsg);
+}
+
 }
 
 }

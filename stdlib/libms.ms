@@ -161,3 +161,17 @@ class __IndexError : LookupError {
 @internal_bind("StopIteration")
 class __StopIteration {
 }
+
+@internal_bind("MathError")
+class __MathError : Exception {
+    fun __String() {
+        return "MathError: " ++ this.msg
+    }
+}
+
+@internal_bind("DivisionByZeroError")
+class __DivisionByZeroError : MathError {
+    fun __String() {
+        return "DivisionByZeroError: " ++ this.msg
+    }
+}

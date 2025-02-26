@@ -64,6 +64,18 @@ try {
     "Caught: "++e++"\n"
 }
 
+try {
+    raise MathError("")
+} catch (e:MathError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise DivisionByZeroError("")
+} catch (e:DivisionByZeroError) {
+    "Caught: "++e++"\n"
+}
+
 // Inheritance tests
 
 try {
@@ -81,5 +93,11 @@ try {
 try {
     raise IndexError("")
 } catch (e:LookupError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise DivisionByZeroError("")
+} catch (e:MathError) {
     "Caught: "++e++"\n"
 }

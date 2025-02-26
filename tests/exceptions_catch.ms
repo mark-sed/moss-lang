@@ -44,3 +44,31 @@ try {
 } catch (e:NameError) {
     "Name error\n"
 }
+
+zero = 0
+zerof = 0.0
+
+try {
+    42 / zero
+} catch(e:DivisionByZeroError) {
+    "Division by zero error\n"
+}
+
+try {
+    5 / zerof
+} catch(e:DivisionByZeroError) {
+    // TODO: Extract the message that it says "Float division by zero"
+    "Float division by zero error\n"
+}
+
+try {
+    zero % zero
+} catch(e:DivisionByZeroError) {
+    "DBZ\n"
+}
+
+try {
+    (zero + 5 * 2) % zerof
+} catch(e:DivisionByZeroError) {
+    "FDBZ\n"
+}

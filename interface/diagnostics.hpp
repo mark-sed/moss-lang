@@ -121,6 +121,8 @@ enum DiagID {
     ARG_MISMATCH,           ///< Argument were not matched to params
     NOT_ITERABLE_TYPE,      ///< Cannot iterate over this type
     NO_NEXT_DEFINED,        ///< Object does not have __next for for
+    DIV_BY_ZERO,            ///< Division by 0
+    FDIV_BY_ZERO,            ///< Float division by 0
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -222,6 +224,8 @@ static const char * DIAG_MSGS[] = {
     "could not match arguments",
     "Type '%s' is not iterable",
     "Object of class '%s' is not iterable — __next method has to be defined",
+    "Division by zero",
+    "Float division by zero",
 };
 
 /// \brief Diagnostic message for error reporting
