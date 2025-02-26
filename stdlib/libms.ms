@@ -77,7 +77,7 @@ fun exit(code=0) {}
 @internal_bind("Exception")
 class __Exception {
 
-    fun Exception(msg) {
+    fun Exception(msg="") {
         this.msg = msg
     }
 

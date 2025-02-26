@@ -200,9 +200,11 @@ void StoreConst::exec(Interpreter *vm) {
 void StoreAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
     assert(dstobj && "non existent register");
+    op_assert(dstobj->is_mutable(), mslib::create_attribute_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR,
+            dstobj->get_name().c_str())));
     auto *v = vm->load(this->src);
     assert(v && "non existent register");
-    LOGMAX(*dstobj << " . " << name << " = " << *v);
     dstobj->set_attr(this->name, v);
 }
 

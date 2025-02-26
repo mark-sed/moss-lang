@@ -72,3 +72,14 @@ try {
 } catch(e:DivisionByZeroError) {
     "FDBZ\n"
 }
+
+try {
+    a = 5
+    a.v = true
+} catch (e:AttributeError) {
+    "Attribute error\n"
+}
+
+try ("string").length = 5; catch (e:AttributeError) {
+    "Attribute error\n"
+}

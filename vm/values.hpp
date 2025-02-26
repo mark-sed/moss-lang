@@ -106,6 +106,9 @@ public:
     Value *get_type() { return this->type; }
     ustring get_name() { return this->name; }
 
+    /// When mutable, then the value can have attributes assigned into
+    virtual inline bool is_mutable() { return false; }
+
     virtual std::ostream& debug(std::ostream& os) const = 0;
 
     virtual opcode::StringConst as_string() const = 0;
@@ -299,6 +302,7 @@ public:
     }
 
     virtual Value *iter(Interpreter *vm) override {
+        (void)vm;
         iterator = 0;
         return this;
     }
@@ -373,6 +377,7 @@ public:
     }
 
     virtual Value *iter(Interpreter *vm) override {
+        (void)vm;
         iterator = 0;
         return this;
     }
@@ -426,6 +431,8 @@ public:
         this->annotations = cls->get_annotations();
     }
 
+    virtual inline bool is_mutable() override { return true; }
+
     virtual opcode::StringConst as_string() const override {
         return "<class " + name + ">";
     }
@@ -456,6 +463,8 @@ public:
         return cpy;
     }
 
+    virtual inline bool is_mutable() override { return true; }
+
     virtual opcode::StringConst as_string() const override {
         return "<object of class " + this->type->get_name() + ">";
     }
@@ -477,6 +486,8 @@ public:
         cpy->annotations = this->annotations;
         return cpy;
     }
+
+    virtual inline bool is_mutable() override { return true; }
 
     virtual opcode::StringConst as_string() const override {
         return "<space " + name + ">";

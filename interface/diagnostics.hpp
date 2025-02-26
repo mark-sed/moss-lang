@@ -122,7 +122,8 @@ enum DiagID {
     NOT_ITERABLE_TYPE,      ///< Cannot iterate over this type
     NO_NEXT_DEFINED,        ///< Object does not have __next for for
     DIV_BY_ZERO,            ///< Division by 0
-    FDIV_BY_ZERO,            ///< Float division by 0
+    FDIV_BY_ZERO,           ///< Float division by 0
+    CANNOT_CREATE_ATTR,     ///< Creating attribute on immutable value
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -226,6 +227,7 @@ static const char * DIAG_MSGS[] = {
     "Object of class '%s' is not iterable — __next method has to be defined",
     "Division by zero",
     "Float division by zero",
+    "Cannot assign to attributes for type '%s'",
 };
 
 /// \brief Diagnostic message for error reporting

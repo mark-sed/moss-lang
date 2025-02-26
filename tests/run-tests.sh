@@ -654,7 +654,8 @@ function test_exceptions_catch {
     expect_pass "exceptions_catch.ms" $1
     expect_out_eq "NameError: a\nNameError: foo()\nModule not found
 Assertion error\nType error\nAttribute error\nName error
-Division by zero error\nFloat division by zero error\nDBZ\nFDBZ\n" $1
+Division by zero error\nFloat division by zero error\nDBZ\nFDBZ
+Attribute error\nAttribute error\n" $1
 
     expect_fail_exec "some_name" "Name 'some_name' is not defined" $1
     expect_retcode 1 $1

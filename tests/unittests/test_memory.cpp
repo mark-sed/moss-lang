@@ -17,8 +17,11 @@ TEST(Memory, Attributes) {
     bc->push_back(new opcode::StoreIntConst(301, 24));
     bc->push_back(new opcode::StoreConst(100, 300));
     bc->push_back(new opcode::StoreConst(101, 301));
-    bc->push_back(new opcode::StoreAttr(101, 100, "some_val"));
-    bc->push_back(new opcode::LoadAttr(102, 100, "some_val"));
+    bc->push_back(new opcode::Load(102, "Exception"));
+    bc->push_back(new opcode::PushCallFrame());
+    bc->push_back(new opcode::Call(103, 102));
+    bc->push_back(new opcode::StoreAttr(101, 103, "some_val"));
+    bc->push_back(new opcode::LoadAttr(104, 103, "some_val"));
 
     Interpreter *i = new Interpreter(bc, nullptr, true);
     i->run();
@@ -26,7 +29,7 @@ TEST(Memory, Attributes) {
     EXPECT_EQ(i->get_exit_code(), 0);
     EXPECT_EQ(int_val(i->load(100)), 42);
     EXPECT_EQ(int_val(i->load(101)), 24);
-    EXPECT_EQ(int_val(i->load(102)), 24);
+    EXPECT_EQ(int_val(i->load(104)), 24);
     EXPECT_EQ(int_val(i->load_const(300)), 42);
     EXPECT_EQ(int_val(i->load_const(301)), 24);
 

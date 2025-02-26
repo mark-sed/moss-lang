@@ -43,14 +43,17 @@ Value *Value::get_attr(ustring name) {
 }
 
 void Value::set_attrs(MemoryPool *p) {
+    assert(this->is_mutable() && "Setting attribute for immutable value");
     this->attrs = p;
 }
 
 void Value::copy_attrs(MemoryPool *p) {
+    assert(this->is_mutable() && "Setting attribute for immutable value");
     this->attrs = p->clone();
 }
 
 void Value::set_attr(ustring name, Value *v) {
+    assert(this->is_mutable() && "Setting attribute for immutable value");
     if (!attrs) {
         this->attrs = new MemoryPool();
     }
@@ -92,6 +95,7 @@ void Value::operator delete(void * p, size_t size) {
 }
 
 Value *StringValue::next(Interpreter *vm) {
+    (void)vm;
     if (this->iterator >= this->value.size()) {
         opcode::raise(mslib::create_stop_iteration());
     }
@@ -101,6 +105,7 @@ Value *StringValue::next(Interpreter *vm) {
 }
 
 Value *ListValue::next(Interpreter *vm) {
+    (void)vm;
     if (this->iterator >= this->vals.size()) {
         opcode::raise(mslib::create_stop_iteration());
     }
