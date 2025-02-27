@@ -71,6 +71,9 @@ fun vardump(value) {}
 fun print(... msgs, end="\n", separator=" ") {}
 
 @internal
+fun input(prompt="") {}
+
+@internal
 fun exit(code=0) {}
 
 @internal_bind("File")

@@ -4,6 +4,7 @@
 #include "diagnostics.hpp"
 #include "logging.hpp"
 #include <functional>
+#include <iostream>
 #include <cstdlib>
 
 using namespace moss;
@@ -56,6 +57,16 @@ Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
     }
     outs << end->as_string();
     return BuiltIns::Nil;
+}
+
+Value *input(Interpreter *vm, Value *prompt) {
+    (void)vm;
+    auto msg = prompt->as_string();
+    if (!msg.empty())
+        outs << msg;
+    ustring line;
+    std::getline(std::cin, line);
+    return new StringValue(line);
 }
 
 Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
@@ -121,6 +132,10 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     else if (name == "print") {
         assert(arg_size == 3 && "Mismatch of args");
         ret_v = print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"));
+    }
+    else if (name == "input") {
+        assert(arg_size == 1 && "Mismatch of args");
+        ret_v = input(vm, args[0].value);
     }
     else if (name == "Int") {
         assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");

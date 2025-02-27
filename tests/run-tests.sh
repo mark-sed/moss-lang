@@ -73,6 +73,12 @@ function run_repl {
     RETCODE=$(echo $?)
 }
 
+function run_redir {
+    CMD="$MOSS ${RUN_TEST_FLAGS} ${TEST_DIR}$1"
+    $CMD < ${TEST_DIR}$2 2>$OUTP_ERR 1>$OUTP_STD
+    RETCODE=$(echo $?)
+}
+
 function run_compile {
     CMD="$MOSS -o ${TEST_DIR}$2 ${TEST_DIR}$1"
     $MOSS -o ${TEST_DIR}$2 ${TEST_DIR}$1 2>$OUTP_ERR 1>$OUTP_STD
@@ -105,6 +111,18 @@ function expect_pass_exec {
 
 function expect_pass_repl {
     run_repl "${@:1:$#-1}"
+    if [[ $RETCODE -ne 0 ]]; then
+        failed "${@: -1}" "Program failed."
+        printf "Command:\n--------\n$CMD\n"
+        printf "Output:\n-------\n"
+        cat $OUTP_STD
+        printf "Error output:\n-------------\n"
+        cat $OUTP_ERR
+    fi
+}
+
+function expect_pass_redir {
+    run_redir "${@:1:$#-1}"
     if [[ $RETCODE -ne 0 ]]; then
         failed "${@: -1}" "Program failed."
         printf "Command:\n--------\n$CMD\n"
@@ -589,6 +607,11 @@ function test_lib_ranges {
 0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n' $1
 }
 
+function test_lib_input {
+    expect_pass_redir "stdlib_tests/input.ms" "stdlib_tests/input.ms" $1 
+    expect_out_eq "> // input function test\n// this file is also read\n5//\n" $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -723,6 +746,7 @@ function run_all_tests {
     run_test lib_type_constructors
     run_test lib_builtin_exceptions
     run_test lib_ranges
+    run_test lib_input
 
     # gc tests
     run_test gc_local_vars
