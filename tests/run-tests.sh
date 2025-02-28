@@ -448,7 +448,7 @@ Hi\n2468\n43210
 
 function test_scopes {
     expect_pass "scopes.ms" $1
-    expect_out_eq "5\n6\n2\n2\nhi\n" $1
+    expect_out_eq "5\n6\n2\n2\nhi\ncaught\ncaught\n2\n3\n" $1
 }
 
 function test_basic_import {

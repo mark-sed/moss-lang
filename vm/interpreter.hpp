@@ -207,6 +207,9 @@ public:
     /// If there is no such name, then nullptr is returned
     Value *load_global_name(ustring name);
 
+    /// Looks up a symbol from top-1 frame up until global frame (excluding it)
+    Value *load_non_local_name(ustring name);
+
     /// Pushes a new frame (memory pool) into a frame stack
     /// \param fun_owner If set then the function owner of the frame is set,
     ///                  this is needed for accessing function closures

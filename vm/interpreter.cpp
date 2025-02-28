@@ -241,6 +241,16 @@ Value *Interpreter::load_global_name(ustring name) {
     return get_global_frame()->load_name(name);
 }
 
+Value *Interpreter::load_non_local_name(ustring name) {
+    if (frames.size() <= 1) return nullptr;
+    for (auto riter = std::next(frames.rbegin()); riter != std::prev(frames.rend()); ++riter) {
+        auto val = (*riter)->load_name(name);
+        if (val)
+            return val;
+    }
+    return nullptr;
+}
+
 void Interpreter::push_spilled_value(Value *v) {
     assert(v && "sanity check");
     get_top_frame()->push_spilled_value(v);

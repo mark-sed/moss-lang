@@ -180,7 +180,10 @@ void LoadGlobal::exec(Interpreter *vm) {
 }
 
 void LoadNonLoc::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    op_assert(vm->get_top_frame() != vm->get_global_frame(), mslib::create_syntax_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_LOC_IN_GLOB, this->name.c_str())));
+    auto v = vm->load_non_local_name(this->name);
+    op_assert(v, mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NON_LOC_BINDING, this->name.c_str())));
+    vm->store(this->dst, v);
 }
 
 void Store::exec(Interpreter *vm) {

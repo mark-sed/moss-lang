@@ -64,6 +64,10 @@ inline Value *create_syntax_error(ustring msg) {
     return create_exception(BuiltIns::SyntaxError, msg);
 }
 
+inline Value *create_syntax_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::SyntaxError, dmsg);
+}
+
 inline Value *create_index_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::IndexError, dmsg);
 }
