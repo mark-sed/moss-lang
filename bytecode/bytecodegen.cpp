@@ -633,7 +633,10 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
 }
 
 RegValue *BytecodeGen::emit(ir::UnaryExpr *expr) {
-    RegValue *val = emit(expr->get_expr());
+    RegValue *val = nullptr;
+    // For global value dont output the value access
+    if (expr->get_op().get_kind() != OperatorKind::OP_SCOPE)
+        val = emit(expr->get_expr());
 
     switch (expr->get_op().get_kind()) {
         case OperatorKind::OP_NOT: {
@@ -664,6 +667,10 @@ RegValue *BytecodeGen::emit(ir::UnaryExpr *expr) {
             auto lr = last_reg();
             lr->set_silent(true);
             return lr;
+        }
+        case OperatorKind::OP_SCOPE: {
+            append(new LoadGlobal(next_reg(), expr->get_expr()->get_name()));
+            return last_reg();
         }
         default: assert(false && "Unknown unary operator");
     }
