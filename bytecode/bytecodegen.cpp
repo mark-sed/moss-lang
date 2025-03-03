@@ -830,6 +830,29 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         }
         bcv = last_reg();
     }
+    else if (auto tif = dyn_cast<ir::TernaryIf>(expr)) {
+        auto cond = emit(tif->get_condition(), true);
+        auto jmp_false = new JmpIfFalse(free_reg(cond), 0);
+        auto res_reg = next_reg();
+        append(jmp_false);
+        auto tr_val = emit(tif->get_value_true());
+        if (tr_val->is_const()) {
+            append(new StoreConst(res_reg, free_reg(tr_val)));
+        } else {
+            append(new Store(res_reg, free_reg(tr_val)));
+        }
+        auto jmp_end = new Jmp(0);
+        append(jmp_end);
+        jmp_false->addr = get_curr_address() + 1;
+        auto fl_val = emit(tif->get_value_false());
+        if (fl_val->is_const()) {
+            append(new StoreConst(res_reg, free_reg(fl_val)));
+        } else {
+            append(new Store(res_reg, free_reg(fl_val)));
+        }
+        jmp_end->addr = get_curr_address() + 1;
+        bcv = new RegValue(res_reg, false);
+    }
     else {
         LOGMAX("MISSING EXPR ENUM: " << static_cast<int>(expr->get_type()));
         assert(false && "Missing Expression generation");

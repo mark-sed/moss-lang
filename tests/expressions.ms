@@ -37,3 +37,21 @@ not (a < 42)
 "abcdef"[-1]
 "abcdef"[-4]
 "\n"[0]
+
+// Ternary if
+
+true ? "hi\n" : "no"
+false ? "no" : "there\n"
+
+fun get_true() {
+    return true ? true : false
+}
+
+ter_v = get_true() ? "true\n" : "false\n"
+ter_v
+
+try {
+    [1,2,3] ? "1" : "2"
+} catch (e:TypeError) {
+    "caught\n"
+}

@@ -1081,6 +1081,10 @@ public:
         delete value_false;
     }
 
+    Expression *get_condition() { return condition; }
+    Expression *get_value_true() { return value_true; }
+    Expression *get_value_false() { return value_false; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "(" << *condition << " ? " << *value_true << " : " << *value_false << ")";
         return os;
