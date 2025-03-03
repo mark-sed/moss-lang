@@ -957,17 +957,38 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     for_op->addr = get_curr_address() + 1;
 }
 
-void BytecodeGen::emit_import_expr(ir::Expression *e) {
-    if (isa<ir::Variable>(e)) {
-        append(new opcode::Import(next_reg(), e->get_name()));
+void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
+    if (auto vr = dyn_cast<ir::Variable>(e)) {
+        if (!space_import)
+            append(new opcode::Import(next_reg(), e->get_name()));
+        else {
+            if (vr->is_non_local())
+                append(new opcode::LoadNonLoc(next_reg(), e->get_name()));
+            else
+                append(new opcode::Load(next_reg(), e->get_name()));
+        }
     } else if (auto be = dyn_cast<BinaryExpr>(e)) {
         assert(be->get_op().get_kind() == OperatorKind::OP_ACCESS && "Incorrect expression in import");
-        emit_import_expr(be->get_left());
+        emit_import_expr(be->get_left(), space_import);
         auto res_reg = val_last_reg();
         if (isa<AllSymbols>(be->get_right())) {
             append(new opcode::ImportAll(res_reg));
         } else {
             append(new opcode::LoadAttr(next_reg(), res_reg, be->get_right()->get_name()));
+        }
+    } else if (auto ue = dyn_cast<UnaryExpr>(e)) {
+        // Possible space import (import ::S.*)
+        assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "Incorrect expression in import");
+        assert(!isa<AllSymbols>(ue->get_expr()) && "Cannot import from this scope into this scope");
+        if (space_import) {
+            // import of global space `::(::S.*)`
+            auto vr = dyn_cast<Variable>(ue->get_expr());
+            assert(vr && "incorrect space import");
+            assert(!vr->is_non_local() && "Cannot have non-local global value");
+            append(new opcode::LoadGlobal(next_reg(), vr->get_name()));
+            return;
+        } else {
+            emit_import_expr(ue->get_expr(), true);
         }
     } else {
         assert(false && "Incorrect import expression value");

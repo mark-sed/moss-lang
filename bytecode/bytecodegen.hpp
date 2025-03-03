@@ -59,7 +59,7 @@ private:
     RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
-    void emit_import_expr(ir::Expression *e);
+    void emit_import_expr(ir::Expression *e, bool space_import=false);
     /// Updates all break and continue jumps to proper addresses
     /// @param start Address where loop starts (start search)
     /// @param end Address where loop ends (end of search)

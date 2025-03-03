@@ -480,6 +480,12 @@ function test_import_calls {
 mod1 ran!\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\n" $1
 }
 
+function test_space_imports {
+    expect_pass "space_imports.ms" $1
+    expect_out_eq "caught\n1-msf\ncaught\nval1\n2-msf\nval1\n3-msf\nlocal val1
+val1\ninner local val1\nlocal val1\nval1\n" $1
+}
+
 function test_closures {
     expect_pass "closures.ms" $1
     expect_out_eq "24\nOC; Created Inner + OC; <object of class InnerClass>\n<class InnerClass>
@@ -735,6 +741,7 @@ function run_all_tests {
 
     run_test basic_import
     run_test import_calls
+    run_test space_imports
     run_test closures
     run_test implicit_calls
     run_test exceptions_catch

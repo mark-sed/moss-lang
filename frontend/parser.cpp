@@ -284,9 +284,10 @@ ustring Parser::get_last_id(Expression *e) {
         }
     }
     if (auto ue = dyn_cast<UnaryExpr>(e)) {
-        if (ue->get_op().get_kind() == OperatorKind::OP_SCOPE) {
-            assert(false && "TODO: Handle global value");
-        }
+        // Only ::Name then raise an exception
+        if (ue->get_op().get_kind() == OperatorKind::OP_SCOPE)
+            parser_assert(!isa<Variable>(ue->get_expr()), create_diag(diags::SPACE_IMPORT_AS_ITSELF));
+        return get_last_id(ue->get_expr());
     }
     parser_error(create_diag(diags::MEMBER_OR_ID_EXPECTED));
     return "";

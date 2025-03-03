@@ -126,6 +126,7 @@ enum DiagID {
     CANNOT_CREATE_ATTR,     ///< Creating attribute on immutable value
     NON_LOC_IN_GLOB,        ///< Use of $ in global frame
     NO_NON_LOC_BINDING,     ///< Cannot bind $ var
+    SPACE_IMPORT_AS_ITSELF, ///< ::Name
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -232,6 +233,7 @@ static const char * DIAG_MSGS[] = {
     "Cannot assign to attributes for type '%s'",
     "Accessing non-local variable ('%s') cannot appear on global scope",
     "No binding for non-local variable '%s'",
+    "Cannot import space as itself",
 };
 
 /// \brief Diagnostic message for error reporting
