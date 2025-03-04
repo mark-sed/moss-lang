@@ -263,3 +263,30 @@ assert(y < 0, "Input value should be negative.")
 
 Assert does have a function syntax, but is in fact a keyword and cannot be
 overwritten.
+
+## Short-circuit evaluation
+
+`||` and `&&` are logical or and end respectivelly, but don't necessairly
+evaluate their second argument.
+
+These operators can be used to create an evaluation chain.
+
+```cpp
+fun foo() { return false; }
+
+foo() || exit(1) && print("success")
+```
+
+This will exit the program with return code 1.
+
+`||` can be thought of as the next evaluation after a false value and
+`&&` as the next one after a true value. So if there is a false evaluated then
+moss will be ignoring all the `&&` and looking for next `||` or end the
+evaluation with false.
+
+```cpp
+file_exists("f.txt") && print("exists!") || print("does not exist.")
+```
+
+In the case above if file `f.txt` does not exist then "does not exist." is printed
+otherwise "exists!" is printed.

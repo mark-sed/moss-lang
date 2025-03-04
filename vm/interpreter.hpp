@@ -218,6 +218,7 @@ public:
     void pop_frame();
     /// \return Top frame, meaning the current local frame or global if no local is inserted
     MemoryPool *get_top_frame() { return this->get_local_frame(); }
+    MemoryPool *get_top_const_frame() { return this->get_const_pool(); }
     MemoryPool *get_global_frame() { return this->frames.front(); }
     std::list<MemoryPool *>& get_frames() { return this->frames; }
 

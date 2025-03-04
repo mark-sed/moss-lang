@@ -428,6 +428,9 @@ public:
         }
     }
 
+    std::vector<Expression *> get_values() { return values; }
+    bool is_default_case() { return default_case; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
         if (!default_case) {
             os << "case ";
@@ -455,21 +458,23 @@ public:
 
 class Switch : public Construct {
 private:
-    Expression *val;
+    Expression *cond;
 
 public:
     static const IRType ClassType = IRType::SWITCH;
 
-    Switch(Expression *val, std::list<IR *> cases) 
-           : Construct(ClassType, "switch"), val(val) {
+    Switch(Expression *cond, std::list<IR *> cases) 
+           : Construct(ClassType, "switch"), cond(cond) {
         this->body = cases;
     }
     ~Switch() {
-        delete val;
+        delete cond;
     }
 
+    Expression *get_cond() { return this->cond; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << "switch (" << *val << ") {\n";
+        os << "switch (" << *cond << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
         }

@@ -1967,7 +1967,37 @@ void CreateRange8::exec(Interpreter *vm) {
 }
 
 void Switch::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto cv = vm->load(this->src);
+    assert(cv && "sanity check");
+    
+    auto v_vals = vm->load(this->vals);
+    assert(v_vals && "sanity check");
+    auto val_list = dyn_cast<ListValue>(v_vals);
+    assert(val_list && "switch value list is not a list");
+
+    auto v_addr = vm->load(this->addrs);
+    assert(v_addr && "sanity check");
+    auto addr_list = dyn_cast<ListValue>(v_addr);
+    assert(addr_list && "switch addr list is not a list");
+
+    auto lvals = val_list->get_vals();
+    bool matched = false;
+    for (size_t i = 0; i < lvals.size() && !matched; ++i) {
+        // TODO:
+        assert(!isa<ObjectValue>(lvals[i]) && !isa<ObjectValue>(cv) && "TODO: Match for objects");
+        auto res = eq(lvals[i], cv, 0, vm);
+        assert(res && "sanity check");
+        auto resbool = dyn_cast<BoolValue>(res);
+        assert(resbool && "eq did not return bool");
+        if (resbool->get_value()) {
+            auto addr_int = dyn_cast<IntValue>(addr_list->get_vals()[i]);
+            assert(addr_int && "switch address is not an int");
+            vm->set_bci(addr_int->get_value());
+            matched = true;
+        }
+    }
+    if (!matched)
+        vm->set_bci(default_addr);
 }
 
 void For::exec(Interpreter *vm) {

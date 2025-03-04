@@ -318,6 +318,11 @@ function test_whiles {
 -\n1\n2\n3\n3\n" $1
 }
 
+function test_switches {
+    expect_pass "switches.ms" $1
+    expect_out_eq "440-1\nhi!\ndef\n-1-1\n1111\n000\n" $1
+}
+
 function test_fors {
     expect_pass "fors.ms" $1
     expect_out_eq "Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579\n" $1
@@ -722,6 +727,7 @@ function run_all_tests {
     run_test functions
     run_test ifs
     run_test whiles
+    run_test switches
     run_test fors
     run_test try_catch
     run_test classes
