@@ -538,6 +538,7 @@ public:
                 bool vararg=false) 
                : name(name), types(types), default_value(default_value), vararg(vararg) {}
 
+    bool is_typed() { return types.empty(); }
     // TODO: Debug
 };
 

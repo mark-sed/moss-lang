@@ -320,7 +320,8 @@ function test_whiles {
 
 function test_switches {
     expect_pass "switches.ms" $1
-    expect_out_eq "440-1\nhi!\ndef\n-1-1\n1111\n000\n" $1
+    expect_out_eq "440-1\nhi!\ndef\n-1-1\n1111\n000
+fc1\n1\nfc1\nnone\nnone\n" $1
 }
 
 function test_fors {

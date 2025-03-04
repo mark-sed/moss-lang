@@ -290,6 +290,8 @@ void Interpreter::runtime_call(FunValue *fun) {
     auto pre_bci_modified = this->bci_modified;
     auto pre_stop = this->stop;
 
+    LOGMAX("Runtime call to " << *fun << " with: " << *get_call_frame());
+
     push_frame();
     get_call_frame()->set_function(fun);
     set_bci(fun->get_body_addr());

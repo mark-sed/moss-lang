@@ -52,18 +52,27 @@ class FooClass {
         this.id = id
     }
 
-    fun (==)(other) {
+    fun (==)(other:FooClass) {
         return this.id == other.id
+    }
+    fun (==)(other) {
+        return false
     }
 }
 
-fc1 = FooClass(4)
-fc2 = FooClass(42)
+fun test3(a) {
+    fc1 = FooClass(4)
+    fc2 = FooClass(42)
+    switch(a) {
+        case FooClass(1): "1\n"
+        case fc1, fc2: "fc1\n"
+        case fc2: "fc2\n" //unrechable
+        default: "none\n"
+    }
+}
 
-// TODO: Uncomment once implemented
-//switch(FooClass(42)) {
-//    case FooClass(1): "1\n"
-//    case fc1: "fc1\n"
-//    case fc2: "fc2\n"
-//    default: "none\n"
-//}
+~test3(FooClass(42))
+~test3(FooClass(1))
+~test3(FooClass(4))
+~test3(FooClass(100))
+~test3(nil)

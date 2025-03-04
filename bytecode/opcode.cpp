@@ -58,8 +58,8 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
     return false;
 }
 
-/// \brief Does a call within this VM to a function in the code
-/// \param vm VM where to call
+/// \brief Does a call to a function in the code
+/// \param vm Current vm
 /// \param funV Function which to call
 /// \param args Arguments to pass in there the 0th arg is `this` argument
 /// \return Value returned by the function
@@ -68,8 +68,13 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
     vm->push_call_frame(funV);
     auto cf = vm->get_call_frame();
     cf->set_function(funV);
+    int argi = 0;
     for (auto v: args) {
         cf->push_back(v);
+        if (argi < funV->get_args().size())
+            cf->get_args().back().name = funV->get_args()[argi]->name;
+        cf->get_args().back().dst = argi;
+        ++argi;
     }
     assert(args.size() != 0 && "Missing this argument");
     cf->get_args().back().name = "this";
@@ -1983,12 +1988,44 @@ void Switch::exec(Interpreter *vm) {
     auto lvals = val_list->get_vals();
     bool matched = false;
     for (size_t i = 0; i < lvals.size() && !matched; ++i) {
-        // TODO:
-        assert(!isa<ObjectValue>(lvals[i]) && !isa<ObjectValue>(cv) && "TODO: Match for objects");
-        auto res = eq(lvals[i], cv, 0, vm);
+        Value *res = nullptr;
+        if (isa<ObjectValue>(lvals[i])) {
+            auto objv = dyn_cast<ObjectValue>(lvals[i]);
+            auto eq_op = objv->get_attr("==");
+            if (eq_op && (isa<FunValue>(eq_op) || isa<FunValueList>(eq_op))) {
+                FunValue *funv = dyn_cast<FunValue>(eq_op);
+                if (!funv) {
+                    auto eqlist = dyn_cast<FunValueList>(eq_op);
+                    for (auto f : eqlist->get_funs()) {
+                        if (f->get_args().size() == 1) {
+                            if (f->get_args()[0]->types.size() == 0) {
+                                funv = f;
+                                break;
+                            } else {
+                                for (auto t: f->get_args()[0]->types) {
+                                    if (t == cv->get_type()) {
+                                        funv = f;
+                                        break;
+                                    }
+                                }
+                                if (funv)
+                                    break;
+                            }
+                        }
+                    }
+                }
+                res = runtime_method_call(vm, funv, {cv, lvals[i]});
+                assert(res && "runtime call did not return");
+            } else {
+                res = eq(lvals[i], cv, 0, vm);
+            }
+        } else {
+            res = eq(lvals[i], cv, 0, vm);
+        }
         assert(res && "sanity check");
         auto resbool = dyn_cast<BoolValue>(res);
-        assert(resbool && "eq did not return bool");
+        if (!resbool)
+            continue;
         if (resbool->get_value()) {
             auto addr_int = dyn_cast<IntValue>(addr_list->get_vals()[i]);
             assert(addr_int && "switch address is not an int");
