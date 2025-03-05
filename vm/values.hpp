@@ -44,7 +44,9 @@ enum class TypeKind {
     MODULE,
     SPACE,
     ENUM,
-    ENUM_VALUE
+    ENUM_VALUE,
+
+    CPP_FSTREAM
 };
 
 inline ustring TypeKind2String(TypeKind kind) {
@@ -65,6 +67,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::SPACE: return "SPACE";
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
+        case TypeKind::CPP_FSTREAM: return "CPP_FSTREAM";
     }
     assert(false && "Type kind in to string conversion");
     return "UNKNOWN";
@@ -202,6 +205,10 @@ namespace BuiltIns {
     extern Value *Nil;
     #define BUILT_INS_INT_CONSTANTS_AM 262
     extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
+
+    namespace Cpp {
+        extern Value *FStream;
+    }
 }
 
 /// Moss integer value
@@ -767,6 +774,47 @@ public:
         return os;
     }
 };
+
+namespace t_cpp {
+
+class CppValue : public Value {
+public:
+    CppValue(TypeKind ClassType, ustring name, Value *type) 
+        : Value(ClassType, name, type) {}
+
+    virtual Value *clone() {
+        assert(false && "Cannot coppy CppValue");
+        return nullptr;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        return "<C++ value of type " + name + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << type->get_name() << "(" << name << ")";
+        return os;
+    }
+};
+
+class FStreamValue : public CppValue {
+private:
+    std::fstream &fs;
+public:
+    static const TypeKind ClassType = TypeKind::CPP_FSTREAM;
+
+    FStreamValue(std::fstream &fs) 
+        : CppValue(ClassType, "std::fstream", BuiltIns::Cpp::FStream), fs(fs) {}
+
+    std::fstream &get_fs() { return this->fs; }
+
+    virtual Value *clone() {
+        // TODO: Maybe copy the value
+        return new FStreamValue(fs);
+    }
+};
+
+}
 
 // Helper functions
 template<class T>

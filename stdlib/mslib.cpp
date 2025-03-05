@@ -35,9 +35,9 @@ Value *vardump(Interpreter *vm, Value *v) {
 
 Value *open(Interpreter *vm, Value *ths) {
     (void)vm;
-    // TODO:
-    assert(false && "TODO: Open file");
-    //ths->set_attr("__file_handle", new IntValue());
+    assert(false && "TODO: open");
+    //std::fstream fs();
+    //ths->set_attr("__fstream", new t_cpp::FStreamValue(fs));
     return BuiltIns::Nil;
 }
 

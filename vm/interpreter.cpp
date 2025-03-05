@@ -106,6 +106,9 @@ void Interpreter::init_global_frame() {
     store_glob_val(reg++, "MathError", BuiltIns::MathError, gf);
     store_glob_val(reg++, "DivisionByZeroError", BuiltIns::DivisionByZeroError, gf);
 
+    // TODO: Create this inside of a space
+    store_glob_val(reg++, "FStream", BuiltIns::Cpp::FStream, gf);
+
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }
 

@@ -234,6 +234,8 @@ Value *BuiltIns::IndexError = new ClassValue("IndexError");
 Value *BuiltIns::MathError = new ClassValue("MathError");
 Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");
 
+Value *BuiltIns::Cpp::FStream = new ClassValue("FStream");
+
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {
     new IntValue(0), new IntValue(1), new IntValue(2), new IntValue(3),
