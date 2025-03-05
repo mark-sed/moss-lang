@@ -21,7 +21,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     RegValue *right = nullptr;
     // Dont emit for left if set and its variable
     if (expr->get_op().get_kind() != OperatorKind::OP_SET ||
-          !(isa<Variable>(expr->get_left()) || isa<OperatorLiteral>(expr->get_left()))) {
+          !(isa<Variable>(expr->get_left()) || isa<Multivar>(expr->get_left()) || isa<OperatorLiteral>(expr->get_left()))) {
         // Dont emit also scope nor access
         BinaryExpr *be = dyn_cast<BinaryExpr>(expr->get_left());
         if (!be || be->get_op().get_kind() != OperatorKind::OP_ACCESS ||
@@ -182,6 +182,21 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 rval->set_silent(true);
                 append(new StoreAttr(rval->reg(), free_reg(leftE), rightE->get_name()));
                 return rval;
+            } else if (auto mva = dyn_cast<Multivar>(expr->get_left())) {
+                if (right->is_const()) {
+                    append(new opcode::StoreConst(next_reg(), free_reg(right)));
+                    right = last_reg();
+                }
+                auto vars = mva->get_vars();
+                for (size_t i = 0; i < vars.size(); ++i) {
+                    // TODO: Add opcode::SubscRest which will get 1 value or list
+                    append(new opcode::StoreIntConst(next_reg(), i));
+                    auto stor_reg = val_last_reg();
+                    append(new opcode::Subsc3(next_reg(), right->reg(), stor_reg));
+                    append(new StoreName(val_last_reg(), vars[i]->get_name()));
+                }
+                right->set_silent(true);
+                return right;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -852,6 +867,9 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         }
         jmp_end->addr = get_curr_address() + 1;
         bcv = new RegValue(res_reg, false);
+    }
+    else if (isa<Multivar>(expr)) {
+        assert(false && "Standalone multivar?");
     }
     else {
         LOGMAX("MISSING EXPR ENUM: " << static_cast<int>(expr->get_type()));
