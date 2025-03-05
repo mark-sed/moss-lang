@@ -1727,7 +1727,7 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         if (auto i2 = dyn_cast<IntValue>(s2)) {
             if ((i2->get_value() < 0 && static_cast<unsigned long>(i2->get_value()*-1) > lt1->get_vals().size()) || 
               (i2->get_value() > 0 && static_cast<unsigned long>(i2->get_value()) >= lt1->get_vals().size())) {
-                raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str())));
+                raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str(), i2->get_value())));
             }
             if (i2->get_value() < 0) {
                 res = lt1->get_vals()[lt1->get_vals().size()+i2->get_value()];
