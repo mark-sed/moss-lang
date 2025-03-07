@@ -1,5 +1,6 @@
 #include "mslib.hpp"
 #include "values.hpp"
+#include "values_cpp.hpp"
 #include "errors.hpp"
 #include "diagnostics.hpp"
 #include "logging.hpp"
@@ -9,6 +10,15 @@
 
 using namespace moss;
 using namespace mslib;
+
+static Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
+    auto v = obj->get_attr(name);
+    if (!v) {
+        // TODO: Perhaps this should be a special version of this error?
+        err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED, obj->get_type()->get_name().c_str(), name.c_str()));
+    }
+    return v;
+}
 
 void exit(Interpreter *vm, Value *code) {
     if (auto i = dyn_cast<IntValue>(code)) {
@@ -33,11 +43,45 @@ Value *vardump(Interpreter *vm, Value *v) {
     return new StringValue(ss.str());
 }
 
-Value *open(Interpreter *vm, Value *ths) {
-    (void)vm;
-    assert(false && "TODO: open");
-    //std::fstream fs();
-    //ths->set_attr("__fstream", new t_cpp::FStreamValue(fs));
+static bool str_to_ios_mode(const std::string& mode, std::ios_base::openmode &ios_mode) {
+    static const std::unordered_map<std::string, std::ios_base::openmode> mode_map = {
+        {"r", std::ios_base::in},
+        {"w", std::ios_base::out},
+        {"a", std::ios_base::app},
+        {"rb", std::ios_base::in | std::ios_base::binary},
+        {"wb", std::ios_base::out | std::ios_base::binary},
+        {"ab", std::ios_base::app | std::ios_base::binary},
+        {"r+", std::ios_base::in | std::ios_base::out},
+        {"w+", std::ios_base::in | std::ios_base::out | std::ios_base::trunc},
+        {"a+", std::ios_base::in | std::ios_base::out | std::ios_base::app},
+        {"r+b", std::ios_base::in | std::ios_base::out | std::ios_base::binary},
+        {"w+b", std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary},
+        {"a+b", std::ios_base::in | std::ios_base::out | std::ios_base::app | std::ios_base::binary}
+    };
+
+    auto it = mode_map.find(mode);
+    if (it != mode_map.end()) {
+        ios_mode = it->second;
+        return true;
+    }
+    return false;
+}
+
+Value *open(Interpreter *vm, Value *ths, Value *&err) {
+    auto path = get_attr(ths, "path", vm, err);
+    auto mode = get_attr(ths, "mode", vm, err);
+    std::ios_base::openmode ios_mode;
+    if (!str_to_ios_mode(mode->as_string(), ios_mode)) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INVALID_FOPEN_MODE, mode->as_string().c_str()));
+        return BuiltIns::Nil;
+    }
+    std::fstream fs(path->as_string(), ios_mode);
+    if (!fs.is_open()) {
+        // TODO: Give more precise error, if file cannot be open or cannot be found
+        err = create_file_not_found_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_OPEN_FILE, path->as_string().c_str()));
+        return BuiltIns::Nil;
+    }
+    ths->set_attr("__fstream", new t_cpp::FStreamValue(fs));
     return BuiltIns::Nil;
 }
 
@@ -145,7 +189,7 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     else if (name == "open") {
         assert(arg_size == 1 && "Mismatch of args");
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = open(vm, args[0].value);
+        ret_v = open(vm, args[0].value, err);
     }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));

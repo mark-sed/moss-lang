@@ -32,8 +32,14 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         assert(libms_mod && "TODO: Raise Could not load libms");
     }
     // We don't spill in libms itself so check that it was loaded
-    if (libms_mod)
+    if (libms_mod) {
         push_spilled_value(libms_mod);
+        auto gf = this->get_global_frame();
+        auto fr_reg = get_free_reg(gf);
+        gf->store(fr_reg, libms_mod);
+        // Also create name for the module to access it in case of overshadowing
+        gf->store_name(fr_reg, "moss");
+    }
 }
 
 Interpreter::~Interpreter() {

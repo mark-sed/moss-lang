@@ -127,6 +127,8 @@ enum DiagID {
     NON_LOC_IN_GLOB,        ///< Use of $ in global frame
     NO_NON_LOC_BINDING,     ///< Cannot bind $ var
     SPACE_IMPORT_AS_ITSELF, ///< ::Name
+    INVALID_FOPEN_MODE,     ///< Not a known file open mode
+    CANNOT_OPEN_FILE,       ///< Cannot open file
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -234,6 +236,8 @@ static const char * DIAG_MSGS[] = {
     "Accessing non-local variable ('%s') cannot appear on global scope",
     "No binding for non-local variable '%s'",
     "Cannot import space as itself",
+    "Invalid file open mode '%s'",
+    "File '%s' was not found or cannot be open",
 };
 
 /// \brief Diagnostic message for error reporting

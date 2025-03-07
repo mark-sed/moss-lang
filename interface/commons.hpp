@@ -94,7 +94,7 @@ using FloatConst = double;
 #define BC_BOOL_SIZE 1      ///< How many bytes does bool take
 using BoolConst = bool;
 
-#define BC_RESERVED_REGS 30  ///< Number of global registers reserved for built-ins
+#define BC_RESERVED_REGS 100  ///< Number of global registers reserved for built-ins
 #define BC_RESERVED_CREGS 300 ///< Number of const registers reserved for built-ins
 }
 

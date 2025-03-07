@@ -76,6 +76,24 @@ try {
     "Caught: "++e++"\n"
 }
 
+try {
+    raise ValueError("")
+} catch (e:ValueError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise OSError("")
+} catch (e:OSError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise FileNotFoundError("")
+} catch (e:FileNotFoundError) {
+    "Caught: "++e++"\n"
+}
+
 // Inheritance tests
 
 try {
@@ -99,5 +117,11 @@ try {
 try {
     raise DivisionByZeroError("")
 } catch (e:MathError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise FileNotFoundError("")
+} catch (e:OSError) {
     "Caught: "++e++"\n"
 }

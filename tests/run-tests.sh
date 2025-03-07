@@ -612,10 +612,14 @@ Caught: LookupError:
 Caught: IndexError: 
 Caught: MathError: 
 Caught: DivisionByZeroError: 
+Caught: ValueError: 
+Caught: OSError: 
+Caught: FileNotFoundError: 
 Caught: NameError: 
 Caught: SyntaxError: 
 Caught: IndexError: 
-Caught: DivisionByZeroError: \n" $1
+Caught: DivisionByZeroError: 
+Caught: FileNotFoundError: \n" $1
 }
 
 function test_lib_ranges {

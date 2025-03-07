@@ -10,9 +10,9 @@ static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, 
     gf->store_name(reg, name);
 }
 
-static void init_cpp_built_ins(opcode::Register &reg) {
+static void init_cpp_built_ins() {
     using namespace Cpp;
-    CppSpace->set_attr("FStream", FStream);
+    CppSpace->set_attr("fstream", FStream);
 }
 
 void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
@@ -43,12 +43,15 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "SyntaxError", BuiltIns::SyntaxError, gf);
     store_glob_val(reg++, "LookupError", BuiltIns::LookupError, gf);
     store_glob_val(reg++, "IndexError", BuiltIns::IndexError, gf);
+    store_glob_val(reg++, "ValueError", BuiltIns::ValueError, gf);
     store_glob_val(reg++, "MathError", BuiltIns::MathError, gf);
     store_glob_val(reg++, "DivisionByZeroError", BuiltIns::DivisionByZeroError, gf);
+    store_glob_val(reg++, "OSError", BuiltIns::OSError, gf);
+    store_glob_val(reg++, "FileNotFoundError", BuiltIns::FileNotFoundError, gf);
 
     store_glob_val(reg++, "cpp", BuiltIns::Cpp::CppSpace, gf);
     
-    init_cpp_built_ins(reg);
+    init_cpp_built_ins();
 }
 
 Value *BuiltIns::Type = new ClassValue("Type");
@@ -81,11 +84,14 @@ Value *BuiltIns::ParserError = new ClassValue("ParserError");
 Value *BuiltIns::SyntaxError = new ClassValue("SyntaxError");
 Value *BuiltIns::LookupError = new ClassValue("LookupError");
 Value *BuiltIns::IndexError = new ClassValue("IndexError");
+Value *BuiltIns::ValueError = new ClassValue("ValueError");
 Value *BuiltIns::MathError = new ClassValue("MathError");
 Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");
+Value *BuiltIns::OSError = new ClassValue("OSError");
+Value *BuiltIns::FileNotFoundError = new ClassValue("FileNotFoundError");
 
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp");
-Value *BuiltIns::Cpp::FStream = new ClassValue("FStream");
+Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 
 Value *BuiltIns::Nil = new NilValue();
 

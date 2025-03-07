@@ -213,6 +213,13 @@ class __IndexError : LookupError {
     }
 }
 
+@internal_bind("ValueError")
+class __ValueError : Exception {
+    fun __String() {
+        return "ValueError: " ++ this.msg
+    }
+}
+
 @internal_bind("StopIteration")
 class __StopIteration {
 }
@@ -228,5 +235,19 @@ class __MathError : Exception {
 class __DivisionByZeroError : MathError {
     fun __String() {
         return "DivisionByZeroError: " ++ this.msg
+    }
+}
+
+@internal_bind("OSError")
+class __OSError : Exception {
+    fun __String() {
+        return "OSError: " ++ this.msg
+    }
+}
+
+@internal_bind("FileNotFoundError")
+class __FileNotFoundError : OSError {
+    fun __String() {
+        return "FileNotFoundError: " ++ this.msg
     }
 }
