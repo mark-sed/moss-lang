@@ -14,6 +14,7 @@
 #include "utils.hpp"
 #include "memory.hpp"
 #include "clopts.hpp"
+#include "builtins.hpp"
 #include <cstdint>
 #include <map>
 #include <sstream>
@@ -166,50 +167,6 @@ bool isa(Value* t);
 
 template<class T>
 T *dyn_cast(Value* t);
-
-/// This namespace contains values (pointers) for all the built-in types
-/// \note: When adding a new value also add it to Interpreter::init_global_frame
-///        and instantiate it in values.cpp
-namespace BuiltIns {
-    extern Value *Type;// = new ClassValue("Type");
-    extern Value *Int;// = new ClassValue("Int");
-    extern Value *Float;// = new ClassValue("Float");
-    extern Value *Bool;// = new ClassValue("Bool");
-    extern Value *NilType;// = new ClassValue("NilType");
-    extern Value *String;// = new ClassValue("String");
-    extern Value *List;
-    extern Value *Function;// = new ClassValue("Function");
-    extern Value *FunctionList;// = new ClassValue("FunctionList");
-    extern Value *Function;// = new ClassValue("Function");
-    extern Value *Module;
-    extern Value *Space;
-    
-    extern Value *Range;
-    extern Value *File;
-
-    extern Value *StopIteration;
-    extern Value *Exception;
-    extern Value *NameError;
-    extern Value *AttributeError;
-    extern Value *ModuleNotFoundError;
-    extern Value *TypeError;
-    extern Value *AssertionError;
-    extern Value *NotImplementedError;
-    extern Value *ParserError;
-    extern Value *SyntaxError;
-    extern Value *LookupError;
-    extern Value *IndexError;
-    extern Value *MathError;
-    extern Value *DivisionByZeroError;
-
-    extern Value *Nil;
-    #define BUILT_INS_INT_CONSTANTS_AM 262
-    extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
-
-    namespace Cpp {
-        extern Value *FStream;
-    }
-}
 
 /// Moss integer value
 class IntValue : public Value {
@@ -774,47 +731,6 @@ public:
         return os;
     }
 };
-
-namespace t_cpp {
-
-class CppValue : public Value {
-public:
-    CppValue(TypeKind ClassType, ustring name, Value *type) 
-        : Value(ClassType, name, type) {}
-
-    virtual Value *clone() {
-        assert(false && "Cannot coppy CppValue");
-        return nullptr;
-    }
-
-    virtual opcode::StringConst as_string() const override {
-        return "<C++ value of type " + name + ">";
-    }
-
-    virtual std::ostream& debug(std::ostream& os) const override {
-        os << type->get_name() << "(" << name << ")";
-        return os;
-    }
-};
-
-class FStreamValue : public CppValue {
-private:
-    std::fstream &fs;
-public:
-    static const TypeKind ClassType = TypeKind::CPP_FSTREAM;
-
-    FStreamValue(std::fstream &fs) 
-        : CppValue(ClassType, "std::fstream", BuiltIns::Cpp::FStream), fs(fs) {}
-
-    std::fstream &get_fs() { return this->fs; }
-
-    virtual Value *clone() {
-        // TODO: Maybe copy the value
-        return new FStreamValue(fs);
-    }
-};
-
-}
 
 // Helper functions
 template<class T>

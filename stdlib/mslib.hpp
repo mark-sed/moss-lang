@@ -1,12 +1,12 @@
 /// 
-/// \file interpreter.hpp
+/// \file mslib.hpp
 /// \author Marek Sedlacek
 /// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
-/// \brief Moss bytecode interpreter
+/// \brief Moss standard library
 /// 
-/// It connects all the VM parts into one and runs moss bytecode.
+/// This contains internal implementations of std functions.
 /// 
 
 #ifndef _MSLIB_HPP_

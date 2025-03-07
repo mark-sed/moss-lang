@@ -54,6 +54,7 @@ set(SOURCES
     vm/interpreter.cpp
     vm/memory.cpp
     vm/values.cpp
+    stdlib/builtins.cpp # builtins has to be after values
 )
 
 # Targets

@@ -67,47 +67,11 @@ size_t Interpreter::get_code_size() {
     return this->code->size();
 }
 
-static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, MemoryPool *gf) {
-    gf->store(reg, v);
-    gf->store_name(reg, name);
-}
-
 void Interpreter::init_global_frame() {
     auto gf = get_global_frame();
 
     opcode::Register reg = 0;
-    store_glob_val(reg++, "Type", BuiltIns::Type, gf);
-    store_glob_val(reg++, "Int", BuiltIns::Int, gf);
-    store_glob_val(reg++, "Float", BuiltIns::Float, gf);
-    store_glob_val(reg++, "Bool", BuiltIns::Bool, gf);
-    store_glob_val(reg++, "List", BuiltIns::List, gf);
-    store_glob_val(reg++, "NilType", BuiltIns::NilType, gf);
-    store_glob_val(reg++, "String", BuiltIns::String, gf);
-    store_glob_val(reg++, "Function", BuiltIns::Function, gf);
-    store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
-    store_glob_val(reg++, "Module", BuiltIns::Module, gf);
-    store_glob_val(reg++, "Space", BuiltIns::Space, gf);
-
-    store_glob_val(reg++, "Range", BuiltIns::Range, gf);
-    store_glob_val(reg++, "File", BuiltIns::File, gf);
-
-    store_glob_val(reg++, "StopIteration", BuiltIns::StopIteration, gf);
-    store_glob_val(reg++, "Exception", BuiltIns::Exception, gf);
-    store_glob_val(reg++, "NameError", BuiltIns::NameError, gf);
-    store_glob_val(reg++, "AttributeError", BuiltIns::AttributeError, gf);
-    store_glob_val(reg++, "ModuleNotFoundError", BuiltIns::ModuleNotFoundError, gf);
-    store_glob_val(reg++, "TypeError", BuiltIns::TypeError, gf);
-    store_glob_val(reg++, "AssertionError", BuiltIns::AssertionError, gf);
-    store_glob_val(reg++, "NotImplementedError", BuiltIns::NotImplementedError, gf);
-    store_glob_val(reg++, "ParserError", BuiltIns::ParserError, gf);
-    store_glob_val(reg++, "SyntaxError", BuiltIns::SyntaxError, gf);
-    store_glob_val(reg++, "LookupError", BuiltIns::LookupError, gf);
-    store_glob_val(reg++, "IndexError", BuiltIns::IndexError, gf);
-    store_glob_val(reg++, "MathError", BuiltIns::MathError, gf);
-    store_glob_val(reg++, "DivisionByZeroError", BuiltIns::DivisionByZeroError, gf);
-
-    // TODO: Create this inside of a space
-    store_glob_val(reg++, "FStream", BuiltIns::Cpp::FStream, gf);
+    BuiltIns::init_built_ins(gf, reg);
 
     assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }
