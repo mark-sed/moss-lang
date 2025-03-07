@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
 
 using namespace moss;
 using namespace mslib;
@@ -75,14 +76,28 @@ Value *open(Interpreter *vm, Value *ths, Value *&err) {
         err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INVALID_FOPEN_MODE, mode->as_string().c_str()));
         return BuiltIns::Nil;
     }
-    std::fstream fs(path->as_string(), ios_mode);
-    if (!fs.is_open()) {
+    std::fstream *fs = new std::fstream(path->as_string(), ios_mode);
+    if (!fs->is_open()) {
         // TODO: Give more precise error, if file cannot be open or cannot be found
         err = create_file_not_found_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_OPEN_FILE, path->as_string().c_str()));
         return BuiltIns::Nil;
     }
     ths->set_attr("__fstream", new t_cpp::FStreamValue(fs));
     return BuiltIns::Nil;
+}
+
+Value *readlines(Interpreter *vm, Value *ths, Value *&err) {
+    assert(ths->has_attr("__fstream") && "no __fstream generated");
+    auto fsv = ths->get_attr("__fstream");
+    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    assert(fsfs && "fstream is not std::fstream");
+    auto lines = new ListValue();
+    ustring line;
+    std::fstream *fstrm = fsfs->get_fs();
+    while(std::getline(*fstrm, line)) {
+        lines->push(new StringValue(line));
+    }
+    return lines;
 }
 
 Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
@@ -190,6 +205,11 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert(arg_size == 1 && "Mismatch of args");
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
         ret_v = open(vm, args[0].value, err);
+    }
+    else if (name == "readlines") {
+        assert(arg_size == 1 && "Mismatch of args");
+        assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
+        ret_v = readlines(vm, args[0].value, err);
     }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));

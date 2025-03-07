@@ -120,12 +120,19 @@ class __File {
 
     //fun readln()
 
-    //fun readlines()
+    @internal
+    fun readlines() {}
 
     @internal
     fun open() {}
 
     //fun close()*/
+}
+
+fun open(path:String, mode:String="r") {
+    f = File(path, mode)
+    f.open()
+    return f
 }
 
 /// Exceptions

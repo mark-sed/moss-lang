@@ -37,14 +37,17 @@ namespace t_cpp {
     
     class FStreamValue : public CppValue {
     private:
-        std::fstream &fs;
+        std::fstream *fs;
     public:
         static const TypeKind ClassType = TypeKind::CPP_FSTREAM;
     
-        FStreamValue(std::fstream &fs) 
+        FStreamValue(std::fstream *fs) 
             : CppValue(ClassType, "std::fstream", BuiltIns::Cpp::FStream), fs(fs) {}
-    
-        std::fstream &get_fs() { return this->fs; }
+        ~FStreamValue() {
+            delete fs;
+        }
+
+        std::fstream *get_fs() { return this->fs; }
     
         virtual Value *clone() {
             // TODO: Maybe copy the value
