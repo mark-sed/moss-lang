@@ -5,7 +5,7 @@
 ///            See accompanied LICENSE file.
 ///
 
-__LIB_MS_VERSION = "0.0.1"
+__LIB_MS_VERSION = "0.0.2"
 
 @internal_bind("Int")
 class __Int {
@@ -14,6 +14,24 @@ class __Int {
 
     @internal
     fun Int(v=0) {}
+}
+
+@internal_bind("Float")
+class __Float {
+}
+
+@internal_bind("Bool")
+class __Bool {
+}
+
+@internal_bind("String")
+class __String {
+}
+
+@internal_bind("List")
+class __List {
+    @internal
+    fun length() {}
 }
 
 @internal_bind("Range")
@@ -131,9 +149,12 @@ class __File {
 
 fun open(path:String, mode:String="r") {
     f = File(path, mode)
-    f.open()
+    ~f.open()
     return f
 }
+
+@internal
+fun rand_int(min:Int, max:Int) {}
 
 /// Exceptions
 @internal_bind("Exception")

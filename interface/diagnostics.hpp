@@ -129,6 +129,7 @@ enum DiagID {
     SPACE_IMPORT_AS_ITSELF, ///< ::Name
     INVALID_FOPEN_MODE,     ///< Not a known file open mode
     CANNOT_OPEN_FILE,       ///< Cannot open file
+    BAD_OBJ_PASSED,         ///< Method got wrong this object type
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -238,6 +239,7 @@ static const char * DIAG_MSGS[] = {
     "Cannot import space as itself",
     "Invalid file open mode '%s'",
     "File '%s' was not found or cannot be open",
+    "Incorrect object type ('%s') passed as this argument",
 };
 
 /// \brief Diagnostic message for error reporting

@@ -633,6 +633,25 @@ function test_lib_input {
     expect_out_eq "> // input function test\n// this file is also read\n5//\n" $1
 }
 
+function test_lib_lists {
+    expect_pass "stdlib_tests/lists.ms" $1 
+    expect_out_eq "2\n0\n8\n" $1
+}
+
+function test_lib_random {
+    expect_pass "stdlib_tests/random.ms" $1 
+    expect_out_eq "" $1
+}
+
+function test_lib_file {
+    local DATA_FILE=.data_file_read.txt
+    printf "Czechia\nSlovakia\n\nFrance\nEngland\nGermany\nItaly" > $DATA_FILE
+    expect_pass "stdlib_tests/file.ms" $1 
+    expect_out_eq "caught\ncaught\n<C++ value of type std::fstream>
+[\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]\n" $1
+    rm -f $DATA_FILE
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -771,6 +790,9 @@ function run_all_tests {
     run_test lib_builtin_exceptions
     run_test lib_ranges
     run_test lib_input
+    run_test lib_lists
+    run_test lib_random
+    run_test lib_file
 
     # gc tests
     run_test gc_local_vars

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#include <random>
 
 using namespace moss;
 using namespace mslib;
@@ -118,6 +119,16 @@ Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
     return BuiltIns::Nil;
 }
 
+Value *rand_int(Interpreter *vm, Value *min, Value *max) {
+    (void)vm;
+    static std::random_device rng_device;
+    auto min_int = dyn_cast<IntValue>(min);
+    auto max_int = dyn_cast<IntValue>(max);
+    assert(min_int && max_int && "not ints");
+    std::uniform_int_distribution<opcode::IntConst> distrib(min_int->get_value(), max_int->get_value());
+    return new IntValue(distrib(rng_device));
+}
+
 Value *input(Interpreter *vm, Value *prompt) {
     (void)vm;
     auto msg = prompt->as_string();
@@ -155,6 +166,15 @@ Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
     }
     
     assert(false && "Incorrect arg type");
+}
+
+Value *List_length(Interpreter *vm, Value *ths, Value *&err) {
+    auto lv = dyn_cast<ListValue>(ths);
+    if (!lv) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+        return BuiltIns::Nil;
+    }
+    return new IntValue(lv->get_vals().size());
 }
 
 Value *mslib::create_exception(Value *type, ustring msg) {
@@ -206,10 +226,23 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
         ret_v = open(vm, args[0].value, err);
     }
+    else if (name == "length") {
+        assert(arg_size == 1 && "Mismatch of args");
+        if (args[0].value->get_type() == BuiltIns::List) {
+            ret_v = List_length(vm, args[0].value, err);
+        } else {
+            err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
+        }
+    }
     else if (name == "readlines") {
         assert(arg_size == 1 && "Mismatch of args");
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
         ret_v = readlines(vm, args[0].value, err);
+    }
+    else if (name == "rand_int") {
+        assert(arg_size == 2 && "Mismatch of args");
+        // Base might not be set as this is only for string argument
+        ret_v = rand_int(vm, cf->get_arg("min"), cf->get_arg("max"));
     }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
@@ -222,6 +255,12 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);
     vm->set_bci(caller_addr);
+}
+
+void mslib::global_init() {
+    // Init rng
+    std::random_device rd;
+    std::mt19937 gen(rd());
 }
 
 /*void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {

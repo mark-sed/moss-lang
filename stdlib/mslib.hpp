@@ -28,6 +28,7 @@ namespace mslib {
 /// \param name Name of the function to execute
 /// \param err Possible exception from execution
 void dispatch(Interpreter *vm, ustring name, Value *&err);
+void global_init();
 
 Value *create_exception(Value *type, ustring msg);
 Value *create_exception(Value *type, diags::Diagnostic dmsg);

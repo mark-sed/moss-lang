@@ -13,6 +13,7 @@
 #include "bytecode_reader.hpp"
 #include "bytecode_writer.hpp"
 #include "opcode.hpp"
+#include "mslib.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -79,6 +80,9 @@ int main(int argc, const char *argv[]) {
     if (clopts::dump_text_bc && !clopts::output) {
         error::error(error::ErrorCode::ARGUMENT, "Option -S requires -o specified", nullptr, true);
     }
+
+    // Global init of mslib
+    mslib::global_init();
 
     ir::IR *main_mod = nullptr;
     File *input_file = nullptr;

@@ -175,7 +175,8 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::INT;
 
-    IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::Int), value(value) {}
+    IntValue(opcode::IntConst value);
+
     virtual Value *clone() {
         return new IntValue(this->value);
     }
@@ -203,7 +204,8 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::FLOAT;
 
-    FloatValue(opcode::FloatConst value) : Value(ClassType, "Float", BuiltIns::Float), value(value) {}
+    FloatValue(opcode::FloatConst value);
+    
     virtual Value *clone() {
         return new FloatValue(this->value);
     }
@@ -230,7 +232,8 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::BOOL;
 
-    BoolValue(opcode::BoolConst value) : Value(ClassType, "Bool", BuiltIns::Bool), value(value) {}
+    BoolValue(opcode::BoolConst value);
+    
     virtual Value *clone() {
         return new BoolValue(this->value);
     }
@@ -255,7 +258,8 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::STRING;
 
-    StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {}
+    StringValue(opcode::StringConst value);
+
     virtual Value *clone() {
         return new StringValue(this->value);
     }
@@ -311,8 +315,8 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::LIST;
 
-    ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals) {}
-    ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {}
+    ListValue(std::vector<Value *> vals);
+    ListValue();
 
     virtual Value *clone() {
         return new ListValue(this->vals);
