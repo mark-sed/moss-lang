@@ -5,7 +5,9 @@ Classes and spaces are 2 constructs for setting the scope of resources.
 ## Spaces
 
 Space is just a scope and accessibility construct. They encapsulate symbols 
-within it into its own scope. It can be named or anonymous.
+within it into its own scope. It can be named or anonymous. Anonymous spaces
+don't expose their contents to other modules when this module is imported and
+therefore can be used to hide internals and export just what is desired.
 
 ```cpp
 space Math {
@@ -16,8 +18,10 @@ space Math {
 
 space {
     a = someCall()
-    a // A is printed and unaccessible
+    a // A is printed and unaccessible from OTHER modules
 }
+
+a // Can be accessed in this module
 ```
 
 ## Classes 

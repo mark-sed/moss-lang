@@ -90,7 +90,7 @@ Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");
 Value *BuiltIns::OSError = new ClassValue("OSError");
 Value *BuiltIns::FileNotFoundError = new ClassValue("FileNotFoundError");
 
-Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp");
+Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 
 Value *BuiltIns::Nil = new NilValue();

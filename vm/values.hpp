@@ -140,9 +140,10 @@ public:
     /// Returns register in which is attribute stored 
     /// If this attribute is not set, then nullptr is returned
     /// \param name Attribute name
+    /// \param owner_vm VM which does this call
     /// \return Value of attribute or nullptr if not set
-    Value *get_attr(ustring name);
-    bool has_attr(ustring name) { return get_attr(name) != nullptr; }
+    Value *get_attr(ustring name, Interpreter *caller_vm);
+    bool has_attr(ustring name, Interpreter *caller_vm) { return get_attr(name, caller_vm) != nullptr; }
 
     /// Sets (new or overrides) attribute name to value v
     void set_attr(ustring name, Value *v);
@@ -442,19 +443,27 @@ public:
 };
 
 class SpaceValue : public Value {
+private:
+    Interpreter *owner_vm;
+    bool anonymous;
 public:
     static const TypeKind ClassType = TypeKind::SPACE;
 
-    SpaceValue(ustring name) : Value(ClassType, name, BuiltIns::Space) {}
-    SpaceValue(ustring name, MemoryPool *frm) : Value(ClassType, name, BuiltIns::Space, frm) {}
+    SpaceValue(ustring name, Interpreter *owner_vm, bool anonymous=false)
+        : Value(ClassType, name, BuiltIns::Space), owner_vm(owner_vm), anonymous(anonymous) {}
+    SpaceValue(ustring name, MemoryPool *frm, Interpreter *owner_vm, bool anonymous=false)
+        : Value(ClassType, name, BuiltIns::Space, frm), owner_vm(owner_vm), anonymous(anonymous) {}
     ~SpaceValue() {}
 
     virtual Value *clone() {
-        auto cpy = new SpaceValue(this->name);
+        auto cpy = new SpaceValue(this->name, owner_vm, anonymous);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
         return cpy;
     }
+
+    Interpreter *get_owner_vm() { return this->owner_vm; }
+    bool is_anonymous() { return this->anonymous; }
 
     virtual inline bool is_mutable() override { return true; }
 

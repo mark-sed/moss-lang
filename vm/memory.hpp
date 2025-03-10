@@ -69,7 +69,7 @@ public:
 
     void remove_name(ustring name);
 
-    Value *load_name(ustring name, Value **owner=nullptr);
+    Value *load_name(ustring name, Interpreter *vm, Value **owner=nullptr);
 
     void push_spilled_value(Value *v) {
         this->spilled_values.push_back(v);

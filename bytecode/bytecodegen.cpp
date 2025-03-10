@@ -1184,7 +1184,7 @@ void BytecodeGen::emit(ir::Class *cls) {
 
 void BytecodeGen::emit(ir::Space *spc) {
     comment("space " + spc->get_name() + " start");
-    append(new BuildSpace(next_reg(), spc->get_name()));
+    append(new BuildSpace(next_reg(), spc->get_name(), spc->is_anonymous()));
     // Add annotations
     // Since BuildSpace will push a new frame we need to load the space by name
     auto spc_reg = next_reg();

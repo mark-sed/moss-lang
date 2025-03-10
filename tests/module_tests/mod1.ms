@@ -20,3 +20,9 @@ fun square_all(a) {
 }
 
 "mod1 ran!\n"
+
+space {
+    mod1_val_an_sp = "anon_space_value\n"
+}
+
+mod1_val_an_sp

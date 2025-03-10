@@ -45,3 +45,10 @@ space {
     "Anonymous space\n"
     Foo ++ "\n"
 }
+
+space {
+    VAL = 99
+}
+
+VAL
+"\n"

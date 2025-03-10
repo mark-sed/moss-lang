@@ -31,7 +31,7 @@ void MemoryPool::remove_name(ustring name) {
     this->sym_table.erase(pos);
 }
 
-Value *MemoryPool::load_name(ustring name, Value **owner) {
+Value *MemoryPool::load_name(ustring name, Interpreter *vm, Value **owner) {
     auto index = this->sym_table.find(name);
     if (index != this->sym_table.end()) {
         auto v = this->pool[index->second];
@@ -39,7 +39,14 @@ Value *MemoryPool::load_name(ustring name, Value **owner) {
     }
     // Look for name also in spilled values
     for (auto riter = spilled_values.rbegin(); riter != spilled_values.rend(); ++riter) {
-        auto val = (*riter)->get_attr(name);
+        // Skip anonymous spilled values accessed from other module
+        if (auto spc = dyn_cast<SpaceValue>(*riter)) {
+            if (spc->is_anonymous() && vm != spc->get_owner_vm()) {
+                assert(spc->get_owner_vm() && "Anonymous space without owner");
+                continue;
+            }
+        }
+        auto val = (*riter)->get_attr(name, vm);
         if (val) {
             if (owner) {
                 *owner = *riter;
@@ -52,9 +59,10 @@ Value *MemoryPool::load_name(ustring name, Value **owner) {
         // Frames are pushed into closures from the back to front so no need for
         // reverse iteration
         for(auto f: pool_fun_owner->get_closures()) {
-            auto val = f->load_name(name, owner);
-            if (val)
+            auto val = f->load_name(name, vm, owner);
+            if (val) {
                 return val;
+            }
         }
     }
     return nullptr;

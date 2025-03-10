@@ -1882,11 +1882,12 @@ class BuildSpace : public OpCode {
 public:
     Register dst;
     StringConst name;
+    bool anonymous;
 
     static const OpCodes ClassType = OpCodes::BUILD_SPACE;
 
-    BuildSpace(Register dst, StringConst name)
-        : OpCode(ClassType, "BUILD_SPACE"), dst(dst), name(name) {}
+    BuildSpace(Register dst, StringConst name, bool anonymous=false)
+        : OpCode(ClassType, "BUILD_SPACE"), dst(dst), name(name), anonymous(anonymous) {}
     
     void exec(Interpreter *vm) override;
     

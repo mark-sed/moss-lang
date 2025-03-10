@@ -385,7 +385,7 @@ OLD\nold\n" $1
 function test_space {
     expect_pass "spaces.ms" $1
     expect_out_eq "In FooSpace\nIn BarSpace\nI can see: FooSpace\nFooSpace\nFooSpace
-BarSpace\nBarSpace\nFoo\nFoo\nAnonymous space\n<space Foo>\n" $1
+BarSpace\nBarSpace\nFoo\nFoo\nAnonymous space\n<space Foo>\n99\n" $1
 }
 
 function test_optional_typing {
@@ -482,8 +482,8 @@ Ending module.ms\n" $1
 
 function test_import_calls {
     expect_pass "module_tests/square.ms" $1
-    expect_out_eq "mod1 ran!\nsquare\nmod2fun\ngot result\n25\n9\n100\n49
-mod1 ran!\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\n" $1
+    expect_out_eq "mod1 ran!\nanon_space_value\nsquare\nmod2fun\ngot result\n25\n9\n100\n49
+mod1 ran!\nanon_space_value\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n" $1
 }
 
 function test_space_imports {

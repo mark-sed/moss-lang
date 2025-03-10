@@ -194,7 +194,7 @@ void Interpreter::remove_global_name(ustring name) {
 
 Value *Interpreter::load_name(ustring name, Value **owner) {
     for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
-        auto val = (*riter)->load_name(name, owner);
+        auto val = (*riter)->load_name(name, this, owner);
         if (val)
             return val;
     }
@@ -203,7 +203,7 @@ Value *Interpreter::load_name(ustring name, Value **owner) {
 
 Value *Interpreter::load_type(ustring name) {
     for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
-        auto val = (*riter)->load_name(name);
+        auto val = (*riter)->load_name(name, this, nullptr);
         if (val && isa<ClassValue>(val))
             return val;
     }
@@ -211,13 +211,13 @@ Value *Interpreter::load_type(ustring name) {
 }
 
 Value *Interpreter::load_global_name(ustring name) {
-    return get_global_frame()->load_name(name);
+    return get_global_frame()->load_name(name, this, nullptr);
 }
 
 Value *Interpreter::load_non_local_name(ustring name) {
     if (frames.size() <= 1) return nullptr;
     for (auto riter = std::next(frames.rbegin()); riter != std::prev(frames.rend()); ++riter) {
-        auto val = (*riter)->load_name(name);
+        auto val = (*riter)->load_name(name, this, nullptr);
         if (val)
             return val;
     }

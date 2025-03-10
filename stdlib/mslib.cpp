@@ -14,7 +14,7 @@ using namespace moss;
 using namespace mslib;
 
 static Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
-    auto v = obj->get_attr(name);
+    auto v = obj->get_attr(name, vm);
     if (!v) {
         // TODO: Perhaps this should be a special version of this error?
         err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED, obj->get_type()->get_name().c_str(), name.c_str()));
@@ -88,8 +88,8 @@ Value *open(Interpreter *vm, Value *ths, Value *&err) {
 }
 
 Value *readlines(Interpreter *vm, Value *ths, Value *&err) {
-    assert(ths->has_attr("__fstream") && "no __fstream generated");
-    auto fsv = ths->get_attr("__fstream");
+    assert(ths->has_attr("__fstream", vm) && "no __fstream generated");
+    auto fsv = ths->get_attr("__fstream", vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
     auto lines = new ListValue();

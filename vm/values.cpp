@@ -38,9 +38,9 @@ Value *Value::next(Interpreter *vm) {
     return nullptr;
 }
 
-Value *Value::get_attr(ustring name) {
+Value *Value::get_attr(ustring name, Interpreter *caller_vm) {
     if (!attrs) return nullptr;
-    return attrs->load_name(name);
+    return attrs->load_name(name, caller_vm);
 }
 
 void Value::set_attrs(MemoryPool *p) {

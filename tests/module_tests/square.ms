@@ -32,3 +32,16 @@ sum3(1,2,3)
 a = mod2.Sum(-1)
 a.sum(5, 5)
 "\n"
+
+try {
+    // Test that anonymous namespace values are not spilled with import
+    mod1_val_an_sp
+} catch (e:NameError) {
+    "caught\n"
+}
+
+try {
+    mod1.mod1_val_an_sp
+} catch (e:NameError) {
+    "caught\n"
+}

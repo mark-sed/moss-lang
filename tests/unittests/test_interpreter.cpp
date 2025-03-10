@@ -53,24 +53,24 @@ m.v = true
     ASSERT_TRUE(M->get_attrs());
 
     // m
-    EXPECT_TRUE(m->has_attr("name"));
-    EXPECT_TRUE(m->has_attr("v"));
-    EXPECT_TRUE(m->has_attr("M_VAR"));
-    EXPECT_TRUE(m->has_attr("me"));
+    EXPECT_TRUE(m->has_attr("name", i));
+    EXPECT_TRUE(m->has_attr("v", i));
+    EXPECT_TRUE(m->has_attr("M_VAR", i));
+    EXPECT_TRUE(m->has_attr("me", i));
     // Object can see its constructor
-    EXPECT_TRUE(m->has_attr("M"));
-    EXPECT_FALSE(m->has_attr("this"));
+    EXPECT_TRUE(m->has_attr("M", i));
+    EXPECT_FALSE(m->has_attr("this", i));
 
     EXPECT_FALSE(m->has_annotation("foo_annot"));
 
     // M
-    EXPECT_TRUE(M->has_attr("M_VAR"));
-    EXPECT_TRUE(M->has_attr("me"));
-    EXPECT_TRUE(M->has_attr("M"));
-    EXPECT_FALSE(M->has_attr("name"));
-    EXPECT_FALSE(M->has_attr("v"));
-    EXPECT_FALSE(M->has_attr("a1"));
-    EXPECT_FALSE(M->has_attr("this"));
+    EXPECT_TRUE(M->has_attr("M_VAR", i));
+    EXPECT_TRUE(M->has_attr("me", i));
+    EXPECT_TRUE(M->has_attr("M", i));
+    EXPECT_FALSE(M->has_attr("name", i));
+    EXPECT_FALSE(M->has_attr("v", i));
+    EXPECT_FALSE(M->has_attr("a1", i));
+    EXPECT_FALSE(M->has_attr("this", i));
 
     EXPECT_TRUE(M->has_annotation("foo_annot"));
 

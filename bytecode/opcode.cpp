@@ -98,7 +98,7 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
 /// \note This might do a runtime call to __String method
 opcode::StringConst opcode::to_string(Interpreter *vm, Value *v) {
     if (auto ov = dyn_cast<ObjectValue>(v)) {
-        auto string_attr = ov->get_attr(known_names::TO_STRING_METHOD);
+        auto string_attr = ov->get_attr(known_names::TO_STRING_METHOD, vm);
         FunValue *string_fun = nullptr;
         if (string_attr && isa<FunValue>(string_attr))
             string_fun = dyn_cast<FunValue>(string_attr);
@@ -148,7 +148,7 @@ void Load::exec(Interpreter *vm) {
 void LoadAttr::exec(Interpreter *vm) {
     auto *v = vm->load(this->src);
     // TODO: Raise type error if type cannot have attributes, such as function
-    auto attr = v->get_attr(this->name);
+    auto attr = v->get_attr(this->name, vm);
     // This could possibly be an object or a class
     if (!attr && (isa<ObjectValue>(v) || isa<ClassValue>(v))) {
         ClassValue *cls = nullptr;
@@ -159,7 +159,7 @@ void LoadAttr::exec(Interpreter *vm) {
         }
 
         for (auto sup: cls->get_all_supers()) {
-            attr = sup->get_attr(this->name);
+            attr = sup->get_attr(this->name, vm);
             if (attr)
                 break;
         }
@@ -468,11 +468,11 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
         constructor_of = cls;
         if (cls->get_attrs())
-            funV = cls->get_attrs()->load_name(cls->get_name());
+            funV = cls->get_attrs()->load_name(cls->get_name(), vm);
         if (!funV) {
             // No constructor provided, look for one in parent classes
             for (auto parent : cls->get_all_supers()) {
-                funV = parent->get_attrs()->load_name(parent->get_name());
+                funV = parent->get_attrs()->load_name(parent->get_name(), vm);
                 if (funV)
                     break;
             }
@@ -586,7 +586,7 @@ void call_method(Interpreter *vm, Register dst, Value *funV, std::initializer_li
 }
 
 void call_operator(Interpreter *vm, const char * op, Value *s1, Value *s2, Register dst) {
-    auto v = s1->get_attr(op);
+    auto v = s1->get_attr(op, vm);
     op_assert(v, mslib::create_type_error(
         diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
             s1->get_type()->get_name().c_str(), op)));
@@ -594,7 +594,7 @@ void call_operator(Interpreter *vm, const char * op, Value *s1, Value *s2, Regis
 }
 
 void call_operator_unary(Interpreter *vm, ustring op, Value *s1, Register dst) {
-    auto v = s1->get_attr(op);
+    auto v = s1->get_attr(op, vm);
     op_assert(v, mslib::create_type_error(
         diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
             s1->get_type()->get_name().c_str(), op.c_str())));
@@ -1645,15 +1645,15 @@ void Xor3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
-static void extract_range(Value *r, opcode::IntConst &start, opcode::IntConst &end, opcode::IntConst &step) {
+static void extract_range(Value *r, opcode::IntConst &start, opcode::IntConst &end, opcode::IntConst &step, Interpreter *vm) {
     // TODO: Raise exception if asserted
     auto rngobj = dyn_cast<ObjectValue>(r);
     assert(rngobj && "sanity check");
-    auto start_v = rngobj->get_attr("start");
+    auto start_v = rngobj->get_attr("start", vm);
     assert(start_v && "range does not have a start attribute");
-    auto step_v = rngobj->get_attr("step");
+    auto step_v = rngobj->get_attr("step", vm);
     assert(step_v && "range does not have a step attribute");
-    auto end_v = rngobj->get_attr("end");
+    auto end_v = rngobj->get_attr("end", vm);
     assert(end_v && "range does not have a end attribute");
 
     auto start_i = dyn_cast<IntValue>(start_v);
@@ -1710,7 +1710,7 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
             opcode::IntConst start;
             opcode::IntConst end;
             opcode::IntConst step;
-            extract_range(s2, start, end, step);
+            extract_range(s2, start, end, step, vm);
             std::stringstream ss;
             // Here we don't do oob check
             // Note: this is not in line with Python's slice, but does not raise exception on oob
@@ -1738,7 +1738,7 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
             opcode::IntConst start;
             opcode::IntConst end;
             opcode::IntConst step;
-            extract_range(s2, start, end, step);
+            extract_range(s2, start, end, step, vm);
             std::vector<Value *> vals;
             for (IntConst i = start; (step < 0 && i > end) || (step >= 0 && i < end); i += step) {
                 if (is_oob(lt1, i)) break;
@@ -1925,9 +1925,11 @@ void BuildEnum::exec(Interpreter *vm) {
 }
 
 void BuildSpace::exec(Interpreter *vm) {
-    auto spc = new SpaceValue(name);
+    auto spc = new SpaceValue(name, vm, anonymous);
     vm->store(dst, spc);
     vm->store_name(dst, name);
+    if (anonymous)
+        vm->push_spilled_value(spc);
     vm->push_frame();
     spc->set_attrs(vm->get_top_frame());
 }
@@ -1991,7 +1993,7 @@ void Switch::exec(Interpreter *vm) {
         Value *res = nullptr;
         if (isa<ObjectValue>(lvals[i])) {
             auto objv = dyn_cast<ObjectValue>(lvals[i]);
-            auto eq_op = objv->get_attr("==");
+            auto eq_op = objv->get_attr("==", vm);
             if (eq_op && (isa<FunValue>(eq_op) || isa<FunValueList>(eq_op))) {
                 FunValue *funv = dyn_cast<FunValue>(eq_op);
                 if (!funv) {
@@ -2041,7 +2043,7 @@ void For::exec(Interpreter *vm) {
     auto coll = vm->load(this->collection);
     assert(coll && "sanity check");
     if (isa<ObjectValue>(coll)) {
-        auto nextv = coll->get_attr("__next");
+        auto nextv = coll->get_attr("__next", vm);
         if (nextv) {
             FunValue *nextf = dyn_cast<FunValue>(nextv);
             if (!nextf && isa<FunValueList>(nextv)) {
@@ -2092,7 +2094,7 @@ void Iter::exec(Interpreter *vm) {
     // this data
     if (isa<ObjectValue>(coll)) {
         // Call __iter only if it exists otherwise use this object
-        auto iterv = coll->get_attr("__iter");
+        auto iterv = coll->get_attr("__iter", vm);
         if (iterv) {
             FunValue *iterf = dyn_cast<FunValue>(iterv);
             if (!iterf && isa<FunValueList>(iterv)) {
