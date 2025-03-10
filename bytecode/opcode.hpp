@@ -199,8 +199,22 @@ enum OpCodes : opcode_t {
     OPCODES_AMOUNT
 };
 
+/// \brief Raises moss interpreter exception
+/// \param exc Value to raise
 void raise(Value *exc);
+
+/// \brief Loads module from a ms or msb file
+/// \param vm VM doing the loading
+/// \param name Name of the module (file extention will be added)
+/// \return Loaded module or raises an exception
 ModuleValue *load_module(Interpreter *vm, ustring name);
+
+/// \brief Converts value to its string representation
+/// This conversion might use primitive value convertors or runtime call to __String
+/// \note This might raise an exception the runtime call to __String
+/// \param vm VM doing the conversion
+/// \param v Value to convert
+/// \return v as string
 StringConst to_string(Interpreter *vm, Value *v);
 
 /// \return true if t1 is same as t2 or t1 is subtype of t2 (child class)

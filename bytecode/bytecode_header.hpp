@@ -38,19 +38,22 @@ struct __attribute__((packed)) BytecodeHeader {
 // TODO: Handle other OSs
 struct BytecodeHeader {
 #endif
-    const std::uint32_t id = 0xFF'00'00'2A;
-    std::uint32_t checksum;
-    std::uint32_t version;
-    std::uint32_t timestamp;
+    const std::uint32_t id = 0xFF'00'00'2A; ///< Moss identifier
+    std::uint32_t checksum;                 ///< Checksum of the file (not used currently)
+    std::uint32_t version;                  ///< Version od moss which compiled this
+    std::uint32_t timestamp;                ///< Timestamp of the compilation
 
+    /// \return Major version of moss encoded in the header
     uint32_t get_version_major() {
         return (version & 0xFF000000) >> 24;
     }
 
+    /// \return Minor version of moss encoded in the header
     uint32_t get_version_minor() {
         return (version & 0x00FF0000) >> 16;
     }
 
+    /// \return Patch version of moss encoded in the header
     uint32_t get_version_patch() {
         return (version & 0x0000FF00) >> 8;
     }

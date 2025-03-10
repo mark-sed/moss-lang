@@ -88,6 +88,7 @@ Value *open(Interpreter *vm, Value *ths, Value *&err) {
 }
 
 Value *readlines(Interpreter *vm, Value *ths, Value *&err) {
+    // TODO: Generate exceptions on errors
     assert(ths->has_attr("__fstream", vm) && "no __fstream generated");
     auto fsv = ths->get_attr("__fstream", vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
@@ -255,12 +256,6 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);
     vm->set_bci(caller_addr);
-}
-
-void mslib::global_init() {
-    // Init rng
-    std::random_device rd;
-    std::mt19937 gen(rd());
 }
 
 /*void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {

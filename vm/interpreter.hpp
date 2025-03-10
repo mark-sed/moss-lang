@@ -72,18 +72,31 @@ public:
                                          runtime_call(false),
                                          extern_return_value(nullptr) {}
 
+    /// Pushes a Value as a new argument into the call frame stack
     void push_back(Value *v) { args.push_back(CallFrameArg(v)); }
+    /// Pushes a named Value as a new argument into the call frame stack
     void push_back(ustring name, Value *v) { args.push_back(CallFrameArg(name, v)); }
+    /// Pushes a names Value as a new argument into the call frame stack and
+    /// sets its destination register in the function frame
     void push_back(ustring name, Value *v, opcode::Register dst) {
         args.push_back(CallFrameArg(name, v, dst)); 
     }
+    /// Sets function, which will receive this call frame.
+    /// This is needed mostly for stack tracing.
     void set_function(Value *function) { this->function = function; }
+    /// Sets which register should contain the function return value
     void set_return_reg(opcode::Register r) { this->return_reg = r; }
+    /// Sets from which address was this called and therefore where to return
     void set_caller_addr(opcode::Address addr) { this->caller_addr = addr; }
+    /// Bulk argument setting
     void set_args(std::vector<CallFrameArg> args) { this->args = args; }
+    /// Denotes if this call is a constructor call (to handle return value)
     void set_constructor_call(bool b) { this->constructor_call = b; }
+    /// Denotes if this call is to another module
     void set_extern_module_call(bool b) { this->extern_module_call = b; }
+    /// Denotes if this call was generated in runtime and not in codegen
     void set_runtime_call(bool b) { this->runtime_call = b; }
+    /// Sets value to return when this call was external or runtime
     void set_extern_return_value(Value *v) { this->extern_return_value = v; }
 
     Value *get_function() { return this->function; }
@@ -95,6 +108,8 @@ public:
     bool is_runtime_call() { return this->runtime_call; }
     Value *get_extern_return_value() { return this->extern_return_value; }
 
+    /// Extracts argument from call frame
+    /// \param optional This is used for assertion to be sure that value can miss
     Value *get_arg(ustring name, bool optional=false) {
         for (auto a: args) {
             if (a.name == name) {
@@ -145,14 +160,13 @@ private:
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
 
-    std::list<ExceptionCatch> catches;
-    //std::list<Value *> exception_stack;  ///< Stack of raised exceptions, there might be multiple of them
+    std::list<ExceptionCatch> catches;   ///< List of current catches
 
-    static gcs::TracingGC *gc;
+    static gcs::TracingGC *gc;  ///< Garbage collector for this VM
 
-    opcode::Address bci;
+    opcode::Address bci;        ///< Current bytecode index
 
-    int exit_code;
+    int exit_code;              ///< VM's exit code
 
     bool bci_modified;
     bool stop;
@@ -168,12 +182,18 @@ public:
     Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();
 
+    /// Runs interpreter
     void run();
 
+    /// Call to another VM's function
+    /// \param fun Function that is called
+    /// \param cf Call frame to use for the call
     void cross_module_call(FunValue *fun, CallFrame *cf);
+
+    /// Runtime generated call to a function
     void runtime_call(FunValue *fun);
 
-    static ModuleValue *libms_mod;
+    static ModuleValue *libms_mod;  ///< Standard library as module
 
     /// Stores a value into a register
     void store(opcode::Register reg, Value *v);
@@ -270,9 +290,11 @@ public:
     ModuleValue *top_currently_imported_module();
 #endif
 
+    /// Pushes a new catch exception block into the catch stack
     void push_catch(ExceptionCatch ec) {
         this->catches.push_back(ec);
     }
+    /// Removes value from top of the stack
     void pop_catch() {
         assert(!this->catches.empty() && "Popping empty catch stack");
         this->catches.pop_back();
@@ -287,6 +309,7 @@ public:
 
     //void collect_garbage();
 
+    /// \return true if the current VM is vm of the main module
     bool is_main() { return this->main; }
 
     /// \return Interpreter exit code
@@ -294,6 +317,7 @@ public:
 
     void set_exit_code(int c) { this->exit_code = c; }
 
+    /// When set to true, interpreter will halt on the next instruction
     void set_stop(bool s) { this->stop = s; }
     bool is_stop() { return this->stop; }
 
@@ -305,16 +329,22 @@ public:
         this->bci_modified = true; 
     }
 
+    /// Handler for an exception
     void handle_exception(ExceptionCatch ec, Value *v);
 
+    /// Restores frames to a global frame state
     void restore_to_global_frame();
 
+    /// Returns number of the first free possible register in a frame
     opcode::Register get_free_reg(MemoryPool *fr);
 
+    /// Returns number of instructions in the bytecode this interprets
     size_t get_code_size();
 
+    /// Returns interpreted bytecode
     Bytecode *get_code() { return this->code; }
 
+    /// Returns source file this interprets
     File *get_src_file() { return this->src_file; }
     
     std::ostream& debug(std::ostream& os) const;

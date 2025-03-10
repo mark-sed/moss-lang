@@ -1,10 +1,10 @@
 /// 
-/// \file opcode.hpp
+/// \file testing_utils.hpp
 /// \author Marek Sedlacek
 /// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
-/// \brief Bytecode opcodes
+/// \brief Helper functions for unit testing
 /// 
 
 #ifndef _TESTING_UTILS_HPP_

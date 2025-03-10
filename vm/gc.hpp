@@ -46,9 +46,14 @@ private:
 public:
     TracingGC(Interpreter *vm);
 
+    /// \brief Runs GC
     void collect_garbage();
 
+    /// While module import is happening GC might ran and it would delete
+    /// the module and all its values, pushing it will add it to known accessible
+    /// values for GC
     static void push_currently_imported_module(ModuleValue *m);
+    /// Once import of a module is done, it should be popped
     static void pop_currently_imported_module();
 #ifndef NDEBUG
     static ModuleValue *top_currently_imported_module();

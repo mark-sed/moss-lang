@@ -81,9 +81,6 @@ int main(int argc, const char *argv[]) {
         error::error(error::ErrorCode::ARGUMENT, "Option -S requires -o specified", nullptr, true);
     }
 
-    // Global init of mslib
-    mslib::global_init();
-
     ir::IR *main_mod = nullptr;
     File *input_file = nullptr;
     // .ms input

@@ -64,13 +64,6 @@ public:
     bc_header::BytecodeHeader *get_header() {
         return this->header;
     }
-
-    /*std::vector<opcode::OpCode *>::iterator begin() { return code.begin(); }
-    std::vector<opcode::OpCode *>::const_iterator begin() const { return code.begin(); }
-    std::vector<opcode::OpCode *>::const_iterator cbegin() const { return code.cbegin(); }
-    std::vector<opcode::OpCode *>::iterator end() { return code.end(); }
-    std::vector<opcode::OpCode *>::const_iterator end() const { return code.end(); }
-    std::vector<opcode::OpCode *>::const_iterator cend() const { return code.cend(); }*/
 };
 
 inline std::ostream& operator<< (std::ostream& os, Bytecode &bc) {

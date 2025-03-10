@@ -32,15 +32,18 @@ private:
 public:
     RegValue(opcode::Register value, bool constant=false) : value(value), constant(constant), silent(false) {}
 
-    /// @return Opcode register this represents
+    /// \return Opcode register this represents
     opcode::Register reg() { return this->value; }
 
+    /// Constant registers reside in constant pool 
     bool is_const() { return this->constant; }
 
     void set_reg(opcode::Register r) { this->value = r; }
     void set_const(bool c) { this->constant = c; }
 
+    /// Sets if the register should be outputted when left as standalone expression 
     void set_silent(bool s) { this->silent = s; }
+    /// If true then register value will be outputted when it is the root register 
     bool is_silent() { return this->silent; }
 };
 
@@ -59,12 +62,15 @@ private:
     RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
+    /// \brief Emits import expression for either module or space
+    /// \param e Expression to emit
+    /// \param space_import This value is set within this function and used in recursive call
     void emit_import_expr(ir::Expression *e, bool space_import=false);
     /// Updates all break and continue jumps to proper addresses
-    /// @param start Address where loop starts (start search)
-    /// @param end Address where loop ends (end of search)
-    /// @param brk Address where to jump on break
-    /// @param cont Address where to jump on continue
+    /// \param start Address where loop starts (start search)
+    /// \param end Address where loop ends (end of search)
+    /// \param brk Address where to jump on break
+    /// \param cont Address where to jump on continue
     void update_jmps(opcode::Address start, opcode::Address end, opcode::Address brk, opcode::Address cont);
 
     void emit(ir::Raise *r);

@@ -26,16 +26,16 @@ namespace BuiltIns {
 
     void init_built_ins(MemoryPool *gf, opcode::Register &reg);
 
-    extern Value *Type;// = new ClassValue("Type");
-    extern Value *Int;// = new ClassValue("Int");
-    extern Value *Float;// = new ClassValue("Float");
-    extern Value *Bool;// = new ClassValue("Bool");
-    extern Value *NilType;// = new ClassValue("NilType");
-    extern Value *String;// = new ClassValue("String");
+    extern Value *Type;
+    extern Value *Int;
+    extern Value *Float;
+    extern Value *Bool;
+    extern Value *NilType;
+    extern Value *String;
     extern Value *List;
-    extern Value *Function;// = new ClassValue("Function");
-    extern Value *FunctionList;// = new ClassValue("FunctionList");
-    extern Value *Function;// = new ClassValue("Function");
+    extern Value *Function;
+    extern Value *FunctionList;
+    extern Value *Function;
     extern Value *Module;
     extern Value *Space;
     
@@ -64,6 +64,7 @@ namespace BuiltIns {
     #define BUILT_INS_INT_CONSTANTS_AM 262
     extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
 
+    /// C++ values as moss values
     namespace Cpp {
         extern Value *CppSpace;
         extern Value *FStream;

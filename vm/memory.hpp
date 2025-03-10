@@ -67,14 +67,23 @@ public:
     /// Sets a name for specific register
     void store_name(opcode::Register reg, ustring name);
 
+    /// Removes a name from symbol table.
     void remove_name(ustring name);
 
+    /// Loads a value based on a name.
+    /// \param name Name to look up.
+    /// \param vm Interpreter which does this call. This is used to check if
+    ///           values from anonymous namespace should be returned.
+    /// \param owner Returns value which owns this value if the value is in a
+    ///              closure.
     Value *load_name(ustring name, Interpreter *vm, Value **owner=nullptr);
 
+    /// Spills a new value.
     void push_spilled_value(Value *v) {
         this->spilled_values.push_back(v);
     }
 
+    /// \return first free register
     size_t get_free_reg() {
         for (size_t i = 0; i < pool.size(); ++i) {
             if (!pool[i]) return i;
@@ -85,11 +94,13 @@ public:
 
     std::vector<Value *> &get_pool() { return this->pool; }
     std::list<Value *> &get_spilled_values() { return this->spilled_values; }
-    
+
+    /// \return true if frame is global frame
     bool is_global() { return this->global; }
 
     bool is_empty_sym_table() { return this->sym_table.empty(); }
 
+    /// Sets owner of this pool to a function if this is a closure frame
     void set_pool_fun_owner(FunValue *f) { this->pool_fun_owner = f; }
 
     std::ostream& debug(std::ostream& os) const;
