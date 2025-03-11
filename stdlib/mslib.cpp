@@ -69,7 +69,7 @@ static bool str_to_ios_mode(const std::string& mode, std::ios_base::openmode &io
     return false;
 }
 
-Value *open(Interpreter *vm, Value *ths, Value *&err) {
+Value *File_open(Interpreter *vm, Value *ths, Value *&err) {
     auto path = get_attr(ths, "path", vm, err);
     auto mode = get_attr(ths, "mode", vm, err);
     std::ios_base::openmode ios_mode;
@@ -167,6 +167,7 @@ Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
     }
     
     assert(false && "Incorrect arg type");
+    return new IntValue(0);
 }
 
 Value *List_length(Interpreter *vm, Value *ths, Value *&err) {
@@ -225,7 +226,7 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     else if (name == "open") {
         assert(arg_size == 1 && "Mismatch of args");
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = open(vm, args[0].value, err);
+        ret_v = File_open(vm, args[0].value, err);
     }
     else if (name == "length") {
         assert(arg_size == 1 && "Mismatch of args");
