@@ -594,6 +594,11 @@ function test_lib_print {
 function test_lib_type_constructors {
     expect_pass "stdlib_tests/type_constructors.ms" $1
     expect_out_eq '56\n56\n42\n10\n0\n22\n100\n0\n-8
+0.000000\n2.500000\n50.000000\n15.000000
+false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
+Hi\n55\n<class String>\nnil
+nil
+[]\n[1]\n[true, nil, 2, 4]\n[[1, 2], 2, [2, 1]]
 Exception: Some exception\n' $1
 }
 

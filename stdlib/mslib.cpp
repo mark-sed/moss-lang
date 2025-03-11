@@ -166,8 +166,70 @@ Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
         return new IntValue(static_cast<opcode::IntConst>(fv->get_value()));
     }
     
+    // TODO: Raise error 
     assert(false && "Incorrect arg type");
     return new IntValue(0);
+}
+
+Value *Float(Interpreter *vm, Value * ths, Value *v) {
+    (void)vm;
+    (void)ths;
+
+    if (isa<FloatValue>(v))
+        return v;
+    if (auto sv = dyn_cast<StringValue>(v)) {
+        char *pend;
+        errno = 0;
+        double vf = std::strtod(sv->as_string().c_str(), &pend);
+        if (*pend != '\0')
+            assert(false && "TODO: Raise error value is not int");
+        if (errno != 0) {
+            LOGMAX("Errno error: " << strerror(errno));
+            assert(false && "TODO: Raise conversion error");
+        }
+        return new FloatValue(vf);
+    }
+    if (auto fv = dyn_cast<IntValue>(v)) {
+        return new FloatValue(static_cast<opcode::FloatConst>(fv->get_value()));
+    }
+    
+    assert(false && "Incorrect arg type");
+    return new FloatValue(0.0);
+}
+
+Value *Bool(Interpreter *vm, Value * ths, Value *v) {
+    (void)vm;
+    (void)ths;
+
+    if (isa<BoolValue>(v))
+        return v;
+    if (auto sv = dyn_cast<StringValue>(v)) {
+        return new BoolValue(!sv->get_value().empty());
+    }
+    if (auto iv = dyn_cast<IntValue>(v)) {
+        return new BoolValue(iv->get_value() != 0);
+    }
+    if (auto fv = dyn_cast<FloatValue>(v)) {
+        return new BoolValue(fv->get_value() != 0.0);
+    }
+    if (isa<NilValue>(v)) {
+        return new BoolValue(false);
+    }
+    if (auto lv = dyn_cast<ListValue>(v)) {
+        return new BoolValue(!lv->get_vals().empty());
+    }
+    // TODO: Add dict once implemented
+    //if (auto dv = dyn_cast<DictValue>(v)) {
+    //    return new BoolValue(!dv->get_keys().empty());
+    //}
+    
+    return new BoolValue(true);
+}
+
+Value *String(Interpreter *vm, Value * ths, Value *v) {
+    (void)vm;
+    (void)ths;
+    return new StringValue(v->as_string());
 }
 
 Value *List_length(Interpreter *vm, Value *ths, Value *&err) {
@@ -222,6 +284,26 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");
         // Base might not be set as this is only for string argument
         ret_v = Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
+    }
+    else if (name == "Float") {
+        assert((arg_size == 2) && "Mismatch of args");
+        ret_v = Float(vm, cf->get_arg("this"), cf->get_arg("v"));
+    }
+    else if (name == "Bool") {
+        assert((arg_size == 2) && "Mismatch of args");
+        ret_v = Bool(vm, cf->get_arg("this"), cf->get_arg("v"));
+    }
+    else if (name == "String") {
+        assert((arg_size == 2) && "Mismatch of args");
+        ret_v = String(vm, cf->get_arg("this"), cf->get_arg("v"));
+    }
+    else if (name == "NilType") {
+        assert((arg_size == 1) && "Mismatch of args");
+        ret_v = new NilValue();
+    }
+    else if (name == "List") {
+        assert((arg_size == 2) && "Mismatch of args");
+        ret_v = cf->get_arg("vals");
     }
     else if (name == "open") {
         assert(arg_size == 1 && "Mismatch of args");

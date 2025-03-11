@@ -18,18 +18,33 @@ class __Int {
 
 @internal_bind("Float")
 class __Float {
+    @internal
+    fun Float(v=0.0) {}
 }
 
 @internal_bind("Bool")
 class __Bool {
+    @internal
+    fun Bool(v=false) {}
 }
 
 @internal_bind("String")
 class __String {
+    @internal
+    fun String(v="") {}
+}
+
+@internal_bind("NilType")
+class __NilType {
+    @internal
+    fun NilType() { }
 }
 
 @internal_bind("List")
 class __List {
+    @internal
+    fun List(... vals) {}
+
     @internal
     fun length() {}
 }
