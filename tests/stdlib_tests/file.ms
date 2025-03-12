@@ -17,3 +17,13 @@ f.__fstream
 "\n"
 f.readlines()
 "\n"
+
+path2 = ".created_file_t.txt1"
+f2 = open(path2, "w")
+~f2.write("written line\n")
+~f2.close()
+
+f3 = open(path2, "r")
+f3.readlines()[0]
+~f3.close()
+"\n"

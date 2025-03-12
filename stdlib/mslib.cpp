@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <random>
+#include <cmath>
 
 using namespace moss;
 using namespace mslib;
@@ -87,7 +88,17 @@ Value *File_open(Interpreter *vm, Value *ths, Value *&err) {
     return BuiltIns::Nil;
 }
 
-Value *readlines(Interpreter *vm, Value *ths, Value *&err) {
+Value *File_close(Interpreter *vm, Value *ths, Value *&err) {
+    // TODO: Check if file is open
+    auto fstrm_v = get_attr(ths, "__fstream", vm, err);
+    auto fstrm = dyn_cast<t_cpp::FStreamValue>(fstrm_v);
+    assert(fstrm && "Not FStream value");
+    fstrm->get_fs()->close();
+    ths->set_attr("__fstream", BuiltIns::Nil);
+    return BuiltIns::Nil;
+}
+
+Value *File_readlines(Interpreter *vm, Value *ths, Value *&err) {
     // TODO: Generate exceptions on errors
     assert(ths->has_attr("__fstream", vm) && "no __fstream generated");
     auto fsv = ths->get_attr("__fstream", vm);
@@ -100,6 +111,16 @@ Value *readlines(Interpreter *vm, Value *ths, Value *&err) {
         lines->push(new StringValue(line));
     }
     return lines;
+}
+
+Value *File_write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
+    // TODO: Generate exceptions on errors
+    assert(ths->has_attr("__fstream", vm) && "no __fstream generated");
+    auto fsv = ths->get_attr("__fstream", vm);
+    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    assert(fsfs && "fstream is not std::fstream");
+    *(fsfs->get_fs()) << content->as_string();
+    return BuiltIns::Nil;
 }
 
 Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
@@ -310,6 +331,11 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
         ret_v = File_open(vm, args[0].value, err);
     }
+    else if (name == "close") {
+        assert(arg_size == 1 && "Mismatch of args");
+        assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
+        ret_v = File_close(vm, args[0].value, err);
+    }
     else if (name == "length") {
         assert(arg_size == 1 && "Mismatch of args");
         if (args[0].value->get_type() == BuiltIns::List) {
@@ -321,12 +347,21 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     else if (name == "readlines") {
         assert(arg_size == 1 && "Mismatch of args");
         assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = readlines(vm, args[0].value, err);
+        ret_v = File_readlines(vm, args[0].value, err);
+    }
+    else if (name == "write") {
+        assert(arg_size == 2 && "Mismatch of args");
+        assert(args[1].value->get_type() == BuiltIns::File && "Not File open called");
+        ret_v = File_write(vm, cf->get_arg("this"), cf->get_arg("content"), err);
     }
     else if (name == "rand_int") {
         assert(arg_size == 2 && "Mismatch of args");
         // Base might not be set as this is only for string argument
         ret_v = rand_int(vm, cf->get_arg("min"), cf->get_arg("max"));
+    }
+    else if (name == "sin") {
+        assert(arg_size == 1 && "Mismatch of args");
+        ret_v = new FloatValue(std::sin(args[0].value->as_float()));
     }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));

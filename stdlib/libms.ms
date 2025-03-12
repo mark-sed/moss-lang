@@ -88,15 +88,6 @@ class __Range {
     }
 }
 
-/*@internal_bind("Float")
-class __Float {
-    @internal
-    fun Float(v:String) {}
-
-    @internal
-    fun Float(v:[Int, Float]=0.0) {}
-}*/
-
 @internal
 fun vardump(value) {}
 
@@ -111,47 +102,18 @@ fun exit(code=0) {}
 
 @internal_bind("File")
 class __File {
-    enum FileMode {
-        READ        // "r"
-        WRITE       // "w"
-        CREATE      // "x"
-        APPEND      // "a"
-        READ_WRITE  // "+"
-    }
 
     fun File(path:String, mode:String="r") {
         this.path = path
         this.mode = mode
     }
 
-    //fun File(path:String, mode:FileMode) {
-    //    //this.path = path
-    //    //this.mode = this.mode2str(mode)
-    //}
+    @internal
+    fun write(content) {}
 
-    //fun mode2str(mode:FileMode) {
-    //    if(mode == FileMode.READ) return "r"
-    //    if(mode == FileMode.WRITE) return "w"
-    //    if(mode == FileMode.CREATE) return "x"
-    //    if(mode == FileMode.APPEND) return "a"
-    //    if(mode == FileMode.READ_WRITE) return "+"
-    //    assert(false, "missing file mode")
-    //}
-
-    //fun str2mode(mode:String) {
-    //    if(mode == "r") return FileMode.READ
-    //    if(mode == "w") return FileMode.WRITE
-    //    if(mode == "x") return FileMode.CREATE
-    //    if(mode == "a") return FileMode.APPEND
-    //    if(mode == "+") return FileMode.READ_WRITE
-    //    assert(false, "unknown file mode")
-    //}
-
-    //fun write(content:String)
-
-    //fun read(size:Int=-1)
-
-    //fun readln()
+    //fun read(size:Int=-1) {}
+    //fun readln() {}
+    //fun seek(pos:Int) {}
 
     @internal
     fun readlines() {}
@@ -159,7 +121,8 @@ class __File {
     @internal
     fun open() {}
 
-    //fun close()*/
+    @internal
+    fun close() {}
 }
 
 fun open(path:String, mode:String="r") {
@@ -170,6 +133,40 @@ fun open(path:String, mode:String="r") {
 
 @internal
 fun rand_int(min:Int, max:Int) {}
+
+space Math {
+    /// π (Ludolph's number)
+    pi = 3.141592653589793115997963468544185161590576171875
+
+    /// e (Euler's number)
+    e = 2.718281828459045090795598298427648842334747314453125
+
+    /// τ (2*pi)
+    tau = 6.28318530717958623199592693708837032318115234375
+
+    /// φ (Golden ratio = (1 + 5^0.5)/2)
+    phi = 1.6180339887498949025257388711906969547271728515625
+
+    /// Euler–Mascheroni constant
+    euler_gamma = 0.57721566490153286554942724251304753124713897705078125
+
+    @internal
+    fun sin(x:[Int,Float]) {}
+
+    //fun tan(x) {}
+
+    //fun cos(x) {}
+
+    fun sqrt(x) {
+        //d"""
+        //Square root function
+        //Is equal to x^0.5
+        //@param x Value to be calculated the square root of
+        //@return Square root of passed in argument
+        //"""
+        return x^0.5;
+    }
+}
 
 /// Exceptions
 @internal_bind("Exception")

@@ -648,13 +648,21 @@ function test_lib_random {
     expect_out_eq "" $1
 }
 
+function test_lib_math {
+    expect_pass "stdlib_tests/math.ms" $1 
+    expect_out_eq "1\n5\n0\n8
+0.00\n0.50\n0.00\n1.00\n0.00\n-0.9\n" $1
+}
+
 function test_lib_file {
     local DATA_FILE=.data_file_read.txt
     printf "Czechia\nSlovakia\n\nFrance\nEngland\nGermany\nItaly" > $DATA_FILE
     expect_pass "stdlib_tests/file.ms" $1 
     expect_out_eq "caught\ncaught\n<C++ value of type std::fstream>
-[\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]\n" $1
+[\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]
+written line\n" $1
     rm -f $DATA_FILE
+    rm -r ".created_file_t.txt1"
 }
 
 function test_gc_local_vars {
@@ -797,6 +805,7 @@ function run_all_tests {
     run_test lib_input
     run_test lib_lists
     run_test lib_random
+    run_test lib_math
     run_test lib_file
 
     # gc tests
