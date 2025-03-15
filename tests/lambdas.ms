@@ -33,3 +33,17 @@ add(2, 3)
 "\n"
 add(-1, 1)
 "\n"
+
+class MyClass {
+    fun MyClass(off) {
+        this.off = off
+    }
+
+    fun foo(x) = this.off + x
+}
+
+mc = MyClass(100)
+mc.foo(4)
+"\n"
+mc.foo(-200)
+"\n"

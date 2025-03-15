@@ -460,7 +460,8 @@ function test_scopes {
 
 function test_lambdas {
     expect_pass "lambdas.ms" $1
-    expect_out_eq "foo: 42\nfoo: hi\ncaught\n8\n5-inner\noutter\n5\n> moss is great.\n5\n0\n" $1
+    expect_out_eq "foo: 42\nfoo: hi\ncaught\n8\n5-inner\noutter\n5\n> moss is great.\n5\n0
+104\n-100\n" $1
 }
 
 function test_basic_import {

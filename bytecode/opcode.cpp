@@ -716,7 +716,7 @@ void CreateFun::exec(Interpreter *vm) {
             break;
         funval->push_closure(*riter);
     }
-    auto f = vm->load_name(name);
+    auto f = vm->get_top_frame()->load_name(name, vm);
     if (f && (isa<FunValue>(f) || isa<FunValueList>(f))) {
         if (auto fv = dyn_cast<FunValue>(f)) {
             vm->store(this->fun, new FunValueList(std::vector<FunValue *>{fv, funval}));
