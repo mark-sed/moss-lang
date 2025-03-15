@@ -458,6 +458,11 @@ function test_scopes {
     expect_out_eq "5\n6\n2\n2\nhi\ncaught\ncaught\n2\n3\n" $1
 }
 
+function test_lambdas {
+    expect_pass "lambdas.ms" $1
+    expect_out_eq "foo: 42\nfoo: hi\ncaught\n8\n5-inner\noutter\n5\n> moss is great.\n5\n0\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -781,6 +786,7 @@ function run_all_tests {
     run_test calls
     run_test continues_and_breaks
     run_test scopes
+    run_test lambdas
 
     run_test basic_import
     run_test import_calls

@@ -1104,19 +1104,26 @@ public:
 
 class Lambda : public Expression {
 private:
+    static unsigned long annonymous_id;
     std::vector<Argument *> args;
     Expression *body;
-
 public:
     static const IRType ClassType = IRType::LAMBDA;
 
     Lambda(ustring name, std::vector<Argument *> args, Expression *body) 
-        : Expression(ClassType, name), args(args), body(body) {}
+        : Expression(ClassType, name), args(args), body(body) {
+        if (name.empty()) {
+            this->name = std::to_string(annonymous_id++) + "l";
+        }
+    }
     ~Lambda() {
         for (auto a : this->args)
             delete a;
         delete body;
     }
+
+    std::vector<Argument *> get_args() { return this->args; }
+    Expression *get_body() { return this->body; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "(fun " << name << "(";

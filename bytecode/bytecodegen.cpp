@@ -868,6 +868,66 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         jmp_end->addr = get_curr_address() + 1;
         bcv = new RegValue(res_reg, false);
     }
+    else if (auto lmb = dyn_cast<ir::Lambda>(expr)) {
+        auto fun_reg = next_reg();
+        auto arg_names = ir::encode_fun_args(lmb->get_args());
+        // Store the name without arguments
+        append(new CreateFun(fun_reg, lmb->get_name(), arg_names));
+        comment("lambda fun "+lmb->get_name()+"(" + arg_names + ") declaration");
+        // Add annotations
+        for (auto annt : lmb->get_annotations()) {
+            auto annot_val = emit(annt->get_value(), true);
+            append(new Annotate(fun_reg, annt->get_name(), free_reg(annot_val)));
+        }
+        // Set argument default values and types
+        opcode::IntConst arg_i = 0;
+        for (auto a: lmb->get_args()) {
+            if (a->is_vararg()) {
+                append(new SetVararg(fun_reg, arg_i));
+            }
+            else {
+                if (a->has_default_value()) {
+                    auto def_val = emit(a->get_default_value());
+                    if (def_val->is_const()) {
+                        append(new SetDefaultConst(fun_reg, arg_i, free_reg(def_val)));
+                    }
+                    else {
+                        append(new SetDefault(fun_reg, arg_i, free_reg(def_val)));
+                    }
+                }
+                for (auto t: a->get_types()) {
+                    auto t_reg = emit(t, true);
+                    append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
+                }
+            }
+            ++arg_i;
+        }
+        append(new FunBegin(fun_reg));
+        // Place jump which will be later on modified to contain the actual
+        // function end - this skips beyond the function body
+        auto fn_end_jmp = new Jmp(0);
+        append(fn_end_jmp);
+        comment("lambda fun "+lmb->get_name()+"(" + arg_names + ") body start");
+        append(new PopCallFrame());
+        // Registers need to be reset, store them and restore after whole
+        // function is generated
+        auto pre_function_reg = curr_reg;
+        auto pre_function_creg = curr_creg;
+        // We add one for possible "this" argument
+        reset_regs(lmb->get_args().size()+1);
+        // Generate function body
+        auto rval = emit(lmb->get_body());
+        if (rval->is_const())
+            append(new opcode::ReturnConst(free_reg(rval)));
+        else
+            append(new opcode::Return(free_reg(rval)));
+        fn_end_jmp->addr = get_curr_address() + 1;
+
+        this->curr_reg = pre_function_reg;
+        this->curr_creg = pre_function_creg;
+        bcv = new RegValue(fun_reg, false);
+        bcv->set_silent(true);
+    }
     else if (isa<Multivar>(expr)) {
         assert(false && "Standalone multivar?");
     }

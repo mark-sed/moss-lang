@@ -96,4 +96,43 @@ space {}
     delete mod;
 }
 
+/** Check that anonymous lambdas have unique names for lookup */
+TEST(IR, AnonymousLambdaNames){
+    ustring code = R"(
+fun(x) = x
+fun foo() = "ji"
+fun(a, b) = 3
+fun(g) = true
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<ir::Module>(parser.parse());
+
+    // Convert list of IRs into vector for easy access
+    std::list<ir::IR *> body_list = mod->get_body();
+    std::vector<ir::IR *> body{ std::begin(body_list), std::end(body_list) };
+
+    ir::Lambda *l1 = dyn_cast<ir::Lambda>(body[0]);
+    ASSERT_TRUE(l1);
+    ir::Lambda *l2 = dyn_cast<ir::Lambda>(body[1]);
+    ASSERT_TRUE(l2);
+    ir::Lambda *l3 = dyn_cast<ir::Lambda>(body[2]);
+    ASSERT_TRUE(l3);
+    ir::Lambda *l4 = dyn_cast<ir::Lambda>(body[3]);
+    ASSERT_TRUE(l4);
+    
+    EXPECT_TRUE(l1 != l3);
+    EXPECT_TRUE(l1 != l4);
+    EXPECT_TRUE(l3 != l4);
+
+    EXPECT_EQ(l1->get_name(), "0l");
+    EXPECT_EQ(l2->get_name(), "foo");
+    EXPECT_EQ(l3->get_name(), "1l");
+    EXPECT_EQ(l4->get_name(), "2l");
+
+    delete mod;
+}
+
 }
