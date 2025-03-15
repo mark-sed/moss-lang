@@ -290,9 +290,13 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
     auto &og_call_args = cf->get_args();
     const auto fun_args = f->get_args();
 
+#ifndef NDEBUG
+    unsigned indx = 0;
     for (auto a : og_call_args) {
-        LOGMAX(a);
+        LOGMAX(indx << ": " << a);
+        ++indx;
     }
+#endif
 
     std::vector<CallFrameArg> call_args;
     CallFrameArg *ths = nullptr;
@@ -318,6 +322,19 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
             LOGMAX("This argument passed in");
         }
     }
+
+#ifndef NDEBUG
+    if (call_args.empty()) {
+        LOGMAX("No arguments after manipulation");
+    } else {
+        LOGMAX("Arguments after manipulation");
+        indx = 0;
+        for (auto a : call_args) {
+            LOGMAX(indx << ": " << a);
+            ++indx;
+        }
+    }
+#endif
 
     if (call_args.size() > fun_args.size()) {
         bool is_vararg = false;
@@ -449,6 +466,7 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
 }
 
 void call(Interpreter *vm, Register dst, Value *funV) {
+    LOGMAX("Call to : " << *funV);
     auto cf = vm->get_call_frame();
     cf->set_return_reg(dst);
     cf->set_caller_addr(vm->get_bci()+1);
@@ -459,11 +477,12 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     // Class constructor call
     if (auto cls = dyn_cast<ClassValue>(funV)) {
         LOGMAX("Constructor call");
-        // Check if this is set and it is a module (e.g `mod1.MyClass()`)
-        if (!cf->get_args().empty() && cf->get_args().back().name == "this" && isa<ModuleValue>(cf->get_args().back().value)) {
+        // Check if this is set and if so remove it (e.g `mod1.MyClass()`)
+        if (!cf->get_args().empty() && cf->get_args().back().name == "this") {
             // this argument is set for all attribute calls (as we don't know the
             // type in bytecodegen), so remove it if the value should not know it
-            LOGMAX("Removing module arg from constructor call");
+            // and since we are in a constructor call there shall be no this.
+            LOGMAX("Removing this arg from constructor call");
             cf->get_args().pop_back();
         }
         constructor_of = cls;

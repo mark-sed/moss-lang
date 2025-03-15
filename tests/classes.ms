@@ -54,3 +54,38 @@ class Foo1 {
 
 foo1 = Foo1()
 foo1.NAME ++ "\n"
+
+class MyOutterClass {
+    class MyInnerClass {
+        fun MyInnerClass(x) {
+            this.x = x
+        }
+
+        fun goo(a) {
+            return a + this.x
+        }
+    }
+}
+
+moc = MyOutterClass.MyInnerClass
+mic = moc(5)
+mic.goo(5)
+"\n"
+
+mic1 = MyOutterClass.MyInnerClass(56)
+mic1.x
+"\n"
+mic1.goo(5)
+"\n"
+
+space MyOutterSpace {
+    class MyInnerClass {
+        fun MyInnerClass(x) {
+            this.x = x
+        }
+    }
+}
+
+mic2 = MyOutterSpace.MyInnerClass(42)
+mic2.x
+"\n"

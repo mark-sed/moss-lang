@@ -340,7 +340,8 @@ function test_classes {
     expect_pass "classes.ms" $1
     expect_out_eq "42\n<class Cat>\n<object of class Cat>
 Vilda\nmeow\n<object of class Animal>
-foo1\nfoo1\n" $1
+foo1\nfoo1
+10\n56\n61\n42\n" $1
 }
 
 function test_attributes {
