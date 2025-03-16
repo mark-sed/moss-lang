@@ -164,3 +164,15 @@ class NlText {
 
 t = NlText("Hi all!")
 t[3]++t[0]++t[7]
+
+try {
+    no == 5
+} catch (e:TypeError) {
+    "caught\n"
+}
+
+try {
+    t + 5
+} catch(e:TypeError) {
+    "caught\n"
+}

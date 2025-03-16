@@ -147,3 +147,69 @@ vared_type("hi")
 "\n"
 vared_type(false)
 "\n"
+
+// Test that primitive types are passed by value
+// and objects by reference
+fun modifier(a) {
+    a += 1
+    return nil
+}
+
+fun modifier2(a) {
+    a = true
+    return nil
+}
+
+val_int = 5
+val_int
+"\n"
+~modifier(val_int)
+val_int
+"\n"
+
+~modifier2(val_int)
+val_int
+"\n"
+
+fun modifier3(a) {
+    a.x += 1
+    return nil
+}
+
+class MyClass1 {
+    fun MyClass1(x) {
+        this.x = x
+    }
+}
+
+mc1 = MyClass1(8)
+mc1.x
+"\n"
+~modifier(mc1.x)
+mc1.x
+"\n"
+~modifier2(mc1)
+mc1
+"\n"
+~modifier3(mc1)
+mc1.x
+"\n"
+
+enum EnumVals {
+    FIRST, SECOND
+}
+
+fun modifier4(a) {
+    a = EnumVals.SECOND
+    return nil
+}
+
+env = EnumVals.FIRST
+env
+"\n"
+~modifier2(env)
+env
+"\n"
+~modifier4(env)
+env
+"\n"

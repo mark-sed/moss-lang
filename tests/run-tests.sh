@@ -303,7 +303,8 @@ function test_functions {
 12[3, 4, 5]67\n12[3, 4, 5]67\n12[]false97\n12[3, 4, 5]false97
 []\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, \"ok\", false, nil]\ntrue[1]
 1\n0\n0\n42\nhello from greet\ngoo inner fun
-2\nhi!\ntrue\n" $1
+2\nhi!\ntrue
+5\n5\n5\n8\n8\n<object of class MyClass1>\n9\nFIRST\nFIRST\nFIRST\n" $1
 }
 
 function test_ifs {
@@ -362,7 +363,8 @@ function test_operator_funs {
     expect_out_eq "1111 == 1111 == 1111\nfalse == false\ntrue == true\n1000 == 1000
 990 == 990\ntrue == true\nfalse == false\n1005\n1020\n1001
 false\ntrue\ntrue\ntrue\nfalse\ntrue\n0\n1010\n1010\n1023
-0\n-1011\n-1011\n1001\n1100\n10\naH\n" $1
+0\n-1011\n-1011\n1001\n1100\n10\naH
+caught\ncaught\n" $1
 }
 
 function test_lists {
