@@ -132,6 +132,15 @@ void End::exec(Interpreter *vm) {
 }
 
 void Load::exec(Interpreter *vm) {
+    // Special case is when super is called
+    if (this->name == "super") {
+        auto ths_v = vm->load_name("this");
+        assert(ths_v && "Not inside of a class");
+        auto ths = dyn_cast<ObjectValue>(ths_v);
+        assert(ths && "this is not an object?!");
+        vm->store(this->dst, new SuperValue(ths));
+        return;
+    }
     auto v = vm->load_name(this->name);
     /*if (!v) {
         // The refered value could possibly be method or attribute in the

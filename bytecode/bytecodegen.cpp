@@ -755,6 +755,11 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new Load(next_reg(), "this"));
         bcv = last_reg();
     }
+    else if (isa<SuperLiteral>(expr)) {
+        // Super is just a variable in bytecode
+        append(new Load(next_reg(), "super"));
+        bcv = last_reg();
+    }
     else if (auto opl = dyn_cast<OperatorLiteral>(expr)) {
         append(new Load(next_reg(), opl->get_op().as_string()));
         bcv = last_reg();

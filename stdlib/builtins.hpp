@@ -39,6 +39,8 @@ namespace BuiltIns {
     extern Value *Module;
     extern Value *Space;
     
+    extern Value *super;
+    
     extern Value *Range;
     extern Value *File;
 

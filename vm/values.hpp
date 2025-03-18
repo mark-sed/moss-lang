@@ -46,6 +46,7 @@ enum class TypeKind {
     SPACE,
     ENUM,
     ENUM_VALUE,
+    SUPER_VALUE,
 
     CPP_FSTREAM
 };
@@ -68,6 +69,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::SPACE: return "SPACE";
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
+        case TypeKind::SUPER_VALUE: return "SUPER_VALUE";
         case TypeKind::CPP_FSTREAM: return "CPP_FSTREAM";
     }
     assert(false && "Type kind in to string conversion");
@@ -741,6 +743,32 @@ public:
             --tab_depth;
             os << "\n" << std::string(tab_depth*2, ' ') << "}";
         }
+        return os;
+    }
+};
+
+class SuperValue : public Value {
+private:
+    ObjectValue *instance;
+public:
+    static const TypeKind ClassType = TypeKind::SUPER_VALUE;
+
+    SuperValue(ObjectValue *instance)
+        : Value(ClassType, "super", BuiltIns::super), instance(instance) {}
+    ~SuperValue() {}
+
+    virtual Value *clone() {
+        return new SuperValue(this->instance);
+    }
+
+    ObjectValue *get_instance() { return this->instance; }
+
+    virtual opcode::StringConst as_string() const override {
+        return "<super of " + instance->get_type()->get_name() + ">";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "super(" << *instance << ")";
         return os;
     }
 };
