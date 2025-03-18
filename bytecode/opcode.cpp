@@ -1064,6 +1064,14 @@ static Value *add(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "+", s1, s2, dst);
     }
+    else if (isa<ListValue>(s1) && isa<ListValue>(s2)) {
+        auto vec1 = dyn_cast<ListValue>(s1)->get_vals();
+        auto vec2 = dyn_cast<ListValue>(s2)->get_vals();
+        std::vector<Value *> joint;
+        joint.insert(joint.end(), vec1.begin(), vec1.end());
+        joint.insert(joint.end(), vec2.begin(), vec2.end());
+        res = new ListValue(joint);
+    }
     else {
         raise_operand_exc(vm, "+", s1, s2);
     }
