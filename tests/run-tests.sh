@@ -489,6 +489,11 @@ function test_range_precedence {
 [[<object of class Range>]]\n" $1
 }
 
+function test_short_circuit_eval {
+    expect_pass "short_circuit_eval.ms" $1
+    expect_out_eq "true\ntrue\nhi\nthere\nfalse\nfail\nexists!\ndoes not exist.\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -823,6 +828,7 @@ function run_all_tests {
     run_test exceptions_catch
     run_test runtime_errors
     run_test range_precedence
+    run_test short_circuit_eval
 
     run_test fibonacci
     run_test factorial

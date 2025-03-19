@@ -280,13 +280,4 @@ foo() || exit(1) && print("success")
 This will exit the program with return code 1.
 
 `||` can be thought of as the next evaluation after a false value and
-`&&` as the next one after a true value. So if there is a false evaluated then
-moss will be ignoring all the `&&` and looking for next `||` or end the
-evaluation with false.
-
-```cpp
-file_exists("f.txt") && print("exists!") || print("does not exist.")
-```
-
-In the case above if file `f.txt` does not exist then "does not exist." is printed
-otherwise "exists!" is printed.
+`&&` as the next one after a true value.

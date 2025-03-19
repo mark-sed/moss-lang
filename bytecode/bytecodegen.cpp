@@ -26,12 +26,15 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         BinaryExpr *be = dyn_cast<BinaryExpr>(expr->get_left());
         if (!be || be->get_op().get_kind() != OperatorKind::OP_ACCESS ||
                 expr->get_op().get_kind() != OperatorKind::OP_SET) {
-            left = emit(expr->get_left());
+            bool is_shc = expr->get_op().get_kind() == OperatorKind::OP_SHORT_C_AND || expr->get_op().get_kind() == OperatorKind::OP_SHORT_C_OR;
+            left = emit(expr->get_left(), is_shc);
         }
     }
     if (expr->get_op().get_kind() != OperatorKind::OP_ACCESS ||
           !(isa<Variable>(expr->get_right()) || isa<OperatorLiteral>(expr->get_right()))) {
-        right = emit(expr->get_right());
+        if (expr->get_op().get_kind() != OperatorKind::OP_SHORT_C_AND && expr->get_op().get_kind() != OperatorKind::OP_SHORT_C_OR) {
+            right = emit(expr->get_right());
+        }
     }
 
     // TODO: Optimize 2 consts into literals
@@ -527,9 +530,30 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
             return last_reg();
         }
-        case OperatorKind::OP_SHORT_C_AND:
-        case OperatorKind::OP_SHORT_C_OR:
-            assert(false && "TODO: Unimplemented operator");
+        case OperatorKind::OP_SHORT_C_AND: {
+            assert(!left->is_const() && "should have generated non-const");
+            auto res_reg = next_reg();
+            append(new Store(res_reg, left->reg()));
+            append(new JmpIfTrue(free_reg(left), get_curr_address() + 3));
+            auto jmp_end = new Jmp(0);
+            append(jmp_end);
+            auto right = emit(expr->get_right(), true);
+            append(new Store(res_reg, free_reg(right)));
+            jmp_end->addr = get_curr_address() + 1;
+            return new RegValue(res_reg, false);
+        }
+        case OperatorKind::OP_SHORT_C_OR: {
+            assert(!left->is_const() && "should have generated non-const");
+            auto res_reg = next_reg();
+            append(new Store(res_reg, left->reg()));
+            append(new JmpIfFalse(free_reg(left), get_curr_address() + 3));
+            auto jmp_end = new Jmp(0);
+            append(jmp_end);
+            auto right = emit(expr->get_right(), true);
+            append(new Store(res_reg, free_reg(right)));
+            jmp_end->addr = get_curr_address() + 1;
+            return new RegValue(res_reg, false);
+        }
         case OperatorKind::OP_AND: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), free_reg(right)));

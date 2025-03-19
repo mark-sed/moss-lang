@@ -127,8 +127,6 @@ xxh - OR        %dst, %src1, %src2
 xxh - NOT       %dst, %src1
 xxh - NEG       %dst, %src1
 xxh - XOR       %dst, %src1, %src2
-xxh - SC_AND    %dst, %src1, %src2
-xxh - SC_OR     %dst, %src1, %src2
 xxh - SUBSC     %dst, %src, %index
 
 xxh - CONCAT2   %dst, #val, %src2
@@ -148,8 +146,6 @@ xxh - IN2       %dst, #val, %src2
 xxh - AND2      %dst, #val, %src2
 xxh - OR2       %dst, #val, %src2
 xxh - XOR2      %dst, #val, %src2
-xxh - SC_AND2   %dst, #val, %src2
-xxh - SC_OR2    %dst, #val, %src2
 xxh - SUBSC2    %dst, #src, %index
 
 xxh - CONCAT3   %dst, %src1, #val
@@ -169,8 +165,6 @@ xxh - IN3       %dst, %src1, #val
 xxh - AND3      %dst, %src1, #val
 xxh - OR3       %dst, %src1, #val
 xxh - XOR3      %dst, %src1, #val
-xxh - SC_AND3   %dst, %src1, #val
-xxh - SC_OR3    %dst, %src1, #val
 xxh - SUBSC3    %dst, %src, #index
 
 xxh - ASSERT    %src, %msg
@@ -562,4 +556,20 @@ x       JMP  <end of while>
 x       JMP  <start of while or end of while-1>
 x       JMP  1
 x       END
+```
+
+### Short circuit and and or
+
+```cpp
+a || b
+```
+
+```
+x       LOAD_NAME %0, "a"
+x       JMP_IF_FALSE %0, <b>
+x       STORE %1, %0
+x       JMP <after b>
+x       LOAD_NAME %2, "b"
+x       STORE %1, %2
+x       OUTPUT %1
 ```

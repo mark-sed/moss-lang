@@ -111,8 +111,6 @@ enum OpCodes : opcode_t {
     AND, //       %dst, %src1, %src2
     OR, //        %dst, %src1, %src2
     XOR, //       %dst, %src1, %src2
-    //SC_AND, //    %dst, %src1, %src2 // Short circuit is done with jumps based on value
-    //SC_OR, //     %dst, %src1, %src2
     SUBSC, //     %dst, %src, %index
 
     CONCAT2, //   %dst, #val, %src2
@@ -132,8 +130,6 @@ enum OpCodes : opcode_t {
     AND2, //      %dst, #val, %src2
     OR2, //       %dst, #val, %src2
     XOR2, //      %dst, #val, %src2
-    //SC_AND2, //   %dst, #val, %src2
-    //SC_OR2, //    %dst, #val, %src2
     SUBSC2, //    %dst, #src, %index
 
     CONCAT3, //   %dst, %src1, #val
@@ -153,8 +149,6 @@ enum OpCodes : opcode_t {
     AND3, //      %dst, %src1, #val
     OR3, //       %dst, %src1, #val
     XOR3, //      %dst, %src1, #val
-    //SC_AND3, //   %dst, %src1, #val
-    //SC_OR3, //    %dst, %src1, #val
     SUBSC3, //    %dst, %src, #index
 
     NOT, //       %dst, %src1
