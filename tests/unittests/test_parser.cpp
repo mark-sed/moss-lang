@@ -179,6 +179,8 @@ a > 4 > b
 c < 3
 g >= 2*r
 g <= 22
+a && foo()
+a || goo()
 true and false
 false or c
 42 xor a xor c
@@ -276,6 +278,8 @@ $a, $b.e.a = ["s", "g"]
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
         IRType::UNARY_EXPR,
 
         IRType::BINARY_EXPR,
@@ -328,7 +332,9 @@ $a, $b.e.a = ["s", "g"]
         OperatorKind::OP_BT,  
         OperatorKind::OP_LT,  
         OperatorKind::OP_BEQ, 
-        OperatorKind::OP_LEQ,
+        OperatorKind::OP_LEQ, 
+        OperatorKind::OP_SHORT_C_AND,
+        OperatorKind::OP_SHORT_C_OR, 
         OperatorKind::OP_AND,   
         OperatorKind::OP_OR,
         OperatorKind::OP_XOR,   
@@ -381,6 +387,9 @@ a >= (not a) // Parenthesis are needed
 not a > 4
 
 true and false and true or a xor b and not c
+
+a && b > 4 || (c and b && -f)
+//false || ~a
 
 (a > 5 ? -4 : "hello")
 (a > 4 ? c : d) != 0 ? some : not other
@@ -436,6 +445,7 @@ goo[0], roo = [true, false]
 (a >= (not a))
 (not (a > 4))
 (((((true and false) and true) or a) xor b) and (not c))
+((a && (b > 4)) || ((c and b) && (- f)))
 ((a > 5) ? (- 4) : "hello")
 ((((a > 4) ? c : d) != 0) ? some : (not other))
 (value in something)
@@ -1454,6 +1464,8 @@ a.(>)(b)
 a.(<)(b)
 a.(>=)(b)
 a.(<=)(b)
+a.(&&)(b)
+a.(||)(b)
 a.(and)(b)
 a.(or)(b)
 (not)(b)
@@ -1486,6 +1498,8 @@ ustring expected = R"(((4 + (a * (c . (-))(42))) + 2)
 (a . (<))(b)
 (a . (>=))(b)
 (a . (<=))(b)
+(a . (&&))(b)
+(a . (||))(b)
 (a . (and))(b)
 (a . (or))(b)
 (not)(b)
@@ -1550,6 +1564,8 @@ fun (>)(a) { return a > b; }
 fun (<)(a) { return a < b; }
 fun (>=)(a) { return a >= b; }
 fun (<=)(a) { return a <= b; }
+fun (&&)(a) { return a && b; }
+fun (||)(a) { return a || b; }
 fun (and)(a) { return a and b; }
 fun (or)(a) { return a or b; }
 fun (xor)(a) { return a xor b; }
@@ -1561,6 +1577,8 @@ fun (in)(a) { return a in b; }
         IRType::LAMBDA,
         IRType::FUNCTION,
         IRType::LAMBDA,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,

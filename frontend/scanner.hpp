@@ -82,6 +82,8 @@ enum class TokenType {
     BEQ, ///< >=
     LEQ, ///< <=
 
+    SHORT_C_AND,    ///< &&
+    SHORT_C_OR,     ///< ||
     AND,            ///< and
     OR,             ///< or
     NOT,            ///< not
@@ -180,6 +182,8 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::LT: os << "LT"; break;
         case TokenType::BEQ: os << "BEQ"; break;
         case TokenType::LEQ: os << "LEQ"; break;
+        case TokenType::SHORT_C_AND: os << "SHORT_C_AND"; break;
+        case TokenType::SHORT_C_OR: os << "SHORT_C_OR"; break;
         case TokenType::AND: os << "AND"; break;
         case TokenType::OR: os << "OR"; break;
         case TokenType::NOT: os << "NOT"; break;

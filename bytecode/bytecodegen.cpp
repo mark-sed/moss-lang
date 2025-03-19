@@ -527,6 +527,9 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             }
             return last_reg();
         }
+        case OperatorKind::OP_SHORT_C_AND:
+        case OperatorKind::OP_SHORT_C_OR:
+            assert(false && "TODO: Unimplemented operator");
         case OperatorKind::OP_AND: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), free_reg(right)));
@@ -1440,6 +1443,7 @@ void BytecodeGen::emit(std::list<ir::IR *> block) {
 
 void BytecodeGen::output(RegValue *val) {
     // TODO: Do we need this flag? Cant we just check if the operator is not "silent"?
+    // But what if it is `a || ~foo()`, then top is SHORTC_OR not SILENT
     if (!val->is_silent()) {
         val = get_ncreg(val);
         append(new Output(val->reg()));

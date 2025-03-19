@@ -550,13 +550,13 @@ Token *Scanner::next_token() {
             }
             case '&': {
                 if (check_and_advance('&'))
-                    return err_tokenize(c, "Logical and is done with 'and'", error::msgs::UNKNOWN_SYMBOL, "&&");
-                return err_tokenize(c, "Bitwise and is done with 'and'", error::msgs::UNKNOWN_SYMBOL, "&");
+                    return tokenize("&&", TokenType::SHORT_C_AND);
+                return err_tokenize(c, "Bitwise and is done with 'and' or did you mean '&&'?", error::msgs::UNKNOWN_SYMBOL, "&");
             }
             case '|': {
                 if (check_and_advance('|'))
-                    return err_tokenize(c, "Logical or is done with 'or'", error::msgs::UNKNOWN_SYMBOL, "||");
-                return err_tokenize(c, "Bitwise or is done with 'or'", error::msgs::UNKNOWN_SYMBOL, "|");
+                    return tokenize("||", TokenType::SHORT_C_OR);
+                return err_tokenize(c, "Bitwise or is done with 'or' or did you mean '||'?", error::msgs::UNKNOWN_SYMBOL, "|");
             }
             case '"': {
                 if (check_and_advance('"')) {

@@ -38,6 +38,8 @@ static Operator token2operator(TokenType t) {
         case TokenType::LT: return Operator(OperatorKind::OP_LT);
         case TokenType::BEQ: return Operator(OperatorKind::OP_BEQ);
         case TokenType::LEQ: return Operator(OperatorKind::OP_LEQ);
+        case TokenType::SHORT_C_AND: return Operator(OperatorKind::OP_SHORT_C_AND);
+        case TokenType::SHORT_C_OR: return Operator(OperatorKind::OP_SHORT_C_OR);
         case TokenType::AND: return Operator(OperatorKind::OP_AND);
         case TokenType::OR: return Operator(OperatorKind::OP_OR);
         case TokenType::NOT: return Operator(OperatorKind::OP_NOT);
@@ -947,7 +949,7 @@ Expression *Parser::unpack() {
 }
 
 Expression *Parser::ternary_if() {
-    Expression *expr = and_or_xor();
+    Expression *expr = short_circuit();
 
     if (match(TokenType::QUESTION_M)) {
         parser_assert(expr, create_diag(diags::TERNARY_IF_MISSING_COND));
@@ -957,6 +959,20 @@ Expression *Parser::ternary_if() {
         auto val_false = ternary_if();
         parser_assert(val_false, create_diag(diags::EXPR_EXPECTED));
         return new TernaryIf(expr, val_true, val_false);
+    }
+
+    return expr;
+}
+
+Expression *Parser::short_circuit() {
+    Expression *expr = and_or_xor();
+
+    while (check({TokenType::SHORT_C_AND, TokenType::SHORT_C_OR})) {
+        auto op = advance();
+        parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
+        auto right = and_or_xor();
+        parser_assert(right, create_diag(diags::EXPR_EXPECTED));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
     }
 
     return expr;
@@ -1294,9 +1310,9 @@ ir::OperatorLiteral *Parser::operator_name() {
     if (check({TokenType::CONCAT, TokenType::EXP, TokenType::PLUS,
           TokenType::MINUS, TokenType::DIV, TokenType::MUL,
           TokenType::MOD, TokenType::EQ, TokenType::NEQ,
-          TokenType::BT, TokenType::LT, TokenType::BEQ, TokenType::LEQ, 
-          TokenType::AND, TokenType::OR, TokenType::NOT, TokenType::XOR,
-          TokenType::IN})) {
+          TokenType::BT, TokenType::LT, TokenType::BEQ, TokenType::LEQ,
+          TokenType::SHORT_C_AND, TokenType::SHORT_C_OR, TokenType::AND,
+          TokenType::OR, TokenType::NOT, TokenType::XOR, TokenType::IN})) {
         auto op = token2operator(advance()->get_type());
         return new OperatorLiteral(op);
     }
