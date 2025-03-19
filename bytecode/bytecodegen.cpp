@@ -1349,7 +1349,15 @@ void BytecodeGen::emit(ir::Try *tcf) {
 
 void BytecodeGen::emit(ir::Assert *asr) {
     auto cnd = emit(asr->get_cond(), true);
-    auto msg = emit(asr->get_msg(), true);
+    RegValue *msg = nullptr;
+    if (asr->get_msg())
+        msg = emit(asr->get_msg(), true);
+    else {
+        // TODO: Load prestored empty string
+        append(new StoreStringConst(next_creg(), ""));
+        append(new StoreConst(next_reg(), val_last_creg()));
+        msg = last_reg();
+    }
     append(new opcode::Assert(free_reg(cnd), free_reg(msg)));
 }
 

@@ -147,7 +147,7 @@ space test7 {
         }
 
         fun foo() {
-            return "A foo\n"
+            return "A foo " ++ this.a ++ "\n"
         }
     }
 
@@ -157,7 +157,7 @@ space test7 {
 
     class C : B, A {
         fun C() {
-
+            this.a = 42
         }
 
         fun get_val() {

@@ -7,5 +7,7 @@ for(i: 0..10) {
     rf = rand_float(-100, 100)
     assert(rf >= -100 and rf <= 100, "Generated float outside of min and max")
 }
-rf2 = rand_float(10.0, 10.0)
-assert(rf2 == 10.0, "Generated not 10.0?")
+assert(rand_float(10.0, 10.0) == 10.0, "Generated not 10.0?")
+
+rf2 = rand_float()
+assert(rf2 >= 0.0 and rf2 <= 1.0, "rand_float not in [0, 1]")

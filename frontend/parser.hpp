@@ -30,7 +30,7 @@ private:
     size_t curr_token;
     std::vector<Token *> tokens;
 
-    bool lower_range_prec;
+    int lower_range_prec;
     bool reading_by_lines;
     int multi_line_parsing;
 

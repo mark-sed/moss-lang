@@ -470,7 +470,23 @@ function test_lambdas {
 
 function test_supers {
     expect_pass "supers.ms" $1
-    expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\nA foo\nVAL B\ncaught\n" $1
+    expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\nA foo 42\nVAL B\ncaught\n" $1
+}
+
+function test_range_precedence {
+    expect_pass "range_precedence.ms" $1
+    expect_out_eq "[[1], [3]]
+[[1, 2], [3], 5, <object of class Range>]
+[1, <object of class Range>]
+[[1, 2], 2]
+[1, 1]
+[1, \"two\", true, [8, 9], []]
+6
+7
+[1, 3, <object of class Range>]
+[<object of class Range>]
+[[1, <object of class Range>]]
+[[<object of class Range>]]\n" $1
 }
 
 function test_basic_import {
@@ -806,6 +822,7 @@ function run_all_tests {
     run_test implicit_calls
     run_test exceptions_catch
     run_test runtime_errors
+    run_test range_precedence
 
     run_test fibonacci
     run_test factorial

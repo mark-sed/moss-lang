@@ -403,7 +403,7 @@ IR *Parser::declaration() {
     IR *decl = nullptr;
     // In case we errored out inside of function call, reset range
     // precedence lowering
-    lower_range_prec = false;
+    lower_range_prec = 0;
     // Multiline parsing cannot be zeroes in there as this might be called
     // in multiline declaration
     assert(multi_line_parsing >= 0 && "Got out of multiline structures more than into them?");
@@ -447,7 +447,7 @@ IR *Parser::declaration() {
     if (match(TokenType::IMPORT)) {
         std::vector<ir::Expression *> names;
         std::vector<ustring> aliases;
-        lower_range_prec = true;
+        ++lower_range_prec;
 
         Expression *name = nullptr;
         do {
@@ -465,7 +465,7 @@ IR *Parser::declaration() {
             aliases.push_back(alias);
         } while (match(TokenType::COMMA) && name);
 
-        lower_range_prec = false;
+        --lower_range_prec;
         decl = new Import(names, aliases);
     }
 
@@ -1050,7 +1050,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
     parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
     std::vector<ir::Expression *> vars = {first, second};
     Expression *expr = nullptr;
-    lower_range_prec = true;
+    ++lower_range_prec;
     bool found_eq = false;
     do {
         skip_nls();
@@ -1077,7 +1077,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
         }
     } while (match(TokenType::COMMA) && expr);
     parser_assert(found_eq, create_diag(diags::SET_EXPECTED_FOR_MULTIVAL));
-    lower_range_prec = false;
+    --lower_range_prec;
     return new BinaryExpr(new Multivar(vars), expr, Operator(OperatorKind::OP_SET));
 }
 
@@ -1191,7 +1191,7 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allo
     std::vector<ir::Expression *> args;
     // Setting this to true will indicate to not give precedence to range over
     // another argument
-    lower_range_prec = true;
+    ++lower_range_prec;
 
     Expression *expr = nullptr;
     do {
@@ -1204,14 +1204,14 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allo
         }
     } while (match(TokenType::COMMA) && expr);
 
-    lower_range_prec = false;
+    --lower_range_prec;
 
     return args;
 }
 
 std::vector<ir::Argument *> Parser::arg_list() {
     std::vector<ir::Argument *> args;
-    lower_range_prec = true;
+    ++lower_range_prec;
 
     Argument *arg = nullptr;
     bool vararg = false;
@@ -1231,7 +1231,7 @@ std::vector<ir::Argument *> Parser::arg_list() {
         args.push_back(arg);
     } while (match(TokenType::COMMA));
 
-    lower_range_prec = false;
+    --lower_range_prec;
     return args;
 }
 
@@ -1322,7 +1322,7 @@ ir::OperatorLiteral *Parser::operator_name() {
 Expression *Parser::constant() {
     if (match(TokenType::LEFT_PAREN)) {
         bool prev_fun_args_state = lower_range_prec;
-        lower_range_prec = false; // This will allow for range in function call
+        lower_range_prec = 0; // This will allow for range in function call
         Expression *expr = operator_name();
         if (!expr)
             expr = ternary_if();
@@ -1399,7 +1399,7 @@ Expression *Parser::constant() {
     }
     // list
     else if (match(TokenType::LEFT_SQUARE)) {
-        lower_range_prec = true;
+        ++lower_range_prec;
         std::vector<ir::Expression *> vals;
         skip_nls();
         // Lets extract first expr and then check if this is a list comprehension
@@ -1431,7 +1431,7 @@ Expression *Parser::constant() {
                 }
                 skip_nls();
                 expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-                lower_range_prec = false;
+                --lower_range_prec;
                 return new List(first, assignments, condition, else_result);
             }
             else if (match(TokenType::COMMA)){
@@ -1445,7 +1445,7 @@ Expression *Parser::constant() {
         }
         skip_nls();
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-        lower_range_prec = false;
+        --lower_range_prec;
         return new List(vals);
     }
     // dict
@@ -1456,7 +1456,7 @@ Expression *Parser::constant() {
             expect(TokenType::RIGHT_CURLY, create_diag(diags::MISSING_RIGHT_CURLY));
             return new Dict(keys, vals);
         }
-        lower_range_prec = true;
+        ++lower_range_prec;
 
         Expression *expr = nullptr;
         do {
@@ -1471,7 +1471,7 @@ Expression *Parser::constant() {
             }
         } while (match(TokenType::COMMA) && expr);
 
-        lower_range_prec = false;
+        --lower_range_prec;
         skip_nls();
         expect(TokenType::RIGHT_CURLY, create_diag(diags::MISSING_RIGHT_CURLY));
         parser_assert(!keys.empty(), create_diag(diags::EMPTY_DICT_WITHOUT_COLON));
@@ -1487,7 +1487,7 @@ Argument *Parser::argument(bool allow_default_value) {
         std::vector<Expression *> types;
         if (match(TokenType::COLON)) {
             if (match(TokenType::LEFT_SQUARE)) {
-                lower_range_prec = true;
+                ++lower_range_prec;
                 Expression *expr = nullptr;
                 do {
                     skip_nls();
@@ -1499,7 +1499,7 @@ Argument *Parser::argument(bool allow_default_value) {
                 } while (match(TokenType::COMMA) && expr);
                 parser_assert(!types.empty(), create_diag(diags::TYPE_EXPECTED));
                 expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-                lower_range_prec = false;
+                --lower_range_prec;
             }
             else {
                 auto type = call_access_subs();

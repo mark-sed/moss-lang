@@ -135,7 +135,7 @@ fun open(path:String, mode:String="r") {
 fun rand_int(min:Int, max:Int) {}
 
 @internal
-fun rand_float(min:[Float,Int]/*=0.0*/, max:[Float,Int]/*=1.0*/) {}
+fun rand_float(min:[Float,Int]=0.0, max:[Float,Int]=1.0) {}
 
 space Math {
     /// π (Ludolph's number)
