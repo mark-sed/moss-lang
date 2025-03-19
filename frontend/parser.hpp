@@ -74,7 +74,6 @@ private:
     ir::Expression *silent();
     ir::Expression *assignment();
     ir::Expression *ternary_if();
-    ir::Expression *short_circuit();
     ir::Expression *and_or_xor();
     ir::Expression *op_not();
     ir::Expression *eq_neq();

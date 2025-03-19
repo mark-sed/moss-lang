@@ -872,8 +872,6 @@ enum OperatorKind {
     OP_LT,     ///< <
     OP_BEQ,    ///< >=
     OP_LEQ,    ///< <=
-    OP_SHORT_C_AND, ///< &&
-    OP_SHORT_C_OR,  ///< ||
     OP_AND,    ///< and
     OP_OR,     ///< or
     OP_NOT,    ///< not, Unary
@@ -918,8 +916,6 @@ public:
             case OP_LT: return "<"; 
             case OP_BEQ: return ">="; 
             case OP_LEQ: return "<="; 
-            case OP_SHORT_C_AND: return "&&"; 
-            case OP_SHORT_C_OR: return "||"; 
             case OP_AND: return "and"; 
             case OP_OR: return "or"; 
             case OP_NOT: return "not"; 

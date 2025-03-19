@@ -395,8 +395,8 @@ __Class methods__:
 | `<=`, `>=`, `>`, `<`             | Comparisons                                      | Left          |
 | `==`, `!=`                       | Equals, Not equals                               | Left          |
 | `not`                            | Logical not                                      | Right         |
-| `&&`, `and`                      | Short-circuit and logical/bitwise and            | Left          |
-| `\|\|`, `or`                     | Short-circuit and logical/bitwise or             | Left          |
+| `and`                            | Logical/bitwise and                              | Left          |
+| `or`                             | Logical/bitwise or                               | Left          |
 | `xor`                            | Logical/bitwise xor                              | Left          |
 | `?:`                             | Ternary if                                       | Right         |
 | `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `^=`, `++=` | Assignment, Operation and assignment | Right       |

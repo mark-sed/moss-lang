@@ -57,8 +57,8 @@ static void run_tokenizer_check_type(ustring code, TokenType tp) {
 
 /** Test for operators tokenization */
 TEST(Scanner, OperatorTokens){
-    ustring code = "++ ++= + += ^ ^= - -= / /= * *= % %=  = == != > >= < <= << && ||";
-    ustring expected = "CONCAT SET_CONCAT PLUS SET_PLUS EXP SET_EXP MINUS SET_MINUS DIV SET_DIV MUL SET_MUL MOD SET_MOD SET EQ NEQ BT BEQ LT LEQ UNPACK SHORT_C_AND SHORT_C_OR ";
+    ustring code = "++ ++= + += ^ ^= - -= / /= * *= % %=  = == != > >= < <= <<";
+    ustring expected = "CONCAT SET_CONCAT PLUS SET_PLUS EXP SET_EXP MINUS SET_MINUS DIV SET_DIV MUL SET_MUL MOD SET_MOD SET EQ NEQ BT BEQ LT LEQ UNPACK ";
 
     std::stringstream ss;
     run_tokenizer(ss, code);
