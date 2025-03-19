@@ -483,8 +483,9 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     assert(funV && "nullptr function passed in");
 
     ClassValue *constructor_of = nullptr;
+    bool super_call = false;
     // Class constructor call
-    if (auto cls = dyn_cast<ClassValue>(funV)) {
+    if (isa<ClassValue>(funV) || isa<SuperValue>(funV)) {
         LOGMAX("Constructor call");
         // Check if this is set and if so remove it (e.g `mod1.MyClass()`)
         if (!cf->get_args().empty() && cf->get_args().back().name == "this") {
@@ -494,12 +495,40 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             LOGMAX("Removing this arg from constructor call");
             cf->get_args().pop_back();
         }
+        ClassValue *cls = dyn_cast<ClassValue>(funV);
+        if (!cls) {
+            // super() call, so extract the class based on the mro
+            auto spr = dyn_cast<SuperValue>(funV);
+            assert(spr && "some other value allowed?");
+            auto inst_type = spr->get_instance()->get_type();
+            auto inst_cls = dyn_cast<ClassValue>(inst_type);
+            assert(inst_cls && "Object type is not a class");
+            // We need to go through mro and find the first parent with constructor
+            for (auto parent: inst_cls->get_all_supers()) {
+                if (!parent->get_attrs())
+                    continue;
+                if (parent->get_attrs()->load_name(parent->get_name(), vm)) {
+                    cls = parent;
+                    break;
+                }
+            }
+            if (!cls) {
+                LOGMAX("Super call has no constructor to call, return");
+                vm->store(cf->get_return_reg(), BuiltIns::Nil);
+                vm->pop_call_frame();
+                return;
+            }
+            super_call = true;
+            LOGMAX("Super call to: " << *cls);
+        }
+        assert(cls && "sanity check");
         constructor_of = cls;
         if (cls->get_attrs())
             funV = cls->get_attrs()->load_name(cls->get_name(), vm);
         if (!funV) {
             // No constructor provided, look for one in parent classes
             for (auto parent : cls->get_all_supers()) {
+                if (!parent->get_attrs()) continue;
                 funV = parent->get_attrs()->load_name(parent->get_name(), vm);
                 if (funV)
                     break;
