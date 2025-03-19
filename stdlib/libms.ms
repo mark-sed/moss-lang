@@ -134,6 +134,9 @@ fun open(path:String, mode:String="r") {
 @internal
 fun rand_int(min:Int, max:Int) {}
 
+@internal
+fun rand_float(min:[Float,Int]/*=0.0*/, max:[Float,Int]/*=1.0*/) {}
+
 space Math {
     /// π (Ludolph's number)
     pi = 3.141592653589793115997963468544185161590576171875

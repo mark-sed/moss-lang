@@ -151,6 +151,17 @@ Value *rand_int(Interpreter *vm, Value *min, Value *max) {
     return new IntValue(distrib(rng_device));
 }
 
+Value *rand_float(Interpreter *vm, Value *min, Value *max) {
+    (void)vm;
+    static std::random_device rng_device;
+    assert((isa<FloatValue>(min) || isa<IntValue>(min)) && "not int/float");
+    assert((isa<FloatValue>(max) || isa<IntValue>(max)) && "not int/float");
+    auto min_int = min->as_float();
+    auto max_int = max->as_float();
+    std::uniform_real_distribution<opcode::FloatConst> distrib(min_int, max_int);
+    return new FloatValue(distrib(rng_device));
+}
+
 Value *input(Interpreter *vm, Value *prompt) {
     (void)vm;
     auto msg = prompt->as_string();
@@ -356,8 +367,11 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     }
     else if (name == "rand_int") {
         assert(arg_size == 2 && "Mismatch of args");
-        // Base might not be set as this is only for string argument
         ret_v = rand_int(vm, cf->get_arg("min"), cf->get_arg("max"));
+    }
+    else if (name == "rand_float") {
+        assert(arg_size == 2 && "Mismatch of args");
+        ret_v = rand_float(vm, cf->get_arg("min"), cf->get_arg("max"));
     }
     else if (name == "sin") {
         assert(arg_size == 1 && "Mismatch of args");
