@@ -470,7 +470,7 @@ function test_lambdas {
 
 function test_supers {
     expect_pass "supers.ms" $1
-    expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\n" $1
+    expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\nA foo\nVAL B\ncaught\n" $1
 }
 
 function test_basic_import {

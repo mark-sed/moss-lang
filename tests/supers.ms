@@ -137,3 +137,45 @@ space test6 {
 
     c = C() // A
 }
+
+space test7 {
+    class A {
+        VAL = "VAL A\n"
+
+        fun A() {
+            ~print("A")
+        }
+
+        fun foo() {
+            return "A foo\n"
+        }
+    }
+
+    class B : A {
+        VAL = "VAL B\n"
+    }
+
+    class C : B, A {
+        fun C() {
+
+        }
+
+        fun get_val() {
+            return super.VAL
+        }
+
+        fun incorrect() {
+            return super.get_val()
+        }
+
+        fun goo() {
+            return super.foo()
+        }
+    }
+
+    c = C() // A
+    c.goo()
+    c.get_val()
+}
+
+try test7.c.incorrect(); catch(e:AttributeError) "caught\n"

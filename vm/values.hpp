@@ -144,7 +144,7 @@ public:
     /// \param name Attribute name
     /// \param owner_vm VM which does this call
     /// \return Value of attribute or nullptr if not set
-    Value *get_attr(ustring name, Interpreter *caller_vm);
+    virtual Value *get_attr(ustring name, Interpreter *caller_vm);
     bool has_attr(ustring name, Interpreter *caller_vm) { return get_attr(name, caller_vm) != nullptr; }
 
     /// Sets (new or overrides) attribute name to value v
@@ -762,6 +762,8 @@ public:
     }
 
     ObjectValue *get_instance() { return this->instance; }
+
+    virtual Value *get_attr(ustring name, Interpreter *caller_vm) override;
 
     virtual opcode::StringConst as_string() const override {
         return "<super of " + instance->get_type()->get_name() + ">";

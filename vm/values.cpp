@@ -43,6 +43,18 @@ Value *Value::get_attr(ustring name, Interpreter *caller_vm) {
     return attrs->load_name(name, caller_vm);
 }
 
+Value *SuperValue::get_attr(ustring name, Interpreter *caller_vm) {
+    auto type_v = instance->get_type();
+    auto type = dyn_cast<ClassValue>(type_v);
+    assert(type && "Instance is not an object");
+    for (auto parent: type->get_all_supers()) {
+        auto v = parent->get_attr(name, caller_vm);
+        if (v)
+            return v;
+    }
+    return nullptr;
+}
+
 void Value::set_attrs(MemoryPool *p) {
     assert(this->is_mutable() && "Setting attribute for immutable value");
     this->attrs = p;
