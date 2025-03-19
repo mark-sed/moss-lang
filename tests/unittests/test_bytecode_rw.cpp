@@ -93,11 +93,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::ImportAll(18));
 
     bc->push_back(new opcode::PushParent(11));
-    bc->push_back(new opcode::CreateObject(11, 18));
-    bc->push_back(new opcode::PromoteObject(13, 4));
     bc->push_back(new opcode::BuildClass(0, "MyClass"));
-    bc->push_back(new opcode::Copy(1, 0));
-    bc->push_back(new opcode::DeepCopy(2, 3));
     
     bc->push_back(new opcode::Annotate(12, "annt", 5));
 
@@ -121,7 +117,6 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Or(0, 1, 2));
     bc->push_back(new opcode::Xor(0, 1, 2));
     bc->push_back(new opcode::Subsc(0, 1, 2));
-    bc->push_back(new opcode::Slice(0, 1, 2));
 
     bc->push_back(new opcode::Concat2(0, 1, 2));
     bc->push_back(new opcode::Exp2(0, 1, 2));
@@ -141,7 +136,6 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Or2(0, 1, 2));
     bc->push_back(new opcode::Xor2(0, 1, 2));
     bc->push_back(new opcode::Subsc2(0, 1, 2));
-    bc->push_back(new opcode::Slice2(0, 1, 2));
 
     bc->push_back(new opcode::Concat3(0, 1, 2));
     bc->push_back(new opcode::Exp3(0, 1, 2));

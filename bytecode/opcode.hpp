@@ -88,11 +88,7 @@ enum OpCodes : opcode_t {
     IMPORT_ALL, //    %src
 
     PUSH_PARENT, //   %class
-    CREATE_OBJ, //    %dst, %class
-    PROMOTE_OBJ, //   %src, %class
     BUILD_CLASS, //   %src
-    COPY, //          %dst, %src
-    DEEP_COPY, //     %dst, %src
 
     ANNOTATE, //      %dst, "name", %val
 
@@ -118,7 +114,6 @@ enum OpCodes : opcode_t {
     //SC_AND, //    %dst, %src1, %src2 // Short circuit is done with jumps based on value
     //SC_OR, //     %dst, %src1, %src2
     SUBSC, //     %dst, %src, %index
-    SLICE, //     %dst, %src, %range
 
     CONCAT2, //   %dst, #val, %src2
     EXP2, //      %dst, #val, %src2
@@ -140,7 +135,6 @@ enum OpCodes : opcode_t {
     //SC_AND2, //   %dst, #val, %src2
     //SC_OR2, //    %dst, #val, %src2
     SUBSC2, //    %dst, #src, %index
-    SLICE2, //    %dst, #src, %range
 
     CONCAT3, //   %dst, %src1, #val
     EXP3, //      %dst, %src1, #val
@@ -1065,49 +1059,6 @@ public:
     }
 };
 
-class CreateObject : public OpCode {
-public:
-    Register dst;
-    Register cls;
-
-    static const OpCodes ClassType = OpCodes::CREATE_OBJ;
-
-    CreateObject(Register dst, Register cls) : OpCode(ClassType, "CREATE_OBJ"), dst(dst), cls(cls) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << cls;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<CreateObject>(other);
-        if (!casted) return false;
-        return casted->dst == dst && casted->cls == cls;
-    }
-};
-
-class PromoteObject : public OpCode {
-public:
-    Register src;
-    Register cls;
-
-    static const OpCodes ClassType = OpCodes::PROMOTE_OBJ;
-
-    PromoteObject(Register src, Register cls) : OpCode(ClassType, "PROMOTE_OBJ"), src(src), cls(cls) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << src << ", %" << cls;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<PromoteObject>(other);
-        if (!casted) return false;
-        return casted->src == src && casted->cls == cls;
-    }
-};
 
 class BuildClass : public OpCode {
 public:
@@ -1128,50 +1079,6 @@ public:
         auto casted = dyn_cast<BuildClass>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->name == name;
-    }
-};
-
-class Copy : public OpCode {
-public:
-    Register dst;
-    Register src;
-
-    static const OpCodes ClassType = OpCodes::COPY;
-
-    Copy(Register dst, Register src) : OpCode(ClassType, "COPY"), dst(dst), src(src) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << src;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<Copy>(other);
-        if (!casted) return false;
-        return casted->dst == dst && casted->src == src;
-    }
-};
-
-class DeepCopy : public OpCode {
-public:
-    Register dst;
-    Register src;
-
-    static const OpCodes ClassType = OpCodes::DEEP_COPY;
-
-    DeepCopy(Register dst, Register src) : OpCode(ClassType, "DEEP_COPY"), dst(dst), src(src) {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << src;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<DeepCopy>(other);
-        if (!casted) return false;
-        return casted->dst == dst && casted->src == src;
     }
 };
 
@@ -1594,20 +1501,6 @@ class Subsc3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSC3;
     Subsc3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSC3", dst, src1, csrc2) {}
-    void exec(Interpreter *vm) override;
-};
-
-class Slice : public BinExprOpCode {
-public:
-    static const OpCodes ClassType = OpCodes::SLICE;
-    Slice(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "SLICE", dst, src1, src2) {}
-    void exec(Interpreter *vm) override;
-};
-
-class Slice2 : public BinExprOpCode {
-public:
-    static const OpCodes ClassType = OpCodes::SLICE2;
-    Slice2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SLICE2", dst, csrc1, src2) {}
     void exec(Interpreter *vm) override;
 };
 

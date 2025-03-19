@@ -102,11 +102,7 @@ xxh - IMPORT        %dst, "name"
 xxh - IMPORT_ALL    %src
 
 xxh - PUSH_PARENT   %class
-xxh - CREATE_OBJ    %dst, %class
-xxh - PROMOTE_OBJ   %src, %class
 xxh - BUILD_CLASS   %dst, "name"
-xxh - COPY          %dst, %src
-xxh - DEEP_COPY     %dst, %src
 
 xxh - ANNOTATE      %dst, "name", %val
 
@@ -134,7 +130,6 @@ xxh - XOR       %dst, %src1, %src2
 xxh - SC_AND    %dst, %src1, %src2
 xxh - SC_OR     %dst, %src1, %src2
 xxh - SUBSC     %dst, %src, %index
-xxh - SLICE     %dst, %src, %range
 
 xxh - CONCAT2   %dst, #val, %src2
 xxh - EXP2      %dst, #val, %src2
@@ -156,7 +151,6 @@ xxh - XOR2      %dst, #val, %src2
 xxh - SC_AND2   %dst, #val, %src2
 xxh - SC_OR2    %dst, #val, %src2
 xxh - SUBSC2    %dst, #src, %index
-xxh - SLICE2    %dst, #src, %range
 
 xxh - CONCAT3   %dst, %src1, #val
 xxh - EXP3      %dst, %src1, #val
@@ -329,7 +323,6 @@ x   PUSH_FRAME
 x   LOAD_GLOBAL %1, "XClass"
 x   CALL        %2, %1
 x   LOAD_GLOBAL %3, "MyClass"
-x   PROMOTE_OBJ %2, %3
 x   STORE_ATTR  %0, %2(this), "a"
 x   RETURN      %2
 

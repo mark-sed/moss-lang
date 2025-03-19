@@ -251,30 +251,10 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::PUSH_PARENT: {
                 bc->push_back(new PushParent(read_register()));
             } break;
-            case opcode::OpCodes::CREATE_OBJ: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                bc->push_back(new CreateObject(reg1, reg2));
-            } break;
-            case opcode::OpCodes::PROMOTE_OBJ: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                bc->push_back(new PromoteObject(reg1, reg2));
-            } break;
             case opcode::OpCodes::BUILD_CLASS: {
                 auto reg = read_register();
                 auto str = read_string();
                 bc->push_back(new BuildClass(reg, str));
-            } break;
-            case opcode::OpCodes::COPY: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                bc->push_back(new Copy(reg1, reg2));
-            } break;
-            case opcode::OpCodes::DEEP_COPY: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                bc->push_back(new DeepCopy(reg1, reg2));
             } break;
             case opcode::OpCodes::ANNOTATE: {
                 auto reg1 = read_register();
@@ -393,12 +373,6 @@ Bytecode *BytecodeReader::read() {
                 auto reg3 = read_register();
                 bc->push_back(new Subsc(reg1, reg2, reg3));
             } break;
-            case opcode::OpCodes::SLICE: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                auto reg3 = read_register();
-                bc->push_back(new Slice(reg1, reg2, reg3));
-            } break;
             case opcode::OpCodes::CONCAT2: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
@@ -506,12 +480,6 @@ Bytecode *BytecodeReader::read() {
                 auto reg2 = read_register();
                 auto reg3 = read_register();
                 bc->push_back(new Subsc2(reg1, reg2, reg3));
-            } break;
-            case opcode::OpCodes::SLICE2: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                auto reg3 = read_register();
-                bc->push_back(new Slice2(reg1, reg2, reg3));
             } break;
             case opcode::OpCodes::CONCAT3: {
                 auto reg1 = read_register();

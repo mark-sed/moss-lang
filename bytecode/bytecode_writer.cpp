@@ -190,25 +190,9 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::PushParent>(op_gen)){
             write_register(o->parent);
         }
-        else if (auto o = dyn_cast<opcode::CreateObject>(op_gen)){
-            write_register(o->dst);
-            write_register(o->cls);
-        }
-        else if (auto o = dyn_cast<opcode::PromoteObject>(op_gen)){
-            write_register(o->src);
-            write_register(o->cls);
-        }
         else if (auto o = dyn_cast<opcode::BuildClass>(op_gen)){
             write_register(o->dst);
             write_string(o->name);
-        }
-        else if (auto o = dyn_cast<opcode::Copy>(op_gen)){
-            write_register(o->dst);
-            write_register(o->src);
-        }
-        else if (auto o = dyn_cast<opcode::DeepCopy>(op_gen)){
-            write_register(o->dst);
-            write_register(o->src);
         }
         else if (auto o = dyn_cast<opcode::Annotate>(op_gen)){
             write_register(o->dst);

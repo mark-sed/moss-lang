@@ -936,14 +936,6 @@ void PushParent::exec(Interpreter *vm) {
     vm->push_parent(cv);
 }
 
-void CreateObject::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
-}
-
-void PromoteObject::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
-}
-
 void BuildClass::exec(Interpreter *vm) {
     auto cls = new ClassValue(name, vm->get_parent_list());
     vm->store(dst, cls);
@@ -951,14 +943,6 @@ void BuildClass::exec(Interpreter *vm) {
     vm->clear_parent_list();
     vm->push_frame();
     cls->set_attrs(vm->get_top_frame());
-}
-
-void Copy::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
-}
-
-void DeepCopy::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
 }
 
 void Annotate::exec(Interpreter *vm) {
@@ -1837,25 +1821,6 @@ void Subsc2::exec(Interpreter *vm) {
 
 void Subsc3::exec(Interpreter *vm) {
     auto res = subsc(vm->load(src1), vm->load_const(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
-}
-
-static Value *slice(Value *s1, Value *s2, Interpreter *vm) {
-    (void) vm;
-    Value *res = nullptr;
-    assert(false && "TODO: Unimplemented opcode");
-    return res;
-}
-
-void Slice::exec(Interpreter *vm) {
-    auto res = slice(vm->load(src1), vm->load(src2), vm);
-    if (res)
-        vm->store(dst, res);
-}
-
-void Slice2::exec(Interpreter *vm) {
-    auto res = slice(vm->load_const(src1), vm->load(src2), vm);
     if (res)
         vm->store(dst, res);
 }
