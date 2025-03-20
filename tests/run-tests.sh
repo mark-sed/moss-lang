@@ -328,7 +328,8 @@ fc1\n1\nfc1\nnone\nnone\n" $1
 
 function test_fors {
     expect_pass "fors.ms" $1
-    expect_out_eq "Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579\n" $1
+    expect_out_eq "Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579
+Pos: [], Vel: []\ndone\n" $1
 }
 
 function test_try_catch {

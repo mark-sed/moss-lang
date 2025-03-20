@@ -16,6 +16,7 @@
 #include "bytecode.hpp"
 #include "source.hpp"
 #include "commons.hpp"
+#include "logging.hpp"
 #include "gc.hpp"
 #include "values.hpp"
 #include <cstdint>
@@ -253,6 +254,9 @@ public:
     bool has_call_frame() {
         return !this->call_frames.empty();
     }
+    size_t get_call_frame_size() {
+        return this->call_frames.size();
+    }
     std::ostream& report_call_stack(std::ostream& os);
 
     /// Pushes a new empty call frame into call frame stack
@@ -318,7 +322,10 @@ public:
     void set_exit_code(int c) { this->exit_code = c; }
 
     /// When set to true, interpreter will halt on the next instruction
-    void set_stop(bool s) { this->stop = s; }
+    void set_stop(bool s) {
+        LOGMAX("Stop was set for interpreter: " << src_file->get_name());
+        this->stop = s;
+    }
     bool is_stop() { return this->stop; }
 
     /// \return Current bytecode index

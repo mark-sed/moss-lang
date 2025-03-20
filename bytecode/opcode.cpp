@@ -62,9 +62,11 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \param vm Current vm
 /// \param funV Function which to call
 /// \param args Arguments to pass in there the 0th arg is `this` argument
+/// \param constr_class If set them this is taken as constructor call and object is pushed
 /// \return Value returned by the function
-Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
-    LOGMAX("Doing a runtime call to " << *funV);
+Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class=nullptr) {
+    LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
+    auto pre_call_cf_size = vm->get_call_frame_size();
     vm->push_call_frame(funV);
     auto cf = vm->get_call_frame();
     cf->set_function(funV);
@@ -76,21 +78,41 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
         cf->get_args().back().dst = argi;
         ++argi;
     }
-    assert(args.size() != 0 && "Missing this argument");
-    cf->get_args().back().name = "this";
+    if (constr_class) {
+        LOGMAX("Creating new object for constructor call");
+        auto obj = new ObjectValue(constr_class);
+        cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
+        cf->set_constructor_call(true);
+    } else {
+        assert(args.size() != 0 && "Missing this argument");
+        cf->get_args().back().name = "this";
+    }
 
     if (funV->get_vm() != vm) {
         LOGMAX("Function detected as external, doing cross module call");
         cf->set_extern_module_call(true);
-        funV->get_vm()->cross_module_call(funV, cf);
+        LOGMAX("Call frame: " << *cf);
+        try {
+            funV->get_vm()->cross_module_call(funV, cf);
+        } catch(Value *v) {
+            LOGMAX("Exception in external function call, popping frame and rethrowing");
+            LOGMAX("Popping call frame after exception");
+            vm->pop_call_frame();
+            assert(pre_call_cf_size == vm->get_call_frame_size());
+            throw v;
+        }
+        LOGMAX("Popping call frame");
+        vm->pop_call_frame();
     }
     else {
+        LOGMAX("Runtime call to method");
         cf->set_runtime_call(true);
+        LOGMAX("Call frame: " << *cf);
         vm->runtime_call(funV);
     }
     auto ret_v = cf->get_extern_return_value();
-
     LOGMAX("Runtime call finished");
+    assert(pre_call_cf_size == vm->get_call_frame_size());
     return ret_v;
 }
 
@@ -295,6 +317,7 @@ void JmpIfFalse::exec(Interpreter *vm) {
 // Finally we just check if fun and call arg size match
 /// \return nullptr on success or diagnostic on error
 static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
+    assert(f && "sanity check");
     LOGMAX("Checking if can call " << *f);
     auto &og_call_args = cf->get_args();
     const auto fun_args = f->get_args();
@@ -515,6 +538,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             if (!cls) {
                 LOGMAX("Super call has no constructor to call, return");
                 vm->store(cf->get_return_reg(), BuiltIns::Nil);
+                LOGMAX("Popping call frame 1");
                 vm->pop_call_frame();
                 return;
             }
@@ -540,6 +564,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 auto obj = new ObjectValue(constructor_of);
                 vm->store(cf->get_return_reg(), obj);
                 // Also pop call frame
+                LOGMAX("Popping call frame 2");
                 vm->pop_call_frame();
                 return;
             }
@@ -566,6 +591,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             }
         }
         if (!fun) {
+            LOGMAX("Popping call frame 3");
             vm->pop_call_frame();
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, 
                 fvl->back()->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
@@ -575,6 +601,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         std::optional<diags::DiagID> err_id = can_call(fun, cf);
         if (err_id) {
             // Pop frame so that call stack is correct
+            LOGMAX("Popping call frame 4");
             vm->pop_call_frame();
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
                 fun->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
@@ -612,6 +639,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         vm->store(cf->get_return_reg(), cf->get_extern_return_value());
         vm->set_bci(cf->get_caller_addr());
         // Remove already pushed in call frame
+        LOGMAX("Popping call frame 6");
         vm->pop_call_frame();
         if (fun->get_vm()->get_exit_code() != 0) {
             LOGMAX("Delagating exit code from external module");
@@ -622,6 +650,39 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         vm->push_frame(fun);
         vm->set_bci(fun->get_body_addr());
     }
+}
+
+FunValue *get_constructor(Interpreter *vm, ClassValue *cls, std::initializer_list<Value *> args, diags::DiagID &err) {
+    auto constr = cls->get_attr(cls->get_name(), vm);
+    if (constr) {
+        FunValue *constrf = dyn_cast<FunValue>(constr);
+        if (!constrf && isa<FunValueList>(constr)) {
+            auto constrflist = dyn_cast<FunValueList>(constr);
+            for (auto f : constrflist->get_funs()) {
+                CallFrame cf;
+                for (auto a: args) {
+                    cf.push_back(a);
+                }
+                auto rv = can_call(f, &cf);
+                if (!rv) {
+                    return f;
+                }
+                err = *rv;
+            }
+        }
+        if (constrf) {
+            CallFrame cf;
+            for (auto a: args) {
+                cf.push_back(a);
+            }
+            auto rv = can_call(constrf, &cf);
+            if (!rv) {
+                return constrf;
+            }
+            err = *rv;
+        }
+    }
+    return nullptr;
 }
 
 void call(Interpreter *vm, Register dst, Value *funV, std::initializer_list<Value *> args) {
@@ -706,12 +767,14 @@ void Return::exec(Interpreter *vm) {
         vm->set_stop(true);
         // pop_call_frame deletes the frame, so we cannot call it here
         // the original owner will delete it.
+        LOGMAX("Dropping call frame");
         vm->drop_call_frame();
         vm->pop_frame();
     } else {
         vm->pop_frame();
         vm->store(return_reg, ret_v);
         vm->set_bci(caller_addr);
+        LOGMAX("Popping call frame");
         vm->pop_call_frame();
     }
 }
@@ -737,12 +800,14 @@ void ReturnConst::exec(Interpreter *vm) {
         vm->set_stop(true);
         // pop_call_frame deletes the frame, so we cannot call it here
         // the original owner will delete it.
+        LOGMAX("Dropping call frame");
         vm->drop_call_frame();
         vm->pop_frame();
     } else {
         vm->pop_frame();
         vm->store(return_reg, ret_v);
         vm->set_bci(caller_addr);
+        LOGMAX("Popping call frame");
         vm->pop_call_frame();
     }
 }
@@ -1965,11 +2030,27 @@ void BuildSpace::exec(Interpreter *vm) {
 }
 
 static void range(Value *start, Value *step, Value *end, Register dst, Interpreter *vm) {
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    FunValue *constr;
+    ClassValue *range_cls = dyn_cast<ClassValue>(BuiltIns::Range);
+    assert(range_cls && "Range is not a class type");
     // We cannot call range if step is nil with this value as it won't match the type
-    if (isa<NilValue>(step))
-        call(vm, dst, BuiltIns::Range, {start, end});
-    else
-        call(vm, dst, BuiltIns::Range, {start, end, step});
+    if (isa<NilValue>(step)) {
+        constr = get_constructor(vm, range_cls, {start, end}, did);
+    } else {
+        constr = get_constructor(vm, range_cls, {start, end, step}, did);
+    }
+    if (!constr) {
+        if (did != diags::DiagID::UNKNOWN) {
+            raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, "Range")));
+        } else {
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                constr->get_name().c_str(), diags::DIAG_MSGS[did])));
+        }
+    }
+    Value *rval = nullptr;
+    rval = runtime_method_call(vm, constr, {start, end, step}, range_cls);
+    vm->store(dst, rval);
 }
 
 void CreateRange::exec(Interpreter *vm) {
@@ -2092,8 +2173,9 @@ void For::exec(Interpreter *vm) {
                     assert(v && "sanity check");
                     vm->store(this->index, v);
                 } catch (Value *v) {
-                    if (v->get_type() == BuiltIns::StopIteration)
+                    if (v->get_type() == BuiltIns::StopIteration) {
                         vm->set_bci(this->addr);
+                    }
                     else
                         throw v;
                 }
@@ -2109,9 +2191,10 @@ void For::exec(Interpreter *vm) {
             assert(v && "sanity check");
             vm->store(this->index, v);
         } catch (Value *v) {
-            if (v->get_type() == BuiltIns::StopIteration)
+            if (v->get_type() == BuiltIns::StopIteration) {
+                // We are still in __next and need to pop it
                 vm->set_bci(this->addr);
-            else
+            } else
                 throw v;
         }
     }

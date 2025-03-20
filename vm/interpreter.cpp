@@ -369,7 +369,5 @@ void Interpreter::run() {
             global_controls::trigger_gc = false;
         }
     }
-    
-
     LOG1("Finished interpreter");
 }

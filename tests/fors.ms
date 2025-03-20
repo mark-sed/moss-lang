@@ -89,3 +89,23 @@ for(i: some_range) {
 for (j: some_range)
     j
 "\n"
+
+// For inside of constructor
+class Particle {
+
+    fun Particle(bounds) {
+        this.velocity = []
+        for (i: 0..2) {   
+        }
+        this.position = []
+    }
+
+    fun __String() {
+        return "Pos: " ++ this.position ++ ", Vel: " ++ this.velocity
+    }
+}
+
+
+p = Particle([[-50, 50], [-50, 50]])
+p ++ "\n"
+"done\n"
