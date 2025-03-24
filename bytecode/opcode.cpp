@@ -251,6 +251,54 @@ void StoreConstAttr::exec(Interpreter *vm) {
     assert(false && "TODO: Unimplemented opcode");
 }
 
+static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
+    if (auto objval = dyn_cast<ObjectValue>(obj)) {
+        assert(false && "TODO: Implement method for setting subsc");
+    } else {
+        obj->set_subsc(vm, key, src);
+    }
+}
+
+void StoreSubsc::exec(Interpreter *vm) {
+    auto *dstobj = vm->load(this->obj);
+    assert(dstobj && "non existent register");
+    auto *v = vm->load(this->src);
+    assert(v && "non existent register");
+    auto *k = vm->load(this->key);
+    assert(k && "non existent register");
+    set_subsc(vm, v, dstobj, k);
+}
+
+void StoreConstSubsc::exec(Interpreter *vm) {
+    auto *dstobj = vm->load(this->obj);
+    assert(dstobj && "non existent register");
+    auto *v = vm->load_const(this->csrc);
+    assert(v && "non existent register");
+    auto *k = vm->load(this->key);
+    assert(k && "non existent register");
+    set_subsc(vm, v, dstobj, k);
+}
+
+void StoreSubscConst::exec(Interpreter *vm) {
+    auto *dstobj = vm->load(this->obj);
+    assert(dstobj && "non existent register");
+    auto *v = vm->load(this->src);
+    assert(v && "non existent register");
+    auto *k = vm->load_const(this->ckey);
+    assert(k && "non existent register");
+    set_subsc(vm, v, dstobj, k);
+}
+
+void StoreConstSubscConst::exec(Interpreter *vm) {
+    auto *dstobj = vm->load(this->obj);
+    assert(dstobj && "non existent register");
+    auto *v = vm->load_const(this->csrc);
+    assert(v && "non existent register");
+    auto *k = vm->load_const(this->ckey);
+    assert(k && "non existent register");
+    set_subsc(vm, v, dstobj, k);
+}
+
 void StoreIntConst::exec(Interpreter *vm) {
     vm->store_const(dst, new IntValue(val));
 }

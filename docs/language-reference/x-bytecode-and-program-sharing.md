@@ -72,6 +72,10 @@ xxh - STORE_NAME        %dst, "name"
 xxh - STORE_CONST       %dst, #val
 xxh - STORE_ATTR        %src, %obj, "name"
 xxh - STORE_CONST_ATTR  #val, %obj, "name"
+xxh - STORE_SUBSC       %src, %obj, %key
+xxh - STORE_CONST_SUBSC #val, %obj, %key
+xxh - STORE_SUBSC_CONST %src, %obj, #ckey
+xxh - STORE_C_SUBSC_C   #val, %obj, #ckey
 
 xxh - STORE_INT_CONST   #dst, int
 xxh - STORE_FLOAT_CONST #dst, float

@@ -130,6 +130,9 @@ enum DiagID {
     INVALID_FOPEN_MODE,     ///< Not a known file open mode
     CANNOT_OPEN_FILE,       ///< Cannot open file
     BAD_OBJ_PASSED,         ///< Method got wrong this object type
+    TYPE_NOT_SUBSCRIPT,     ///< Cannot [] the type
+    STR_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
+    LIST_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -240,6 +243,9 @@ static const char * DIAG_MSGS[] = {
     "Invalid file open mode '%s'",
     "File '%s' was not found or cannot be open",
     "Incorrect object type ('%s') passed as this argument",
+    "Type '%s' is not subscriptable",
+    "String indices must be Int or Range, but got '%s'",
+    "List indices must be Int or Range, but got '%s'",
 };
 
 /// \brief Diagnostic message for error reporting

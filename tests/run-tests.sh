@@ -354,6 +354,22 @@ function test_attributes {
 4\n5\n4\nnil\n5\n4\nnil\n" $1
 }
 
+function test_subscript_set {
+    expect_pass "subscript_set.ms" $1
+    expect_out_eq "Hi there
+Hello there
+> Hello there
+> Hello there!
+[1, 2, 3]
+[1, true, 3]
+[1, true, true]
+[false, true, true]
+Val: 1
+Val: <class Int>
+[1, 2, 3, 4]
+[-8, 2, 3, 4]\n" $1
+}
+
 function test_inheritance {
     expect_pass "inheritance.ms" $1
     expect_out_eq "A\n<object of class A>\nB\n<object of class B>\nB
@@ -806,6 +822,7 @@ function run_all_tests {
     run_test try_catch
     run_test classes
     run_test attributes
+    run_test subscript_set
     run_test inheritance
     run_test operator_funs
     run_test lists

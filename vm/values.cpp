@@ -29,13 +29,20 @@ Value::~Value() {
 }
 
 Value *Value::iter(Interpreter *vm) {
+    assert(!isa<ObjectValue>(this) && "object value should be handled in caller");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
 }
 
 Value *Value::next(Interpreter *vm) {
+    assert(!isa<ObjectValue>(this) && "object value should be handled in caller");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
+}
+
+void Value::set_subsc(Interpreter *vm, Value *key, Value *val) {
+    assert(!isa<ObjectValue>(this) && "object value should be handled in caller");
+    opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_NOT_SUBSCRIPT, this->get_type()->get_name().c_str())));
 }
 
 Value *Value::get_attr(ustring name, Interpreter *caller_vm) {
@@ -125,6 +132,37 @@ Value *ListValue::next(Interpreter *vm) {
     auto val = this->vals[iterator];
     this->iterator++;
     return val;
+}
+
+void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
+    assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
+    auto key_int = dyn_cast<IntValue>(key);
+    if (!key_int)
+        opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::STR_INDEX_NOT_INT_OR_RANGE, key->get_type()->get_name().c_str())));
+    auto index = key_int->get_value();
+    if ((index < 0 && -1*index > static_cast<opcode::IntConst>(this->value.length())) || (index >= 0 && index >= static_cast<opcode::IntConst>(this->value.length()))) {
+        opcode::raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, name.c_str(), index)));
+    }
+    auto val_str = val->as_string();
+    if (index >= 0)
+        this->value.replace(key_int->get_value(), 1, val_str);
+    else
+        this->value.replace(this->value.length() + key_int->get_value(), 1, val_str);
+}
+
+void ListValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
+    assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
+    auto key_int = dyn_cast<IntValue>(key);
+    if (!key_int)
+        opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::LIST_INDEX_NOT_INT_OR_RANGE, key->get_type()->get_name().c_str())));
+    auto index = key_int->get_value();
+    if ((index < 0 && -1*index > static_cast<opcode::IntConst>(this->vals.size())) || (index >= 0 && index >= static_cast<opcode::IntConst>(this->vals.size()))) {
+        opcode::raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, name.c_str(), index)));
+    } 
+    if (index >= 0)
+        this->vals[key_int->get_value()] = val;
+    else
+    this->vals[this->vals.size() + key_int->get_value()] = val;
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {

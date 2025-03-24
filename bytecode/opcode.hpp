@@ -57,6 +57,10 @@ enum OpCodes : opcode_t {
     STORE_CONST, //       %dst, #val
     STORE_ATTR, //        %src, %obj, "name"
     STORE_CONST_ATTR, //  #val, %obj, "name"
+    STORE_SUBSC, //       %src, %obj, %key
+    STORE_CONST_SUBSC, // #val, %obj, %key
+    STORE_SUBSC_CONST, // %src, %obj, #ckey
+    STORE_C_SUBSC_C, //   #val, %obj, #ckey
 
     STORE_INT_CONST, //   #dst, int
     STORE_FLOAT_CONST, // #dst, float
@@ -470,6 +474,102 @@ public:
         auto casted = dyn_cast<StoreConstAttr>(other);
         if (!casted) return false;
         return casted->csrc == csrc && casted->obj == obj && casted->name == name;
+    }
+};
+
+class StoreSubsc : public OpCode {
+public:
+    Register src;
+    Register obj;
+    Register key;
+
+    static const OpCodes ClassType = OpCodes::STORE_SUBSC;
+
+    StoreSubsc(Register src, Register obj, Register key) 
+        : OpCode(ClassType, "STORE_SUBSC"), src(src), obj(obj), key(key) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << src << ", %" << obj << ", %" << key;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreSubsc>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->obj == obj && casted->key == key;
+    }
+};
+
+class StoreConstSubsc : public OpCode {
+public:
+    Register csrc;
+    Register obj;
+    Register key;
+
+    static const OpCodes ClassType = OpCodes::STORE_CONST_SUBSC;
+
+    StoreConstSubsc(Register csrc, Register obj, Register key) 
+        : OpCode(ClassType, "STORE_CONST_SUBSC"), csrc(csrc), obj(obj), key(key) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  #" << csrc << ", %" << obj << ", %" << key;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreConstSubsc>(other);
+        if (!casted) return false;
+        return casted->csrc == csrc && casted->obj == obj && casted->key == key;
+    }
+};
+
+class StoreSubscConst : public OpCode {
+public:
+    Register src;
+    Register obj;
+    Register ckey;
+
+    static const OpCodes ClassType = OpCodes::STORE_SUBSC_CONST;
+
+    StoreSubscConst(Register src, Register obj, Register ckey) 
+        : OpCode(ClassType, "STORE_SUBSC_CONST"), src(src), obj(obj), ckey(ckey) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << src << ", %" << obj << ", #" << ckey;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreSubscConst>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->obj == obj && casted->ckey == ckey;
+    }
+};
+
+class StoreConstSubscConst : public OpCode {
+public:
+    Register csrc;
+    Register obj;
+    Register ckey;
+
+    static const OpCodes ClassType = OpCodes::STORE_C_SUBSC_C;
+
+    StoreConstSubscConst(Register csrc, Register obj, Register ckey) 
+        : OpCode(ClassType, "STORE_C_SUBSC_C"), csrc(csrc), obj(obj), ckey(ckey) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  #" << csrc << ", %" << obj << ", #" << ckey;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreConstSubscConst>(other);
+        if (!casted) return false;
+        return casted->csrc == csrc && casted->obj == obj && casted->ckey == ckey;
     }
 };
 

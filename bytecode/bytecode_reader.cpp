@@ -137,6 +137,30 @@ Bytecode *BytecodeReader::read() {
                 auto str = read_string();
                 bc->push_back(new StoreConstAttr(reg1, reg2, str));
             } break;
+            case opcode::OpCodes::STORE_SUBSC: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto reg3 = read_register();
+                bc->push_back(new StoreSubsc(reg1, reg2, reg3));
+            } break;
+            case opcode::OpCodes::STORE_CONST_SUBSC: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto reg3 = read_register();
+                bc->push_back(new StoreConstSubsc(reg1, reg2, reg3));
+            } break;
+            case opcode::OpCodes::STORE_SUBSC_CONST: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto reg3 = read_register();
+                bc->push_back(new StoreSubscConst(reg1, reg2, reg3));
+            } break;
+            case opcode::OpCodes::STORE_C_SUBSC_C: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto reg3 = read_register();
+                bc->push_back(new StoreConstSubscConst(reg1, reg2, reg3));
+            } break;
             case opcode::OpCodes::STORE_INT_CONST: {
                 auto reg = read_register();
                 auto cint = read_const_int();

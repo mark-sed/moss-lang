@@ -24,7 +24,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
           !(isa<Variable>(expr->get_left()) || isa<Multivar>(expr->get_left()) || isa<OperatorLiteral>(expr->get_left()))) {
         // Dont emit also scope nor access
         BinaryExpr *be = dyn_cast<BinaryExpr>(expr->get_left());
-        if (!be || be->get_op().get_kind() != OperatorKind::OP_ACCESS ||
+        if (!be || (be->get_op().get_kind() != OperatorKind::OP_ACCESS && be->get_op().get_kind() != OperatorKind::OP_SUBSC) || 
                 expr->get_op().get_kind() != OperatorKind::OP_SET) {
             bool is_shc = expr->get_op().get_kind() == OperatorKind::OP_SHORT_C_AND || expr->get_op().get_kind() == OperatorKind::OP_SHORT_C_OR;
             left = emit(expr->get_left(), is_shc);
@@ -174,17 +174,35 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 append(new StoreName(reg->reg(), irvar->get_name()));
                 return reg;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto rval = right;
-                if (right->is_const()) {
-                    append(new StoreConst(next_reg(), free_reg(right)));
-                    rval = last_reg();
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (!right->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(right->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (right->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(right->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!right->is_const() && index->is_const()){
+                        append(new StoreSubscConst(right->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(right->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    right->set_silent(true);
+                    return right;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto rval = right;
+                    if (right->is_const()) {
+                        append(new StoreConst(next_reg(), free_reg(right)));
+                        rval = last_reg();
+                    }
+                    auto leftE = emit(be->get_left(), true);
+                    rval->set_silent(true);
+                    append(new StoreAttr(rval->reg(), free_reg(leftE), rightE->get_name()));
+                    return rval;
                 }
-                auto leftE = emit(be->get_left(), true);
-                rval->set_silent(true);
-                append(new StoreAttr(rval->reg(), free_reg(leftE), rightE->get_name()));
-                return rval;
+                assert("Non-assignable expression");
+                return nullptr;
             } else if (auto mva = dyn_cast<Multivar>(expr->get_left())) {
                 if (right->is_const()) {
                     append(new opcode::StoreConst(next_reg(), free_reg(right)));

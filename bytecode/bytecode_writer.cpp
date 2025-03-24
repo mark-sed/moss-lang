@@ -89,6 +89,26 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->obj);
             write_string(o->name);
         }
+        else if (auto o = dyn_cast<opcode::StoreSubsc>(op_gen)){
+            write_register(o->src);
+            write_register(o->obj);
+            write_register(o->key);
+        }
+        else if (auto o = dyn_cast<opcode::StoreConstSubsc>(op_gen)){
+            write_register(o->csrc);
+            write_register(o->obj);
+            write_register(o->key);
+        }
+        else if (auto o = dyn_cast<opcode::StoreSubscConst>(op_gen)){
+            write_register(o->src);
+            write_register(o->obj);
+            write_register(o->ckey);
+        }
+        else if (auto o = dyn_cast<opcode::StoreConstSubscConst>(op_gen)){
+            write_register(o->csrc);
+            write_register(o->obj);
+            write_register(o->ckey);
+        }
         else if (auto o = dyn_cast<opcode::StoreIntConst>(op_gen)){
             write_register(o->dst);
             write_int(o->val);

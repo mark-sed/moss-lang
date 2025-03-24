@@ -128,6 +128,7 @@ public:
     }
     virtual Value *iter(Interpreter *vm);
     virtual Value *next(Interpreter *vm);
+    virtual void set_subsc(Interpreter *vm, Value *obj, Value *val);
 
     void annotate(ustring name, Value *val);
     std::map<ustring, Value *> get_annotations() { return this->annotations; }
@@ -280,6 +281,7 @@ public:
     }
 
     virtual Value *next(Interpreter *vm) override;
+    virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
     virtual opcode::StringConst dump() override {
         return "\"" + value + "\"";
@@ -355,6 +357,7 @@ public:
     }
 
     virtual Value *next(Interpreter *vm) override;
+    virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "List(" << vals.size() << ") [";
