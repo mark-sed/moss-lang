@@ -41,6 +41,8 @@ Value *Value::next(Interpreter *vm) {
 }
 
 void Value::set_subsc(Interpreter *vm, Value *key, Value *val) {
+    (void)key;
+    (void)val;
     assert(!isa<ObjectValue>(this) && "object value should be handled in caller");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_NOT_SUBSCRIPT, this->get_type()->get_name().c_str())));
 }

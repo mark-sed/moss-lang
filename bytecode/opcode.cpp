@@ -21,6 +21,8 @@ using namespace moss::opcode;
 /// This macro asserts that condition is true otherwise it raises passed value 
 #define op_assert(cond, msg) do { if(!(cond)) raise(msg); } while(0)
 
+FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err);
+
 std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
     std::stringstream ss;
     ss << vm->get_bci() << "\t" << *this << " :: " << msg;
@@ -70,7 +72,7 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
     vm->push_call_frame(funV);
     auto cf = vm->get_call_frame();
     cf->set_function(funV);
-    int argi = 0;
+    size_t argi = 0;
     for (auto v: args) {
         cf->push_back(v);
         if (argi < funV->get_args().size())
@@ -253,7 +255,19 @@ void StoreConstAttr::exec(Interpreter *vm) {
 
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
     if (auto objval = dyn_cast<ObjectValue>(obj)) {
-        assert(false && "TODO: Implement method for setting subsc");
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        FunValue *setf = lookup_method(vm, objval, "__setitem", {key, src}, did);
+        if (setf) {
+            runtime_method_call(vm, setf, {key, src, objval});
+        } else {
+            if (did == diags::DiagID::UNKNOWN) {
+                raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SETITEM_DEFINED, objval->get_type()->get_name().c_str())));
+            } else {
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                    ".__setitem", diags::DIAG_MSGS[did])));
+            }
+            
+        }
     } else {
         obj->set_subsc(vm, key, src);
     }
@@ -554,7 +568,6 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     assert(funV && "nullptr function passed in");
 
     ClassValue *constructor_of = nullptr;
-    bool super_call = false;
     // Class constructor call
     if (isa<ClassValue>(funV) || isa<SuperValue>(funV)) {
         LOGMAX("Constructor call");
@@ -590,7 +603,6 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 vm->pop_call_frame();
                 return;
             }
-            super_call = true;
             LOGMAX("Super call to: " << *cls);
         }
         assert(cls && "sanity check");
@@ -700,8 +712,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
 }
 
-FunValue *get_constructor(Interpreter *vm, ClassValue *cls, std::initializer_list<Value *> args, diags::DiagID &err) {
-    auto constr = cls->get_attr(cls->get_name(), vm);
+FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
+    auto constr = obj->get_attr(name, vm);
     if (constr) {
         FunValue *constrf = dyn_cast<FunValue>(constr);
         if (!constrf && isa<FunValueList>(constr)) {
@@ -1101,7 +1113,7 @@ void Output::exec(Interpreter *vm) {
     std::cout << to_string(vm, v);
 }
 
-static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpreter *vm) {
+static Value *concat(Value *s1, Value *s2, Interpreter *vm) {
     (void)vm;
     assert(s1 && "Value or nil should have been loaded");
     assert(s2 && "Value or nil should have been loaded");
@@ -1113,17 +1125,17 @@ static Value *concat(Value *s1, Value *s2, Register src1, Register src2, Interpr
 }
 
 void Concat::exec(Interpreter *vm) {
-    auto res = concat(vm->load(src1), vm->load(src2), src1, src2, vm);
+    auto res = concat(vm->load(src1), vm->load(src2), vm);
     vm->store(dst, res);
 }
 
 void Concat2::exec(Interpreter *vm) {
-    auto res = concat(vm->load_const(src1), vm->load(src2), src1, src2, vm);
+    auto res = concat(vm->load_const(src1), vm->load(src2), vm);
     vm->store(dst, res);
 }
 
 void Concat3::exec(Interpreter *vm) {
-    auto res = concat(vm->load(src1), vm->load_const(src2), src1, src2, vm);
+    auto res = concat(vm->load(src1), vm->load_const(src2), vm);
     vm->store(dst, res);
 }
 
@@ -2084,12 +2096,12 @@ static void range(Value *start, Value *step, Value *end, Register dst, Interpret
     assert(range_cls && "Range is not a class type");
     // We cannot call range if step is nil with this value as it won't match the type
     if (isa<NilValue>(step)) {
-        constr = get_constructor(vm, range_cls, {start, end}, did);
+        constr = lookup_method(vm, range_cls, range_cls->get_name(), {start, end}, did);
     } else {
-        constr = get_constructor(vm, range_cls, {start, end, step}, did);
+        constr = lookup_method(vm, range_cls, range_cls->get_name(), {start, end, step}, did);
     }
     if (!constr) {
-        if (did != diags::DiagID::UNKNOWN) {
+        if (did == diags::DiagID::UNKNOWN) {
             raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, "Range")));
         } else {
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
@@ -2214,7 +2226,6 @@ void For::exec(Interpreter *vm) {
                     }
                 }
             }
-            // If it cannot be called, then don't call it
             if (nextf) {
                 try {
                     auto v = runtime_method_call(vm, nextf, {coll});

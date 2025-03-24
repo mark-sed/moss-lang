@@ -133,6 +133,7 @@ enum DiagID {
     TYPE_NOT_SUBSCRIPT,     ///< Cannot [] the type
     STR_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
     LIST_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
+    NO_SETITEM_DEFINED,     ///< Calling [a] = b without __setitem method
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -246,6 +247,7 @@ static const char * DIAG_MSGS[] = {
     "Type '%s' is not subscriptable",
     "String indices must be Int or Range, but got '%s'",
     "List indices must be Int or Range, but got '%s'",
+    "Object of class '%s' cannot set indexed value — __setitem method has to be defined",
 };
 
 /// \brief Diagnostic message for error reporting

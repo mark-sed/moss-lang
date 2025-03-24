@@ -360,14 +360,21 @@ function test_subscript_set {
 Hello there
 > Hello there
 > Hello there!
+caught
 [1, 2, 3]
 [1, true, 3]
 [1, true, true]
 [false, true, true]
+caught
 Val: 1
 Val: <class Int>
 [1, 2, 3, 4]
-[-8, 2, 3, 4]\n" $1
+[-8, 2, 3, 4]
+[-8, -7, -6, 4]
+caught
+[nil, 1, 2]
+[0, 1, 2]
+caught\n" $1
 }
 
 function test_inheritance {
