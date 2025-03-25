@@ -49,3 +49,55 @@ a.v
 a.v %= 4
 a.v
 "\n"
+
+l_str = ["a", "b", "c"]
+l_str
+"\n"
+l_str[0] ++= l_str[1]
+l_str[1] ++= "d"
+l_str
+"\n"
+
+l_int1 = [1, 2, 3]
+l_int1
+"\n"
+l_int1[1] ^= l_int1[2]
+l_int1[2] ^= 0
+l_int1
+"\n"
+
+l_int1
+"\n"
+l_int1[0] += l_int1[1]
+l_int1[2] += -1
+l_int1
+"\n"
+
+l_int1
+"\n"
+l_int1[0] -= l_int1[0]
+l_int1[1] -= 8
+l_int1
+"\n"
+
+l_int2 = [1, 5, 10]
+l_int2
+"\n"
+l_int2[2] /= l_int2[1]
+l_int2[0] /= 2.0
+l_int2
+"\n"
+
+l_int2
+"\n"
+l_int2[2] *= l_int2[1]
+l_int2[0] *= 2
+l_int2
+"\n"
+
+l_int2
+"\n"
+l_int2[2] %= l_int2[1]
+l_int2[0] %= 2
+l_int2
+"\n"

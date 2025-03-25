@@ -465,7 +465,14 @@ function test_range_expr {
 
 function test_compound_assignment {
     expect_pass "compound_assignment.ms" $1
-    expect_out_eq "I say hi\nI say hi!\nI say hi!?\n2\n4\n14\n9\n3\n6\n2\n" $1
+    expect_out_eq "I say hi\nI say hi!\nI say hi!?\n2\n4\n14\n9\n3\n6\n2
+[\"a\", \"b\", \"c\"]\n[\"ab\", \"bd\", \"c\"]
+[1, 2, 3]\n[1, 8, 1]
+[1, 8, 1]\n[9, 8, 0]
+[9, 8, 0]\n[0, 0, 0]
+[1, 5, 10]\n[0.500000, 5, 2]
+[0.500000, 5, 2]\n[1.000000, 5, 10]
+[1.000000, 5, 10]\n[1.000000, 5, 0]\n" $1
 }
 
 function test_calls {

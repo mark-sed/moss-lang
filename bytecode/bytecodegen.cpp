@@ -219,7 +219,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_CONCAT: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -237,21 +237,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Concat3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Concat(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Concat3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Concat(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Concat3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Concat(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_EXP: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -269,21 +290,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Exp3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Exp(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Exp3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Exp(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Exp3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Exp(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_PLUS: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -301,21 +343,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Add3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Add(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Add3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Add(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Add3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Add(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_MINUS: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -333,21 +396,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Sub3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Sub(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Sub3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Sub(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Sub3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Sub(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_DIV: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -365,21 +449,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Div3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Div(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Div3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Div(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Div3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Div(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_MUL: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -397,21 +502,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Mul3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Mul(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Mul3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Mul(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Mul3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Mul(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_SET_MOD: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
@@ -429,21 +555,42 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 left->set_silent(true);
                 return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
-                auto rightE = dyn_cast<Variable>(be->get_right());
-                assert(rightE && "Non assignable access");
-                auto leftE = emit(be->get_left(), true);
-                if (right->is_const())
-                    append(new Mod3(next_reg(), free_reg(left), free_reg(right)));
-                else
-                    append(new Mod(next_reg(), free_reg(left), free_reg(right)));
-                auto retv = last_reg();
-                retv->set_silent(true);
-                append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
-                return retv;
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Mod3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Mod(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    if (!retv->is_const() && !index->is_const()) {
+                        append(new StoreSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (retv->is_const() && !index->is_const()){
+                        append(new StoreConstSubsc(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else if (!retv->is_const() && index->is_const()){
+                        append(new StoreSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreConstSubscConst(retv->reg(), free_reg(leftE), free_reg(index)));
+                    }
+                    return retv;
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    if (right->is_const())
+                        append(new Mod3(next_reg(), free_reg(left), free_reg(right)));
+                    else
+                        append(new Mod(next_reg(), free_reg(left), free_reg(right)));
+                    auto retv = last_reg();
+                    retv->set_silent(true);
+                    append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
+                    return retv;
+                }
             } else {
                 assert(false && "Missing assignment type");
             }
-        }
+        } break;
         case OperatorKind::OP_EQ: {
             if (left->is_const() && right->is_const()) {
                 append(new StoreConst(next_reg(), free_reg(right)));
