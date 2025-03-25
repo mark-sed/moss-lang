@@ -191,15 +191,13 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
                     auto rightE = dyn_cast<Variable>(be->get_right());
                     assert(rightE && "Non assignable access");
-                    auto rval = right;
-                    if (right->is_const()) {
-                        append(new StoreConst(next_reg(), free_reg(right)));
-                        rval = last_reg();
-                    }
                     auto leftE = emit(be->get_left(), true);
-                    rval->set_silent(true);
-                    append(new StoreAttr(rval->reg(), free_reg(leftE), rightE->get_name()));
-                    return rval;
+                    if (!right->is_const())
+                        append(new StoreAttr(right->reg(), free_reg(leftE), rightE->get_name()));
+                    else
+                        append(new StoreConstAttr(right->reg(), free_reg(leftE), rightE->get_name()));
+                    right->set_silent(true);
+                    return right;
                 }
                 assert("Non-assignable expression");
                 return nullptr;

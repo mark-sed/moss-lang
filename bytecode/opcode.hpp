@@ -467,7 +467,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << csrc << ", %" << obj << ", \"" << name << "\"";
+        os << mnem << "  #" << csrc << ", %" << obj << ", \"" << name << "\"";
         return os;
     }
     bool equals(OpCode *other) override {
@@ -876,7 +876,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << csrc;
+        os << mnem << "  #" << csrc;
         return os;
     }
     bool equals(OpCode *other) override {

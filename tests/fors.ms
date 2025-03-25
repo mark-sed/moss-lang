@@ -109,3 +109,19 @@ class Particle {
 p = Particle([[-50, 50], [-50, 50]])
 p ++ "\n"
 "done\n"
+
+class WrongNext {
+    fun __iter() {
+        this.i = 0
+        return this
+    }
+
+    fun __next(i) {
+        raise StopIteration()
+    }
+}
+
+try
+    for (iwi : WrongNext()) {}
+catch (e:TypeError)
+    "caught\n"

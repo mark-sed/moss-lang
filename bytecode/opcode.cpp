@@ -250,7 +250,14 @@ void StoreAttr::exec(Interpreter *vm) {
 }
 
 void StoreConstAttr::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto *dstobj = vm->load(this->obj);
+    assert(dstobj && "non existent register");
+    op_assert(dstobj->is_mutable(), mslib::create_attribute_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR,
+            dstobj->get_name().c_str())));
+    auto *v = vm->load_const(this->csrc);
+    assert(v && "non existent register");
+    dstobj->set_attr(this->name, v);
 }
 
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
@@ -263,8 +270,7 @@ static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
             if (did == diags::DiagID::UNKNOWN) {
                 raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SETITEM_DEFINED, objval->get_type()->get_name().c_str())));
             } else {
-                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
-                    ".__setitem", diags::DIAG_MSGS[did])));
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__setitem", diags::DIAG_MSGS[did])));
             }
             
         }
@@ -2214,35 +2220,25 @@ void For::exec(Interpreter *vm) {
     auto coll = vm->load(this->collection);
     assert(coll && "sanity check");
     if (isa<ObjectValue>(coll)) {
-        auto nextv = coll->get_attr("__next", vm);
-        if (nextv) {
-            FunValue *nextf = dyn_cast<FunValue>(nextv);
-            if (!nextf && isa<FunValueList>(nextv)) {
-                auto nextlist = dyn_cast<FunValueList>(nextv);
-                for (auto f : nextlist->get_funs()) {
-                    if (f->get_args().size() == 0) {
-                        nextf = f;
-                        break;
-                    }
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        FunValue *nextf = lookup_method(vm, coll, "__next", {}, did);
+        if (nextf) {
+            try {
+                auto v = runtime_method_call(vm, nextf, {coll});
+                assert(v && "sanity check");
+                vm->store(this->index, v);
+            } catch (Value *v) {
+                if (v->get_type() == BuiltIns::StopIteration) {
+                    vm->set_bci(this->addr);
                 }
-            }
-            if (nextf) {
-                try {
-                    auto v = runtime_method_call(vm, nextf, {coll});
-                    assert(v && "sanity check");
-                    vm->store(this->index, v);
-                } catch (Value *v) {
-                    if (v->get_type() == BuiltIns::StopIteration) {
-                        vm->set_bci(this->addr);
-                    }
-                    else
-                        throw v;
-                }
-            } else {
-                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, coll->get_type()->get_name().c_str())));
+                else
+                    throw v;
             }
         } else {
-            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, coll->get_type()->get_name().c_str())));
+            if (did == diags::DiagID::UNKNOWN)
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, coll->get_type()->get_name().c_str())));
+            else
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__next", diags::DIAG_MSGS[did])));
         }
     } else {
         try {
@@ -2266,30 +2262,16 @@ void Iter::exec(Interpreter *vm) {
     // this data
     if (isa<ObjectValue>(coll)) {
         // Call __iter only if it exists otherwise use this object
-        auto iterv = coll->get_attr("__iter", vm);
-        if (iterv) {
-            FunValue *iterf = dyn_cast<FunValue>(iterv);
-            if (!iterf && isa<FunValueList>(iterv)) {
-                auto iterlist = dyn_cast<FunValueList>(iterv);
-                for (auto f : iterlist->get_funs()) {
-                    if (f->get_args().size() == 0) {
-                        iterf = f;
-                        break;
-                    }
-                }
-            }
-            if (iterf) {
-                LOGMAX("Calling object iterator");
-                auto new_iter = runtime_method_call(vm, iterf, {coll});
-                if (!isa<ObjectValue>(new_iter))
-                    new_iter->iter(vm);
-                vm->store(iterator, new_iter);
-            } else {
-                // If it cannot be called, then don't call 
-                LOGMAX("No object iterator found, using the object");
-                vm->store(iterator, coll);
-            }
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        FunValue *iterf = lookup_method(vm, coll, "__iter", {}, did);
+        if (iterf) {
+            LOGMAX("Calling object iterator");
+            auto new_iter = runtime_method_call(vm, iterf, {coll});
+            if (!isa<ObjectValue>(new_iter))
+                new_iter->iter(vm);
+            vm->store(iterator, new_iter);
         } else {
+            // If it cannot be called, then don't call 
             LOGMAX("No object iterator found, using the object");
             vm->store(iterator, coll);
         }

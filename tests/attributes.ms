@@ -88,3 +88,12 @@ FooAtt.att(f)
 "\n"
 f.att()
 "\n"
+
+class FooConst {
+    fun FooConst() {
+        this.valid = true
+    }
+}
+
+FooConst().valid
+"\n"

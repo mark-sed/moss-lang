@@ -329,7 +329,7 @@ fc1\n1\nfc1\nnone\nnone\n" $1
 function test_fors {
     expect_pass "fors.ms" $1
     expect_out_eq "Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579
-Pos: [], Vel: []\ndone\n" $1
+Pos: [], Vel: []\ndone\ncaught\n" $1
 }
 
 function test_try_catch {
@@ -351,7 +351,7 @@ function test_attributes {
     expect_pass "attributes.ms" $1
     expect_out_eq "constructed\n56\n56\n56\n<object of class Foo>
 <object of class B>\n91\n91\n91 != 65\n-1 == -1
-4\n5\n4\nnil\n5\n4\nnil\n" $1
+4\n5\n4\nnil\n5\n4\nnil\ntrue\n" $1
 }
 
 function test_subscript_set {
@@ -715,7 +715,9 @@ function test_lib_random {
 function test_lib_math {
     expect_pass "stdlib_tests/math.ms" $1 
     expect_out_eq "1\n5\n0\n8
-0.00\n0.50\n0.00\n1.00\n0.00\n-0.9\n" $1
+0.00\n0.50\n0.00\n1.00\n0.00\n-0.9
+1.00\n0.50\n0.00\n-1.0\n1.00\n-0.3
+0.00\n1.00\n-0.0\n0.00\n-0.0\n2.29\n" $1
 }
 
 function test_lib_file {

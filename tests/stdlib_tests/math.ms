@@ -7,14 +7,28 @@ Int(Math.euler_gamma)
 Int(Math.sqrt(4) + Math.sqrt(36))
 "\n"
 
-fun sin_test(x) {
-    v = Math.sin(x)
+fun f_test(f, x) {
+    v = f(x)
     return String(v)[0..4] ++ "\n"
 }
 
-sin_test(0)
-sin_test(Math.pi/6)
-sin_test(Math.pi)
-sin_test(-3 * Math.pi / 2)
-sin_test(-8 * Math.pi)
-sin_test(42)
+f_test(Math.sin, 0)
+f_test(Math.sin, Math.pi/6)
+f_test(Math.sin, Math.pi)
+f_test(Math.sin, -3 * Math.pi / 2)
+f_test(Math.sin, -8 * Math.pi)
+f_test(Math.sin, 42)
+
+f_test(Math.cos, 0)
+f_test(Math.cos, Math.pi/3)
+f_test(Math.cos, Math.pi/2)
+f_test(Math.cos, Math.pi)
+f_test(Math.cos, Math.pi * 4)
+f_test(Math.cos, 42)
+
+f_test(Math.tan, 0)
+f_test(Math.tan, Math.pi/4)
+f_test(Math.tan, Math.pi)
+f_test(Math.tan, -Math.pi)
+f_test(Math.tan, Math.pi * 4)
+f_test(Math.tan, 42)
