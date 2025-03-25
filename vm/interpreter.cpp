@@ -268,7 +268,16 @@ void Interpreter::runtime_call(FunValue *fun) {
     push_frame();
     get_call_frame()->set_function(fun);
     set_bci(fun->get_body_addr());
-    run();
+    try {
+        run();
+    } catch (Value *e) {
+        this->bci = pre_call_bci;
+        this->bci_modified = pre_bci_modified;
+        this->stop = pre_stop;
+        // No return encountered so pop frame
+        pop_frame();
+        throw e;
+    }
 
     this->bci = pre_call_bci;
     this->bci_modified = pre_bci_modified;
@@ -336,6 +345,7 @@ void Interpreter::run() {
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
         try {
+            //outs << *opc << "\n";
             opc->exec(this);
         } catch (Value *v) {
             // Match to known catches otherwise let fall through to next interpreter

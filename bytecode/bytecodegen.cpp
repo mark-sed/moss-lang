@@ -678,7 +678,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         }
         case OperatorKind::OP_SCOPE: 
         case OperatorKind::OP_UNPACK:
-            assert(false && "TODO: Unimplemented operator");
+            assert(false && "operator is unary");
 
         default: assert(false && "Unknown binary operator");
     }
@@ -726,6 +726,16 @@ RegValue *BytecodeGen::emit(ir::UnaryExpr *expr) {
         case OperatorKind::OP_SCOPE: {
             append(new LoadGlobal(next_reg(), expr->get_expr()->get_name()));
             return last_reg();
+        }
+        case OperatorKind::OP_UNPACK: {
+            if (val->is_const()) {
+                append(new StoreConst(next_reg(), val->reg()));
+                append(new PushUnpacked(val_last_reg()));
+            } else {
+                append(new PushUnpacked(val->reg()));
+            }
+            val->set_silent(true);
+            return val;
         }
         default: assert(false && "Unknown unary operator");
     }
@@ -818,11 +828,14 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             }
             else {
                 a_val = emit(a);
-                if (a_val->is_const()) {
-                    append(new PushConstArg(free_reg(a_val)));
-                }
-                else {
-                    append(new PushArg(free_reg(a_val)));
+                auto a_unary = dyn_cast<UnaryExpr>(a); 
+                if (!a_unary || a_unary->get_op().get_kind() != OperatorKind::OP_UNPACK) {
+                    if (a_val->is_const()) {
+                        append(new PushConstArg(free_reg(a_val)));
+                    }
+                    else {
+                        append(new PushArg(free_reg(a_val)));
+                    }
                 }
             }
         }
@@ -1020,7 +1033,6 @@ void BytecodeGen::emit(ir::If *ifstmt) {
         jmp_false->addr = get_curr_address() + 1;
     }
 }
-
 
 void BytecodeGen::emit(ir::Switch *swch) {
     auto cond = emit(swch->get_cond(), true);

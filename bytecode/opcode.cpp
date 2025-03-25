@@ -97,8 +97,8 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
         try {
             funV->get_vm()->cross_module_call(funV, cf);
         } catch(Value *v) {
-            LOGMAX("Exception in external function call, popping frame and rethrowing");
-            LOGMAX("Popping call frame after exception");
+            LOGMAX("Exception in external function call, dropping frame and rethrowing");
+            LOGMAX("Dropping call frame after exception");
             vm->drop_call_frame();
             assert(pre_call_cf_size == vm->get_call_frame_size());
             throw v;
@@ -110,7 +110,14 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
         LOGMAX("Runtime call to method");
         cf->set_runtime_call(true);
         LOGMAX("Call frame: " << *cf);
-        vm->runtime_call(funV);
+        try {
+            vm->runtime_call(funV);
+        } catch(Value *v) {
+            LOGMAX("Exception in runtime function call, dropping frame and rethrowing");
+            LOGMAX("Dropping call frame after exception");
+            vm->pop_call_frame();
+            throw v;
+        }
     }
     auto ret_v = cf->get_extern_return_value();
     LOGMAX("Runtime call finished");
@@ -894,6 +901,61 @@ void PushNamedArg::exec(Interpreter *vm) {
     auto v = vm->load(src);
     assert(v && "Const does not exist??");
     vm->get_call_frame()->push_back(name, v);
+}
+
+void PushUnpacked::exec(Interpreter *vm) {
+    auto v = vm->load(src);
+    assert(v && "Const does not exist??");
+    if (auto vobj = dyn_cast<ObjectValue>(v)) {
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        FunValue *iterf = lookup_method(vm, vobj, "__iter", {}, did);
+        Value *iterator = vobj;
+        if (iterf) {
+            // When iter is found then call it and use the return value otherwise use the object itself
+            iterator = runtime_method_call(vm, iterf, {iterator});
+        }
+        if (isa<ObjectValue>(iterator)) {
+            did = diags::DiagID::UNKNOWN;
+            FunValue *nextf = lookup_method(vm, iterator, "__next", {}, did);
+            if (nextf) {
+                while (true) {
+                    try {
+                        auto v = runtime_method_call(vm, nextf, {iterator});
+                        assert(v && "sanity check");
+                        vm->get_call_frame()->push_back(v);
+                    } catch (Value *ve) {
+                        if (ve->get_type() == BuiltIns::StopIteration) {
+                            break;
+                        }
+                        else
+                            throw ve;
+                    }
+                }
+            } else {
+                if (did == diags::DiagID::UNKNOWN)
+                    raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, vobj->get_type()->get_name().c_str())));
+                else
+                    raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__next", diags::DIAG_MSGS[did])));
+            }
+            return;
+        } else {
+            v = iterator;
+        }
+    }
+    
+    if (auto vlst = dyn_cast<ListValue>(v)) {
+        for (auto elem: vlst->get_vals()) {
+            vm->get_call_frame()->push_back(elem);
+        }
+    } else if (auto vstr = dyn_cast<StringValue>(v)) {
+        for (auto elem: vstr->get_value()) {
+            vm->get_call_frame()->push_back(new StringValue(ustring(1, elem)));
+        }
+    } else {
+        raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE,
+                v->get_type()->get_name().c_str())));
+    }
+    // TODO: Dict unpack as named
 }
 
 void CreateFun::exec(Interpreter *vm) {
@@ -2007,10 +2069,6 @@ void Assert::exec(Interpreter *vm) {
     if (!check->get_value()) {
         raise(mslib::create_assertion_error(str_msg));
     }
-}
-
-void CopyArgs::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
 }
 
 void Raise::exec(Interpreter *vm) {

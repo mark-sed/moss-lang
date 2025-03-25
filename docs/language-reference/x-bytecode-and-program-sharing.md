@@ -95,6 +95,7 @@ xxh - RETURN_CONST      #val
 xxh - PUSH_ARG          %val
 xxh - PUSH_CONST_ARG    #val
 xxh - PUSH_NAMED_ARG    %val, "name"
+xxh - PUSH_UNPACKED     %val
 xxh - CREATE_FUN        %fun, "name" "arg csv" // eg: "foo" "a,b,c,d"  
 xxh - FUN_BEGIN         %fun
 xxh - SET_DEFAULT       %fun, int, %src
@@ -172,8 +173,6 @@ xxh - XOR3      %dst, %src1, #val
 xxh - SUBSC3    %dst, %src, #index
 
 xxh - ASSERT    %src, %msg
-
-xxh - COPY_ARGS
 
 xxh - RAISE         %val
 xxh - CATCH         "exc_name", addr

@@ -85,6 +85,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::PushArg(11));
     bc->push_back(new opcode::PushConstArg(200));
     bc->push_back(new opcode::PushNamedArg(5, "name12"));
+    bc->push_back(new opcode::PushUnpacked(15));
 
     bc->push_back(new opcode::CreateFun(50, "foo", "a,b,c"));
     bc->push_back(new opcode::FunBegin(50));
@@ -164,8 +165,6 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Neg(0, 1));
     
     bc->push_back(new opcode::Assert(7, 4));
-
-    bc->push_back(new opcode::CopyArgs());
 
     bc->push_back(new opcode::Raise(14));
     bc->push_back(new opcode::Catch("e", 204));

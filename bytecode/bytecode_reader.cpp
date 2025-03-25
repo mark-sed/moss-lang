@@ -231,6 +231,9 @@ Bytecode *BytecodeReader::read() {
                 auto str = read_string();
                 bc->push_back(new PushNamedArg(reg, str));
             } break;
+            case opcode::OpCodes::PUSH_UNPACKED: {
+                bc->push_back(new PushUnpacked(read_register()));
+            } break;
             case opcode::OpCodes::CREATE_FUN: {
                 auto reg = read_register();
                 auto str1 = read_string();
@@ -627,9 +630,6 @@ Bytecode *BytecodeReader::read() {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
                 bc->push_back(new Assert(reg1, reg2));
-            } break;
-            case opcode::OpCodes::COPY_ARGS: {
-                bc->push_back(new CopyArgs());
             } break;
             case opcode::OpCodes::RAISE: {
                 bc->push_back(new Raise(read_register()));

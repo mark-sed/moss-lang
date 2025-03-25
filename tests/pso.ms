@@ -17,8 +17,7 @@ class Particle {
     }
 
     fun evaluate_position(function, fitness_function) {
-        // TODO: << positions 
-        value = function(this.position[0], this.position[1])
+        value = function(<<this.position)
         if (this.best_value == nil || fitness_function(value, this.best_value)) {
             this.best_value = value
             this.best_position = this.position

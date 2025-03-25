@@ -81,6 +81,7 @@ enum OpCodes : opcode_t {
     PUSH_ARG, //          %val
     PUSH_CONST_ARG, //    #val
     PUSH_NAMED_ARG, //    %val, "name"
+    PUSH_UNPACKED, //     %val
     CREATE_FUN, //        %fun, "name", "arg csv"
     FUN_BEGIN,  //        %fun
     SET_DEFAULT, //       %fun, int, %src
@@ -159,8 +160,6 @@ enum OpCodes : opcode_t {
     NEG, //       %dst, %src1
 
     ASSERT, //    %src, %msg
-
-    COPY_ARGS, //
 
     RAISE, //         %src
     CATCH,       //   "exc_name", addr
@@ -950,6 +949,27 @@ public:
     }
 };
 
+class PushUnpacked : public OpCode {
+public:
+    Register src;
+
+    static const OpCodes ClassType = OpCodes::PUSH_UNPACKED;
+
+    PushUnpacked(Register src) : OpCode(ClassType, "PUSH_UNPACKED"), src(src) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << src;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<PushUnpacked>(other);
+        if (!casted) return false;
+        return casted->src == src;
+    }
+};
+
 class CreateFun : public OpCode {
 public:
     Register fun;
@@ -1661,23 +1681,6 @@ public:
         auto casted = dyn_cast<Assert>(other);
         if (!casted) return false;
         return casted->src == src && casted->msg == msg;
-    }
-};
-
-class CopyArgs : public OpCode {
-public:
-    static const OpCodes ClassType = OpCodes::COPY_ARGS;
-
-    CopyArgs() : OpCode(ClassType, "COPY_ARGS") {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        return isa<CopyArgs>(other);
     }
 };
 

@@ -173,6 +173,9 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->src);
             write_string(o->name);
         }
+        else if (auto o = dyn_cast<opcode::PushUnpacked>(op_gen)){
+            write_register(o->src);
+        }
         else if (auto o = dyn_cast<opcode::CreateFun>(op_gen)){
             write_register(o->fun);
             write_string(o->name);
@@ -240,9 +243,6 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::Assert>(op_gen)){
             write_register(o->src);
             write_register(o->msg);
-        }
-        else if (isa<opcode::CopyArgs>(op_gen)){
-            // Nothing to do
         }
         else if (auto o = dyn_cast<opcode::Raise>(op_gen)){
             write_register(o->src);
