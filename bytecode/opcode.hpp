@@ -57,6 +57,8 @@ enum OpCodes : opcode_t {
     STORE_CONST, //       %dst, #val
     STORE_ATTR, //        %src, %obj, "name"
     STORE_CONST_ATTR, //  #val, %obj, "name"
+    STORE_GLOBAL, //      %src, "name"
+    STORE_NONLOC, //      %src, "name"
     STORE_SUBSC, //       %src, %obj, %key
     STORE_CONST_SUBSC, // #val, %obj, %key
     STORE_SUBSC_CONST, // %src, %obj, #ckey
@@ -473,6 +475,52 @@ public:
         auto casted = dyn_cast<StoreConstAttr>(other);
         if (!casted) return false;
         return casted->csrc == csrc && casted->obj == obj && casted->name == name;
+    }
+};
+
+class StoreGlobal : public OpCode {
+public:
+    Register src;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::STORE_GLOBAL;
+
+    StoreGlobal(Register src, StringConst name)
+        : OpCode(ClassType, "STORE_GLOBAL"), src(src), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << src << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreGlobal>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->name == name;
+    }
+};
+
+class StoreNonLoc : public OpCode {
+public:
+    Register src;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::STORE_NONLOC;
+
+    StoreNonLoc(Register src, StringConst name)
+        : OpCode(ClassType, "STORE_NONLOC"), src(src), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << src << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<StoreNonLoc>(other);
+        if (!casted) return false;
+        return casted->src == src && casted->name == name;
     }
 };
 

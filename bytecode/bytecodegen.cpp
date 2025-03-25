@@ -160,19 +160,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         }
         case OperatorKind::OP_SET: {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
-                if (right->is_const()) {
-                    append(new StoreConst(next_reg(), free_reg(right)));
-                } else {
-                    append(new Store(next_reg(), free_reg(right)));
-                }
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new StoreConst(next_reg(), right->reg()));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new StoreNonLoc(right->reg(), irvar->get_name()));
+                    }
+                    right->set_silent(true);
+                    return right;
+                } else {
+                    if (right->is_const()) {
+                        append(new StoreConst(next_reg(), free_reg(right)));
+                    } else {
+                        append(new Store(next_reg(), free_reg(right)));
+                    }
+                    auto reg = last_reg();
+                    reg->set_silent(true);
+                    append(new StoreName(reg->reg(), irvar->get_name()));
+                    return reg;
                 }
-                auto reg = last_reg();
-                reg->set_silent(true);
-                append(new StoreName(reg->reg(), irvar->get_name()));
-                return reg;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());

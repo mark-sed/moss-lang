@@ -61,6 +61,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::StoreConst(3, 200));
     bc->push_back(new opcode::StoreAttr(0, 1, "aname"));
     bc->push_back(new opcode::StoreConstAttr(1, 2, "aaa"));
+    bc->push_back(new opcode::StoreGlobal(8, "a1"));
+    bc->push_back(new opcode::StoreNonLoc(8, "a2"));
     bc->push_back(new opcode::StoreSubsc(7, 8, 9));
     bc->push_back(new opcode::StoreConstSubsc(17, 8, 9));
     bc->push_back(new opcode::StoreSubscConst(7, 8, 19));

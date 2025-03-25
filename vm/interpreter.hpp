@@ -230,6 +230,7 @@ public:
 
     /// Looks up a symbol from top-1 frame up until global frame (excluding it)
     Value *load_non_local_name(ustring name);
+    Value *store_non_local(ustring name, Value *v);
 
     /// Pushes a new frame (memory pool) into a frame stack
     /// \param fun_owner If set then the function owner of the frame is set,

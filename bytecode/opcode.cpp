@@ -267,6 +267,14 @@ void StoreConstAttr::exec(Interpreter *vm) {
     dstobj->set_attr(this->name, v);
 }
 
+void StoreGlobal::exec(Interpreter *vm) {
+    assert(false && "TODO");
+}
+
+void StoreNonLoc::exec(Interpreter *vm) {
+    assert(false && "TODO");
+}
+
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
     if (auto objval = dyn_cast<ObjectValue>(obj)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;

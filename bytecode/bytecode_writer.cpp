@@ -89,6 +89,14 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->obj);
             write_string(o->name);
         }
+        else if (auto o = dyn_cast<opcode::StoreGlobal>(op_gen)){
+            write_register(o->src);
+            write_string(o->name);
+        }
+        else if (auto o = dyn_cast<opcode::StoreNonLoc>(op_gen)){
+            write_register(o->src);
+            write_string(o->name);
+        }
         else if (auto o = dyn_cast<opcode::StoreSubsc>(op_gen)){
             write_register(o->src);
             write_register(o->obj);

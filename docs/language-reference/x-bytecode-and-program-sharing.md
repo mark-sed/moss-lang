@@ -72,6 +72,8 @@ xxh - STORE_NAME        %dst, "name"
 xxh - STORE_CONST       %dst, #val
 xxh - STORE_ATTR        %src, %obj, "name"
 xxh - STORE_CONST_ATTR  #val, %obj, "name"
+xxh - STORE_GLOBAL      %src, "name"
+xxh - STORE_NONLOC      %src, "name"
 xxh - STORE_SUBSC       %src, %obj, %key
 xxh - STORE_CONST_SUBSC #val, %obj, %key
 xxh - STORE_SUBSC_CONST %src, %obj, #ckey
