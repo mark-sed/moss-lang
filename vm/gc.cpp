@@ -93,6 +93,9 @@ void TracingGC::blacken_value(Value *v) {
         LOGMAX("Blackening module: " << subv->get_name());
         mark_roots(subv->get_vm());
     }
+    else if (auto subv = dyn_cast<SuperValue>(v)) {
+        mark_value(subv->get_instance());
+    }
 }
 
 void TracingGC::trace_refs() {
@@ -144,6 +147,7 @@ void TracingGC::mark_roots(Interpreter *ivm) {
             mark_value(arg.value);
         }
         mark_value(cf->get_extern_return_value());
+        mark_value(cf->get_function());
     }
 
     // libms marking

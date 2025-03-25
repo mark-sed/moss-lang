@@ -377,13 +377,21 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert(arg_size == 1 && "Mismatch of args");
         ret_v = new FloatValue(std::sin(args[0].value->as_float()));
     }
+    else if (name == "cos") {
+        assert(arg_size == 1 && "Mismatch of args");
+        ret_v = new FloatValue(std::cos(args[0].value->as_float()));
+    }
+    else if (name == "tan") {
+        assert(arg_size == 1 && "Mismatch of args");
+        ret_v = new FloatValue(std::tan(args[0].value->as_float()));
+    }
     else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
     }
 
     auto return_reg = vm->get_call_frame()->get_return_reg();
     auto caller_addr = vm->get_call_frame()->get_caller_addr();
-    vm->pop_call_frame();
+    vm->drop_call_frame();
     if (!ret_v)
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);

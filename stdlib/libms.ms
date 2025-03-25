@@ -156,9 +156,11 @@ space Math {
     @internal
     fun sin(x:[Int,Float]) {}
 
-    //fun tan(x) {}
+    @internal
+    fun tan(x:[Int,Float]) {}
 
-    //fun cos(x) {}
+    @internal
+    fun cos(x:[Int,Float]) {}
 
     fun sqrt(x) {
         //d"""

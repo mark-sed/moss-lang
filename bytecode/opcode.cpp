@@ -99,7 +99,7 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
         } catch(Value *v) {
             LOGMAX("Exception in external function call, popping frame and rethrowing");
             LOGMAX("Popping call frame after exception");
-            vm->pop_call_frame();
+            vm->drop_call_frame();
             assert(pre_call_cf_size == vm->get_call_frame_size());
             throw v;
         }
