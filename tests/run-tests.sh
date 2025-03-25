@@ -586,6 +586,10 @@ function test_factorial {
     expect_out_eq "2432902008176640000" $1
 }
 
+function test_pso {
+    expect_pass "pso.ms" $1
+}
+
 function test_lib_constants {
     expect_pass "stdlib_tests/constants.ms" $1
     expect_out_eq_rx "[0-9]\.[0-9]\.[0-9]\n" $1
@@ -858,6 +862,7 @@ function run_all_tests {
     run_test fibonacci
     run_test factorial
     run_test collatz
+    run_test pso
 
     # stdlib tests
     run_test lib_constants
