@@ -936,7 +936,10 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             }
         }
         else {
-            assert(false && "List comprehension generation");
+            auto generator = val->as_for();
+            emit(generator);
+            append(new opcode::Load(next_reg(), val->get_compr_result_name()));
+            return last_reg();
         } 
     }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
@@ -1578,6 +1581,7 @@ void BytecodeGen::emit(ir::Continue *ct) {
 }
 
 void BytecodeGen::emit(ir::IR *decl) {
+    assert(decl && "emitting nullptr");
     if (auto mod = dyn_cast<Module>(decl)) {
         emit(mod);
     }

@@ -398,6 +398,17 @@ function test_lists {
 [5, 8, [0, -1, -7]]\n[5, 8, [0, -1, -7]]\n" $1
 }
 
+function test_list_comprehension {
+    expect_pass "list_comprehension.ms" $1
+    expect_out_eq "[1, 2, 3]
+[[1, 4], [1, 5], [1, 6], [2, 4], [2, 5], [2, 6], [3, 4], [3, 5], [3, 6]]
+[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 97, 99]
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+[\"H\", \"e\", \"l\", \"l\", \"o\", \"_\", \"t\", \"h\", \"e\", \"r\", \"e\", \"_\", \"p\", \"r\", \"o\", \"g\", \"r\", \"a\", \"m\", \"m\", \"e\", \"r\", \"!\"]
+[\"H\", \"e\", \"l\", \"l\", \"o\", \"_\", \"t\", \"h\", \"e\", \"r\", \"e\", \"_\", \"p\", \"r\", \"o\", \"g\", \"r\", \"a\", \"m\", \"m\", \"e\", \"r\", \"!\"]
+[[1, \"a\"], [1, \"b\"], [2, \"a\"], [2, \"b\"], [3, \"a\"], [3, \"b\"]]\n" $1
+}
+
 function test_enums {
     expect_pass "enums.ms" $1
     expect_out_eq "<Enum Colors>\nEnum {
@@ -863,6 +874,7 @@ function run_all_tests {
     run_test inheritance
     run_test operator_funs
     run_test lists
+    run_test list_comprehension
     run_test enums
     run_test space
     run_test optional_typing

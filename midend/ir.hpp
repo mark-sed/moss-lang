@@ -1348,12 +1348,15 @@ public:
 
 class List : public Expression {
 private:
+    static unsigned long annonymous_id;
     std::vector<Expression *> value;
     bool comprehension;
     Expression *result;
     Expression *else_result;
     Expression *condition;
     std::vector<Expression *> assignments;
+    ustring compr_result_name;
+    std::list<IR *> transform_irs;
 public:
     static const IRType ClassType = IRType::LIST;
 
@@ -1366,6 +1369,7 @@ public:
           else_result(else_result), condition(condition), assignments(assignments) {
         assert((!else_result || (else_result && condition)) && "else without condition in list comprehension");
         assert(result && "comprehension without result");
+        this->compr_result_name = std::to_string(annonymous_id++) + "cl";
     }
     ~List() {
         for (auto v: value)
@@ -1381,6 +1385,8 @@ public:
                 delete a;
         }
     }
+
+    std::list<IR *> as_for();
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "[";
@@ -1422,6 +1428,14 @@ public:
 
     std::vector<Expression *> get_value() { return this->value; }
     bool is_comprehension() { return this->comprehension; }
+    Expression *get_result() { return this->result; };
+    Expression *get_else_result() { return this->else_result; };
+    Expression *get_condition() { return this->condition; };
+    std::vector<Expression *> get_assignments() { return this->assignments; };
+    ustring get_compr_result_name() {
+        assert(comprehension && "extracting list result variable name from non comprehended list");
+        return this->compr_result_name;
+    }
 };
 
 class Dict : public Expression {

@@ -66,6 +66,7 @@ private:
     /// \param e Expression to emit
     /// \param space_import This value is set within this function and used in recursive call
     void emit_import_expr(ir::Expression *e, bool space_import=false);
+
     /// Updates all break and continue jumps to proper addresses
     /// \param start Address where loop starts (start search)
     /// \param end Address where loop ends (end of search)

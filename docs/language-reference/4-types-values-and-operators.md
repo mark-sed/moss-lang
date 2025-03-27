@@ -311,17 +311,36 @@ _[expression if(condition) < else expression > : variable = expression < comma s
 ```cpp
 l1 = [1, 2, 3]
 l2 = [4, 5, 6]
-ziped = [[x, y] : x = l1, y = l2] 
-// [[1, 4],[2, 5],[3, 6]]
+zipped = [[x, y] : x = l1, y = l2] 
+// [[1, 4], [1, 5], [1, 6], [2, 4], [2, 5], [2, 6], [3, 4], [3, 5], [3, 6]]
 
 [a : a = (1,3..100)] // odd numbers from 1 to 99
 
-[p if(all([p % x != 0 : x = (2..p/2)])) : p = (2..1000)] // primes
+[p if(all([p % x != 0 : x = [v : v = (2..p/2)]])) : p = (2..100)] // primes
 
 greet = "Hello there programmer!"
 [c if(c != " ") else "_" : c = greet].join() // "Hello_there_programmer!"
 // Alternatively one can use ternary operator for this case as well
 [(c != " ") ? c : "_" : c = greet].join() // "Hello_there_programmer!"
+```
+
+With multiple assignments this is the same as if you nested multiple for loop.
+For example:
+
+```py
+z = [[x, y] if (x > 0) else [0, 0]: x = [1, 2, 3], y = ["a", "b"]]
+```
+
+```java
+z = []
+for (x: [1,2,3]) {
+    for (y: ["a", "b"]) {
+        if (x > 0)
+            z += [x, y]
+        else
+            z += [0, 0]
+    }
+}
 ```
 
 ## Dict

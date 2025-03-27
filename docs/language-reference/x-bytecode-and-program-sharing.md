@@ -578,3 +578,22 @@ x       LOAD_NAME %2, "b"
 x       STORE %1, %2
 x       OUTPUT %1
 ```
+
+### List comprehension
+
+```py
+c = "Hello there programmer"
+f = [",", "_", ""]
+[c if(c != " ") else f : c = greet, f = separs]
+```
+
+```java
+for (c: greet) {
+    for (f: separs) {
+        if (c == " ")
+            lst += [f]
+        else
+            lst += c
+    }
+}
+```
