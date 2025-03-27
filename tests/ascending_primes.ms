@@ -17,9 +17,9 @@ primes = []
 while(!queue.empty()) {
     n = queue.pop()
     if (is_prime(n))
-        primes.append(n)
+        ~primes.append(n)
     // ????
-    queue.extend([n * 10 + k : k = (n % 10 + 1, 10)])
+    ~queue.extend([n * 10 + k : k = (n % 10 + 1 .. 10)])
 }
 
 primes

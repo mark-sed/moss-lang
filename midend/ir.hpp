@@ -1355,18 +1355,21 @@ private:
     Expression *else_result;
     Expression *condition;
     std::vector<Expression *> assignments;
+    IR *list_compr_var;
+    IR *list_compr_for;
     ustring compr_result_name;
-    std::list<IR *> transform_irs;
 public:
     static const IRType ClassType = IRType::LIST;
 
     List(std::vector<Expression *> value) 
         : Expression(ClassType, "<list>"), value(value), comprehension(false),
-          result(nullptr), else_result(nullptr), condition(nullptr) {}
+          result(nullptr), else_result(nullptr), condition(nullptr),
+          list_compr_var(nullptr), list_compr_for(nullptr) {}
     List(Expression *result, std::vector<Expression *> assignments,
          Expression *condition, Expression *else_result)
         : Expression(ClassType, "<list>"), comprehension(true), result(result),
-          else_result(else_result), condition(condition), assignments(assignments) {
+          else_result(else_result), condition(condition), assignments(assignments),
+          list_compr_var(nullptr), list_compr_for(nullptr) {
         assert((!else_result || (else_result && condition)) && "else without condition in list comprehension");
         assert(result && "comprehension without result");
         this->compr_result_name = std::to_string(annonymous_id++) + "cl";
@@ -1375,14 +1378,20 @@ public:
         for (auto v: value)
             delete v;
         if (comprehension) {
-            if (result)
-                delete result;
-            if (else_result)
-                delete else_result;
-            if (condition)
-                delete condition;
-            for (auto a: assignments)
-                delete a;
+            if (list_compr_var) {
+                assert(list_compr_for);
+                delete list_compr_for;
+                delete list_compr_var;
+            } else {
+                if (result)
+                    delete result;
+                if (else_result)
+                    delete else_result;
+                if (condition)
+                    delete condition;
+                for (auto a: assignments)
+                    delete a;
+            }
         }
     }
 
