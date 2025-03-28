@@ -35,8 +35,9 @@ private:
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     bool holds_consts;
     bool global;
+    bool marked;
 public:
-    MemoryPool(bool holds_consts=false, bool global=false) : pool_fun_owner(nullptr), holds_consts(holds_consts), global(global) {
+    MemoryPool(bool holds_consts=false, bool global=false) : pool_fun_owner(nullptr), holds_consts(holds_consts), global(global), marked(false) {
         if (!global && !holds_consts) {
             // TODO: Fine tune these values
             pool = std::vector<Value *>(128, nullptr);
@@ -102,6 +103,9 @@ public:
 
     /// Sets owner of this pool to a function if this is a closure frame
     void set_pool_fun_owner(FunValue *f) { this->pool_fun_owner = f; }
+
+    void set_marked(bool m) { this->marked = m; }
+    bool is_marked() { return this->marked; }
 
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;

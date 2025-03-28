@@ -14,6 +14,7 @@
 #include "values.hpp"
 #include "memory.hpp"
 #include <vector>
+#include <list>
 
 namespace moss {
 
@@ -43,6 +44,7 @@ private:
     void sweep();
 
     static std::vector<ModuleValue *> currently_imported_modules;
+    static std::list<MemoryPool *> popped_frames;
 public:
     TracingGC(Interpreter *vm);
 
@@ -55,6 +57,8 @@ public:
     static void push_currently_imported_module(ModuleValue *m);
     /// Once import of a module is done, it should be popped
     static void pop_currently_imported_module();
+
+    static void push_popped_frame(MemoryPool *f);
 #ifndef NDEBUG
     static ModuleValue *top_currently_imported_module();
 #endif

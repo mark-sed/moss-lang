@@ -806,6 +806,7 @@ gc.cpp::sweep: Deleting: INT(Int)
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting: INT(Int)
 gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame
 done\n" $1
 }
 

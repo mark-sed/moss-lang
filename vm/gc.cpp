@@ -6,6 +6,7 @@ using namespace moss;
 using namespace gcs;
 
 std::vector<ModuleValue *> TracingGC::currently_imported_modules{};
+std::list<MemoryPool *> TracingGC::popped_frames{};
 
 void TracingGC::push_currently_imported_module(ModuleValue *m) {
     currently_imported_modules.push_back(m);
@@ -13,6 +14,10 @@ void TracingGC::push_currently_imported_module(ModuleValue *m) {
 
 void TracingGC::pop_currently_imported_module() {
     currently_imported_modules.pop_back();
+}
+
+void TracingGC::push_popped_frame(MemoryPool *f) {
+    popped_frames.push_back(f);
 }
 
 #ifndef NDEBUG
@@ -41,6 +46,20 @@ void TracingGC::sweep() {
             LOGMAX("Deleting: " << TypeKind2String(v->get_kind()) << "(" << v->get_name() << ")");
             i = Value::all_values.erase(i);
             delete v;
+        }
+    }
+    std::list<MemoryPool *>::iterator fi = popped_frames.begin();
+    while (fi != popped_frames.end()) {
+        auto f = *fi;
+        assert(f && "nullptr not removed from popped frames?");
+        if (f->is_marked()) {
+            f->set_marked(false);
+            ++fi;
+        }
+        else {
+            LOGMAX("Deleting frame");
+            fi = popped_frames.erase(fi);
+            delete f;
         }
     }
 }
@@ -116,6 +135,8 @@ void TracingGC::mark_value(Value *v) {
 
 void TracingGC::mark_frame(MemoryPool *p) {
     assert(p && "passed in nullptr memory pool");
+    // Mark the frame itself as popped frames need to be freed by the GC
+    p->set_marked(true);
     // There will be bunch of nullptrs as the pool is initialized that way
     for (auto v : p->get_pool()) {
         mark_value(v);
@@ -139,6 +160,10 @@ void TracingGC::mark_roots(Interpreter *ivm) {
     // Mark values pushed as parents
     for (auto pl: ivm->parent_list) {
         mark_value(pl);
+    }
+
+    for (auto c: ivm->catches) {
+        mark_value(c.type);
     }
 
     // Call frame marking

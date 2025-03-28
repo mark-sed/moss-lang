@@ -24,8 +24,8 @@ Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs)
 
 Value::~Value() {
     // Values will be deleted by gc
-    if (attrs)
-        delete attrs;
+    //if (attrs)
+    //    delete attrs;
 }
 
 Value *Value::iter(Interpreter *vm) {

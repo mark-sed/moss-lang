@@ -242,9 +242,9 @@ void Interpreter::push_frame(FunValue *fun_owner) {
 void Interpreter::pop_frame() {
     LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
-    //auto f = frames.back();
+    auto f = frames.back();
     frames.pop_back();
-    //delete f;
+    gc->push_popped_frame(f);
     assert(const_pools.size() > 1 && "Trying to pop global const frame");
     auto c = const_pools.back();
     const_pools.pop_back();
@@ -318,7 +318,7 @@ void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
         if (*riter == ec.cf_position) {
             break;
         }
-        pop_call_frame();
+        drop_call_frame();
     }
 
     // Setting exception value
