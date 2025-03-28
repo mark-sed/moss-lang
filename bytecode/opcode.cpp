@@ -1466,67 +1466,88 @@ void Mod3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
-static Value *eq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
-    (void) vm;
-    Value *res = nullptr;
-    if (s1->get_kind() == s2->get_kind()) {
+static bool eq(Value *s1, Value *s2, Interpreter *vm) {
+    if (s1->get_kind() == s2->get_kind() && !isa<ObjectValue>(s1)) {
         if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
             IntValue *i2 = dyn_cast<IntValue>(s2);
-            res = new BoolValue(i1->get_value() == i2->get_value());
+            return i1->get_value() == i2->get_value();
         }
         else if (FloatValue *f1 = dyn_cast<FloatValue>(s1)) {
             FloatValue *f2 = dyn_cast<FloatValue>(s2);
-            res = new BoolValue(f1->get_value() == f2->get_value());
+            return f1->get_value() == f2->get_value();
         }
         else if (BoolValue *b1 = dyn_cast<BoolValue>(s1)) {
             BoolValue *b2 = dyn_cast<BoolValue>(s2);
-            res = new BoolValue(b1->get_value() == b2->get_value());
+            return b1->get_value() == b2->get_value();
         }
         else if (StringValue *st1 = dyn_cast<StringValue>(s1)) {
             StringValue *st2 = dyn_cast<StringValue>(s2);
-            res = new BoolValue(st1->get_value() == st2->get_value());
+            return st1->get_value() == st2->get_value();
         }
         else if (isa<NilValue>(s1)) {
-            res = new BoolValue(true);
+            return true;
         }
         else if (EnumValue *ev1 = dyn_cast<EnumValue>(s1)) {
             EnumValue *ev2 = dyn_cast<EnumValue>(s2);
-            res = new BoolValue(ev1 == ev2);
+            return ev1 == ev2;
+        }
+        else if (ListValue *lt1 = dyn_cast<ListValue>(s1)) {
+            ListValue *lt2 = dyn_cast<ListValue>(s2);
+            if (lt1->get_vals().size() != lt2->get_vals().size())
+                return false;
+            for (size_t i = 0; i < lt1->get_vals().size(); ++i) {
+                auto v1 = lt1->get_vals()[i];
+                auto v2 = lt2->get_vals()[i];
+                if (!eq(v1, v2, vm))
+                    return false;
+            }
+            return true;
         }
         else {
-            call_operator(vm, "==", s1, s2, dst);
+            return s1 == s2;
         }
     }
     else if (is_float_expr(s1, s2)) {
-        res = new BoolValue(s1->as_float() == s2->as_float());
+        return s1->as_float() == s2->as_float();
     }
     else if (isa<NilValue>(s1) || isa<NilValue>(s1)) {
-        res = new BoolValue(false);
+        return false;
     }
-    else if (isa<ObjectValue>(s1)) {
-        call_operator(vm, "==", s1, s2, dst);
-    } else {
-        res = new BoolValue(false);
+    else if (ObjectValue *ob1 = dyn_cast<ObjectValue>(s1)) {
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        auto op_fun = lookup_method(vm, ob1, "==", {s2}, did);
+        if (!op_fun) {
+            if (did == diags::DiagID::UNKNOWN) {
+                raise(mslib::create_type_error(
+                    diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
+                        s1->get_type()->get_name().c_str(), "==")));
+            } else {
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                    "(==)", diags::DIAG_MSGS[did])));
+            }
+        }
+        auto rv = runtime_method_call(vm, op_fun, {s2, s1});
+        BoolValue *boolrv = dyn_cast<BoolValue>(rv);
+        op_assert(boolrv, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_BOOL_FROM_EQ,
+            ob1->get_type()->get_name().c_str(), rv->get_type()->get_name().c_str())));
+        return boolrv->get_value();
     }
-    return res;
+    return false;
 }
 
 void Eq::exec(Interpreter *vm) {
-    auto res = eq(vm->load(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = eq(vm->load(src1), vm->load(src2), vm);
+    vm->store(dst, new BoolValue(res));
 }
 
 void Eq2::exec(Interpreter *vm) {
-    auto res = eq(vm->load_const(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = eq(vm->load_const(src1), vm->load(src2), vm);
+    vm->store(dst, new BoolValue(res));
 }
 
 void Eq3::exec(Interpreter *vm) {
-    auto res = eq(vm->load(src1), vm->load_const(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = eq(vm->load(src1), vm->load_const(src2), vm);
+    vm->store(dst, new BoolValue(res));
 }
 
 /*static bool can_eq(Value *s) {
@@ -1541,8 +1562,8 @@ static Value *neq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     }
     else {
         // TODO: Perhaps this should call can_eq??
-        auto eqRes = eq(s1, s2, dst, vm);
-        auto neqRes = new BoolValue(!dyn_cast<BoolValue>(eqRes)->get_value());
+        auto eqRes = eq(s1, s2, vm);
+        auto neqRes = new BoolValue(!eqRes);
         return neqRes;
     }
     return res;
@@ -2262,10 +2283,10 @@ void Switch::exec(Interpreter *vm) {
                 res = runtime_method_call(vm, funv, {cv, lvals[i]});
                 assert(res && "runtime call did not return");
             } else {
-                res = eq(lvals[i], cv, 0, vm);
+                res = new BoolValue(eq(lvals[i], cv, vm));
             }
         } else {
-            res = eq(lvals[i], cv, 0, vm);
+            res = new BoolValue(eq(lvals[i], cv, vm));
         }
         assert(res && "sanity check");
         auto resbool = dyn_cast<BoolValue>(res);

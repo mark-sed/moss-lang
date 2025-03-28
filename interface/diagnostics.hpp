@@ -134,6 +134,7 @@ enum DiagID {
     STR_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
     LIST_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
     NO_SETITEM_DEFINED,     ///< Calling [a] = b without __setitem method
+    NON_BOOL_FROM_EQ,       ///< When (==) returns non-bool type but was used by operator
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -248,6 +249,7 @@ static const char * DIAG_MSGS[] = {
     "String indices must be Int or Range, but got '%s'",
     "List indices must be Int or Range, but got '%s'",
     "Object of class '%s' cannot set indexed value — __setitem method has to be defined",
+    "(==) operator function for type '%s' returned non-bool value ('%s')",
 };
 
 /// \brief Diagnostic message for error reporting
