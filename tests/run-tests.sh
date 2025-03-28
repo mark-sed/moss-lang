@@ -745,7 +745,9 @@ function test_lib_input {
 
 function test_lib_lists {
     expect_pass "stdlib_tests/lists.ms" $1 
-    expect_out_eq "2\n0\n8\n" $1
+    expect_out_eq "2\n0\n8
+[1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
+[1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]\n" $1
 }
 
 function test_lib_random {

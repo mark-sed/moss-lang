@@ -330,6 +330,8 @@ public:
     std::vector<Value *> get_vals() { return this->vals; }
 
     void push(Value *v) { vals.push_back(v); }
+    size_t size() { return vals.size(); }
+    void remove(long i) { vals.erase(vals.begin() + i); }
 
     virtual opcode::StringConst as_string() const override {
         if (vals.empty()) return "[]";

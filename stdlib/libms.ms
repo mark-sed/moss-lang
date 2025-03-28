@@ -47,6 +47,12 @@ class __List {
 
     @internal
     fun length() {}
+
+    @internal
+    fun append(... v) {}
+
+    @internal
+    fun pop(index:Int=-1) {}
 }
 
 @internal_bind("Range")
