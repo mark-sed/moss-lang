@@ -145,6 +145,23 @@ Value *ListValue::next(Interpreter *vm) {
     return val;
 }
 
+Value *DictValue::next(Interpreter *vm) {
+    (void)vm;
+    if (this->iterator == this->vals.end()) {
+        opcode::raise(mslib::create_stop_iteration());
+    }
+    auto item = iterator->second;
+    auto key = item[keys_iterator].first;
+    auto val = item[keys_iterator].second;
+    ++keys_iterator;
+    if (keys_iterator >= item.size()) {
+        this->iterator++;
+        this->keys_iterator = 0;
+    }
+    std::vector<Value *> lst_vals{key, val};
+    return new ListValue(lst_vals);
+}
+
 /*void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
     assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
     auto key_int = dyn_cast<IntValue>(key);
@@ -174,6 +191,10 @@ void ListValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
         this->vals[key_int->get_value()] = val;
     else
     this->vals[this->vals.size() + key_int->get_value()] = val;
+}
+
+void DictValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
+    this->push(key, val, vm);
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {

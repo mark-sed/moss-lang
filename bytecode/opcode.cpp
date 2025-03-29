@@ -1486,7 +1486,6 @@ void Mod3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
-// This function is exported in commons.hpp
 bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
     if (s1->get_kind() == s2->get_kind() && !isa<ObjectValue>(s1)) {
         if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
@@ -1793,6 +1792,26 @@ static Value *in(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         // Here we need to flip the arguments as to call the method on the collection
         call_operator(vm, "in", s2, s1, dst);
     }
+    else if (auto lst = dyn_cast<ListValue>(s2)) {
+        for (auto v: lst->get_vals()) {
+            if (eq(v, s1, vm)) {
+                return new BoolValue(true);
+            }
+        }
+        return new BoolValue(false);
+    }
+    else if (auto dct = dyn_cast<DictValue>(s2)) {
+        auto vals = dct->get_vals();
+        auto dit = vals.find(hash(s1, vm));
+        if (dit == vals.end())
+            return new BoolValue(false);
+        for (std::pair<Value *, Value *> p: dit->second) {
+            if (opcode::eq(p.first, s1, vm)) {
+                return new BoolValue(true);
+            }
+        }
+        return new BoolValue(false);
+    }
     else {
         raise_operand_exc(vm, "in", s1, s2);
     }
@@ -2039,6 +2058,21 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
             res = new ListValue(vals);
         } else {
             raise_operand_exc(vm, "[]", s1, s2);
+        }
+    }
+    else if (auto dt1 = dyn_cast<DictValue>(s1)) {
+        auto vals = dt1->get_vals();
+        auto dit = vals.find(hash(s2, vm));
+        if (dit == vals.end())
+            raise(mslib::create_key_error(diags::Diagnostic(*vm->get_src_file(), diags::KEY_NOT_FOUND, s2->as_string().c_str())));
+        for (std::pair<Value *, Value *> p: dit->second) {
+            if (opcode::eq(p.first, s2, vm)) {
+                res = p.second;
+                break;
+            }
+        }
+        if (!res) {
+            raise(mslib::create_key_error(diags::Diagnostic(*vm->get_src_file(), diags::KEY_NOT_FOUND, s2->as_string().c_str())));
         }
     }
     else if (isa<ObjectValue>(s1)) {

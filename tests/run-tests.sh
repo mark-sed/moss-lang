@@ -413,7 +413,10 @@ caught
 {\"empty_dict\": {:}, \"empty_list\": [], \"empty_str\": \"\"}
 {<object of class CustomObject>: \"custom1\", <object of class CustomObject>: \"custom2\"}
 {<object of class CustomObject>: \"custom1_obj3\", <object of class CustomObject>: \"custom2\"}
-caught\n" $1
+caught
+caught\ncaught\n3\na\nint\ncst_cls3
+{\"a\": 42}\n{\"a\": 68}\n{true: true, 1: true, \"a\": 68}
+true: true, 1: true, a: 68\n[\"b\", 2]\n[\"a\", 1]\n" $1
 }
 
 function test_list_comprehension {
@@ -577,6 +580,12 @@ function test_equalities {
 false\ntrue\ntrue\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\n" $1
 }
 
+function test_memberships {
+    expect_pass "memberships.ms" $1
+    expect_out_eq "false\ntrue\nfalse\ncaught\ntrue\nfalse\ntrue\nfalse\ntrue
+false\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -738,6 +747,7 @@ Caught: ParserError:
 Caught: SyntaxError: 
 Caught: LookupError: 
 Caught: IndexError: 
+Caught: KeyError: 
 Caught: MathError: 
 Caught: DivisionByZeroError: 
 Caught: ValueError: 
@@ -746,6 +756,7 @@ Caught: FileNotFoundError:
 Caught: NameError: 
 Caught: SyntaxError: 
 Caught: IndexError: 
+Caught: KeyError: 
 Caught: DivisionByZeroError: 
 Caught: FileNotFoundError: \n" $1
 }
@@ -926,6 +937,7 @@ function run_all_tests {
     run_test short_circuit_eval
     run_test unpacking
     run_test equalities
+    run_test memberships
 
     run_test fibonacci
     run_test factorial

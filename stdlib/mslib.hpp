@@ -72,6 +72,10 @@ inline Value *create_index_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::IndexError, dmsg);
 }
 
+inline Value *create_key_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::KeyError, dmsg);
+}
+
 inline Value *create_value_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::ValueError, dmsg);
 }

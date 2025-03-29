@@ -57,6 +57,7 @@ namespace BuiltIns {
     extern Value *SyntaxError;
     extern Value *LookupError;
     extern Value *IndexError;
+    extern Value *KeyError;
     extern Value *ValueError;
     extern Value *MathError;
     extern Value *DivisionByZeroError;

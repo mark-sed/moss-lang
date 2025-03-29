@@ -47,6 +47,7 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "SyntaxError", BuiltIns::SyntaxError, gf);
     store_glob_val(reg++, "LookupError", BuiltIns::LookupError, gf);
     store_glob_val(reg++, "IndexError", BuiltIns::IndexError, gf);
+    store_glob_val(reg++, "KeyError", BuiltIns::KeyError, gf);
     store_glob_val(reg++, "ValueError", BuiltIns::ValueError, gf);
     store_glob_val(reg++, "MathError", BuiltIns::MathError, gf);
     store_glob_val(reg++, "DivisionByZeroError", BuiltIns::DivisionByZeroError, gf);
@@ -91,6 +92,7 @@ Value *BuiltIns::ParserError = new ClassValue("ParserError");
 Value *BuiltIns::SyntaxError = new ClassValue("SyntaxError");
 Value *BuiltIns::LookupError = new ClassValue("LookupError");
 Value *BuiltIns::IndexError = new ClassValue("IndexError");
+Value *BuiltIns::KeyError = new ClassValue("KeyError");
 Value *BuiltIns::ValueError = new ClassValue("ValueError");
 Value *BuiltIns::MathError = new ClassValue("MathError");
 Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");

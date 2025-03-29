@@ -65,6 +65,12 @@ try {
 }
 
 try {
+    raise KeyError("")
+} catch (e:KeyError) {
+    "Caught: "++e++"\n"
+}
+
+try {
     raise MathError("")
 } catch (e:MathError) {
     "Caught: "++e++"\n"
@@ -110,6 +116,12 @@ try {
 
 try {
     raise IndexError("")
+} catch (e:LookupError) {
+    "Caught: "++e++"\n"
+}
+
+try {
+    raise KeyError("")
 } catch (e:LookupError) {
     "Caught: "++e++"\n"
 }

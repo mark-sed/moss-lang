@@ -82,3 +82,66 @@ try {
     {C(): "C", C(): "B"}
 } catch (e:TypeError)
     "caught\n"
+
+class CstCls {
+    fun CstCls(x) {
+        this.x = x
+    }
+    fun __String() {
+        return "CustomClass: " ++ this.x
+    
+    }
+    fun __hash() = this.x
+    fun (==)(other) = this.x == other.x
+}
+
+dct = {"a": 3, 3: "a", Int: "int", CstCls(3): "cst_cls3"}
+
+try
+    dct["3"]
+catch (e:KeyError)
+    "caught\n"
+
+try
+    dct[CstCls(6)]
+catch(e: KeyError)
+    "caught\n"
+
+dct["a"]
+"\n"
+dct[3]
+"\n"
+dct[Int]
+"\n"
+dct[CstCls(3)]
+"\n"
+
+a = {:}
+a["a"] = 42
+a
+"\n"
+a["a"] = 68
+a
+"\n"
+
+a[true] = true
+a[1] = true
+a
+"\n"
+
+first = true
+for (kv: a) {
+    if (not first)
+        ", "
+    kv[0] ++ ": " ++ kv[1]
+    first = false
+}
+"\n"
+
+for (kv: {:}) {
+    kv
+}
+
+for (kv: {"a": 1, "b": 2}) {
+    kv ++ "\n"
+}

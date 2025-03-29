@@ -421,7 +421,8 @@ public:
 class DictValue : public Value {
 private:
     std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;    
-    size_t iterator;
+    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>>::iterator iterator;
+    size_t keys_iterator;
 public:
     static const TypeKind ClassType = TypeKind::DICT;
 
@@ -463,12 +464,13 @@ public:
 
     virtual Value *iter(Interpreter *vm) override {
         (void)vm;
-        iterator = 0;
+        iterator = vals.begin();
+        keys_iterator = 0;
         return this;
     }
 
-    //virtual Value *next(Interpreter *vm) override;
-    //virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
+    virtual Value *next(Interpreter *vm) override;
+    virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Dict(" << vals.size() << ") {";

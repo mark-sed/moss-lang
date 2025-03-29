@@ -264,6 +264,13 @@ class __IndexError : LookupError {
     }
 }
 
+@internal_bind("KeyError")
+class __KeyError : LookupError {
+    fun __String() {
+        return "KeyError: " ++ this.msg
+    }
+}
+
 @internal_bind("ValueError")
 class __ValueError : Exception {
     fun __String() {

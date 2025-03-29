@@ -138,6 +138,7 @@ enum DiagID {
     NOT_HASHABLE,           ///< Cannot create hash of it
     NON_INT_FROM_HASH,      ///< __hash did not return an Int value
     NO_HASH_DEFINED,        ///< When __hash is missing
+    KEY_NOT_FOUND,          ///< For key error
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -256,6 +257,7 @@ static const char * DIAG_MSGS[] = {
     "Type '%s' is not hashable",
     "Function __hash for type '%s' returned value of type '%s', but Int is expected",
     "Object of class '%s' cannot be hashed — __hash method has to be defined",
+    "Key '%s' not found",
 };
 
 /// \brief Diagnostic message for error reporting
