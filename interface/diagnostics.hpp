@@ -136,6 +136,8 @@ enum DiagID {
     NO_SETITEM_DEFINED,     ///< Calling [a] = b without __setitem method
     NON_BOOL_FROM_EQ,       ///< When (==) returns non-bool type but was used by operator
     NOT_HASHABLE,           ///< Cannot create hash of it
+    NON_INT_FROM_HASH,      ///< __hash did not return an Int value
+    NO_HASH_DEFINED,        ///< When __hash is missing
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -250,8 +252,10 @@ static const char * DIAG_MSGS[] = {
     "String indices must be Int or Range, but got '%s'",
     "List indices must be Int or Range, but got '%s'",
     "Object of class '%s' cannot set indexed value — __setitem method has to be defined",
-    "(==) operator function for type '%s' returned non-bool value ('%s')",
+    "(==) operator function for type '%s' returned value of type '%s', but Bool is expected",
     "Type '%s' is not hashable",
+    "Function __hash for type '%s' returned value of type '%s', but Int is expected",
+    "Object of class '%s' cannot be hashed — __hash method has to be defined",
 };
 
 /// \brief Diagnostic message for error reporting

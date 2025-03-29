@@ -13,6 +13,7 @@
 #include "commons.hpp"
 #include "interpreter.hpp"
 #include "utils.hpp"
+#include "diagnostics.hpp"
 #include <cstdint>
 
 namespace moss {
@@ -22,6 +23,7 @@ class Interpreter;
 namespace opcode {
     class OpCode;
 }
+class ObjectValue;
 
 // Helper functions
 template<class T>
@@ -214,6 +216,10 @@ StringConst to_string(Interpreter *vm, Value *v);
 bool is_type_eq_or_subtype(Value *t1, Value *t2);
 
 bool eq(Value *s1, Value *s2, Interpreter *vm);
+
+FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err);
+
+opcode::IntConst hash_obj(ObjectValue *obj, Interpreter *vm);
 
 /// Base Opcode class
 class OpCode {

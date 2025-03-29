@@ -125,6 +125,27 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
     return ret_v;
 }
 
+opcode::IntConst opcode::hash_obj(ObjectValue *obj, Interpreter *vm) {
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    auto hashf = opcode::lookup_method(vm, obj, "__hash", {}, did);
+    if (!hashf) {
+        if (did == diags::DiagID::UNKNOWN) {
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_HASH_DEFINED, obj->get_type()->get_name().c_str())));
+        } else {
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                "__hash", diags::DIAG_MSGS[did])));
+        }
+    }
+    else {
+        auto rv = runtime_method_call(vm, hashf, {obj});
+        IntValue *intrv = dyn_cast<IntValue>(rv);
+        op_assert(intrv, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_INT_FROM_HASH,
+            obj->get_type()->get_name().c_str(), rv->get_type()->get_name().c_str())));
+        return intrv->get_value();
+    }
+    return 0;
+}
+
 /// Converts value to string
 /// \note This might do a runtime call to __String method
 opcode::StringConst opcode::to_string(Interpreter *vm, Value *v) {
@@ -278,7 +299,7 @@ void StoreNonLoc::exec(Interpreter *vm) {
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
     if (auto objval = dyn_cast<ObjectValue>(obj)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *setf = lookup_method(vm, objval, "__setitem", {key, src}, did);
+        FunValue *setf = opcode::lookup_method(vm, objval, "__setitem", {key, src}, did);
         if (setf) {
             runtime_method_call(vm, setf, {key, src, objval});
         } else {
@@ -287,7 +308,6 @@ static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
             } else {
                 raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__setitem", diags::DIAG_MSGS[did])));
             }
-            
         }
     } else {
         obj->set_subsc(vm, key, src);
@@ -733,7 +753,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
 }
 
-FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
+FunValue *opcode::lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
     auto constr = obj->get_attr(name, vm);
     if (constr) {
         FunValue *constrf = dyn_cast<FunValue>(constr);
@@ -2198,9 +2218,9 @@ static void range(Value *start, Value *step, Value *end, Register dst, Interpret
     assert(range_cls && "Range is not a class type");
     // We cannot call range if step is nil with this value as it won't match the type
     if (isa<NilValue>(step)) {
-        constr = lookup_method(vm, range_cls, range_cls->get_name(), {start, end}, did);
+        constr = opcode::lookup_method(vm, range_cls, range_cls->get_name(), {start, end}, did);
     } else {
-        constr = lookup_method(vm, range_cls, range_cls->get_name(), {start, end, step}, did);
+        constr = opcode::lookup_method(vm, range_cls, range_cls->get_name(), {start, end, step}, did);
     }
     if (!constr) {
         if (did == diags::DiagID::UNKNOWN) {

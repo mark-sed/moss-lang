@@ -21,8 +21,7 @@ opcode::IntConst moss::hash(Value *v, Interpreter *vm) {
     if (!v->is_hashable())
         opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_HASHABLE, v->get_type()->get_name().c_str())));
     if (auto obj = dyn_cast<ObjectValue>(v)) {
-        assert(false && "TODO: obj hashing");
-        return 0;
+        return opcode::hash_obj(obj, vm);
     }
     return v->hash();
 }

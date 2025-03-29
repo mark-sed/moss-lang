@@ -410,7 +410,10 @@ caught
 {2.718000: \"e\", 3.140000: \"pi\"}
 {\"key\": 42, nil: \"nothing\"}
 {\"outer\": {\"inner\": \"value\"}}
-{\"empty_dict\": {:}, \"empty_list\": [], \"empty_str\": \"\"}\n" $1
+{\"empty_dict\": {:}, \"empty_list\": [], \"empty_str\": \"\"}
+{<object of class CustomObject>: \"custom1\", <object of class CustomObject>: \"custom2\"}
+{<object of class CustomObject>: \"custom1_obj3\", <object of class CustomObject>: \"custom2\"}
+caught\n" $1
 }
 
 function test_list_comprehension {

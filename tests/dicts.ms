@@ -56,19 +56,29 @@ d++"\n"
 d = {"empty_str": "", "empty_list": [], "empty_dict": {:}}
 d++"\n"
 
-// TODO: Uncomment once added
 // Dictionary with custom objects as keys (as long as they are hashable)
-//class CustomObject {
-//    fun CustomObject(val) {
-//        this.val = val
-//    }
-//
-//    fun __hash() = hash(this.val)
-//    fun (==)(other) = this.val == other.val
-//}
-//
-//obj1 = CustomObject(1)
-//obj2 = CustomObject(2)
-//
-//d = {obj1: "custom1", obj2: "custom2"}
-//d++"\n"
+class CustomObject {
+    fun CustomObject(val) {
+        this.val = val
+    }
+
+    fun __hash() = this.val
+    fun (==)(other) = this.val == other.val
+    fun __String() = "CustomObject: "++this.val
+}
+
+obj1 = CustomObject(1)
+obj2 = CustomObject(2)
+obj3 = CustomObject(1)
+
+d = {obj1: "custom1", obj2: "custom2"}
+d++"\n"
+
+d = {obj1: "custom1", obj2: "custom2", obj3: "custom1_obj3"}
+d++"\n"
+
+class C{}
+try {
+    {C(): "C", C(): "B"}
+} catch (e:TypeError)
+    "caught\n"
