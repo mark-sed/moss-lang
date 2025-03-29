@@ -940,7 +940,33 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             emit(generator);
             append(new opcode::Load(next_reg(), val->get_compr_result_name()));
             return last_reg();
-        } 
+        }
+    }
+    else if (auto val = dyn_cast<Dict>(expr)) {
+        auto key_list_reg = next_reg();
+        append(new BuildList(key_list_reg));
+        for (auto v: val->get_keys()) {
+            auto genv = emit(v);
+            if (genv->is_const()) {
+                append(new ListPushConst(key_list_reg, free_reg(genv)));
+            }
+            else {
+                append(new ListPush(key_list_reg, free_reg(genv)));
+            }
+        }
+        auto vals_list_reg = next_reg();
+        append(new BuildList(vals_list_reg));
+        for (auto v: val->get_values()) {
+            auto genv = emit(v);
+            if (genv->is_const()) {
+                append(new ListPushConst(vals_list_reg, free_reg(genv)));
+            }
+            else {
+                append(new ListPush(vals_list_reg, free_reg(genv)));
+            }
+        }
+        append(new BuildDict(next_reg(), key_list_reg, vals_list_reg));
+        bcv = last_reg();
     }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);

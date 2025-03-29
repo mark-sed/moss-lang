@@ -2,16 +2,10 @@ a = "Hi there\n"
 i = 1
 v = "ello"
 a
-a[i] = v
-a
-i = -12
-inst = "> " ++ a[0] 
-a[i] = inst
-a
-a[-1] = "!\n"
-a
-
-try a[-20] = 4; catch(e:IndexError) "caught\n"
+try {
+    a[i] = v
+} catch (e:TypeError)
+    "caught\n"
 
 space D {
     vals = [1,2,3]
@@ -33,12 +27,6 @@ D.vals
 "\n"
 
 try D.vals[20] = 4; catch(e:IndexError) "caught\n"
-
-txt = "Val: ?"
-txt[-1] = 1
-txt ++ "\n"
-txt[-1] = Int
-txt ++ "\n"
 
 class Test {
     fun Test() {

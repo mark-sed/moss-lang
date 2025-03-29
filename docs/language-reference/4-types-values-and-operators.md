@@ -8,7 +8,7 @@ E.g.:
 
 ```cpp
 "moss".upper() // "MOSS"
-[1,2,3].len()  // 3
+[1,2,3].length()  // 3
 1.(+)(2)       // "3"
 ```
 
@@ -216,7 +216,7 @@ __Class operators__:
 * `fun (>)(x:String)`
 
 __Class methods__:
-* `fun len()`
+* `fun length()`
 * `fun repeat(x:Int)`
 * `fun upper()`
 * `fun lower()`
@@ -278,7 +278,7 @@ __Class operators__:
 
 __Class methods__:
 * `fun append(x)`
-* `fun len()`
+* `fun length()`
 * `fun reverse()`
 * `fun find(x)`
 * `fun sort(bool ascend=true)`
@@ -352,6 +352,10 @@ empty = {:}
 mappings = {"name": "Marek", "id": 42}
 ```
 
+Only types which are hashable can be used as keys, these are immutable types,
+so for example list or dict cannot be used as keys. If object is used then it
+must implement `__hash()` method, which returns its hash (Int).
+
 __Class constructors__:
 * `fun Dict()`
 * `fun Dict(keys:List, values:List)`
@@ -368,7 +372,7 @@ __Class methods__:
 * `fun remove_if(f)`
 * `fun filter(f)`
 * `fun empty()`
-* `fun len()`
+* `fun length()`
 * `fun insert(key, value)`
 * `fun emplace(key, value)`
 

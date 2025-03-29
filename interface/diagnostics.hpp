@@ -123,7 +123,7 @@ enum DiagID {
     NO_NEXT_DEFINED,        ///< Object does not have __next for for
     DIV_BY_ZERO,            ///< Division by 0
     FDIV_BY_ZERO,           ///< Float division by 0
-    CANNOT_CREATE_ATTR,     ///< Creating attribute on immutable value
+    CANNOT_CREATE_ATTR,     ///< Creating attribute on non-modifiable value
     NON_LOC_IN_GLOB,        ///< Use of $ in global frame
     NO_NON_LOC_BINDING,     ///< Cannot bind $ var
     SPACE_IMPORT_AS_ITSELF, ///< ::Name
@@ -135,6 +135,7 @@ enum DiagID {
     LIST_INDEX_NOT_INT_OR_RANGE, ///< Indexing with other type than int or range
     NO_SETITEM_DEFINED,     ///< Calling [a] = b without __setitem method
     NON_BOOL_FROM_EQ,       ///< When (==) returns non-bool type but was used by operator
+    NOT_HASHABLE,           ///< Cannot create hash of it
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -250,6 +251,7 @@ static const char * DIAG_MSGS[] = {
     "List indices must be Int or Range, but got '%s'",
     "Object of class '%s' cannot set indexed value — __setitem method has to be defined",
     "(==) operator function for type '%s' returned non-bool value ('%s')",
+    "Type '%s' is not hashable",
 };
 
 /// \brief Diagnostic message for error reporting

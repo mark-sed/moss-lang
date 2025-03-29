@@ -357,17 +357,12 @@ function test_attributes {
 function test_subscript_set {
     expect_pass "subscript_set.ms" $1
     expect_out_eq "Hi there
-Hello there
-> Hello there
-> Hello there!
 caught
 [1, 2, 3]
 [1, true, 3]
 [1, true, true]
 [false, true, true]
 caught
-Val: 1
-Val: <class Int>
 [1, 2, 3, 4]
 [-8, 2, 3, 4]
 [-8, -7, -6, 4]
@@ -396,6 +391,26 @@ function test_lists {
     expect_pass "lists.ms" $1
     expect_out_eq "[1, 2, 3, false, \"pět\"]\n[[123], 4, [123]]
 [5, 8, [0, -1, -7]]\n[5, 8, [0, -1, -7]]\n" $1
+}
+
+function test_dicts {
+    expect_pass "dicts.ms" $1
+    expect_out_eq "{:}
+{3: \"3\", 10: \"10\"}
+{nil: \"nil\", false: \"false\", 0: \"0\", true: \"true\", \"0_true\": \"0_true\"}
+{1: 1, 2: 2, 2.000000: 2.000000}
+caught
+caught
+{1: \"one\", 2: \"two\", 3: \"three\"}
+{\"b\": 2, \"c\": 3, \"a\": 1}
+{nil: \"n1\", false: \"f2\"}
+{\"key\": 2.500000, 1: \"int\", <class Int>: [1, 2]}
+{1: [1, 2, 3], 2: [4, 5, 6]}
+{false: \"no\", true: \"yes\"}
+{2.718000: \"e\", 3.140000: \"pi\"}
+{\"key\": 42, nil: \"nothing\"}
+{\"outer\": {\"inner\": \"value\"}}
+{\"empty_dict\": {:}, \"empty_list\": [], \"empty_str\": \"\"}\n" $1
 }
 
 function test_list_comprehension {
@@ -884,6 +899,7 @@ function run_all_tests {
     run_test operator_funs
     run_test lists
     run_test list_comprehension
+    run_test dicts
     run_test enums
     run_test space
     run_test optional_typing

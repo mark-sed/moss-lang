@@ -112,8 +112,10 @@ public:
     Value *get_type() { return this->type; }
     ustring get_name() { return this->name; }
 
-    /// When mutable, then the value can have attributes assigned into
-    virtual inline bool is_mutable() { return false; }
+    /// When modifiable, then the value can have attributes assigned into
+    virtual inline bool is_modifiable() { return false; }
+    /// When mutable, then the value can change
+    virtual inline bool is_hashable() = 0;
 
     virtual std::ostream& debug(std::ostream& os) const = 0;
 
@@ -129,6 +131,11 @@ public:
     virtual Value *iter(Interpreter *vm);
     virtual Value *next(Interpreter *vm);
     virtual void set_subsc(Interpreter *vm, Value *obj, Value *val);
+    virtual opcode::IntConst hash() {
+        assert(!is_hashable() && "Calling hash on non-hashable type");
+        assert(false && "Missing hash implementation");
+        return 0;
+    }
 
     void annotate(ustring name, Value *val);
     std::map<ustring, Value *> get_annotations() { return this->annotations; }
@@ -161,6 +168,7 @@ inline std::ostream& operator<< (std::ostream& os, Value &v) {
 }
 
 bool has_methods(Value *v);
+opcode::IntConst hash(Value *v, Interpreter *vm);
 
 // Forward declarations
 template<class T>
@@ -183,6 +191,11 @@ public:
 
     virtual Value *clone() {
         return new IntValue(this->value);
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return value;
     }
 
     opcode::IntConst get_value() { return this->value; }
@@ -214,6 +227,11 @@ public:
         return new FloatValue(this->value);
     }
 
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<opcode::FloatConst>{}(value);
+    }
+
     opcode::FloatConst get_value() { return this->value; }
     virtual opcode::FloatConst as_float() override {
         return this->value;
@@ -242,6 +260,11 @@ public:
         return new BoolValue(this->value);
     }
 
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return value ? 1L : 0L;
+    }
+
     opcode::BoolConst get_value() { return this->value; }
 
     virtual opcode::StringConst as_string() const override {
@@ -268,6 +291,11 @@ public:
         return new StringValue(this->value);
     }
 
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<opcode::StringConst>{}(value);
+    }
+
     opcode::StringConst get_value() { return this->value; }
 
     virtual opcode::StringConst as_string() const override {
@@ -281,7 +309,6 @@ public:
     }
 
     virtual Value *next(Interpreter *vm) override;
-    virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
     virtual opcode::StringConst dump() override {
         return "\"" + value + "\"";
@@ -299,8 +326,14 @@ public:
     static const TypeKind ClassType = TypeKind::NIL;
 
     NilValue() : Value(ClassType, "Nil", BuiltIns::NilType) {}
+
     virtual Value *clone() {
         return new NilValue();
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return -1L;
     }
 
     virtual opcode::StringConst as_string() const override {
@@ -326,6 +359,8 @@ public:
     virtual Value *clone() {
         return new ListValue(this->vals);
     }
+
+    virtual inline bool is_hashable() override { return false; }
 
     std::vector<Value *> get_vals() { return this->vals; }
 
@@ -383,6 +418,83 @@ public:
     }
 };
 
+class DictValue : public Value {
+private:
+    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;    
+    size_t iterator;
+public:
+    static const TypeKind ClassType = TypeKind::DICT;
+
+    DictValue(ListValue *keys, ListValue *values, Interpreter *vm);
+    DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
+    DictValue();
+
+    virtual Value *clone() {
+        return new DictValue(this->vals);
+    }
+
+    virtual inline bool is_hashable() override { return false; }
+
+    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> get_vals() { return this->vals; }
+
+    void push(Value *k, Value *v, Interpreter *vm);
+    size_t size() { return vals.size(); }
+
+    virtual opcode::StringConst as_string() const override {
+        if (vals.empty()) return "{:}";
+        std::stringstream ss;
+        ss << "{";
+        bool first = true;
+        for (auto [k, v]: vals) {
+            for (auto vl: v) {
+                if (first) {
+                    ss << vl.first->dump() << ": " << vl.second->dump();
+                    first = false;
+                }
+                else {
+                    ss << ", " << vl.first->dump() << ": " << vl.second->dump();
+                }
+            }
+        }
+        ss << "}";
+
+        return ss.str();
+    }
+
+    virtual Value *iter(Interpreter *vm) override {
+        (void)vm;
+        iterator = 0;
+        return this;
+    }
+
+    //virtual Value *next(Interpreter *vm) override;
+    //virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Dict(" << vals.size() << ") {";
+        if (vals.empty()) {
+            os << "}";
+            return os;
+        }
+
+        bool first = true;
+        ++tab_depth;
+        for (auto [k, v]: vals) {
+            // TODO: tab has to increase with each use so that if
+            // list or some other structure is outputted it will also have
+            // correct tabs.
+            for (auto vl: v) {
+                os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
+                << "(" << k << ")" << *vl.first << ": " << *vl.second; 
+                first = false;
+            }
+        }
+        --tab_depth;
+        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        return os;
+    }
+};
+
 class ClassValue : public Value {
 private:
     std::list<ClassValue *> supers;
@@ -402,13 +514,18 @@ public:
         return cpy;
     }
 
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0c_"+name);
+    }
+
     void bind(ClassValue *cls) {
         set_attrs(cls->get_attrs());
         this->supers = cls->get_supers();
         this->annotations = cls->get_annotations();
     }
 
-    virtual inline bool is_mutable() override { return true; }
+    virtual inline bool is_modifiable() override { return true; }
 
     virtual opcode::StringConst as_string() const override {
         return "<class " + name + ">";
@@ -440,7 +557,8 @@ public:
         return cpy;
     }
 
-    virtual inline bool is_mutable() override { return true; }
+    virtual inline bool is_modifiable() override { return true; }
+    virtual inline bool is_hashable() override { return true; }
 
     virtual opcode::StringConst as_string() const override {
         return "<object of class " + this->type->get_name() + ">";
@@ -468,11 +586,15 @@ public:
         cpy->annotations = this->annotations;
         return cpy;
     }
-
+    
     Interpreter *get_owner_vm() { return this->owner_vm; }
     bool is_anonymous() { return this->anonymous; }
-
-    virtual inline bool is_mutable() override { return true; }
+    
+    virtual inline bool is_modifiable() override { return true; }
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0s_"+name);
+    }
 
     virtual opcode::StringConst as_string() const override {
         return "<space " + name + ">";
@@ -498,6 +620,11 @@ public:
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
         return cpy;
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0m_"+name);
     }
 
     virtual opcode::StringConst as_string() const override {
@@ -557,6 +684,11 @@ public:
 
     virtual Value *clone() {
         return new FunValue(this->name, this->args, this->vm, this->body_addr);
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0f_"+name);
     }
 
     void set_vararg(opcode::IntConst index) {
@@ -655,6 +787,11 @@ public:
         return new FunValueList(this->funs);
     }
 
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0fl_"+name);
+    }
+
     std::vector<FunValue *> get_funs() { return this->funs; }
     void push_back(FunValue *f) { this->funs.push_back(f); }
     FunValue *back() {
@@ -694,6 +831,11 @@ public:
 
     virtual Value *clone();
 
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0ev_"+name);
+    }
+
     virtual opcode::StringConst as_string() const override {
         return name;
     }
@@ -716,6 +858,11 @@ public:
 
     virtual Value *clone() {
         return new EnumTypeValue(this->name, this->vals);
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0e_"+name);
     }
 
     void set_values(std::vector<EnumValue *> vals) {
@@ -764,6 +911,11 @@ public:
 
     virtual Value *clone() {
         return new SuperValue(this->instance);
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}("0sp_"+name);
     }
 
     ObjectValue *get_instance() { return this->instance; }

@@ -17,6 +17,16 @@ bool moss::has_methods(Value *v) {
         || isa<StringValue>(v) || isa<ListValue>(v);
 }
 
+opcode::IntConst moss::hash(Value *v, Interpreter *vm) {
+    if (!v->is_hashable())
+        opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_HASHABLE, v->get_type()->get_name().c_str())));
+    if (auto obj = dyn_cast<ObjectValue>(v)) {
+        assert(false && "TODO: obj hashing");
+        return 0;
+    }
+    return v->hash();
+}
+
 Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
         : marked(false), kind(kind), type(type), name(name), 
           attrs(attrs), annotations{} {
@@ -65,17 +75,17 @@ Value *SuperValue::get_attr(ustring name, Interpreter *caller_vm) {
 }
 
 void Value::set_attrs(MemoryPool *p) {
-    assert(this->is_mutable() && "Setting attribute for immutable value");
+    assert(this->is_modifiable() && "Setting attribute for not-modifiable value");
     this->attrs = p;
 }
 
 void Value::copy_attrs(MemoryPool *p) {
-    assert(this->is_mutable() && "Setting attribute for immutable value");
+    assert(this->is_modifiable() && "Setting attribute for non-modifiable value");
     this->attrs = p->clone();
 }
 
 void Value::set_attr(ustring name, Value *v) {
-    assert(this->is_mutable() && "Setting attribute for immutable value");
+    assert(this->is_modifiable() && "Setting attribute for non-modifiable value");
     if (!attrs) {
         this->attrs = new MemoryPool();
     }
@@ -136,7 +146,7 @@ Value *ListValue::next(Interpreter *vm) {
     return val;
 }
 
-void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
+/*void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
     assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
     auto key_int = dyn_cast<IntValue>(key);
     if (!key_int)
@@ -150,7 +160,7 @@ void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
         this->value.replace(key_int->get_value(), 1, val_str);
     else
         this->value.replace(this->value.length() + key_int->get_value(), 1, val_str);
-}
+}*/
 
 void ListValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
     assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
@@ -244,6 +254,34 @@ Value *EnumValue::clone() {
     return new EnumValue(dyn_cast<EnumTypeValue>(this->type), this->name);
 }
 
+void DictValue::push(Value *k, Value *v, Interpreter *vm) {
+    LOGMAX("Pushing a dict item [" << *k << ": " << *v << "]");
+    auto hash_key = moss::hash(k, vm);
+    LOGMAX("Got hash: " << hash_key);
+    auto value_at_k = vals.find(hash_key);
+    if (value_at_k != vals.end()) {
+        LOGMAX("Clash of hashes - appending");
+        bool contains = false;
+        auto vak = value_at_k->second;
+        for (size_t vindex = 0; vindex < vak.size(); ++vindex) {
+            if (opcode::eq(vak[vindex].first, k, vm)) {
+                LOGMAX("Overriding index " << vindex << " with " << *vals[hash_key][vindex].first << ": " << *vals[hash_key][vindex].second);
+                contains = true;
+                vals[hash_key][vindex] = std::make_pair(k, v);
+                break;
+            }
+        }
+        if (!contains) {
+            LOGMAX("New key, appending");
+            vals[hash_key].push_back(std::make_pair(k, v));
+        }
+    } else {
+        LOGMAX("No clash creating a new item");
+        std::vector<std::pair<Value *, Value *>> item{std::make_pair(k, v)};
+        vals[hash_key] = item;
+    }
+}
+
 std::list<ClassValue *> ClassValue::get_all_supers() {
     std::list<ClassValue *> sups(supers);
     // Append supers of supers
@@ -262,6 +300,7 @@ ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {
     assert(BuiltIns::List->get_attrs() && "no attribs");
     this->attrs = BuiltIns::List->get_attrs()->clone();
 }
+
 StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {
     //assert(BuiltIns::String->get_attrs() && "no attribs");
     //this->attrs = BuiltIns::String->get_attrs()->clone();
@@ -278,3 +317,20 @@ IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::I
     //assert(BuiltIns::Int->get_attrs() && "no attribs");
     //this->attrs = BuiltIns::Int->get_attrs()->clone();
 }
+
+DictValue::DictValue(ListValue *keys, ListValue *values, Interpreter *vm)
+        : Value(ClassType, "Dict", BuiltIns::Dict) {
+    LOGMAX("Creating dict");
+    auto kvs = keys->get_vals();
+    auto vvs = values->get_vals();
+    assert(kvs.size() == vvs.size() && "key size does not match value size");
+    for (size_t i = 0; i < kvs.size(); ++i) {
+        auto k = kvs[i];
+        auto v = vvs[i];
+        push(k, v, vm);
+    }
+}
+DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals)
+        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals) {
+}
+DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {}

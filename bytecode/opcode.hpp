@@ -213,6 +213,8 @@ StringConst to_string(Interpreter *vm, Value *v);
 /// \return true if t1 is same as t2 or t1 is subtype of t2 (child class)
 bool is_type_eq_or_subtype(Value *t1, Value *t2);
 
+bool eq(Value *s1, Value *s2, Interpreter *vm);
+
 /// Base Opcode class
 class OpCode {
 protected:

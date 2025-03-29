@@ -185,7 +185,7 @@ xxh - LIST_PUSH         %dst, %val
 xxh - LIST_PUSH_CONST   %dst, #val
 xxh - BUILD_LIST        %dst
 
-xxh - BUILD_DICT        %keys, %vals
+xxh - BUILD_DICT        %dst, %keys, %vals
 xxh - BUILD_ENUM        %dst, %vals, "name"
 xxh - BUILD_SPACE       %dst, "name"
 

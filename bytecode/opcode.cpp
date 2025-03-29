@@ -248,7 +248,7 @@ void StoreConst::exec(Interpreter *vm) {
 void StoreAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
     assert(dstobj && "non existent register");
-    op_assert(dstobj->is_mutable(), mslib::create_attribute_error(
+    op_assert(dstobj->is_modifiable(), mslib::create_attribute_error(
         diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR,
             dstobj->get_name().c_str())));
     auto *v = vm->load(this->src);
@@ -259,7 +259,7 @@ void StoreAttr::exec(Interpreter *vm) {
 void StoreConstAttr::exec(Interpreter *vm) {
     auto *dstobj = vm->load(this->obj);
     assert(dstobj && "non existent register");
-    op_assert(dstobj->is_mutable(), mslib::create_attribute_error(
+    op_assert(dstobj->is_modifiable(), mslib::create_attribute_error(
         diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR,
             dstobj->get_name().c_str())));
     auto *v = vm->load_const(this->csrc);
@@ -1466,7 +1466,8 @@ void Mod3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
-static bool eq(Value *s1, Value *s2, Interpreter *vm) {
+// This function is exported in commons.hpp
+bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
     if (s1->get_kind() == s2->get_kind() && !isa<ObjectValue>(s1)) {
         if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
             IntValue *i2 = dyn_cast<IntValue>(s2);
@@ -2153,7 +2154,15 @@ void BuildList::exec(Interpreter *vm) {
 }
 
 void BuildDict::exec(Interpreter *vm) {
-    assert(false && "TODO: Unimplemented opcode");
+    auto k = vm->load(keys);
+    assert(k && "keys don't exist");
+    auto v = vm->load(vals);
+    assert(v && "values don't exist");
+    auto kl = dyn_cast<ListValue>(k);
+    assert(kl && "keys are not a list");
+    auto vl = dyn_cast<ListValue>(v);
+    assert(vl && "values are not a list");
+    vm->store(dst, new DictValue(kl, vl, vm));
 }
 
 void BuildEnum::exec(Interpreter *vm) {

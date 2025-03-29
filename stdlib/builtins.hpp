@@ -33,6 +33,7 @@ namespace BuiltIns {
     extern Value *NilType;
     extern Value *String;
     extern Value *List;
+    extern Value *Dict;
     extern Value *Function;
     extern Value *FunctionList;
     extern Value *Function;

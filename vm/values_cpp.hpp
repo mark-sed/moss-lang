@@ -24,6 +24,8 @@ namespace t_cpp {
             assert(false && "Cannot coppy CppValue");
             return nullptr;
         }
+
+        virtual inline bool is_hashable() override { return true; }
     
         virtual opcode::StringConst as_string() const override {
             return "<C++ value of type " + name + ">";
