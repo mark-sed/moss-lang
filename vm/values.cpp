@@ -313,33 +313,35 @@ std::list<ClassValue *> ClassValue::get_all_supers() {
 }
 
 ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals) {
-    assert(BuiltIns::List->get_attrs() && "no attribs");
-    this->attrs = BuiltIns::List->get_attrs()->clone();
+    if(BuiltIns::List->get_attrs())
+        this->attrs = BuiltIns::List->get_attrs()->clone();
 }
 ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {
-    assert(BuiltIns::List->get_attrs() && "no attribs");
-    this->attrs = BuiltIns::List->get_attrs()->clone();
+    if(BuiltIns::List->get_attrs())
+        this->attrs = BuiltIns::List->get_attrs()->clone();
 }
 
 StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {
-    //assert(BuiltIns::String->get_attrs() && "no attribs");
-    //this->attrs = BuiltIns::String->get_attrs()->clone();
+    if(BuiltIns::String->get_attrs())
+        this->attrs = BuiltIns::String->get_attrs()->clone();
 }
 BoolValue::BoolValue(opcode::BoolConst value) : Value(ClassType, "Bool", BuiltIns::Bool), value(value) {
-    //assert(BuiltIns::Bool->get_attrs() && "no attribs");
-    //this->attrs = BuiltIns::Bool->get_attrs()->clone();
+    if(BuiltIns::Bool->get_attrs())
+        this->attrs = BuiltIns::Bool->get_attrs()->clone();
 }
 FloatValue::FloatValue(opcode::FloatConst value) : Value(ClassType, "Float", BuiltIns::Float), value(value) {
-    //assert(BuiltIns::Float->get_attrs() && "no attribs");
-    //this->attrs = BuiltIns::Float->get_attrs()->clone();
+    if(BuiltIns::Float->get_attrs())
+        this->attrs = BuiltIns::Float->get_attrs()->clone();
 }
 IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::Int), value(value) {
-    //assert(BuiltIns::Int->get_attrs() && "no attribs");
-    //this->attrs = BuiltIns::Int->get_attrs()->clone();
+    if(BuiltIns::Int->get_attrs())
+        this->attrs = BuiltIns::Int->get_attrs()->clone();
 }
 
 DictValue::DictValue(ListValue *keys, ListValue *values, Interpreter *vm)
         : Value(ClassType, "Dict", BuiltIns::Dict) {
+    if(BuiltIns::Dict->get_attrs())
+        this->attrs = BuiltIns::Dict->get_attrs()->clone();
     LOGMAX("Creating dict");
     auto kvs = keys->get_vals();
     auto vvs = values->get_vals();
@@ -352,5 +354,10 @@ DictValue::DictValue(ListValue *keys, ListValue *values, Interpreter *vm)
 }
 DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals)
         : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals) {
+    if(BuiltIns::Dict->get_attrs())
+        this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }
-DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {}
+DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
+    if(BuiltIns::Dict->get_attrs())
+        this->attrs = BuiltIns::Dict->get_attrs()->clone();
+}

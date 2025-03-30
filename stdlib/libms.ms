@@ -32,6 +32,11 @@ class __Bool {
 class __String {
     @internal
     fun String(v="") {}
+
+    @internal
+    fun length() {}
+
+    fun reverse() = this[-1..-this.length()-1]
 }
 
 @internal_bind("NilType")

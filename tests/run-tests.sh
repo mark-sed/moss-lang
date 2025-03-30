@@ -779,6 +779,13 @@ function test_lib_lists {
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]\n" $1
 }
 
+function test_lib_strings {
+    expect_pass "stdlib_tests/strings.ms" $1 
+    expect_out_eq "3\n12\n11
+dcba\ntrue\n" $1
+}
+
+
 function test_lib_random {
     expect_pass "stdlib_tests/random.ms" $1 
     expect_out_eq "" $1
@@ -954,6 +961,7 @@ function run_all_tests {
     run_test lib_ranges
     run_test lib_input
     run_test lib_lists
+    run_test lib_strings
     run_test lib_random
     run_test lib_math
     run_test lib_file

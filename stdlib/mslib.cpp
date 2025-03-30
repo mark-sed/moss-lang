@@ -390,6 +390,8 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
         assert(arg_size == 1 && "Mismatch of args");
         if (args[0].value->get_type() == BuiltIns::List) {
             ret_v = List_length(vm, args[0].value, err);
+        } else if (auto stv = dyn_cast<StringValue>(args[0].value)) {
+            ret_v = new IntValue(stv->get_value().length());
         } else {
             err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
         }
