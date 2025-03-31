@@ -968,6 +968,14 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(new BuildDict(next_reg(), key_list_reg, vals_list_reg));
         bcv = last_reg();
     }
+    else if (auto nt = dyn_cast<Note>(expr)) {
+        auto note = emit(nt->get_note());
+        assert(note->is_const() && "String literal is not const");
+        append(new PushCallFrame());
+        append(new PushConstArg(free_reg(note)));
+        append(new opcode::CallFormatter(next_reg(), nt->get_prefix()));
+        bcv = last_reg();
+    }
     else if (auto be = dyn_cast<BinaryExpr>(expr)) {
         bcv = emit(be);
     }

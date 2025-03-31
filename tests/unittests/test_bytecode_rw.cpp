@@ -78,6 +78,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::JmpIfTrue(2, -7));
     bc->push_back(new opcode::JmpIfFalse(3, -12));
     bc->push_back(new opcode::Call(11, 7));
+    bc->push_back(new opcode::CallFormatter(11, "md"));
     bc->push_back(new opcode::PushFrame());
     bc->push_back(new opcode::PopFrame());
     bc->push_back(new opcode::PushCallFrame());

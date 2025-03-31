@@ -1329,19 +1329,21 @@ public:
 
 class Note : public Expression {
 private:
-    Expression *prefix;
+    ustring prefix;
     StringLiteral *note;
 public:
     static const IRType ClassType = IRType::NOTE;
 
-    Note(Expression *prefix, StringLiteral *note) : Expression(ClassType, "<note>"), prefix(prefix), note(note) {}
+    Note(ustring prefix, StringLiteral *note) : Expression(ClassType, "<note>"), prefix(prefix), note(note) {}
     ~Note() {
-        delete prefix;
         delete note;
     }
 
+    ustring get_prefix() { return this->prefix; }
+    StringLiteral *get_note() { return this->note; }
+
     virtual inline std::ostream& debug(std::ostream& os) const {
-        os << *prefix << *note;
+        os << prefix << *note;
         return os;
     }
 };

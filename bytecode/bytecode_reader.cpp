@@ -212,6 +212,11 @@ Bytecode *BytecodeReader::read() {
                 auto reg2 = read_register();
                 bc->push_back(new Call(reg1, reg2));
             } break;
+            case opcode::OpCodes::CALL_FORMATTER: {
+                auto reg = read_register();
+                auto str = read_string();
+                bc->push_back(new CallFormatter(reg, str));
+            } break;
             case opcode::OpCodes::PUSH_FRAME: {
                 bc->push_back(new PushFrame());
             } break;

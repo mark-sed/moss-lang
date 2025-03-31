@@ -49,7 +49,7 @@ If one wants to call a function and disregard the return value, the
 ## xString notes
 
 xString stands for a string that is prefixed by some identificator. There are
-built-in formats, such as markdown (`md`) or `pdf`. But there can be also
+built-in formats, such as markdown (`md`) or `txt`. But there can be also
 custom prefixes, that are needed for outputting custom format. If this prefix
 matches any global function name that has been annotated as `@formatter` and
 this function takes one argument, then this string is also sent to it for
@@ -86,7 +86,7 @@ a = md"# Header"
 
 The actual output extends `String` type, but is of type `Note` and more
 specifically of type `MarkdownNote`. So in the given example with function `eq`
-the type of `s` is `Note`, which might be used for some additional analysis.
+the type of `a` is `Note`, which might be used for some additional analysis.
 
 ## Formatters
 
@@ -180,7 +180,7 @@ md(header("Introduction"))
 ## Output formats
 
 There are predefined output formats, which you can always use, such as
-`md` (markdown) or `pdf`.
+`md` (markdown) or `txt`.
 
 You can also add a custom output format and use one of the existing
 for your transformation.

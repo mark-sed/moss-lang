@@ -33,6 +33,7 @@ enum DiagID {
     EXPECTED_END,           ///< Missing ; or nl 
     ASSERT_MISSING_PARENTH, ///< Assert specific - missing () for when someone uses raise syntax
     ASSERT_EXPECTS_ARG,     ///< Assert specific - incorrect arguments
+    INVALID_NOTE_PREFIX,    ///< When note prfix is not a variable
     EXPR_EXPECTED,          ///< Parser expected an expression
     DECL_EXPECTED,          ///< Parser expected a declaration
     EXPR_EXPECTED_NOTE,     ///< As above but with extra note
@@ -152,6 +153,7 @@ static const char * DIAG_MSGS[] = {
     "Missing a new line ('\\n') or a semicolon (';') after a statement",
     "Assert expects its arguments in parenthesis",
     "Assert expects 1 or 2 arguments — condition and optional message",
+    "Note prefix has to be an identificator — if you require an expression, use function call",
     "Expecting an expression",
     "Expecting a declaration",
     "Expecting an expression — %s",

@@ -1282,7 +1282,9 @@ ir::Expression *Parser::note() {
         auto val = advance();
         // We don't unescape the string as the note might use its own escape
         // sequences and unescape has to be called by the formatter in that case
-        return new Note(expr, new StringLiteral(val->get_value()));
+        auto prefix = dyn_cast<Variable>(expr);
+        parser_assert(prefix, create_diag(diags::INVALID_NOTE_PREFIX));
+        return new Note(prefix->get_name(), new StringLiteral(val->get_value()));
     }
 
     return expr;

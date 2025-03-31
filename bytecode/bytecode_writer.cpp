@@ -153,6 +153,10 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_register(o->src);
         }
+        else if (auto o = dyn_cast<opcode::CallFormatter>(op_gen)){
+            write_register(o->dst);
+            write_string(o->name);
+        }
         else if (isa<opcode::PushFrame>(op_gen)){
             // Nothing to do
         }

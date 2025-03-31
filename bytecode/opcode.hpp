@@ -75,7 +75,8 @@ enum OpCodes : opcode_t {
     JMP, //               addr
     JMP_IF_TRUE, //       %src, addr
     JMP_IF_FALSE, //      %src, addr
-    CALL, //              %dst, addr
+    CALL, //              %dst, fun
+    CALL_FORMATTER, //    %dst, fun
     PUSH_FRAME, //
     POP_FRAME,  //
     PUSH_CALL_FRAME, //
@@ -828,6 +829,29 @@ public:
         auto casted = dyn_cast<Call>(other);
         if (!casted) return false;
         return casted->src == src && casted->dst == dst;
+    }
+};
+
+class CallFormatter : public OpCode {
+public:
+    Register dst;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::CALL_FORMATTER;
+
+    CallFormatter(Register dst, StringConst name)
+        : OpCode(ClassType, "CALL_FORMATTER"), dst(dst), name(name) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << dst << ", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<CallFormatter>(other);
+        if (!casted) return false;
+        return casted->name == name && casted->dst == dst;
     }
 };
 

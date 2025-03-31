@@ -536,6 +536,12 @@ function test_supers {
     expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\nA foo 42\nVAL B\ncaught\n" $1
 }
 
+function test_notes {
+    expect_pass "notes.ms" $1
+    expect_out_eq "Text
+# Title\nSome text.\nformatted!\n" $1
+}
+
 function test_range_precedence {
     expect_pass "range_precedence.ms" $1
     expect_out_eq "[[1], [3]]
@@ -932,6 +938,7 @@ function run_all_tests {
     run_test scopes
     run_test lambdas
     run_test supers
+    run_test notes
 
     run_test basic_import
     run_test import_calls

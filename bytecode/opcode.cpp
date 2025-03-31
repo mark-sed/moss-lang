@@ -753,35 +753,49 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
 }
 
-FunValue *opcode::lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
-    auto constr = obj->get_attr(name, vm);
-    if (constr) {
-        FunValue *constrf = dyn_cast<FunValue>(constr);
-        if (!constrf && isa<FunValueList>(constr)) {
-            auto constrflist = dyn_cast<FunValueList>(constr);
-            for (auto f : constrflist->get_funs()) {
-                CallFrame cf;
-                for (auto a: args) {
-                    cf.push_back(a);
-                }
-                auto rv = can_call(f, &cf);
-                if (!rv) {
-                    return f;
-                }
-                err = *rv;
-            }
-        }
-        if (constrf) {
+static FunValue *select_function(Interpreter *vm, Value *fun, std::initializer_list<Value *> args, diags::DiagID &err) {
+    assert(fun);
+    FunValue *funf = dyn_cast<FunValue>(fun);
+    if (!funf && isa<FunValueList>(fun)) {
+        auto funflist = dyn_cast<FunValueList>(fun);
+        for (auto f : funflist->get_funs()) {
             CallFrame cf;
             for (auto a: args) {
                 cf.push_back(a);
             }
-            auto rv = can_call(constrf, &cf);
+            auto rv = can_call(f, &cf);
             if (!rv) {
-                return constrf;
+                return f;
             }
             err = *rv;
         }
+    }
+    if (funf) {
+        CallFrame cf;
+        for (auto a: args) {
+            cf.push_back(a);
+        }
+        auto rv = can_call(funf, &cf);
+        if (!rv) {
+            return funf;
+        }
+        err = *rv;
+    }
+    return nullptr;
+}
+
+FunValue *opcode::lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
+    auto method = obj->get_attr(name, vm);
+    if (method) {
+        return select_function(vm, method, args, err);
+    }
+    return nullptr;
+}
+
+FunValue *lookup_function(Interpreter *vm, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
+    auto fun = vm->load_name(name);
+    if (fun) {
+        return select_function(vm, fun, args, err);
     }
     return nullptr;
 }
@@ -824,6 +838,22 @@ void Call::exec(Interpreter *vm) {
     auto v = vm->load(src);
     assert(v && "register does not contain a value");
     call(vm, dst, v);
+}
+
+void CallFormatter::exec(Interpreter *vm) {
+    diags::DiagID did;
+    assert(vm->get_call_frame()->get_args().size() == 1 && "Note should have 1 arg and that is the note string");
+    auto arg = vm->get_call_frame()->get_args().back();
+    auto formatf = lookup_function(vm, name, {arg.value}, did);
+    if (formatf && formatf->has_annotation("formatter")) {
+        LOGMAX("Formatter found");
+        call(vm, dst, formatf);
+        // TODO: Load dst, get it as_string and store into dst NoteValue with it
+    }
+    else {
+        LOGMAX("Formatter not found, storing string as is");
+        vm->store(dst, arg.value);
+    }
 }
 
 void PushFrame::exec(Interpreter *vm) {
