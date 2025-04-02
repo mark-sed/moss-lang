@@ -10,6 +10,8 @@
 #include <sstream>
 #include <random>
 #include <cmath>
+#include <chrono>
+#include <thread>
 
 using namespace moss;
 using namespace mslib;
@@ -429,6 +431,12 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     else if (name == "rand_float") {
         assert(arg_size == 2 && "Mismatch of args");
         ret_v = rand_float(vm, cf->get_arg("min"), cf->get_arg("max"));
+    }
+    else if (name == "sleep") {
+        assert(arg_size == 1 && "Mismatch of args");
+        auto seconds = static_cast<opcode::IntConst>(args[0].value->as_float() * 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(seconds));
+        ret_v = BuiltIns::Nil;
     }
     else if (name == "sin") {
         assert(arg_size == 1 && "Mismatch of args");
