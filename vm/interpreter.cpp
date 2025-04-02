@@ -224,6 +224,20 @@ Value *Interpreter::load_non_local_name(ustring name) {
     return nullptr;
 }
 
+bool Interpreter::store_non_local(ustring name, Value *v) {
+    if (frames.size() <= 1) return false;
+    for (auto riter = std::next(frames.rbegin()); riter != std::prev(frames.rend()); ++riter) {
+        auto val = (*riter)->load_name(name, this, nullptr);
+        if (val) {
+            auto reg = (*riter)->get_free_reg();
+            (*riter)->store(reg, v);
+            (*riter)->store_name(reg, name);
+            return true;
+        }
+    }
+    return false;
+}
+
 void Interpreter::push_spilled_value(Value *v) {
     assert(v && "sanity check");
     get_top_frame()->push_spilled_value(v);

@@ -73,3 +73,27 @@ fun fn1() {
 }
 
 fn1()
+
+fun outterf1(c) {
+    a = 12
+    a
+    "\n"
+    b = 5
+    b
+    "\n"
+    fun inner() {
+        $a = "changed\n"
+        $b = "also\n"
+        try $d = 5
+        catch (e:NameError) "caught\n"
+    }
+    ~inner()
+    e = 24
+    a
+    // TODO: Uncomment once fixed
+    //b
+    c
+    "\n"
+}
+
+~outterf1(4)

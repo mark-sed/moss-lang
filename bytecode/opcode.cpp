@@ -293,7 +293,9 @@ void StoreGlobal::exec(Interpreter *vm) {
 }
 
 void StoreNonLoc::exec(Interpreter *vm) {
-    assert(false && "TODO");
+    auto v = vm->load(src);
+    assert(v && "non-existent register");
+    op_assert(vm->store_non_local(name, v), mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NON_LOC_BINDING, this->name.c_str())));
 }
 
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
