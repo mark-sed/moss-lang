@@ -24,6 +24,7 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "Dict", BuiltIns::Dict, gf);
     store_glob_val(reg++, "NilType", BuiltIns::NilType, gf);
     store_glob_val(reg++, "String", BuiltIns::String, gf);
+    store_glob_val(reg++, "Note", BuiltIns::Note, gf);
     store_glob_val(reg++, "Function", BuiltIns::Function, gf);
     // Should this be here? Should it be accessible?
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
@@ -66,6 +67,7 @@ Value *BuiltIns::Float = new ClassValue("Float");
 Value *BuiltIns::Bool = new ClassValue("Bool");
 Value *BuiltIns::NilType = new ClassValue("NilType");
 Value *BuiltIns::String = new ClassValue("String");
+Value *BuiltIns::Note = new ClassValue("Note");
 Value *BuiltIns::List = new ClassValue("List");
 Value *BuiltIns::Dict = new ClassValue("Dict");
 

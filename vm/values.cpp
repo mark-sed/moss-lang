@@ -83,8 +83,8 @@ void Value::copy_attrs(MemoryPool *p) {
     this->attrs = p->clone();
 }
 
-void Value::set_attr(ustring name, Value *v) {
-    assert(this->is_modifiable() && "Setting attribute for non-modifiable value");
+void Value::set_attr(ustring name, Value *v, bool internal_access) {
+    assert((this->is_modifiable() || internal_access) && "Setting attribute for non-modifiable value");
     if (!attrs) {
         this->attrs = new MemoryPool();
     }
@@ -325,14 +325,25 @@ StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String",
     if(BuiltIns::String->get_attrs())
         this->attrs = BuiltIns::String->get_attrs()->clone();
 }
+
+NoteValue::NoteValue(opcode::StringConst format, StringValue *value) 
+        : Value(ClassType, "Note", BuiltIns::Note), format(format), value(value) {
+    if(BuiltIns::Note->get_attrs())
+        this->attrs = BuiltIns::Note->get_attrs()->clone();
+    set_attr("format", new StringValue(format), true);
+    set_attr("value", value, true);
+}
+
 BoolValue::BoolValue(opcode::BoolConst value) : Value(ClassType, "Bool", BuiltIns::Bool), value(value) {
     if(BuiltIns::Bool->get_attrs())
         this->attrs = BuiltIns::Bool->get_attrs()->clone();
 }
+
 FloatValue::FloatValue(opcode::FloatConst value) : Value(ClassType, "Float", BuiltIns::Float), value(value) {
     if(BuiltIns::Float->get_attrs())
         this->attrs = BuiltIns::Float->get_attrs()->clone();
 }
+
 IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::Int), value(value) {
     if(BuiltIns::Int->get_attrs())
         this->attrs = BuiltIns::Int->get_attrs()->clone();

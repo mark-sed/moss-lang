@@ -37,7 +37,7 @@ enum class TypeKind {
     STRING,
     LIST,
     DICT,
-    ADDRESS,
+    NOTE,
     FUN,
     FUN_LIST,
     OBJECT,
@@ -60,7 +60,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::STRING: return "STRING";
         case TypeKind::LIST: return "LIST";
         case TypeKind::DICT: return "DICT";
-        case TypeKind::ADDRESS: return "ADDRESS";
+        case TypeKind::NOTE: return "NOTE";
         case TypeKind::FUN: return "FUN";
         case TypeKind::FUN_LIST: return "FUN_LIST";
         case TypeKind::OBJECT: return "OBJECT";
@@ -156,7 +156,7 @@ public:
     bool has_attr(ustring name, Interpreter *caller_vm) { return get_attr(name, caller_vm) != nullptr; }
 
     /// Sets (new or overrides) attribute name to value v
-    void set_attr(ustring name, Value *v);
+    void set_attr(ustring name, Value *v, bool internal_access=false);
 
     void set_attrs(MemoryPool *p);
     void copy_attrs(MemoryPool *p);
@@ -636,6 +636,52 @@ public:
     Interpreter *get_vm() { return vm; }
 
     virtual std::ostream& debug(std::ostream& os) const override;
+};
+
+class NoteValue : public Value {
+private:
+    opcode::StringConst format;
+    StringValue *value;
+
+public:
+    static const TypeKind ClassType = TypeKind::NOTE;
+
+    NoteValue(opcode::StringConst format, StringValue *value);
+
+    virtual Value *clone() {
+        return new NoteValue(this->format, this->value);
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<opcode::StringConst>{}(format+value->get_value());
+    }
+
+    StringValue *get_value() { return this->value; }
+    opcode::StringConst get_format() { return this->format; }
+
+    virtual opcode::StringConst as_string() const override {
+        return value->get_value();
+    }
+
+    virtual Value *iter(Interpreter *vm) override {
+        return value->iter(vm);
+    }
+
+    virtual Value *next(Interpreter *vm) override {
+        // This should not be really called as iter returns value::iter
+        // But this might be called explicitly
+        return value->next(vm);
+    }
+
+    virtual opcode::StringConst dump() override {
+        return format + value->dump();
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Note(" << format << "\"" << utils::sanitize(value->get_value()) << "\")";
+        return os;
+    }
 };
 
 class FunValueArg {

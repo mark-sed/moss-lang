@@ -174,7 +174,7 @@ Value *input(Interpreter *vm, Value *prompt) {
     return new StringValue(line);
 }
 
-Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
+Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base) {
     (void)vm;
     (void)ths;
     IntValue *base_int = nullptr;
@@ -205,7 +205,7 @@ Value *Int(Interpreter *vm, Value * ths, Value *v, Value *base) {
     return new IntValue(0);
 }
 
-Value *Float(Interpreter *vm, Value * ths, Value *v) {
+Value *Float(Interpreter *vm, Value *ths, Value *v) {
     (void)vm;
     (void)ths;
 
@@ -231,7 +231,7 @@ Value *Float(Interpreter *vm, Value * ths, Value *v) {
     return new FloatValue(0.0);
 }
 
-Value *Bool(Interpreter *vm, Value * ths, Value *v) {
+Value *Bool(Interpreter *vm, Value *ths, Value *v) {
     (void)vm;
     (void)ths;
 
@@ -260,10 +260,18 @@ Value *Bool(Interpreter *vm, Value * ths, Value *v) {
     return new BoolValue(true);
 }
 
-Value *String(Interpreter *vm, Value * ths, Value *v) {
+Value *String(Interpreter *vm, Value *ths, Value *v) {
     (void)vm;
     (void)ths;
     return new StringValue(v->as_string());
+}
+
+Value *Note(Interpreter *vm, Value *ths, Value *format, Value *value) {
+    (void)vm;
+    (void)ths;
+    auto str_val = dyn_cast<StringValue>(value);
+    assert(str_val && "Note did not take string value");
+    return new NoteValue(format->as_string(), str_val);
 }
 
 Value *List_length(Interpreter *vm, Value *ths, Value *&err) {
@@ -369,6 +377,10 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     else if (name == "String") {
         assert((arg_size == 2) && "Mismatch of args");
         ret_v = String(vm, cf->get_arg("this"), cf->get_arg("v"));
+    }
+    else if (name == "Note") {
+        assert((arg_size == 3) && "Mismatch of args");
+        ret_v = Note(vm, cf->get_arg("this"), cf->get_arg("format"), cf->get_arg("value"));
     }
     else if (name == "NilType") {
         assert((arg_size == 1) && "Mismatch of args");

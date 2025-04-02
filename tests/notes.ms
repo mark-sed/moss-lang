@@ -13,3 +13,10 @@ fun md(x) {
 md"""# Title
 Some text.
 """
+
+Note()
+Note("Some text\n")
+mdn = Note("# Title1\n", "md")
+mdn.format
+"\n"
+mdn.value

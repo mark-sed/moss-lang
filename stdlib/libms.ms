@@ -39,6 +39,12 @@ class __String {
     fun reverse() = this[-1..-this.length()-1]
 }
 
+@internal_bind("Note")
+class __Note {
+    @internal
+    fun Note(value:String="", format:String="txt") {}
+}
+
 @internal_bind("NilType")
 class __NilType {
     @internal

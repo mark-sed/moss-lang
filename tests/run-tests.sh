@@ -539,7 +539,7 @@ function test_supers {
 function test_notes {
     expect_pass "notes.ms" $1
     expect_out_eq "Text
-# Title\nSome text.\nformatted!\n" $1
+# Title\nSome text.\nformatted!\nSome text\nmd\n# Title1\n" $1
 }
 
 function test_range_precedence {

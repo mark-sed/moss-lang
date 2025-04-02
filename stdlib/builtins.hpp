@@ -32,6 +32,7 @@ namespace BuiltIns {
     extern Value *Bool;
     extern Value *NilType;
     extern Value *String;
+    extern Value *Note;
     extern Value *List;
     extern Value *Dict;
     extern Value *Function;
