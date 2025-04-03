@@ -178,7 +178,7 @@ private:
     MemoryPool *get_local_frame() { return this->frames.back(); }
 
     void init_const_frame();
-    void init_global_frame();
+    opcode::Register init_global_frame();
 public:
     Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();

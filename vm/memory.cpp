@@ -68,6 +68,41 @@ Value *MemoryPool::load_name(ustring name, Interpreter *vm, Value **owner) {
     return nullptr;
 }
 
+bool MemoryPool::overwrite(ustring name, Value *v, Interpreter *vm) {
+    LOGMAX("Overwriting value " << name);
+    auto index = this->sym_table.find(name);
+    if (index != this->sym_table.end()) {
+        LOGMAX("Overwiting in pool");
+        this->pool[index->second] = v;
+        return true;
+    }
+    for (auto riter = spilled_values.rbegin(); riter != spilled_values.rend(); ++riter) {
+        // Skip anonymous spilled values accessed from other module
+        if (auto spc = dyn_cast<SpaceValue>(*riter)) {
+            if (spc->is_anonymous() && vm != spc->get_owner_vm()) {
+                assert(spc->get_owner_vm() && "Anonymous space without owner");
+                continue;
+            }
+        }
+        if ((*riter)->has_attr(name, vm)) {
+            LOGMAX("Found as a spilled value of " << (*riter)->get_name());
+            bool status = (*riter)->get_attrs()->overwrite(name, v, vm);
+            assert(status && "Has attr but cannot be overwritten");
+            return status;
+        }
+    }
+    // Look for name in closures
+    if (pool_fun_owner) {
+        for(auto f: pool_fun_owner->get_closures()) {
+            auto val = f->overwrite(name, v, vm);
+            if (val) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
     bool first = true;
     ++tab_depth;

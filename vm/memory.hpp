@@ -79,6 +79,8 @@ public:
     ///              closure.
     Value *load_name(ustring name, Interpreter *vm, Value **owner=nullptr);
 
+    bool overwrite(ustring name, Value *v, Interpreter *vm);
+
     /// Spills a new value.
     void push_spilled_value(Value *v) {
         this->spilled_values.push_back(v);

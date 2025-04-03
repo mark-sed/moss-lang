@@ -523,7 +523,7 @@ Hi\n2468\n43210
 function test_scopes {
     expect_pass "scopes.ms" $1
     expect_out_eq "5\n6\n2\n2\nhi\ncaught\ncaught\n2\n3
-12\n5\ncaught\nchanged\n4\n" $1
+12\n5\ncaught\nchanged\nalso\n4\n" $1
 }
 
 function test_lambdas {
@@ -663,6 +663,11 @@ function test_factorial {
 
 function test_pso {
     expect_pass "pso.ms" $1
+}
+
+function test_lib_moss_module {
+    expect_pass "stdlib_tests/moss_module.ms" $1
+    expect_out_eq "<module libms>\n<space Math>\n3\ntrue\n" $1
 }
 
 function test_lib_constants {
@@ -960,6 +965,7 @@ function run_all_tests {
     run_test pso
 
     # stdlib tests
+    run_test lib_moss_module
     run_test lib_constants
     run_test lib_exit
     run_test lib_vardump

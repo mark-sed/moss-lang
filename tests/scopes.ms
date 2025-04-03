@@ -90,8 +90,7 @@ fun outterf1(c) {
     ~inner()
     e = 24
     a
-    // TODO: Uncomment once fixed
-    //b
+    b
     c
     "\n"
 }

@@ -21,9 +21,10 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
     // Global frame
     this->frames.push_back(new MemoryPool(false, true));
     init_const_frame();
+    opcode::Register glob_reg = 0;
     if (!libms_mod && !main) {
         // Init libms module
-        init_global_frame();
+        glob_reg = init_global_frame();
     }
     if (!libms_mod && main) {
         // Loading a module will also create an interpreter and so we need to
@@ -35,11 +36,11 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
     if (libms_mod) {
         push_spilled_value(libms_mod);
         auto gf = this->get_global_frame();
-        auto fr_reg = get_free_reg(gf);
-        gf->store(fr_reg, libms_mod);
-        // Also create name for the module to access it in case of overshadowing
-        gf->store_name(fr_reg, "moss");
+        gf->store(glob_reg, libms_mod);
+        gf->store_name(glob_reg, "moss");
+        ++glob_reg;
     }
+    assert(glob_reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }
 
 Interpreter::~Interpreter() {
@@ -73,13 +74,13 @@ size_t Interpreter::get_code_size() {
     return this->code->size();
 }
 
-void Interpreter::init_global_frame() {
+opcode::Register Interpreter::init_global_frame() {
     auto gf = get_global_frame();
 
     opcode::Register reg = 0;
     BuiltIns::init_built_ins(gf, reg);
 
-    assert(reg < BC_RESERVED_REGS && "More registers used that is reserved");
+    return reg;
 }
 
 void Interpreter::init_const_frame() {
@@ -227,11 +228,8 @@ Value *Interpreter::load_non_local_name(ustring name) {
 bool Interpreter::store_non_local(ustring name, Value *v) {
     if (frames.size() <= 1) return false;
     for (auto riter = std::next(frames.rbegin()); riter != std::prev(frames.rend()); ++riter) {
-        auto val = (*riter)->load_name(name, this, nullptr);
-        if (val) {
-            auto reg = (*riter)->get_free_reg();
-            (*riter)->store(reg, v);
-            (*riter)->store_name(reg, name);
+        auto done = (*riter)->overwrite(name, v, this);
+        if (done) {
             return true;
         }
     }
@@ -359,7 +357,6 @@ void Interpreter::run() {
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
         try {
-            //outs << *opc << "\n";
             opc->exec(this);
         } catch (Value *v) {
             // Match to known catches otherwise let fall through to next interpreter
