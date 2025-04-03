@@ -223,6 +223,15 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 }
                 right->set_silent(true);
                 return right;
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new opcode::StoreConst(next_reg(), free_reg(right)));
+                    right = last_reg();
+                }
+                append(new opcode::StoreGlobal(right->reg(), ue->get_expr()->get_name()));
+                right->set_silent(true);
+                return right;
             } else {
                 assert(false && "Missing assignment type");
             }

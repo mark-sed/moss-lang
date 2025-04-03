@@ -289,7 +289,9 @@ void StoreConstAttr::exec(Interpreter *vm) {
 }
 
 void StoreGlobal::exec(Interpreter *vm) {
-    assert(false && "TODO");
+    auto v = vm->load(src);
+    assert(v && "non-existent register");
+    op_assert(vm->get_global_frame()->overwrite(name, v, vm), mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::GLOB_NAME_NOT_DEFINED, this->name.c_str())));
 }
 
 void StoreNonLoc::exec(Interpreter *vm) {

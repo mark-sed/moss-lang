@@ -68,4 +68,18 @@ try {
     "foo_int is not internal\n"
 }
 
+fun foo_get_reg() {
+    b = 5
+    try
+        raise "a"
+    catch(c) {}
+    a = 4
+    b
+    a
+    c
+}
+
+~foo_get_reg()
+"\n"
+
 "module end\n"

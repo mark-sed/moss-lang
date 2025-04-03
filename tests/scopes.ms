@@ -74,6 +74,8 @@ fun fn1() {
 
 fn1()
 
+globa_val = -1
+
 fun outterf1(c) {
     a = 12
     a
@@ -82,6 +84,7 @@ fun outterf1(c) {
     b
     "\n"
     fun inner() {
+        ::globa_val = -5
         $a = "changed\n"
         $b = "also\n"
         try $d = 5
@@ -95,4 +98,19 @@ fun outterf1(c) {
     "\n"
 }
 
+globa_val
+"\n"
 ~outterf1(4)
+globa_val
+"\n"
+
+a2 = 3
+try
+    ::b = 4
+catch(e:NameError)
+    "caught\n"
+::a2
+"\n"
+::a2 = 1
+::a2
+"\n"

@@ -336,7 +336,7 @@ function test_try_catch {
     expect_pass "try_catch.ms" $1
     expect_out_eq "Success\nfinally end\nCaught NameError: Unkown name!\nfinally end
 Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
-foo_int is not internal\nmodule end\n" $1
+foo_int is not internal\n54a\nmodule end\n" $1
 }
 
 function test_classes {
@@ -523,7 +523,7 @@ Hi\n2468\n43210
 function test_scopes {
     expect_pass "scopes.ms" $1
     expect_out_eq "5\n6\n2\n2\nhi\ncaught\ncaught\n2\n3
-12\n5\ncaught\nchanged\nalso\n4\n" $1
+-1\n12\n5\ncaught\nchanged\nalso\n4\n-5\ncaught\n3\n1\n" $1
 }
 
 function test_lambdas {
