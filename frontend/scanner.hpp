@@ -20,6 +20,7 @@
 #include <istream>
 #include <cstdio>
 #include <unordered_map>
+#include <list>
 
 namespace moss {
 
@@ -124,6 +125,7 @@ enum class TokenType {
     INT,        ///< decimal integer value
     FLOAT,      ///< floating point value
     STRING,     ///< string value
+    FSTRING,    ///< fstring value
 
     ID,         ///< identificator
 
@@ -218,6 +220,7 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::INT: os << "INT"; break;
         case TokenType::FLOAT: os << "FLOAT"; break;
         case TokenType::STRING: os << "STRING"; break;
+        case TokenType::FSTRING: os << "FSTRING"; break;
         case TokenType::ID: os << "ID"; break;
         case TokenType::END_OF_FILE: os << "END_OF_FILE"; break;
         case TokenType::WS: os << "WS"; break;
@@ -255,6 +258,17 @@ public:
 inline std::ostream& operator<< (std::ostream& os, Token &t) {
     return t.debug(os);
 }
+
+class FStringToken : public Token {
+private:
+    std::list<Token *> tokens;
+public:
+    FStringToken(std::list<Token *> tokens, SourceInfo src_info) : Token("<fstring>", TokenType::FSTRING, src_info), tokens(tokens) {}
+    ~FStringToken() {}
+
+    std::list<Token *> &get_tokens() { return this->tokens; }
+    void push_back(Token *t) { this->tokens.push_back(t); }
+};
 
 /// \brief Token that represents syntactic error
 /// 
@@ -326,6 +340,7 @@ private:
 
     Token *tokenize(ustring value, TokenType type);
     Token *tokenize(int value, TokenType type);
+    Token *tokenize_fstring(std::list<Token *> tokens);
     template<typename ... Args>
     ErrorToken *err_tokenize(ustring value, ustring note, error::msgtype msg, Args ... args);
     template<typename ... Args>
@@ -337,7 +352,7 @@ private:
     Token *parse_id_or_keyword(ustring start);
     Token *parse_id_or_keyword(int start);
     Token *parse_number(int start);
-    Token *parse_string(bool triple_quote);
+    Token *parse_string(bool triple_quote, bool fstring=false);
     Token *parse_multi_comment();
 
     ustring curr_line;

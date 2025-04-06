@@ -42,6 +42,7 @@ namespace error {
         inline msgtype UNTERMINATED_COMMENT = "Unterminated comment";
         inline msgtype TRAILING_SEPARATOR = "Trailing digit separators";
         inline msgtype MULTIPLE_SEPARATORS = "Multiple connected digit separators";
+        inline msgtype EMPTY_FSTRING_EXPR = "Empty fstring expression";
     }
 
     /// Namespace for terminal colorization 

@@ -140,6 +140,7 @@ enum DiagID {
     NON_INT_FROM_HASH,      ///< __hash did not return an Int value
     NO_HASH_DEFINED,        ///< When __hash is missing
     KEY_NOT_FOUND,          ///< For key error
+    EXPECTED_CLOSE_FSTRING_EXPR,  ///< More than 1 expression or missing }
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -260,6 +261,7 @@ static const char * DIAG_MSGS[] = {
     "Function __hash for type '%s' returned value of type '%s', but Int is expected",
     "Object of class '%s' cannot be hashed — __hash method has to be defined",
     "Key '%s' not found",
+    "Expected closing fstring expression barace ('}')",
 };
 
 /// \brief Diagnostic message for error reporting

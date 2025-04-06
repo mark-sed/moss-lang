@@ -69,6 +69,7 @@ private:
     ir::Argument *argument(bool allow_default_value=false);
     std::list<ir::IR *> cases();
     ir::Expression *list_of_vars(ir::Expression *first, ir::Expression *second);
+    ir::Expression *fstring(FStringToken *fstr);
 
     ir::Expression *unpack();
     ir::Expression *silent();
@@ -120,6 +121,10 @@ private:
     /// 
     /// \throw ir::Raise if incorrect escape sequence is used 
     ustring unescapeString(ustring str);
+
+    void spill_tokens(std::list<Token *> ts) {
+        this->tokens.insert(tokens.begin()+curr_token, ts.begin(), ts.end());
+    }
 
     void scan_line();
 

@@ -91,6 +91,12 @@ Token *Scanner::tokenize(int value, TokenType type) {
     return tokenize(ustring(1, value), type);
 }
 
+Token *Scanner::tokenize_fstring(std::list<Token *> tokens) {
+    FStringToken *t = new FStringToken(tokens, SourceInfo(file, this->line, this->line, this->col, this->col+this->len));
+    this->col += this->len;
+    return t;
+}
+
 template<typename ... Args>
 ErrorToken *Scanner::err_tokenize(ustring value, ustring note, error::msgtype msg, Args ... args) {
     ErrorToken *t = new ErrorToken(value, SourceInfo(file, this->line, this->line, this->col, this->col+this->len), note, msg, args ...);
@@ -347,14 +353,20 @@ Token *Scanner::parse_multi_comment() {
     return err_tokenize("/*", "", error::msgs::UNTERMINATED_COMMENT, "");
 }
 
-Token *Scanner::parse_string(bool triple_quote) {
+Token *Scanner::parse_string(bool triple_quote, bool fstring) {
     ustring value = "";
     auto next_c = advance();
+    std::list<Token *> toks;
     while (next_c.is_utf || next_c.c != EOF) {
         if (!next_c.is_utf && next_c.c == '"') {
             // Check for escaped quote
             if(value.empty() || value.back() != '\\') {
                 if (!triple_quote) {
+                    if (fstring) {
+                        toks.push_back(tokenize(value, TokenType::STRING));
+                        toks.push_back(tokenize("\"", TokenType::QUOTE));
+                        return tokenize_fstring(toks);
+                    }
                     return tokenize(value, TokenType::STRING);
                 }
                 // Check if triple quote
@@ -364,6 +376,11 @@ Token *Scanner::parse_string(bool triple_quote) {
                     if(peek_nonutf() == '"') {
                         // Last quote in triple quote
                         advance();
+                        if (fstring) {
+                            toks.push_back(tokenize(value, TokenType::STRING));
+                            toks.push_back(tokenize("\"", TokenType::QUOTE));
+                            return tokenize_fstring(toks);
+                        }
                         return tokenize(value, TokenType::STRING);
                     }
                     value += "\"\"";
@@ -378,6 +395,33 @@ Token *Scanner::parse_string(bool triple_quote) {
             this->len = 0;
             if (!triple_quote) {
                 return err_tokenize(value, "", error::msgs::UNTERMINATED_STRING_LITERAL, "");
+            }
+        }
+        else if (fstring) {
+            if (!next_c.is_utf && next_c.c == '{') {
+                if (peek_nonutf() == '{') {
+                    advance();
+                    value += "{";
+                } else {
+                    toks.push_back(tokenize(value, TokenType::STRING));
+                    toks.push_back(tokenize("{", TokenType::LEFT_CURLY));
+                    value = "";
+                    Token *ft = nullptr;
+                    while (!check_and_advance('}')) {
+                        //auto prev_len = this->len;
+                        //auto prev_col = this->col;
+                        ft = next_token();
+                        toks.push_back(ft);
+                        //this->len = prev_len;
+                        //this->col = prev_col;
+                    }
+                    if (!ft) {
+                        return err_tokenize(value, "", error::msgs::EMPTY_FSTRING_EXPR, "");
+                    }
+                    toks.push_back(tokenize("}", TokenType::RIGHT_CURLY));
+                }
+                next_c = advance();
+                continue;
             }
         }
         value += next_c.to_str();
@@ -420,6 +464,18 @@ Token *Scanner::next_token() {
         }
         // ID or keyword
         if (std::isalpha(c) || c == '_') {
+            if (c == 'f' && peek_nonutf() == '"') {
+                advance();
+                if (check_and_advance('"')) {
+                    if(check_and_advance('"')) {
+                        // triple quote string
+                        return parse_string(true, true);
+                    }
+                    // Empty string
+                    return tokenize("", TokenType::STRING);
+                }
+                return parse_string(false, true);
+            }
             return parse_id_or_keyword(c);
         }
         // int or float
@@ -562,13 +618,13 @@ Token *Scanner::next_token() {
                 if (check_and_advance('"')) {
                     if(check_and_advance('"')) {
                         // triple quote string
-                        return parse_string(true);
+                        return parse_string(true, false);
                     }
                     // Empty string
                     return tokenize("", TokenType::STRING);
                 }
                 // Single quote string
-                return parse_string(false);
+                return parse_string(false, false);
             }
             case EOF: return tokenize(c, TokenType::END_OF_FILE);
             // Error cases with notes

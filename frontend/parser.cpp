@@ -1321,6 +1321,39 @@ ir::OperatorLiteral *Parser::operator_name() {
     return nullptr;
 }
 
+Expression *Parser::fstring(FStringToken *fstr) {
+    Expression *retv = nullptr;
+    std::string txt;
+
+    this->spill_tokens(fstr->get_tokens());
+
+    do {
+        if (match(TokenType::LEFT_CURLY)) {
+            auto expr = expression();
+            parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+            if (retv) {
+                retv = new BinaryExpr(retv, expr, Operator(OperatorKind::OP_CONCAT));
+            } else {
+                retv = expr;
+            }
+            expect(TokenType::RIGHT_CURLY, create_diag(diags::EXPECTED_CLOSE_FSTRING_EXPR));
+        } else if (!check(TokenType::QUOTE)){
+            auto c = advance();
+            txt = c->get_value();
+            if (retv) {
+                retv = new BinaryExpr(retv, new StringLiteral(unescapeString(txt)), Operator(OperatorKind::OP_CONCAT));
+            } else {
+                retv = new StringLiteral(unescapeString(txt));
+            }
+            txt = "";
+        }
+    } while (!match(TokenType::QUOTE));
+    // FString has to end with single " no matter if it is multiline or not
+    if (!retv)
+        return new StringLiteral("");
+    return retv;
+}
+
 Expression *Parser::constant() {
     if (match(TokenType::LEFT_PAREN)) {
         bool prev_fun_args_state = lower_range_prec;
@@ -1363,6 +1396,11 @@ Expression *Parser::constant() {
     else if (check(TokenType::STRING)) {
         auto val = advance();
         return new StringLiteral(unescapeString(val->get_value()));
+    }
+    else if (check(TokenType::FSTRING)) {
+        auto val = advance();
+        FStringToken *fstrtok = dynamic_cast<FStringToken *>(val);
+        return fstring(fstrtok);
     }
     else if (match(TokenType::TRUE)) {
         return new BoolLiteral(true);

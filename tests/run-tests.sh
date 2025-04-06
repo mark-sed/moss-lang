@@ -543,6 +543,22 @@ function test_notes {
 # Title\nSome text.\nformatted!\nSome text\nmd\n# Title1\n" $1
 }
 
+function test_fstrings {
+    expect_pass "fstrings.ms" $1
+    expect_out_eq "v: 43 end
+name = moss user
+
+{}
+hi
+Jon loves coding in Moss.
+3 + 4 = 7
+Value: 10!
+Greet: Marek!
+dict = value
+# Title
+lorem ipsum.\n" $1
+}
+
 function test_range_precedence {
     expect_pass "range_precedence.ms" $1
     expect_out_eq "[[1], [3]]
@@ -945,6 +961,7 @@ function run_all_tests {
     run_test lambdas
     run_test supers
     run_test notes
+    run_test fstrings
 
     run_test basic_import
     run_test import_calls
