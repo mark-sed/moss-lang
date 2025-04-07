@@ -120,6 +120,59 @@ String
     EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
 }
 
+/** Tokenization of fstrings */
+TEST(Scanner, FStringTokens) {
+    {
+        ustring strs_code = R"(
+f"""
+exp{value}"""
+f"foovalue"
+f"some { x + 25 * 8 }! {{}}"
+)";
+        ustring expected = "END_NL FSTRING END_NL FSTRING END_NL FSTRING ";
+
+        std::stringstream ss;
+        run_tokenizer(ss, strs_code);
+        EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+    }
+
+
+    {
+        ustring strs_code = R"(
+f"""
+exp{"""
+)";
+        ustring expected = "END_NL ERROR_TOKEN ";
+
+        std::stringstream ss;
+        run_tokenizer(ss, strs_code);
+        EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+    }
+
+    {
+        ustring strs_code = R"(
+f"someval {}"
+)";
+        // 2 errors since '"' will be also parsed
+        ustring expected = "END_NL ERROR_TOKEN ERROR_TOKEN ";
+
+        std::stringstream ss;
+        run_tokenizer(ss, strs_code);
+        EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+    }
+
+    {
+        ustring strs_code = R"(
+f"{{}"
+)";
+        ustring expected = "END_NL ERROR_TOKEN ";
+
+        std::stringstream ss;
+        run_tokenizer(ss, strs_code);
+        EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+    }
+}
+
 /** Tokenization of strings */
 TEST(Scanner, Comments) {
     ustring cmts_code = R"(

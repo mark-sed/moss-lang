@@ -5,7 +5,7 @@ f"name = {name}\n"
 
 f""
 f"\n"
-f"{{}\n"
+f"{{}}\n"
 
 f"{f"{"hi"}"}\n"
 
@@ -15,9 +15,6 @@ fun wholoveswhat(name, lang) {
 name = "Jon"
 lang = "Moss"
 wholoveswhat(name, lang)
-
-// todo: fix
-//f"{}"
 
 name = "Bob"
 assert(f"Hello, {name}" == "Hello, Bob")
@@ -33,9 +30,8 @@ f"Greet: {(fun(name) = name++"!")("Marek")}\n"
 data = {"key": "value"}
 f"dict = {data["key"]}\n"
 
-// todo: fix
-//f"""{{Hello}}
-//there {name}\n"""
+f"""{{Hello}}
+there {name}\n"""
 
 title = "Title"
 p = "lorem ipsum"

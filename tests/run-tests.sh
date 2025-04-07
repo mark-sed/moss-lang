@@ -555,6 +555,8 @@ Jon loves coding in Moss.
 Value: 10!
 Greet: Marek!
 dict = value
+{Hello}
+there Bob
 # Title
 lorem ipsum.\n" $1
 }

@@ -109,10 +109,6 @@ ErrorToken *Scanner::err_tokenize(int value, ustring note, error::msgtype msg, A
     return err_tokenize(ustring(1, value), note, msg, args ...);
 }
 
-/*bool Scanner::is_end() {
-    return peek_nonutf() == EOF;
-}*/
-
 bool Scanner::check_and_advance(char c) {
     if(peek_nonutf() == c) {
         advance();
@@ -399,8 +395,7 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
         }
         else if (fstring) {
             if (!next_c.is_utf && next_c.c == '{') {
-                if (peek_nonutf() == '{') {
-                    advance();
+                if (check_and_advance('{')) {
                     value += "{";
                 } else {
                     toks.push_back(tokenize(value, TokenType::STRING));
@@ -408,18 +403,28 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
                     value = "";
                     Token *ft = nullptr;
                     while (!check_and_advance('}')) {
-                        //auto prev_len = this->len;
-                        //auto prev_col = this->col;
+                        auto prev_len = this->len;
                         ft = next_token();
+                        this->len = prev_len;
+                        this->col = 0;
+                        if (ft->get_type() == TokenType::END_OF_FILE)
+                            return err_tokenize(value, "", error::msgs::UNTERMINATED_FSTRING_EXPR, "");
                         toks.push_back(ft);
-                        //this->len = prev_len;
-                        //this->col = prev_col;
                     }
                     if (!ft) {
                         return err_tokenize(value, "", error::msgs::EMPTY_FSTRING_EXPR, "");
                     }
                     toks.push_back(tokenize("}", TokenType::RIGHT_CURLY));
                 }
+                next_c = advance();
+                continue;
+            }
+            else if (!next_c.is_utf && next_c.c == '}') {
+                next_c = advance();
+                if (next_c.is_utf || next_c.c != '}') {
+                    return err_tokenize(value, "", error::msgs::SINGLE_RCURL_IN_FSTRING, "");
+                }
+                value += "}";
                 next_c = advance();
                 continue;
             }

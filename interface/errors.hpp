@@ -39,6 +39,8 @@ namespace error {
         inline msgtype INCORRECT_INT_LITERAL = "Invalid %s number literal";
         inline msgtype INCORRECT_FLOAT_LITERAL = "Invalid float literal";
         inline msgtype UNTERMINATED_STRING_LITERAL = "Unterminated string literal";
+        inline msgtype UNTERMINATED_FSTRING_EXPR = "Unterminated expression in fstring literal";
+        inline msgtype SINGLE_RCURL_IN_FSTRING = "Single '}' is not allowed in fstring literal";
         inline msgtype UNTERMINATED_COMMENT = "Unterminated comment";
         inline msgtype TRAILING_SEPARATOR = "Trailing digit separators";
         inline msgtype MULTIPLE_SEPARATORS = "Multiple connected digit separators";
