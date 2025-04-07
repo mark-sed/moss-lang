@@ -9,6 +9,8 @@
 using namespace moss::clopts;
 
 args::ValueFlag<bool> opt_use_color(interface_group, "0 or 1", "Enables colored error messages", {"use-color"});
+args::ValueFlag<std::string> note_format(note_group, "<format-name>", "Converts moss notes to selected format", {'f', "format"});
+
 static std::ostream *output_note_file = nullptr; ///< Stream into which output notes, this has to be explicitly deleted
 
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
@@ -80,4 +82,9 @@ ustring moss::clopts::get_logging_list() {
 bool moss::clopts::use_color() {
     if (!opt_use_color) return true;
     return args::get(opt_use_color);
+}
+
+ustring moss::clopts::get_note_format() {
+    if (!note_format) return "txt";
+    return args::get(note_format);
 }

@@ -36,7 +36,6 @@ inline args::Flag print_bc_info(bc_group, "print-bc-header", "Prints bytecode fi
 
 // Note flags
 inline args::Group note_group(arg_parser, "Note and output options:");
-inline args::ValueFlag<std::string> note_format(note_group, "<format-name>", "Converts moss notes to selected format", {'f', "format"});
 inline args::ValueFlag<std::string> note_file(note_group, "<note file name>", "Outputs moss notes to this file", {'O', "output-file"});
 inline args::Flag disable_notes(note_group, "disable-notes", "Disables outputting notes (prints will still output)", {'q', "disable-notes"});
 inline args::Flag print_notes(note_group, "print-notes", "Outputs notes also to stdout", {'p', "print-notes"});
@@ -78,6 +77,9 @@ std::ostream &get_note_stream();
 
 /// \return logging (verbose) level set by the user
 int get_logging_level();
+
+/// \return note format selected by user or "txt" if none selected
+ustring get_note_format();
 
 /// \return value passed to set verbose level (should be a csv of file::method values)
 std::string get_logging_list();
