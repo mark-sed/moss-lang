@@ -854,8 +854,10 @@ void CallFormatter::exec(Interpreter *vm) {
         call(vm, dst, formatf);
     }
     else {
-        LOGMAX("Formatter not found, storing string as is");
-        vm->store(dst, arg.value);
+        LOGMAX("Formatter not found, storing string as NoteValue");
+        auto strarg = dyn_cast<StringValue>(arg.value);
+        assert(strarg && "somehow note value is not a string value");
+        vm->store(dst, new NoteValue(name, strarg));
     }
 }
 

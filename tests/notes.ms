@@ -35,3 +35,6 @@ a = md4"hello"
 vardump(a)
 vardump(md5(45))
 vardump(md6("hello"))
+
+v = md7"text"
+vardump(v)
