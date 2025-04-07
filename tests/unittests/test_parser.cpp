@@ -1415,11 +1415,15 @@ fun bar(a, b) {
         1 + 2
     }
 }
+
+@formatter
+fun md4(x) = x
 )";
 
     IRType expected[] = {
         IRType::FUNCTION,
         IRType::FUNCTION,
+        IRType::LAMBDA,
         
         IRType::END_OF_FILE
     };

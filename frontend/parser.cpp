@@ -744,6 +744,11 @@ IR *Parser::declaration() {
             auto lmbody = expression();
             parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
             decl = new Lambda(name, args, lmbody);
+            // Assign outter annotations
+            for (auto ann : outter_annots) {
+                decl->add_annotation(ann);
+            }
+            outter_annots.clear();
         }
         else {
             parser_error(create_diag(diags::MISSING_FUN_BODY));

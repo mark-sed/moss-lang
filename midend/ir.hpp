@@ -1122,6 +1122,10 @@ public:
         delete body;
     }
 
+    virtual void add_annotation(Annotation *ann) override {
+        annotations.push_back(ann);
+    }
+
     std::vector<Argument *> get_args() { return this->args; }
     Expression *get_body() { return this->body; }
 
