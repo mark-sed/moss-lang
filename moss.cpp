@@ -80,6 +80,12 @@ int main(int argc, const char *argv[]) {
     if (clopts::dump_text_bc && !clopts::output) {
         error::error(error::ErrorCode::ARGUMENT, "Option -S requires -o specified", nullptr, true);
     }
+    if (clopts::disable_notes && clopts::note_file) {
+        error::error(error::ErrorCode::ARGUMENT, "Invalid combination of arguments '-q' ('--disable-notes') and '-O' ('--output-file')", nullptr, true);
+    }
+    if (clopts::disable_notes && clopts::print_notes) {
+        error::error(error::ErrorCode::ARGUMENT, "Invalid combination of arguments '-q' ('--disable-notes') and '-p' ('--print-notes')", nullptr, true);
+    }
 
     ir::IR *main_mod = nullptr;
     File *input_file = nullptr;
@@ -92,6 +98,7 @@ int main(int argc, const char *argv[]) {
         if (main_file->get_type() == SourceFile::SourceType::REPL) {
             Repl repl(*main_file);
             auto exit_code = repl.run();
+            clopts::deinit();
             return exit_code;
         }
         else if (main_file->get_type() == SourceFile::SourceType::FILE) {
@@ -114,6 +121,7 @@ int main(int argc, const char *argv[]) {
         // When --parse-only is set, then let's not interpret this
         if (clopts::parse_only) {
             delete main_mod;
+            clopts::deinit();
             return 0;
         }
 #endif
@@ -137,6 +145,7 @@ int main(int argc, const char *argv[]) {
             delete bc;
             delete input_file;
             delete main_mod;
+            clopts::deinit();
             return 0;
         }
     } else {
@@ -199,5 +208,6 @@ int main(int argc, const char *argv[]) {
         }
     }
 
+    clopts::deinit();
     return exit_code;
 }

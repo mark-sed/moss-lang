@@ -34,6 +34,13 @@ inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecod
 inline args::Flag input_bc(bc_group, "bytecode", "Treats input file as bytecode file", {"bytecode"});
 inline args::Flag print_bc_info(bc_group, "print-bc-header", "Prints bytecode file (.msb) header and exits", {"print-bc-header"});
 
+// Note flags
+inline args::Group note_group(arg_parser, "Note and output options:");
+inline args::ValueFlag<std::string> note_format(note_group, "<format-name>", "Converts moss notes to selected format", {'f', "format"});
+inline args::ValueFlag<std::string> note_file(note_group, "<note file name>", "Outputs moss notes to this file", {'O', "output-file"});
+inline args::Flag disable_notes(note_group, "disable-notes", "Disables outputting notes (prints will still output)", {'q', "disable-notes"});
+inline args::Flag print_notes(note_group, "print-notes", "Outputs notes also to stdout", {'p', "print-notes"});
+
 // GC flags
 inline args::Group gc_group(arg_parser, "Garbage collector options:");
 inline args::Flag delete_values_on_exit(gc_group, "delete-values-on-exit", "Deletes all values left by GC on exit", {"delete-values-on-exit"});
@@ -62,6 +69,12 @@ inline args::Group interface_group(arg_parser, "Interface options:");
 /// \param argv Arguments including the program name
 /// \warning This function might terminate the program (after help, version or on error) 
 void parse_clopts(int argc, const char *argv[]);
+
+/// This needs to be called once no resources from clopts will be used.
+void deinit();
+
+/// \return Output stream for writing notes
+std::ostream &get_note_stream();
 
 /// \return logging (verbose) level set by the user
 int get_logging_level();

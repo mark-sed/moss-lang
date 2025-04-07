@@ -31,3 +31,10 @@ works as the string note.
 
 The same goes for standalone expressions. These are parsed into strings
 and then from them into NoteValue with prefix 'txt'.
+
+## Arguments for output
+
+To select the output format, one might use `-f` or `--format` option.
+For output file `-O` or `--output-file`, if not specified then it is outputted
+to stdout.
+To disable all notes use `-q` or `--disable-notes`.

@@ -9,6 +9,7 @@
 using namespace moss::clopts;
 
 args::ValueFlag<bool> opt_use_color(interface_group, "0 or 1", "Enables colored error messages", {"use-color"});
+static std::ostream *output_note_file = nullptr; ///< Stream into which output notes, this has to be explicitly deleted
 
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     args::HelpFlag help(interface_group, "help", "Display available options", {'h', "help"});
@@ -50,6 +51,19 @@ int moss::clopts::get_logging_level() {
         if (verbose5) return 5;
     #endif
     return 0;
+}
+
+std::ostream &moss::clopts::get_note_stream() {
+    if (!note_file) return outs;
+    if (!output_note_file) {
+        output_note_file = new std::ofstream(args::get(note_file));
+    }
+    return *output_note_file;
+}
+
+void moss::clopts::deinit() {
+    if (output_note_file)
+        delete output_note_file;
 }
 
 ustring moss::clopts::get_logging_list() {

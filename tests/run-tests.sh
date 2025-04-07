@@ -254,6 +254,18 @@ function expect_file_eq {
     fi
 }
 
+function expect_file_eq_str {
+    file_content=$(< "$2")
+    expected=$(echo -e "$1")
+    if [[ "$file_content" != "$expected" ]]; then
+        failed $3 "Output differs"
+        printf "Expected:\n-------\n"
+        echo "$expected"
+        printf "Got:\n----\n"
+        echo "$file_content"
+    fi
+}
+
 function testnum {
     printf "[${INDEX}/${TEST_AMOUNT}]"
 }
@@ -903,6 +915,37 @@ function test_bc_read_write {
     rm -f ${TEST_DIR}/bc_read_write.txt
 }
 
+function test_note_options {
+    # Normal run
+    expect_pass "simple_notes.ms" $1
+    expect_out_eq "Start\n# Title1\nParagraph1\n\n# Title2\nParagraph2\nEnd\n" $1
+
+    # Quiet run without notes
+    expect_pass_log "simple_notes.ms" "-q" $1
+    expect_out_eq "Start\nEnd\n" $1
+    expect_pass_log "simple_notes.ms" "--disable-notes" $1
+    expect_out_eq "Start\nEnd\n" $1
+
+    # -O option
+    local OUTF="${TEST_DIR}/._note_opts_out.md"
+    rm -f $OUTF
+    expect_pass_log "simple_notes.ms" "-O ${OUTF}" $1
+    expect_out_eq "Start\nEnd\n" $1
+    expect_file_eq_str "# Title1\nParagraph1\n\n# Title2\nParagraph2\n" $OUTF $1
+
+    # -O and -p
+    rm $OUTF
+    expect_pass_log "simple_notes.ms" "-O ${OUTF} -p" $1
+    expect_out_eq "Start\n# Title1\nParagraph1\n\n# Title2\nParagraph2\nEnd\n" $1
+    expect_file_eq_str "# Title1\nParagraph1\n\n# Title2\nParagraph2\n" $OUTF $1
+
+    # Invalid combinations
+    expect_fail_log "simple_notes.ms" "-q -O ${OUTF}" "Invalid combination of arguments" $1
+    expect_fail_log "simple_notes.ms" "-q -p" "Invalid combination of arguments" $1
+    
+    rm $OUTF
+}
+
 function test_exceptions_catch {
     expect_pass "exceptions_catch.ms" $1
     expect_out_eq "NameError: a\nNameError: foo()\nModule not found
@@ -934,6 +977,7 @@ function test_repl_exceptions {
 function run_all_tests {
     run_test empty
     run_test bc_read_write
+    run_test note_options
 
     run_test output
     run_test expressions

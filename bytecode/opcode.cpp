@@ -1257,11 +1257,18 @@ void Annotate::exec(Interpreter *vm) {
 }
 
 void Output::exec(Interpreter *vm) {
+    if (clopts::disable_notes) {
+        LOGMAX("Notes disabled, not outputting");
+        return;
+    }
     // FIXME: this is just a placeholder
     auto *v = vm->load(src);
     assert(v && "Cannot load src");
 
-    std::cout << to_string(vm, v);
+    auto ov = to_string(vm, v);
+    clopts::get_note_stream() << ov;
+    if (clopts::print_notes)
+        outs << ov;
 }
 
 static Value *concat(Value *s1, Value *s2, Interpreter *vm) {
