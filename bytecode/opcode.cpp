@@ -852,7 +852,6 @@ void CallFormatter::exec(Interpreter *vm) {
     if (formatf && formatf->has_annotation("formatter")) {
         LOGMAX("Formatter found");
         call(vm, dst, formatf);
-        // TODO: Load dst, get it as_string and store into dst NoteValue with it
     }
     else {
         LOGMAX("Formatter not found, storing string as is");
@@ -894,6 +893,16 @@ void Return::exec(Interpreter *vm) {
         ret_v = vm->load(src);
     }
     assert(ret_v && "Return register does not contain any value??");
+
+    // Formatter return value conversion to NoteValue
+    assert(cf->get_function() && "cannot check function annotations");
+    if (cf->get_function()->has_annotation("formatter") && !isa<NoteValue>(ret_v)) {
+        StringValue *rv_str = dyn_cast<StringValue>(ret_v);
+        if (!rv_str)
+            rv_str = new StringValue(ret_v->as_string());
+        ret_v =  new NoteValue(cf->get_function()->get_name(), rv_str);
+    }
+
     if (cf->is_extern_module_call() || cf->is_runtime_call()) {
         // We need to propagete the return value back using the CallFrame
         // which is used by both VMs. We also need to stop the current
@@ -927,6 +936,16 @@ void ReturnConst::exec(Interpreter *vm) {
         ret_v = vm->load_const(csrc);
     }
     assert(ret_v && "Return register does not contain any value??");
+
+    // Formatter return value conversion to NoteValue
+    assert(cf->get_function() && "cannot check function annotations");
+    if (cf->get_function()->has_annotation("formatter") && !isa<NoteValue>(ret_v)) {
+        StringValue *rv_str = dyn_cast<StringValue>(ret_v);
+        if (!rv_str)
+            rv_str = new StringValue(ret_v->as_string());
+        ret_v =  new NoteValue(cf->get_function()->get_name(), rv_str);
+    }
+
     if (cf->is_extern_module_call() || cf->is_runtime_call()) {
         // We need to propagete the return value back using the CallFrame
         // which is used by both VMs. We also need to stop the current
