@@ -1,3 +1,9 @@
+@converter("not_annotated", "txt")
+fun na(x) = x
+
+@converter("md", "txt")
+fun mdconv(x) = x
+
 fun not_annotated(x) {
     return x ++ "formatted!\n"
 }

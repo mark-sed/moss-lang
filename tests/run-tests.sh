@@ -556,6 +556,15 @@ function test_notes {
 Note(md4\"hello\")\nNote(md5\"conststr\")\nNote(txt\"hello\")\nNote(md7\"text\")\n" $1
 }
 
+function test_converters {
+    expect_pass "converters.ms" $1
+    expect_out_eq "Title1
+Paragraph1
+
+Title2
+Paragraph2\n" $1
+}
+
 function test_fstrings {
     expect_pass "fstrings.ms" $1
     expect_out_eq "v: 43 end
@@ -1009,6 +1018,7 @@ function run_all_tests {
     run_test supers
     run_test notes
     run_test fstrings
+    run_test converters
 
     run_test basic_import
     run_test import_calls

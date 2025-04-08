@@ -4,11 +4,30 @@
 #include "mslib.hpp"
 #include "values.hpp"
 #include <exception>
+#include <utility>
 
 using namespace moss;
 
 gcs::TracingGC *Interpreter::gc = nullptr;
 ModuleValue *Interpreter::libms_mod = nullptr;
+std::map<std::pair<ustring, ustring>, FunValue *> Interpreter::converters{};
+
+void Interpreter::add_converter(ustring from, ustring to, FunValue *fun) {
+    LOGMAX("Adding a converter " << from << " to " << to << " on " << fun->get_name());
+    converters[std::make_pair(from, to)] = fun;
+}
+
+FunValue *Interpreter::get_converter(ustring from, ustring to) {
+    return Interpreter::get_converter(std::make_pair(from, to));
+}
+
+FunValue *Interpreter::get_converter(std::pair<ustring, ustring> key) {
+    auto found = converters.find(key);
+    if (found != converters.end()) {
+        return found->second;
+    }
+    return nullptr;
+}
 
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
         : code(code), src_file(src_file), bci(0), exit_code(0),
@@ -110,6 +129,11 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
         os << "\t[" << index << "] Constant frame:\n" << *f << "\n";
         ++index;
     }
+    os << "\tConverters:\n";
+    for (auto [p, f]: converters) {
+        os << "\"" << p.first << "\"->\"" << p.second << "\": " << f->dump() << "\n";
+    }
+    os << "\n";
     os << "\tExit code: " << exit_code << "\n";
     os << "}\n";
     return os;

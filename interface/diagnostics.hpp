@@ -141,6 +141,9 @@ enum DiagID {
     NO_HASH_DEFINED,        ///< When __hash is missing
     KEY_NOT_FOUND,          ///< For key error
     EXPECTED_CLOSE_FSTRING_EXPR,  ///< More than 1 expression or missing }
+    MISMATCHED_ANNOT_ARG_AM,///< Incorrect amount of arguments to an annotation
+    CONVERTER_ON_NONFUN,    ///< Annotating non-function as a converter
+    CANNOT_FIND_CONVERTER,  ///< No conversion from format of note to output format
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -262,6 +265,9 @@ static const char * DIAG_MSGS[] = {
     "Object of class '%s' cannot be hashed — __hash method has to be defined",
     "Key '%s' not found",
     "Expected closing fstring expression barace ('}')",
+    "Annotation '%s' expects '%ld' arguments, but got '%ld'",
+    "Only functions and lambdas can be annotated as 'converter', but got '%s'",
+    "Found no suitable conversion pipeline from note fromat '%s' to '%s'",
 };
 
 /// \brief Diagnostic message for error reporting

@@ -66,7 +66,7 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \param args Arguments to pass in there the 0th arg is `this` argument
 /// \param constr_class If set them this is taken as constructor call and object is pushed
 /// \return Value returned by the function
-Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class=nullptr) {
+Value *runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
     LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
     auto pre_call_cf_size = vm->get_call_frame_size();
     vm->push_call_frame(funV);
@@ -85,7 +85,7 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
         auto obj = new ObjectValue(constr_class);
         cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
         cf->set_constructor_call(true);
-    } else {
+    } else if (!function_call) {
         assert(args.size() != 0 && "Missing this argument");
         cf->get_args().back().name = "this";
     }
@@ -123,6 +123,18 @@ Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_lis
     LOGMAX("Runtime call finished");
     assert(pre_call_cf_size == vm->get_call_frame_size());
     return ret_v;
+}
+
+Value *runtime_function_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
+    return runtime_call(vm, funV, args, nullptr, true);
+}
+
+Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
+    return runtime_call(vm, funV, args, nullptr, false);
+}
+
+Value *runtime_constructor_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class) {
+    return runtime_call(vm, funV, args, constr_class, false);
 }
 
 opcode::IntConst opcode::hash_obj(ObjectValue *obj, Interpreter *vm) {
@@ -1221,18 +1233,40 @@ void BuildClass::exec(Interpreter *vm) {
     cls->set_attrs(vm->get_top_frame());
 }
 
+std::vector<ustring> get_str_list_annot(Value *args, unsigned long arg_am, ustring an_name, Interpreter *vm) {
+    std::vector<ustring> extr;
+    if(auto argl = dyn_cast<ListValue>(args)) {
+        for (auto v : argl->get_vals()) {
+            auto els = dyn_cast<StringValue>(v);
+            op_assert(els, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
+                "String", v->get_type()->get_name().c_str())));
+            extr.push_back(els->get_value());
+        }
+    } else {
+        raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
+            "List of Strings", args->get_type()->get_name().c_str())));
+    }
+    op_assert(extr.size() == arg_am, mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::MISMATCHED_ANNOT_ARG_AM,
+        an_name.c_str(), arg_am, extr.size())));
+    return extr;
+}
+
 void Annotate::exec(Interpreter *vm) {
     auto *d = vm->load(dst);
     assert(d && "Cannot load dst");
     auto *v = vm->load(val);
     assert(v && "Cannot load val");
+    // Try to cast it for possible later usage
+    FunValue *fn = dyn_cast<FunValue>(d);
     if (auto fl = dyn_cast<FunValueList>(d)) {
         // Annotate is called right after CreateFun so it has the be the top
         // one in the list
-        fl->back()->annotate(name, v);
+        fn = fl->back();
+        fn->annotate(name, v);
     } else {
         d->annotate(name, v);
     }
+    // TODO: Generalize the extraction
     if (name == "internal_bind") {
         LOGMAX("Internal binding");
         auto bind_name = dyn_cast<StringValue>(v);
@@ -1253,6 +1287,11 @@ void Annotate::exec(Interpreter *vm) {
         bind_class->bind(ref_class);
         // Remove the bound class
         vm->remove_global_name(ref_class->get_name());
+    } else if (name == "converter") {
+        op_assert(fn, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CONVERTER_ON_NONFUN,
+            d->get_type()->get_name().c_str())));
+        auto args = get_str_list_annot(v, 2, name, vm);
+        Interpreter::add_converter(args[0], args[1], fn);
     }
 }
 
@@ -1261,9 +1300,30 @@ void Output::exec(Interpreter *vm) {
         LOGMAX("Notes disabled, not outputting");
         return;
     }
-    // FIXME: this is just a placeholder
     auto *v = vm->load(src);
     assert(v && "Cannot load src");
+
+    auto get_value_format = [vm](Value *v) {
+        if (auto nv = dyn_cast<NoteValue>(v)) {
+            auto f = nv->get_attr("format", vm);
+            assert(f && "note does not have a format");
+            return f->as_string();
+        }
+        return ustring("txt");
+    };
+
+    auto val_format = get_value_format(v);
+    auto target_format = clopts::get_note_format();
+    if (val_format != target_format) {
+        auto key = std::make_pair(val_format, target_format);
+        auto converter = Interpreter::get_converter(key);
+        // TODO: Handle multiple pipelining calls
+
+        op_assert(converter, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_CONVERTER,
+            val_format.c_str(), target_format.c_str())));
+        v = runtime_function_call(vm, converter, {v});
+        assert(v && "no return from converter?");
+    }
 
     auto ov = to_string(vm, v);
     clopts::get_note_stream() << ov;
@@ -2327,7 +2387,7 @@ static void range(Value *start, Value *step, Value *end, Register dst, Interpret
         }
     }
     Value *rval = nullptr;
-    rval = runtime_method_call(vm, constr, {start, end, step}, range_cls);
+    rval = runtime_constructor_call(vm, constr, {start, end, step}, range_cls);
     vm->store(dst, rval);
 }
 

@@ -164,6 +164,7 @@ private:
     std::list<ExceptionCatch> catches;   ///< List of current catches
 
     static gcs::TracingGC *gc;  ///< Garbage collector for this VM
+    static std::map<std::pair<ustring, ustring>, FunValue *> converters;
 
     opcode::Address bci;        ///< Current bytecode index
 
@@ -305,6 +306,10 @@ public:
         this->catches.pop_back();
     }
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
+
+    static void add_converter(ustring from, ustring to, FunValue *fun);
+    static FunValue *get_converter(ustring from, ustring to);
+    static FunValue *get_converter(std::pair<ustring, ustring> key);
 
     //void push_exception(Value *v) { exception_stack.push_back(v); }
     //void pop_exception() { exception_stack.pop_back(); }
