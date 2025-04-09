@@ -1408,6 +1408,13 @@ void BytecodeGen::emit(ir::Module *mod) {
     for (auto val: mod->get_annotations()) {
         assert(false && "TOOD: Missing module annotation generation");
     }
+    if (!mod->get_documentation().empty()) {
+        auto doc_var = next_reg();
+        auto str_var = next_creg();
+        append(new StoreStringConst(str_var, mod->get_documentation()));
+        append(new StoreConst(doc_var, str_var));
+        append(new StoreName(doc_var, "__doc"));
+    }
     emit(mod->get_body());
 }
 

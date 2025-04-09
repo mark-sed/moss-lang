@@ -221,12 +221,11 @@ private:
 public:
     static const IRType ClassType = IRType::SPACE;
 
-    Space(ustring name, std::list<IR *> spbody) : Construct(ClassType, name) {
+    Space(ustring name) : Construct(ClassType, name) {
         if (name.empty()) {
             this->anonymous = true;
             this->name = std::to_string(annonymous_id++) + "s";
         }
-        this->body = spbody;
     }
 
     bool is_anonymous() {
@@ -252,9 +251,8 @@ private:
 public:
     static const IRType ClassType = IRType::CLASS;
 
-    Class(ustring name, std::vector<Expression *> parents, std::list<IR *> clbody) 
+    Class(ustring name, std::vector<Expression *> parents) 
         : Construct(ClassType, name), parents(parents) {
-        this->body = clbody;
     }
     ~Class() {
         for (auto p : parents)

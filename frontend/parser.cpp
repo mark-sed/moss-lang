@@ -713,8 +713,12 @@ IR *Parser::declaration() {
             std::list<ir::Annotation *> cl_annts;
             cl_annts.insert(cl_annts.end(), std::make_move_iterator(outter_annots.begin()), std::make_move_iterator(outter_annots.end()));
             outter_annots.clear();
+            auto cldecl = new Class(name->get_value(), clparents);
+            parents.push_back(cldecl);
             auto clbody = block();
-            decl = new Class(name->get_value(), clparents, clbody);
+            parents.pop_back();
+            cldecl->set_body(clbody);
+            decl = cldecl;
             // Assign outter annotations
             for (auto ann : cl_annts) {
                 decl->add_annotation(ann);
@@ -732,13 +736,21 @@ IR *Parser::declaration() {
         ++multi_line_parsing;
         if (check(TokenType::ID)) {
             auto name = advance();
+            auto spcdecl = new Space(name->get_value());
+            parents.push_back(spcdecl);
             auto stbody = block();
-            decl = new Space(name->get_value(), stbody);
+            parents.pop_back();
+            spcdecl->set_body(stbody);
+            decl = spcdecl;
             no_end_needed = true;
         }
         else if (check(TokenType::LEFT_CURLY)) {
+            auto spcdecl = new Space("");
+            parents.push_back(spcdecl);
             auto stbody = block();
-            decl = new Space("", stbody);
+            parents.pop_back();
+            spcdecl->set_body(stbody);
+            decl = spcdecl;
             no_end_needed = true;
         }
         else {
@@ -778,6 +790,7 @@ IR *Parser::declaration() {
             outter_annots.clear();
             parents.push_back(decl);
             auto fnbody = block();
+            parents.pop_back();
             if (name.empty()) {
                 parser_error(create_diag(diags::ANONYMOUS_FUN));
             }
@@ -838,6 +851,9 @@ bool Parser::bind_docstring() {
             assert(!parents.empty() && "No top level IR?");
             auto parent = parents.back();
             parser_assert(parent->can_be_documented(), create_diag(diags::CANNOT_BE_DOCUMENTED, parent->get_name().c_str()));
+            if (auto mdl = dyn_cast<Module>(parent)) {
+                parser_assert(mdl->size() == 0, create_diag(diags::DOC_STRING_NOT_AT_START));
+            }
             parent->add_documentation(val->get_value());
             skip_ends();
             bound = true;

@@ -36,6 +36,9 @@ class __String {
     @internal
     fun length() {}
 
+    @internal
+    fun strip() {}
+
     fun reverse() = this[-1..-this.length()-1]
 }
 
@@ -116,6 +119,21 @@ fun input(prompt="") {}
 
 @internal
 fun exit(code=0) {}
+
+fun info(a) {
+    docs = ""
+    try {
+        docs = a.__doc
+    } catch(e:AttributeError) {
+        return ""
+    }
+    return docs.strip()++"\n"
+}
+
+fun help(a) {
+    // TODO: For function output signature and similar for other types
+    return info(a)
+}
 
 @internal_bind("File")
 class __File {

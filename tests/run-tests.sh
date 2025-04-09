@@ -583,6 +583,16 @@ there Bob
 lorem ipsum.\n" $1
 }
 
+function test_docstrings {
+    expect_pass "docstrings.ms" $1
+    expect_out_eq "Module info
+Second line
+Returns 42 Second comment.
+Class ACls
+Constructor
+Some space\n" $1
+}
+
 function test_range_precedence {
     expect_pass "range_precedence.ms" $1
     expect_out_eq "[[1], [3]]
@@ -834,9 +844,9 @@ function test_lib_lists {
 function test_lib_strings {
     expect_pass "stdlib_tests/strings.ms" $1 
     expect_out_eq "3\n12\n11
-dcba\ntrue\n" $1
+dcba\ntrue
+a \tb\n" $1
 }
-
 
 function test_lib_random {
     expect_pass "stdlib_tests/random.ms" $1 
@@ -1017,8 +1027,9 @@ function run_all_tests {
     run_test lambdas
     run_test supers
     run_test notes
-    run_test fstrings
     run_test converters
+    run_test fstrings
+    run_test docstrings
 
     run_test basic_import
     run_test import_calls

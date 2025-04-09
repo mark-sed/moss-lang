@@ -15,3 +15,8 @@ some vals
 b = "12345"
 b.reverse() == b[-1..-b.length()-1]
 "\n"
+
+"\t\n  \t".strip()
+st = "a \tb\t"
+st.strip()
+"\n"

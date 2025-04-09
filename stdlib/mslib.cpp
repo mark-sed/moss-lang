@@ -410,6 +410,13 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
             err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
         }
     }
+    else if (name == "strip") {
+        assert(arg_size == 1 && "Mismatch of args");
+        assert(args[0].value->get_type() == BuiltIns::String && "Not File open called");
+        auto strv = dyn_cast<StringValue>(args[0].value)->get_value();
+        utils::trim(strv);
+        ret_v = new StringValue(strv);
+    }
     else if (name == "append") {
         assert(arg_size == 2 && "Mismatch of args");
         if (args[1].value->get_type() == BuiltIns::List) {

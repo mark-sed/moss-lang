@@ -1296,7 +1296,9 @@ void Annotate::exec(Interpreter *vm) {
 }
 
 void Document::exec(Interpreter *vm) {
-    assert(false && "TODO");
+    auto d = vm->load(dst);
+    assert(d && "loading non-existent register");
+    d->set_attr("__doc", new StringValue(val), true);
 }
 
 void Output::exec(Interpreter *vm) {
