@@ -1450,6 +1450,34 @@ ustring incorrect = R"(
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, DocStrings){
+    ustring code = R"(
+d"""Does something\author Me"""
+d"Also docstring"
+)";
+
+    IRType expected[] = {
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+a = d"""Main module author Marek"""
+d """Something"""
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 TEST(Parsing, OperatorFunctionCalls){
     ustring code = R"(
 4 + a * c.(-)(42) + 2

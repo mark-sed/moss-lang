@@ -45,6 +45,7 @@ private:
     ///        error, which can be interpreted by moss
     /// \return Parsed input into an IR class 
     ir::IR *declaration();
+    bool bind_docstring();
 
     /// Tries to parse an expression
     /// 
@@ -96,6 +97,8 @@ private:
     bool match(TokenType type);
     Token *expect(TokenType type, diags::Diagnostic msg);
     Token *advance();
+    Token *peek(int offset=1);
+    Token *peek_ws(int offset=1);
     void put_back();
 
     bool check_ws(TokenType type);
@@ -108,6 +111,8 @@ private:
     void next_decl();
     /// Skip all new lines and semicolons until a new token
     void skip_ends();
+    /// Skips all new lines, semicolons and white spaces until a new token
+    void skip_ends_and_ws();
     /// Skip all new lines until some other token
     void skip_nls();
     /// Skip `max` new lines

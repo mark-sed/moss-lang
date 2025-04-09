@@ -1295,6 +1295,10 @@ void Annotate::exec(Interpreter *vm) {
     }
 }
 
+void Document::exec(Interpreter *vm) {
+    assert(false && "TODO");
+}
+
 void Output::exec(Interpreter *vm) {
     if (clopts::disable_notes) {
         LOGMAX("Notes disabled, not outputting");

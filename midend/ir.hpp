@@ -57,6 +57,7 @@ enum IRType {
     BREAK,
     CONTINUE,
     ANNOTATION,
+    DOC_STRING,
 
     BINARY_EXPR, // Start of Expresion IDs -- Add any new to dyn_cast bellow!
     UNARY_EXPR,
@@ -91,8 +92,9 @@ protected:
     IRType ir_type;
     ustring name;
     std::list<Annotation *> annotations;
+    ustring documentation;
 
-    IR(IRType ir_type, ustring name) : ir_type(ir_type), name(name) {}
+    IR(IRType ir_type, ustring name) : ir_type(ir_type), name(name), documentation() {}
 public:
     virtual ~IR() {}
 
@@ -114,7 +116,16 @@ public:
         annotations = a;
     }
 
-     std::list<Annotation *> get_annotations() { return this->annotations; }
+    virtual bool can_be_annotated() { return false; }
+    virtual bool can_be_documented() { return false; }
+
+    void add_documentation(ustring d) {
+        this->documentation += d;
+    }
+
+    ustring get_documentation() { return this->documentation; }
+
+    std::list<Annotation *> get_annotations() { return this->annotations; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
@@ -197,6 +208,9 @@ public:
     Module(ustring name, SourceFile &src_file, std::list<IR *> body, bool is_main) 
         : Construct(ClassType, name, body), src_file(src_file), is_main(is_main) {}
 
+    virtual bool can_be_annotated() override { return true; }
+    virtual bool can_be_documented() override { return true; }
+
     virtual std::ostream& debug(std::ostream& os) const;
 };
 
@@ -218,6 +232,9 @@ public:
     bool is_anonymous() {
         return this->anonymous;
     }
+
+    virtual bool can_be_annotated() override { return true; }
+    virtual bool can_be_documented() override { return true; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "space " << name << " {\n";
@@ -245,6 +262,8 @@ public:
     }
 
     std::vector<Expression *> get_parents() { return this->parents; }
+    virtual bool can_be_annotated() override { return true; }
+    virtual bool can_be_documented() override { return true; }
 
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << "class " << name;
@@ -345,6 +364,9 @@ public:
     std::vector<Argument *> get_args() { return this->args; }
     void set_constructor(bool c) { this->constructor = c; }
     bool is_constructor() { return this->constructor; }
+
+    virtual bool can_be_annotated() override { return true; }
+    virtual bool can_be_documented() override { return true; }
 
     virtual std::ostream& debug(std::ostream& os) const;
 };
@@ -751,6 +773,25 @@ public:
     }
 };
 
+/*class DocString : public Statement {
+private:
+    ustring value;
+
+public:
+    static const IRType ClassType = IRType::DOC_STRING;
+
+    DocString(ustring value) : Statement(ClassType, "<doc-string>"), value(value) {}
+    ~DocString() {
+    }
+
+    ustring get_value() { return this->value; }
+
+    virtual inline std::ostream& debug(std::ostream& os) const {
+        os << "d\"" << value << "\"";
+        return os;
+    }
+};*/
+
 class Raise : public Statement {
 private:
     Expression *exception;
@@ -1125,6 +1166,8 @@ public:
     virtual void add_annotation(Annotation *ann) override {
         annotations.push_back(ann);
     }
+    virtual bool can_be_annotated() override { return true; }
+    virtual bool can_be_documented() override { return false; }
 
     std::vector<Argument *> get_args() { return this->args; }
     Expression *get_body() { return this->body; }

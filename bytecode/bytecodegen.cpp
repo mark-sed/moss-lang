@@ -1422,6 +1422,9 @@ void BytecodeGen::emit(ir::Function *fun) {
         auto annot_val = emit(annt->get_value(), true);
         append(new Annotate(fun_reg, annt->get_name(), free_reg(annot_val)));
     }
+    if (!fun->get_documentation().empty()) {
+        append(new Document(fun_reg, fun->get_documentation()));
+    }
     // Set argument default values and types
     opcode::IntConst arg_i = 0;
     for (auto a: fun->get_args()) {
@@ -1485,6 +1488,9 @@ void BytecodeGen::emit(ir::Class *cls) {
         auto annot_val = emit(annt->get_value(), true);
         append(new Annotate(cls_reg, annt->get_name(), free_reg(annot_val)));
     }
+    if (!cls->get_documentation().empty()) {
+        append(new Document(cls_reg, cls->get_documentation()));
+    }
     emit(cls->get_body());
     /*for (auto d : cls->get_body()) {
         if (auto be = dyn_cast<BinaryExpr>(d)) {
@@ -1509,6 +1515,9 @@ void BytecodeGen::emit(ir::Space *spc) {
     for (auto annt : spc->get_annotations()) {
         auto annot_val = emit(annt->get_value(), true);
         append(new Annotate(spc_reg, annt->get_name(), free_reg(annot_val)));
+    }
+    if (!spc->get_documentation().empty()) {
+        append(new Document(spc_reg, spc->get_documentation()));
     }
     emit(spc->get_body());
 

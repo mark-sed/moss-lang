@@ -101,6 +101,7 @@ enum OpCodes : opcode_t {
     BUILD_CLASS, //   %src
 
     ANNOTATE, //      %dst, "name", %val
+    DOCUMENT, //      %dst, "txt"
 
     OUTPUT, //    %src
 
@@ -1296,6 +1297,28 @@ public:
         auto casted = dyn_cast<Annotate>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->val == val && casted->name == name;
+    }
+};
+
+class Document : public OpCode {
+public:
+    Register dst;
+    StringConst val;
+
+    static const OpCodes ClassType = OpCodes::DOCUMENT;
+
+    Document(Register dst, StringConst val) : OpCode(ClassType, "DOCUMENT"), dst(dst), val(val) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << dst << ", \"" << utils::sanitize(val) << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Document>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->val == val;
     }
 };
 

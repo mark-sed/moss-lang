@@ -67,6 +67,13 @@ IR *Parser::parse(bool is_main) {
     } while(t->get_type() != TokenType::END_OF_FILE);
     LOG2("Finished scanning");
 
+    try {
+        bind_docstring();
+    } catch (Raise *raise) {
+        delete m;
+        return raise;
+    }
+
     while (!check(TokenType::END_OF_FILE)) {
         IR *decl;
         try {
@@ -197,6 +204,28 @@ bool Parser::check(std::initializer_list<TokenType> types) {
     return false;
 }
 
+Token *Parser::peek(int offset) {
+    if (curr_token + offset > tokens.size()) return tokens.back();
+    int gen_off = 0;
+    int i = 0;
+    assert(offset >= 0);
+    while (tokens[curr_token+i]->get_type() == TokenType::WS) {
+        ++i;
+    }
+    while (gen_off != offset) {
+        auto tt = tokens[curr_token+i]->get_type();
+        ++i;
+        if (tt == TokenType::WS) continue;
+        ++gen_off;
+    }
+    return tokens[curr_token+i];
+}
+
+Token *Parser::peek_ws(int offset) {
+    if (curr_token + offset > tokens.size()) return tokens.back();
+    return tokens[curr_token+offset];
+}
+
 bool Parser::match(TokenType type) {
     if (check(type)) {
         advance();
@@ -248,6 +277,15 @@ void Parser::skip_ends() {
         return;
     ++multi_line_parsing;
     while(match(TokenType::END) || match(TokenType::END_NL))
+        ; // Skipping empty new lines and ;
+    --multi_line_parsing;
+}
+
+void Parser::skip_ends_and_ws() {
+    if (!check(TokenType::END_NL) && !check(TokenType::END) && !check(TokenType::WS))
+        return;
+    ++multi_line_parsing;
+    while(match(TokenType::END) || match(TokenType::END_NL) || match(TokenType::WS))
         ; // Skipping empty new lines and ;
     --multi_line_parsing;
 }
@@ -389,7 +427,7 @@ ir::Annotation *Parser::annotation() {
  * 
  * Switch ->
  * Function ->
- * Constructor ->
+ * DocString -> 'd'String
  * 
  * IdList -> ID
  *         | IdList (,|;|\n) ID
@@ -411,6 +449,9 @@ IR *Parser::declaration() {
 
     // Skip random new lines and ;
     skip_ends();
+
+    // This could be uncommented to speed up parsing and error could be just in note
+    parser_assert(!bind_docstring(), create_diag(diags::DOC_STRING_NOT_AT_START));
 
     // end of file returns End IR
     if (match(TokenType::END_OF_FILE)) {
@@ -434,6 +475,8 @@ IR *Parser::declaration() {
         LOGMAX("Parsing annotation: " << *annot);
         if (annot->is_inner()) {
             assert(!parents.empty() && "No top level IR?");
+            auto parent = parents.back();
+            parser_assert(parent->can_be_documented(), create_diag(diags::CANNOT_BE_ANNOTATED, parent->get_name().c_str()));
             parents.back()->add_annotation(annot);
         }
         else {
@@ -781,6 +824,30 @@ IR *Parser::declaration() {
     return decl;
 }
 
+bool Parser::bind_docstring() {
+    // Skip random new lines, ; and white spaces
+    skip_ends_and_ws();
+
+    // Extracting any doc strings
+    bool bound = false;
+    while (check(TokenType::ID)) {
+        auto tt = peek(0);
+        if (tt->get_value() == "d" && peek(1)->get_type() == TokenType::STRING) {
+            advance();
+            auto val = advance();
+            assert(!parents.empty() && "No top level IR?");
+            auto parent = parents.back();
+            parser_assert(parent->can_be_documented(), create_diag(diags::CANNOT_BE_DOCUMENTED, parent->get_name().c_str()));
+            parent->add_documentation(val->get_value());
+            skip_ends();
+            bound = true;
+        } else {
+            break;
+        }
+    }
+    return bound;
+}
+
 std::list<ir::IR *> Parser::block() {
     skip_nls();
     expect(TokenType::LEFT_CURLY, create_diag(diags::MISSING_BLOCK));
@@ -788,6 +855,7 @@ std::list<ir::IR *> Parser::block() {
     std::list<ir::IR *> decls;
 
     IR *decl = nullptr;
+    bind_docstring();
     while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
         decl = declaration();
         if (!decl)
@@ -1281,7 +1349,7 @@ Expression *Parser::call_access_subs(bool allow_star) {
 ir::Expression *Parser::note() {
     Expression *expr = scope();
 
-    if (check(TokenType::STRING)) {
+    if (check_ws(TokenType::STRING)) {
         // expr should never be nullptr as string would be parsed in constant
         assert(expr && "Somehow string was trying to be parsed as a note without prefix");
         auto val = advance();
@@ -1289,6 +1357,7 @@ ir::Expression *Parser::note() {
         // sequences and unescape has to be called by the formatter in that case
         auto prefix = dyn_cast<Variable>(expr);
         parser_assert(prefix, create_diag(diags::INVALID_NOTE_PREFIX));
+        parser_assert(prefix->get_name() != "d", create_diag(diags::DOC_STRING_AS_EXPR));
         return new Note(prefix->get_name(), new StringLiteral(val->get_value()));
     }
 

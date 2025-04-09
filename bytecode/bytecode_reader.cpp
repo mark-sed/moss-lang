@@ -304,6 +304,11 @@ Bytecode *BytecodeReader::read() {
                 auto reg2 = read_register();
                 bc->push_back(new Annotate(reg1, str, reg2));
             } break;
+            case opcode::OpCodes::DOCUMENT: {
+                auto reg = read_register();
+                auto str = read_string();
+                bc->push_back(new Document(reg, str));
+            } break;
             case opcode::OpCodes::OUTPUT: {
                 bc->push_back(new Output(read_register()));
             } break;

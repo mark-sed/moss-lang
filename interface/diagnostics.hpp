@@ -144,6 +144,9 @@ enum DiagID {
     MISMATCHED_ANNOT_ARG_AM,///< Incorrect amount of arguments to an annotation
     CONVERTER_ON_NONFUN,    ///< Annotating non-function as a converter
     CANNOT_FIND_CONVERTER,  ///< No conversion from format of note to output format
+    DOC_STRING_AS_EXPR,     ///< a = d"something"
+    CANNOT_BE_DOCUMENTED,   ///< Using docstring on some value it cannot store it
+    DOC_STRING_NOT_AT_START,///< Doc-string in the middle of the body
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -268,6 +271,9 @@ static const char * DIAG_MSGS[] = {
     "Annotation '%s' expects '%ld' arguments, but got '%ld'",
     "Only functions and lambdas can be annotated as 'converter', but got '%s'",
     "Found no suitable conversion pipeline from note fromat '%s' to '%s'",
+    "Doc-string cannot be used as an expression",
+    "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
+    "Doc-string can appear only at the beginning of the construct",
 };
 
 /// \brief Diagnostic message for error reporting

@@ -112,6 +112,7 @@ xxh - PUSH_PARENT   %class
 xxh - BUILD_CLASS   %dst, "name"
 
 xxh - ANNOTATE      %dst, "name", %val
+xxh - DOCUMENT      %dst, "txt"
 
 xxh - OUTPUT    %src
 

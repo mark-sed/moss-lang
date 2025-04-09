@@ -104,6 +104,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::BuildClass(0, "MyClass"));
     
     bc->push_back(new opcode::Annotate(12, "annt", 5));
+    bc->push_back(new opcode::Document(12, "some fun"));
 
     bc->push_back(new opcode::Output(3));
     
