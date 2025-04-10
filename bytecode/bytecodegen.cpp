@@ -1549,7 +1549,8 @@ void BytecodeGen::emit(ir::Try *tcf) {
     // It is 2D to handle typed arguments
     std::vector<std::vector<opcode::OpCode *>> gen_catches{};
     unsigned catch_am = 0;
-    for (auto ctch: tcf->get_catches()) {
+    for (auto riter = tcf->get_catches().rbegin(); riter != tcf->get_catches().rend(); ++riter) {
+        auto ctch = *riter; 
         Argument *a = ctch->get_arg();
         assert(!a->has_default_value() && "Somehow catch argument has default value");
         assert(!a->is_vararg() && "Somehow catch argument is vararg");
@@ -1579,7 +1580,8 @@ void BytecodeGen::emit(ir::Try *tcf) {
     // List of jumps in catch blocks to set their addresses to finally block
     std::vector<opcode::Jmp *> jmps{};
     unsigned i = 0;
-    for (auto ctch: tcf->get_catches()) {
+    for (auto riter = tcf->get_catches().rbegin(); riter != tcf->get_catches().rend(); ++riter) {
+        auto ctch = *riter; 
         if (auto c = dyn_cast<opcode::Catch>(gen_catches[i][0])) {
             c->addr = get_curr_address() + 1;
         } else {

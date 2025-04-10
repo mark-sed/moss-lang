@@ -348,7 +348,8 @@ function test_try_catch {
     expect_pass "try_catch.ms" $1
     expect_out_eq "Success\nfinally end\nCaught NameError: Unkown name!\nfinally end
 Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
-foo_int is not internal\n54a\nmodule end\n" $1
+foo_int is not internal\n54a\ninner\ninner\noutter\ninner\ninner\noutter\n55\nend\n55
+55\nend\n55\nend\nend\n55\nmodule end\n" $1
 }
 
 function test_classes {

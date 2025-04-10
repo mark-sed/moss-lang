@@ -386,7 +386,8 @@ void Interpreter::run() {
             // Match to known catches otherwise let fall through to next interpreter
             // or interpreter owner to print or exit or both
             bool handled = false;
-            for (auto ec: catches) {
+            for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
+                auto ec = *riter;
                 if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
                     LOGMAX("Caught exception");
                     handle_exception(ec, v);
