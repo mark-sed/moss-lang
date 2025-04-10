@@ -870,6 +870,7 @@ void CallFormatter::exec(Interpreter *vm) {
         auto strarg = dyn_cast<StringValue>(arg.value);
         assert(strarg && "somehow note value is not a string value");
         vm->store(dst, new NoteValue(name, strarg));
+        vm->pop_call_frame();
     }
 }
 
