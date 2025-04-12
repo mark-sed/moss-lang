@@ -1,11 +1,11 @@
-///
-/// \brief Moss standard library
-/// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
-///            See accompanied LICENSE file.
-///
+d"""
+Moss standard library
+author: Marek Sedlacek
+copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
+           See accompanied LICENSE file.
+"""
 
-__LIB_MS_VERSION = "0.0.2"
+__LIB_MS_VERSION = "0.0.3"
 
 @internal_bind("Int")
 class __Int {
@@ -34,7 +34,9 @@ class __String {
     fun String(v="") {}
 
     @internal
-    fun length() {}
+    fun length() {
+        d"Returns amount of characters in this string"
+    }
 
     @internal
     fun strip() {}
@@ -49,6 +51,20 @@ class __String {
 
     @internal
     fun lower() {}
+
+    fun join(iterable) {
+        // TODO: Internal candidate
+        r = ""
+        first = true
+        for (i: iterable) {
+            if (first) { 
+                r ++= i
+                first = false
+            }
+            else r ++= this ++ i
+        }
+        return r
+    }
 }
 
 @internal_bind("Note")
@@ -136,7 +152,7 @@ fun info(a) {
     } catch(e:AttributeError) {
         return ""
     }
-    return docs.strip()++"\n"
+    return String.strip(docs)++"\n"
 }
 
 fun help(a) {

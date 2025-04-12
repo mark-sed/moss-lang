@@ -852,7 +852,11 @@ HELLO! BACK TO YOU - 98&*
 x1234y5--🧆
 X1234Y5--🧆
 Marek
----hi\n" $1
+---hi
+1, 2, 3, 4, 5
+[\"b\", 2] [\"c\", 3] [\"a\", 1]
+6-7-8-9
+h i !\n" $1
 }
 
 function test_lib_random {

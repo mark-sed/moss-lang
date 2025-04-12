@@ -34,3 +34,21 @@ emstring.upper().upper().lower().upper().capitalize()
 str1 = "marek\n"
 str1.capitalize()
 "---hi\n".capitalize()
+
+class ClsIt {
+    fun ClsIt(x) {
+        this.x = x
+    }
+
+    fun __iter() = this.x
+}
+
+", ".join([1,2,3,4,5])
+"\n"
+d = {"a": 1, "b": 2, "c": 3}
+" ".join(d)
+"\n"
+"-".join(ClsIt([6,7,8,9]))
+"\n"
+" ".join("hi!")
+"\n"

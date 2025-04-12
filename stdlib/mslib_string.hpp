@@ -9,7 +9,7 @@
 /// This contains internal implementations of std String methods.
 /// 
 
-#ifndef _MSLIB_STING_HPP_
+#ifndef _MSLIB_STRING_HPP_
 #define _MSLIB_STRING_HPP_
 
 #include "interpreter.hpp"
@@ -24,6 +24,7 @@ namespace String {
 Value *capitalize(Interpreter *vm, Value * ths, Value *&err);
 Value *upper(Interpreter *vm, Value * ths, Value *&err);
 Value *lower(Interpreter *vm, Value * ths, Value *&err);
+//Value *join(Interpreter *vm, Value * ths, Value *iterable, Value *&err);
 
 }
 }

@@ -38,6 +38,7 @@ set(SOURCES
     frontend/source.cpp
     midend/ir.cpp
     stdlib/mslib.cpp
+    stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp
     stdlib/mslib_string.cpp
     interface/commons.cpp

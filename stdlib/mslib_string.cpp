@@ -5,7 +5,7 @@
 using namespace moss;
 using namespace mslib;
 
-Value *String::capitalize(Interpreter *vm, Value * ths, Value *&err) {
+Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring res = strv->get_value();
@@ -13,7 +13,7 @@ Value *String::capitalize(Interpreter *vm, Value * ths, Value *&err) {
     return new StringValue(res);
 }
 
-Value *String::upper(Interpreter *vm, Value * ths, Value *&err) {
+Value *String::upper(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring text = strv->get_value();
@@ -22,7 +22,7 @@ Value *String::upper(Interpreter *vm, Value * ths, Value *&err) {
     return new StringValue(res);
 }
 
-Value *String::lower(Interpreter *vm, Value * ths, Value *&err) {
+Value *String::lower(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring text = strv->get_value();

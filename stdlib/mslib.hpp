@@ -32,6 +32,7 @@ public:
     static const std::unordered_map<std::string, mslib_dispatcher>& get_registry();
 };
 
+Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
 
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources
