@@ -790,7 +790,7 @@ function test_lib_type_constructors {
     expect_pass "stdlib_tests/type_constructors.ms" $1
     expect_out_eq '56\n56\n42\n10\n0\n22\n100\n0\n-8
 0.000000\n2.500000\n50.000000\n15.000000
-false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
+false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
 Hi\n55\n<class String>\nnil
 nil
 []\n[1]\n[true, nil, 2, 4]\n[[1, 2], 2, [2, 1]]
@@ -837,7 +837,7 @@ function test_lib_input {
 
 function test_lib_lists {
     expect_pass "stdlib_tests/lists.ms" $1 
-    expect_out_eq "2\n0\n8
+    expect_out_eq "2\n0\n8\ncaught
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]\n" $1
 }
@@ -846,7 +846,13 @@ function test_lib_strings {
     expect_pass "stdlib_tests/strings.ms" $1 
     expect_out_eq "3\n12\n11
 dcba\ntrue
-a \tb\n" $1
+a \tb
+hello\nthere madam!
+HELLO! BACK TO YOU - 98&*
+x1234y5--🧆
+X1234Y5--🧆
+Marek
+---hi\n" $1
 }
 
 function test_lib_random {

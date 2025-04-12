@@ -1,7 +1,7 @@
 /// 
 /// \file mslib.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Moss standard library

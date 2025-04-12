@@ -4,6 +4,8 @@
 #include "errors.hpp"
 #include "diagnostics.hpp"
 #include "logging.hpp"
+#include "mslib_list.hpp"
+#include "mslib_string.hpp"
 #include <functional>
 #include <iostream>
 #include <cstdlib>
@@ -252,18 +254,11 @@ Value *Bool(Interpreter *vm, Value *ths, Value *v) {
     if (auto lv = dyn_cast<ListValue>(v)) {
         return new BoolValue(!lv->get_vals().empty());
     }
-    // TODO: Add dict once implemented
-    //if (auto dv = dyn_cast<DictValue>(v)) {
-    //    return new BoolValue(!dv->get_keys().empty());
-    //}
+    if (auto dv = dyn_cast<DictValue>(v)) {
+        return new BoolValue(dv->size() != 0);
+    }
     
     return new BoolValue(true);
-}
-
-Value *String(Interpreter *vm, Value *ths, Value *v) {
-    (void)vm;
-    (void)ths;
-    return new StringValue(v->as_string());
 }
 
 Value *Note(Interpreter *vm, Value *ths, Value *format, Value *value) {
@@ -272,54 +267,6 @@ Value *Note(Interpreter *vm, Value *ths, Value *format, Value *value) {
     auto str_val = dyn_cast<StringValue>(value);
     assert(str_val && "Note did not take string value");
     return new NoteValue(format->as_string(), str_val);
-}
-
-Value *List_length(Interpreter *vm, Value *ths, Value *&err) {
-    auto lv = dyn_cast<ListValue>(ths);
-    if (!lv) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
-        return BuiltIns::Nil;
-    }
-    return new IntValue(lv->get_vals().size());
-}
-
-Value *List_append(Interpreter *vm, Value * ths, Value *v, Value *&err) {
-    auto lv = dyn_cast<ListValue>(ths);
-    if (!lv) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
-        return BuiltIns::Nil;
-    }
-    // v is vararg
-    auto vls = dyn_cast<ListValue>(v);
-    assert(vls && "not vararg");
-    for (auto e: vls->get_vals())
-        lv->push(e);
-    return BuiltIns::Nil;
-}
-
-Value *List_pop(Interpreter *vm, Value *ths, Value *index, Value *&err) {
-    auto lv = dyn_cast<ListValue>(ths);
-    if (!lv) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
-        return BuiltIns::Nil;
-    }
-    auto iv = dyn_cast<IntValue>(index);
-    assert(iv);
-    auto ivint = iv->get_value();
-    Value *removed = nullptr;
-    if ((ivint < 0 && static_cast<unsigned long>(ivint*-1) > lv->get_vals().size()) || 
-        (ivint >= 0 && static_cast<unsigned long>(ivint) >= lv->get_vals().size())) {
-            err = mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, lv->get_type()->get_name().c_str(), ivint));
-        return BuiltIns::Nil;
-    }
-    if (ivint < 0) {
-        removed = lv->get_vals()[lv->size() + ivint];
-        lv->remove(lv->size() + ivint);
-    } else {
-        removed = lv->get_vals()[ivint];
-        lv->remove(ivint);
-    }
-    return removed;
 }
 
 Value *mslib::create_exception(Value *type, ustring msg) {
@@ -339,9 +286,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"append", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             if (args[1].value->get_type() == BuiltIns::List) {
-                return List_append(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+                return List::append(vm, cf->get_arg("this"), cf->get_arg("v"), err);
             } else {
-                err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, "append"));
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
             }
         }},
@@ -349,6 +296,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             assert(cf->get_args().size() == 2);
             return Bool(vm, cf->get_arg("this"), cf->get_arg("v"));
+        }},
+        {"capitalize", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(args[0].value->get_type() == BuiltIns::String);
+            return String::capitalize(vm, args[0].value, err);
         }},
         {"close", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
@@ -384,18 +337,24 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_args()[0].value;
-            if (arg->get_type() == BuiltIns::List) {
-                return List_length(vm, arg, err);
+            if (auto lv = dyn_cast<ListValue>(arg)) {
+                return new IntValue(lv->get_vals().size());
             } else if (auto stv = dyn_cast<StringValue>(arg)) {
                 return new IntValue(stv->get_value().length());
             } else {
-                err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, "length"));
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
         }},
         {"List", [](Interpreter*, CallFrame* cf, Value*&) {
             assert(cf->get_args().size() == 2);
             return cf->get_arg("vals");
+        }},
+        {"lower", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(args[0].value->get_type() == BuiltIns::String);
+            return String::lower(vm, args[0].value, err);
         }},
         {"NilType", [](Interpreter*, CallFrame*, Value*&) {
             return new NilValue();
@@ -414,9 +373,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"pop", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             if (args[1].value->get_type() == BuiltIns::List) {
-                return List_pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
+                return List::pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
             } else {
-                err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, "pop"));
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
             }
         }},
@@ -449,8 +408,10 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"String", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
+            (void)vm;
             assert(cf->get_args().size() == 2);
-            return String(vm, cf->get_arg("this"), cf->get_arg("v"));
+            assert(cf->get_arg("v"));
+            return new StringValue(cf->get_arg("v")->as_string());
         }},
         {"strip", [](Interpreter*, CallFrame* cf, Value*&) {
             auto strv = dyn_cast<StringValue>(cf->get_args()[0].value)->get_value();
@@ -459,6 +420,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::tan(cf->get_args()[0].value->as_float()));
+        }},
+        {"upper", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(args[0].value->get_type() == BuiltIns::String);
+            return String::upper(vm, args[0].value, err);
         }},
         {"vardump", [](Interpreter* vm, CallFrame* cf, Value*& err)  {
             (void)err;

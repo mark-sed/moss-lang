@@ -6,6 +6,11 @@ lst = [1,2,3,4,0,0.5, true, nil]
 lst.length()
 "\n"
 
+try
+    List.length(5)
+catch (e:ValueError)
+    "caught\n"
+
 l_0 = [1,2,3]
 l_0
 "\n"

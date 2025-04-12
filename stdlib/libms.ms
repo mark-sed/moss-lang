@@ -40,6 +40,15 @@ class __String {
     fun strip() {}
 
     fun reverse() = this[-1..-this.length()-1]
+
+    @internal
+    fun capitalize() {}
+
+    @internal
+    fun upper() {}
+
+    @internal
+    fun lower() {}
 }
 
 @internal_bind("Note")

@@ -46,6 +46,10 @@ Bool(-0.0)
 "\n"
 Bool(86)
 "\n"
+Bool({:})
+"\n"
+Bool({"a": {:}})
+"\n"
 
 String()
 String("Hi\n")
