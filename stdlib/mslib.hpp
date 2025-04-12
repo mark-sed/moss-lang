@@ -18,10 +18,20 @@
 #include "values.hpp"
 #include "diagnostics.hpp"
 #include <cassert>
+#include <functional>
+#include <unordered_map>
 
 namespace moss {
 
 namespace mslib {
+
+using mslib_dispatcher = std::function<Value*(Interpreter*, CallFrame*, Value*&)>;
+
+class FunctionRegistry {
+public:
+    static const std::unordered_map<std::string, mslib_dispatcher>& get_registry();
+};
+
 
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources

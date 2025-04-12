@@ -334,142 +334,161 @@ Value *mslib::create_exception(Value *type, diags::Diagnostic dmsg) {
     return create_exception(type, error::format_error(dmsg));
 }
 
+const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry() {
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+        {"append", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            if (args[1].value->get_type() == BuiltIns::List) {
+                return List_append(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+            } else {
+                err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, "append"));
+                return nullptr;
+            }
+        }},
+        {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            return Bool(vm, cf->get_arg("this"), cf->get_arg("v"));
+        }},
+        {"close", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(args[0].value->get_type() == BuiltIns::File);
+            return File_close(vm, args[0].value, err);
+        }},
+        {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
+            return new FloatValue(std::cos(cf->get_args()[0].value->as_float()));
+        }},
+        {"exit", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1 && "Mismatch of args");
+            exit(vm, args[0].value);
+            return nullptr; // Won’t be used, return early in dispatch()
+        }},
+        {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            return Float(vm, cf->get_arg("this"), cf->get_arg("v"));
+        }},
+        {"input", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 1);
+            return input(vm, cf->get_args()[0].value);
+        }},
+        {"Int", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert((args.size() == 2 || args.size() == 3));
+            return Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
+        }},
+        {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto arg = cf->get_args()[0].value;
+            if (arg->get_type() == BuiltIns::List) {
+                return List_length(vm, arg, err);
+            } else if (auto stv = dyn_cast<StringValue>(arg)) {
+                return new IntValue(stv->get_value().length());
+            } else {
+                err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, "length"));
+                return nullptr;
+            }
+        }},
+        {"List", [](Interpreter*, CallFrame* cf, Value*&) {
+            assert(cf->get_args().size() == 2);
+            return cf->get_arg("vals");
+        }},
+        {"NilType", [](Interpreter*, CallFrame*, Value*&) {
+            return new NilValue();
+        }},
+        {"Note", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 3);
+            return Note(vm, cf->get_arg("this"), cf->get_arg("format"), cf->get_arg("value"));
+        }},
+        {"open", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(args[0].value->get_type() == BuiltIns::File);
+            return File_open(vm, args[0].value, err);
+        }},
+        {"pop", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            if (args[1].value->get_type() == BuiltIns::List) {
+                return List_pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
+            } else {
+                err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, "pop"));
+                return nullptr;
+            }
+        }},
+        {"print", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 3);
+            return print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"));
+        }},
+        {"rand_float", [](Interpreter* vm, CallFrame* cf, Value*&) {
+            assert(cf->get_args().size() == 2);
+            return rand_float(vm, cf->get_arg("min"), cf->get_arg("max"));
+        }},
+        {"rand_int", [](Interpreter* vm, CallFrame* cf, Value*&) {
+            assert(cf->get_args().size() == 2);
+            return rand_int(vm, cf->get_arg("min"), cf->get_arg("max"));
+        }},
+        {"readlines", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(args[0].value->get_type() == BuiltIns::File);
+            return File_readlines(vm, args[0].value, err);
+        }},
+        {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
+            return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));
+        }},
+        {"sleep", [](Interpreter*, CallFrame* cf, Value*&) {
+            auto seconds = static_cast<opcode::IntConst>(cf->get_args()[0].value->as_float() * 1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(seconds));
+            return BuiltIns::Nil;
+        }},
+        {"String", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            return String(vm, cf->get_arg("this"), cf->get_arg("v"));
+        }},
+        {"strip", [](Interpreter*, CallFrame* cf, Value*&) {
+            auto strv = dyn_cast<StringValue>(cf->get_args()[0].value)->get_value();
+            utils::trim(strv);
+            return new StringValue(strv);
+        }},
+        {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
+            return new FloatValue(std::tan(cf->get_args()[0].value->as_float()));
+        }},
+        {"vardump", [](Interpreter* vm, CallFrame* cf, Value*& err)  {
+            (void)err;
+            assert(cf->get_args().size() == 1);
+            return vardump(vm, cf->get_args()[0].value);
+        }},
+        {"write", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            assert(args[1].value->get_type() == BuiltIns::File);
+            return File_write(vm, cf->get_arg("this"), cf->get_arg("content"), err);
+        }},
+    };
+    return registry;
+};
+
 void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     auto cf = vm->get_call_frame();
-    auto args = cf->get_args();
-    auto arg_size = args.size();
 
+    const auto& registry = FunctionRegistry::get_registry();
     Value *ret_v = nullptr;
 
+    auto it = registry.find(name);
     // Matching function name to execute internal implementation
-    if (name == "exit") {
-        assert(arg_size == 1 && "Mismatch of args");
-        exit(vm, args[0].value);
-        // We must return here as otherwise the bci which exit set would be
-        // overriden by the caller bci
-        return;
-    }
-    else if (name == "vardump") {
-        assert(arg_size == 1 && "Mismatch of args");
-        ret_v = vardump(vm, args[0].value);
-    }
-    else if (name == "print") {
-        assert(arg_size == 3 && "Mismatch of args");
-        ret_v = print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"));
-    }
-    else if (name == "input") {
-        assert(arg_size == 1 && "Mismatch of args");
-        ret_v = input(vm, args[0].value);
-    }
-    else if (name == "Int") {
-        assert((arg_size == 3 || arg_size == 2) && "Mismatch of args");
-        // Base might not be set as this is only for string argument
-        ret_v = Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
-    }
-    else if (name == "Float") {
-        assert((arg_size == 2) && "Mismatch of args");
-        ret_v = Float(vm, cf->get_arg("this"), cf->get_arg("v"));
-    }
-    else if (name == "Bool") {
-        assert((arg_size == 2) && "Mismatch of args");
-        ret_v = Bool(vm, cf->get_arg("this"), cf->get_arg("v"));
-    }
-    else if (name == "String") {
-        assert((arg_size == 2) && "Mismatch of args");
-        ret_v = String(vm, cf->get_arg("this"), cf->get_arg("v"));
-    }
-    else if (name == "Note") {
-        assert((arg_size == 3) && "Mismatch of args");
-        ret_v = Note(vm, cf->get_arg("this"), cf->get_arg("format"), cf->get_arg("value"));
-    }
-    else if (name == "NilType") {
-        assert((arg_size == 1) && "Mismatch of args");
-        ret_v = new NilValue();
-    }
-    else if (name == "List") {
-        assert((arg_size == 2) && "Mismatch of args");
-        ret_v = cf->get_arg("vals");
-    }
-    else if (name == "open") {
-        assert(arg_size == 1 && "Mismatch of args");
-        assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = File_open(vm, args[0].value, err);
-    }
-    else if (name == "close") {
-        assert(arg_size == 1 && "Mismatch of args");
-        assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = File_close(vm, args[0].value, err);
-    }
-    else if (name == "length") {
-        assert(arg_size == 1 && "Mismatch of args");
-        if (args[0].value->get_type() == BuiltIns::List) {
-            ret_v = List_length(vm, args[0].value, err);
-        } else if (auto stv = dyn_cast<StringValue>(args[0].value)) {
-            ret_v = new IntValue(stv->get_value().length());
-        } else {
-            err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
-        }
-    }
-    else if (name == "strip") {
-        assert(arg_size == 1 && "Mismatch of args");
-        assert(args[0].value->get_type() == BuiltIns::String && "Not File open called");
-        auto strv = dyn_cast<StringValue>(args[0].value)->get_value();
-        utils::trim(strv);
-        ret_v = new StringValue(strv);
-    }
-    else if (name == "append") {
-        assert(arg_size == 2 && "Mismatch of args");
-        if (args[1].value->get_type() == BuiltIns::List) {
-            ret_v = List_append(vm, cf->get_arg("this"), cf->get_arg("v"), err);
-        } else {
-            err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
-        }
-    }
-    else if (name == "pop") {
-        assert(arg_size == 2 && "Mismatch of args");
-        if (args[1].value->get_type() == BuiltIns::List) {
-            ret_v = List_pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
-        } else {
-            err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
-        }
-    }
-    else if (name == "readlines") {
-        assert(arg_size == 1 && "Mismatch of args");
-        assert(args[0].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = File_readlines(vm, args[0].value, err);
-    }
-    else if (name == "write") {
-        assert(arg_size == 2 && "Mismatch of args");
-        assert(args[1].value->get_type() == BuiltIns::File && "Not File open called");
-        ret_v = File_write(vm, cf->get_arg("this"), cf->get_arg("content"), err);
-    }
-    else if (name == "rand_int") {
-        assert(arg_size == 2 && "Mismatch of args");
-        ret_v = rand_int(vm, cf->get_arg("min"), cf->get_arg("max"));
-    }
-    else if (name == "rand_float") {
-        assert(arg_size == 2 && "Mismatch of args");
-        ret_v = rand_float(vm, cf->get_arg("min"), cf->get_arg("max"));
-    }
-    else if (name == "sleep") {
-        assert(arg_size == 1 && "Mismatch of args");
-        auto seconds = static_cast<opcode::IntConst>(args[0].value->as_float() * 1000);
-        std::this_thread::sleep_for(std::chrono::milliseconds(seconds));
-        ret_v = BuiltIns::Nil;
-    }
-    else if (name == "sin") {
-        assert(arg_size == 1 && "Mismatch of args");
-        ret_v = new FloatValue(std::sin(args[0].value->as_float()));
-    }
-    else if (name == "cos") {
-        assert(arg_size == 1 && "Mismatch of args");
-        ret_v = new FloatValue(std::cos(args[0].value->as_float()));
-    }
-    else if (name == "tan") {
-        assert(arg_size == 1 && "Mismatch of args");
-        ret_v = new FloatValue(std::tan(args[0].value->as_float()));
-    }
-    else {
+    if (it != registry.end()) {
+        ret_v = it->second(vm, cf, err);
+        // Special case for `exit`, return early to prevent BCI override
+        if (name == "exit")
+            return;
+    } else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
     }
 
@@ -481,22 +500,3 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     vm->store(return_reg, ret_v);
     vm->set_bci(caller_addr);
 }
-
-/*void mslib::init(MemoryPool *gf, opcode::Register &reg_counter) {
-    // Note: Also add function to matching above
-    auto create_fun = [gf, &reg_counter](ustring name, ustring arg_names) {
-        auto f = new FunValue(name, arg_names);
-        // All functions MUST be annotated "@internal"
-        f->annotate(annots::INTERNAL, BuiltIns::Nil);
-        gf->store(reg_counter, f);
-        gf->store_name(reg_counter, name);
-        ++reg_counter;
-        return f;
-    };
-
-    // print(... msgs, end="\n", separator=" ")
-    auto f_print = create_fun("print", "msgs,end,separator");
-    f_print->set_vararg(0);
-    f_print->set_default(1, new StringValue("\n"));
-    f_print->set_default(2, new StringValue(" "));
-}*/
