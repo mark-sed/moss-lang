@@ -15,6 +15,17 @@ static void init_cpp_built_ins() {
     CppSpace->set_attr("fstream", FStream);
 }
 
+static void init_constant_variables(MemoryPool *gf, opcode::Register &reg) {
+    // args
+    auto pr_args = clopts::get_program_args();
+    std::vector<Value *> largs;
+    for (auto a: pr_args) {
+        largs.push_back(new StringValue(a));
+    }
+    store_glob_val(reg++, "args", new ListValue(largs), gf);
+    // end args
+}
+
 void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "Type", BuiltIns::Type, gf);
     store_glob_val(reg++, "Int", BuiltIns::Int, gf);
@@ -58,6 +69,8 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "cpp", BuiltIns::Cpp::CppSpace, gf);
     
     init_cpp_built_ins();
+    
+    init_constant_variables(gf, reg);
 }
 
 Value *BuiltIns::Type = new ClassValue("Type");

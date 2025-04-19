@@ -13,6 +13,8 @@ args::ValueFlag<std::string> note_format(note_group, "<format-name>", "Converts 
 
 static std::ostream *output_note_file = nullptr; ///< Stream into which output notes, this has to be explicitly deleted
 
+static std::vector<ustring> program_args;
+
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     args::HelpFlag help(interface_group, "help", "Display available options", {'h', "help"});
     args::Flag version(interface_group, "version", "Display the version of this program", {"version"});
@@ -21,9 +23,12 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     code.KickOut(true);
     arg_parser.Prog(argv[0]);
     const std::vector<ustring> args(argv + 1, argv + argc);
+    const auto begin = std::begin(args);
+    const auto end = std::end(args);
+    auto rest = begin;
 
     try {
-        arg_parser.ParseCLI(argc, argv);
+        rest = arg_parser.ParseArgs(begin, end);
     }
     catch (const args::Help&) {
         // print help
@@ -42,6 +47,14 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
         outs << "\n";
         exit(0);
     }
+
+    for (;rest != end; ++rest) {
+        program_args.push_back(*rest);
+    }
+}
+
+std::vector<ustring> moss::clopts::get_program_args() {
+    return program_args;
 }
 
 int moss::clopts::get_logging_level() {

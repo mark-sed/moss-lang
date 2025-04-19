@@ -86,6 +86,8 @@ std::string get_logging_list();
 
 bool use_color();
 
+std::vector<ustring> get_program_args();
+
 }
 
 }

@@ -883,6 +883,17 @@ written line\n" $1
     rm -r ".created_file_t.txt1"
 }
 
+function test_lib_args {
+    expect_pass "stdlib_tests/args.ms 1 2" $1
+    expect_out_eq "[\"1\", \"2\"]" $1
+
+    expect_pass "stdlib_tests/args.ms" $1
+    expect_out_eq "[]" $1
+
+    expect_pass "stdlib_tests/args.ms true someval ~ + -" $1
+    expect_out_eq "[\"true\", \"someval\", \"~\", \"+\", \"-\"]" $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -1075,6 +1086,7 @@ function run_all_tests {
     run_test lib_random
     run_test lib_math
     run_test lib_file
+    run_test lib_args
 
     # gc tests
     run_test gc_local_vars
