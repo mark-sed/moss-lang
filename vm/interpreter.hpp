@@ -110,14 +110,12 @@ public:
     Value *get_extern_return_value() { return this->extern_return_value; }
 
     /// Extracts argument from call frame
-    /// \param optional This is used for assertion to be sure that value can miss
-    Value *get_arg(ustring name, bool optional=false) {
+    Value *get_arg(ustring name) {
         for (auto a: args) {
             if (a.name == name) {
                 return a.value;
             }
         }
-        assert(optional && "Argument expected but not found");
         return nullptr;
     }
 

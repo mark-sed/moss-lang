@@ -257,7 +257,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             auto args = cf->get_args();
             assert((args.size() == 2 || args.size() == 3));
-            return Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base", true));
+            return Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base"));
         }},
         /*{"join", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();

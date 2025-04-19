@@ -68,7 +68,9 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \return Value returned by the function
 Value *runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
     LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
+#ifndef NDEBUG
     auto pre_call_cf_size = vm->get_call_frame_size();
+#endif
     vm->push_call_frame(funV);
     auto cf = vm->get_call_frame();
     cf->set_function(funV);
@@ -769,7 +771,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
 }
 
-static FunValue *select_function(Interpreter *vm, Value *fun, std::initializer_list<Value *> args, diags::DiagID &err) {
+static FunValue *select_function(Value *fun, std::initializer_list<Value *> args, diags::DiagID &err) {
     assert(fun);
     FunValue *funf = dyn_cast<FunValue>(fun);
     if (!funf && isa<FunValueList>(fun)) {
@@ -803,7 +805,7 @@ static FunValue *select_function(Interpreter *vm, Value *fun, std::initializer_l
 FunValue *opcode::lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
     auto method = obj->get_attr(name, vm);
     if (method) {
-        return select_function(vm, method, args, err);
+        return select_function(method, args, err);
     }
     return nullptr;
 }
@@ -811,7 +813,7 @@ FunValue *opcode::lookup_method(Interpreter *vm, Value *obj, ustring name, std::
 FunValue *lookup_function(Interpreter *vm, ustring name, std::initializer_list<Value *> args, diags::DiagID &err) {
     auto fun = vm->load_name(name);
     if (fun) {
-        return select_function(vm, fun, args, err);
+        return select_function(fun, args, err);
     }
     return nullptr;
 }

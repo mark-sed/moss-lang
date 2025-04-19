@@ -189,7 +189,7 @@ public:
 
     IntValue(opcode::IntConst value);
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new IntValue(this->value);
     }
 
@@ -223,7 +223,7 @@ public:
 
     FloatValue(opcode::FloatConst value);
     
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new FloatValue(this->value);
     }
 
@@ -256,7 +256,7 @@ public:
 
     BoolValue(opcode::BoolConst value);
     
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new BoolValue(this->value);
     }
 
@@ -287,7 +287,7 @@ public:
 
     StringValue(opcode::StringConst value);
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new StringValue(this->value);
     }
 
@@ -327,7 +327,7 @@ public:
 
     NilValue() : Value(ClassType, "Nil", BuiltIns::NilType) {}
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new NilValue();
     }
 
@@ -356,7 +356,7 @@ public:
     ListValue(std::vector<Value *> vals);
     ListValue();
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new ListValue(this->vals);
     }
 
@@ -430,7 +430,7 @@ public:
     DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
     DictValue();
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new DictValue(this->vals);
     }
 
@@ -509,7 +509,7 @@ public:
     ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
         : Value(ClassType, name, BuiltIns::Type, frm), supers(supers) {}
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         auto cpy = new ClassValue(this->name, this->supers);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
@@ -552,7 +552,7 @@ public:
         this->copy_attrs(cls->get_attrs());
     }
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         assert(isa<ClassValue>(this->type) && "type was modified?");
         auto cpy = new ObjectValue(dyn_cast<ClassValue>(this->type));
         cpy->copy_attrs(this->get_attrs());
@@ -582,7 +582,7 @@ public:
         : Value(ClassType, name, BuiltIns::Space, frm), owner_vm(owner_vm), anonymous(anonymous) {}
     ~SpaceValue() {}
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         auto cpy = new SpaceValue(this->name, owner_vm, anonymous);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
@@ -617,7 +617,7 @@ public:
         : Value(ClassType, name, BuiltIns::Module, frm), vm(vm) {}
     ~ModuleValue();
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         auto cpy = new ModuleValue(this->name, this->vm);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
@@ -648,7 +648,7 @@ public:
 
     NoteValue(opcode::StringConst format, StringValue *value);
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new NoteValue(this->format, this->value);
     }
 
@@ -730,7 +730,7 @@ public:
             delete a;
     }
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new FunValue(this->name, this->args, this->vm, this->body_addr);
     }
 
@@ -831,7 +831,7 @@ public:
     }
     FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs) {}
     
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new FunValueList(this->funs);
     }
 
@@ -877,7 +877,7 @@ public:
 
     EnumValue(EnumTypeValue *type, ustring name);
 
-    virtual Value *clone();
+    virtual Value *clone() override;
 
     virtual inline bool is_hashable() override { return true; }
     virtual opcode::IntConst hash() override {
@@ -904,7 +904,7 @@ public:
     EnumTypeValue(ustring name, std::vector<EnumValue *> vals) 
         : Value(ClassType, name, BuiltIns::Type), vals(vals) {}
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new EnumTypeValue(this->name, this->vals);
     }
 
@@ -957,7 +957,7 @@ public:
         : Value(ClassType, "super", BuiltIns::super), instance(instance) {}
     ~SuperValue() {}
 
-    virtual Value *clone() {
+    virtual Value *clone() override {
         return new SuperValue(this->instance);
     }
 

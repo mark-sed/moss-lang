@@ -20,7 +20,7 @@ namespace t_cpp {
         CppValue(TypeKind ClassType, ustring name, Value *type) 
             : Value(ClassType, name, type) {}
     
-        virtual Value *clone() {
+        virtual Value *clone() override {
             assert(false && "Cannot coppy CppValue");
             return nullptr;
         }
@@ -51,7 +51,7 @@ namespace t_cpp {
 
         std::fstream *get_fs() { return this->fs; }
     
-        virtual Value *clone() {
+        virtual Value *clone() override {
             // TODO: Maybe copy the value
             return new FStreamValue(fs);
         }

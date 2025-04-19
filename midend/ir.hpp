@@ -197,21 +197,16 @@ public:
 };
 
 class Module : public Construct {
-private:
-    SourceFile &src_file;
-    bool is_main;
 public:
     static const IRType ClassType = IRType::MODULE;
 
-    Module(ustring name, SourceFile &src_file, bool is_main) 
-        : Construct(ClassType, name), src_file(src_file), is_main(is_main) {}
-    Module(ustring name, SourceFile &src_file, std::list<IR *> body, bool is_main) 
-        : Construct(ClassType, name, body), src_file(src_file), is_main(is_main) {}
+    Module(ustring name) : Construct(ClassType, name) {}
+    Module(ustring name, std::list<IR *> body) : Construct(ClassType, name, body) {}
 
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
-    virtual std::ostream& debug(std::ostream& os) const;
+    virtual std::ostream& debug(std::ostream& os) const override;
 };
 
 class Space : public Construct {
@@ -235,7 +230,7 @@ public:
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "space " << name << " {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -263,7 +258,7 @@ public:
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "class " << name;
         bool first = true;
         for (auto p: parents) {
@@ -315,7 +310,7 @@ public:
     bool has_default_value() { return this->default_value != nullptr; }
     bool is_vararg() { return this->vararg; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         if (vararg) {
             os << "... " << name;
         }
@@ -366,7 +361,7 @@ public:
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
-    virtual std::ostream& debug(std::ostream& os) const;
+    virtual std::ostream& debug(std::ostream& os) const override;
 };
 
 inline ustring encode_fun_args(std::vector<Argument *> args) {
@@ -392,7 +387,7 @@ public:
         this->body = elbody;
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "else {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -423,7 +418,7 @@ public:
     Expression *get_cond() { return this->cond; }
     Else *get_else() { return this->else_branch; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "if (" << *cond << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -457,7 +452,7 @@ public:
     std::vector<Expression *> get_values() { return values; }
     bool is_default_case() { return default_case; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         if (!default_case) {
             os << "case ";
             bool first = true;
@@ -499,7 +494,7 @@ public:
 
     Expression *get_cond() { return this->cond; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "switch (" << *cond << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -525,7 +520,7 @@ public:
 
     Argument *get_arg() { return arg; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "catch (" << *arg << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -543,7 +538,7 @@ public:
         this->body = fnbody;
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "finally {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -576,7 +571,7 @@ public:
     std::vector<Catch *>& get_catches() { return catches; }
     Finally *get_finally() { return finally_stmt; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "try {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -608,7 +603,7 @@ public:
 
     Expression *get_cond() { return this->cond; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "while (" << *cond << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -635,7 +630,7 @@ public:
 
     Expression *get_cond() { return this->cond; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "do {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -665,7 +660,7 @@ public:
     Expression *get_iterator() { return this->iterator; }
     Expression *get_collection() { return this->collection; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "for (" << *iterator << ": " << *collection << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
@@ -684,7 +679,7 @@ public:
 
     Enum(ustring name, std::vector<ustring> values) : IR(ClassType, name), values(values) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "enum " << name << " {\n";
         for (auto v: values) {
             os << v << "\n";
@@ -726,7 +721,7 @@ public:
         return aliases[index];
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "import ";
         bool first = true;
         for (unsigned i = 0; i < names.size(); ++i) {
@@ -761,7 +756,7 @@ public:
     Expression *get_cond() { return this->cond; }
     Expression *get_msg() { return this->msg; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "assert(" << *cond;
         if (msg)
             os << ", " << *msg << ")";
@@ -802,7 +797,7 @@ public:
         delete exception;
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "raise " << *exception;
         return os;
     }
@@ -822,7 +817,7 @@ public:
         delete expr;
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "return " << *expr;
         return os;
     }
@@ -836,7 +831,7 @@ public:
 
     Break() : Statement(ClassType, "break") {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "break";
         return os;
     }
@@ -848,7 +843,7 @@ public:
 
     Continue() : Statement(ClassType, "break") {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "continue";
         return os;
     }
@@ -867,7 +862,7 @@ public:
         delete value;
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (inner ? "@!" : "@") << name;
         if (value)
             os << "(" << *value << ")";
@@ -1021,7 +1016,7 @@ public:
         return left->as_string() + op.as_string() + right->as_string();
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << *left << " " << op << " " << *right << ")";
         return os;
     }
@@ -1048,7 +1043,7 @@ public:
     Expression *get_expr() { return this->expr; }
     Operator get_op() { return this->op; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << op << " " << *expr << ")";
         return os;
     }
@@ -1064,7 +1059,7 @@ public:
 
     bool is_non_local() { return this->non_local; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (non_local ? "$" : "") << name;
         return os;
     }
@@ -1084,7 +1079,7 @@ public:
 
     std::vector<ir::Expression *> get_vars() { return this->vars; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         bool first = true;
         for (auto v: vars) {
             if (first) {
@@ -1106,7 +1101,7 @@ public:
 
     AllSymbols() : Expression(ClassType, "*") {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "*";
         return os;
     }
@@ -1135,7 +1130,7 @@ public:
     Expression *get_value_true() { return value_true; }
     Expression *get_value_false() { return value_false; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << *condition << " ? " << *value_true << " : " << *value_false << ")";
         return os;
     }
@@ -1170,7 +1165,7 @@ public:
     std::vector<Argument *> get_args() { return this->args; }
     Expression *get_body() { return this->body; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(fun " << name << "(";
         bool first = true;
         for (auto a: args) {
@@ -1211,7 +1206,7 @@ public:
     Expression *get_end() { return end; }
     Expression *get_second() { return second; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         if (second)
             os << "(" << *start << ", " << *second << ".." << *end << ")";
         else
@@ -1239,7 +1234,7 @@ public:
     Expression *get_fun() { return this->fun; }
     std::vector<Expression *> get_args() { return this->args; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << *fun << "(";
         bool first = true;
         for (auto a: args) {
@@ -1263,7 +1258,7 @@ public:
 
     IntLiteral(opcode::IntConst value) : Expression(ClassType, "<int-literal>"), value(value) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << value;
         return os;
     }
@@ -1279,7 +1274,7 @@ public:
 
     FloatLiteral(opcode::FloatConst value) : Expression(ClassType, "<float-literal>"), value(value) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << value;
         return os;
     }
@@ -1295,7 +1290,7 @@ public:
 
     BoolLiteral(opcode::BoolConst value) : Expression(ClassType, "<bool-literal>"), value(value) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (value ? "true" : "false");
         return os;
     }
@@ -1311,7 +1306,7 @@ public:
 
     StringLiteral(opcode::StringConst value) : Expression(ClassType, "<string-literal>"), value(value) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "\"" << utils::sanitize(value) << "\"";
         return os;
     }
@@ -1325,7 +1320,7 @@ public:
 
     NilLiteral() : Expression(ClassType, "<nil-literal>") {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "nil";
         return os;
     }
@@ -1337,7 +1332,7 @@ public:
 
     ThisLiteral() : Expression(ClassType, "<this-literal>") {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "this";
         return os;
     }
@@ -1349,7 +1344,7 @@ public:
 
     SuperLiteral() : Expression(ClassType, "<super-literal>") {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "super";
         return os;
     }
@@ -1364,7 +1359,7 @@ public:
 
     OperatorLiteral(Operator op) : Expression(ClassType, "<operator-literal>"), op(op) {}
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << op << ")";
         return os;
     }
@@ -1387,7 +1382,7 @@ public:
     ustring get_prefix() { return this->prefix; }
     StringLiteral *get_note() { return this->note; }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << prefix << *note;
         return os;
     }
@@ -1444,7 +1439,7 @@ public:
 
     std::list<IR *> as_for();
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "[";
         if (!comprehension) {
             bool first = true;
@@ -1512,7 +1507,7 @@ public:
             delete i;
     }
 
-    virtual inline std::ostream& debug(std::ostream& os) const {
+    virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "{";
         if (keys.empty())
             os << ":";

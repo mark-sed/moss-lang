@@ -56,7 +56,7 @@ static Operator token2operator(TokenType t) {
 IR *Parser::parse(bool is_main) {
     LOG1("Started parsing module");
     reading_by_lines = false;
-    Module *m = new Module(this->src_file.get_module_name(), this->src_file, is_main);
+    Module *m = new Module(this->src_file.get_module_name());
     parents.push_back(m);
 
     LOG2("Running scanner");

@@ -2,8 +2,12 @@
 #include "builtins.hpp"
 #include "logging.hpp"
 #include "mslib.hpp"
+#include <new>
 
 using namespace moss;
+
+// Forward declaration for clang to match the overloaded delete call
+void operator delete(void* ptr, std::size_t size) noexcept;
 
 int Value::tab_depth = 0;
 size_t Value::allocated_bytes = 0;

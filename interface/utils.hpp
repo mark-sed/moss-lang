@@ -57,10 +57,10 @@ inline void trim(ustring &s) {
 /// Formats message using (s)printf style.
 /// \warning this function cannot be called with string as it will mess up the output. Use c_str(). 
 template<typename ... Args>
-inline ustring formatv(const ustring& format, Args ... args) {
+inline ustring formatv(const char *format, Args&& ... args) {
     if(sizeof...(Args) == 0)
         return format;
-    int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1;
+    int size_s = std::snprintf(nullptr, 0, format, std::forward<Args>(args) ...) + 1;
     if( size_s <= 0 ){
         // TODO: Call error
         assert(false);
@@ -68,7 +68,7 @@ inline ustring formatv(const ustring& format, Args ... args) {
     }
     auto size = static_cast<size_t>(size_s);
     std::unique_ptr<char[]> buf(new char[ size ]);
-    std::snprintf(buf.get(), size, format.c_str(), args ...);
+    std::snprintf(buf.get(), size, format, args ...);
     return std::string(buf.get(), buf.get() + size - 1);
 }
 

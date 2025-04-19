@@ -14,8 +14,7 @@ using namespace testing;
 
 /** Test correct casting */
 TEST(IR, Casting){
-    SourceFile f(SourceFile::SourceType::STDIN);
-    ir::Module *m = new ir::Module("m", f, true);
+    ir::Module *m = new ir::Module("m");
     ir::IR *i = m;
 
     EXPECT_TRUE(isa<ir::Module>(*i));
