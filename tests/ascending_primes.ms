@@ -2,7 +2,7 @@ fun is_prime(n) {
     if (n == 2) return true
     if (n == 1 or n % 2 == 0) return false
     
-    root = int(n^0.5 + 1)
+    root = Int(n^0.5) + 1
     
     for (k : 3, 5..root) {
         if (n % k == 0) return false
@@ -14,12 +14,11 @@ fun is_prime(n) {
 queue = [k : k = (1..10)]
 primes = []
 
-while(!queue.empty()) {
-    n = queue.pop()
+while(queue.length() != 0) {
+    n = queue.pop(0)
     if (is_prime(n))
         ~primes.append(n)
-    // ????
-    ~queue.extend([n * 10 + k : k = (n % 10 + 1 .. 10)])
+    queue += [n * 10 + k : k = (n % 10 + 1 .. 10)]
 }
 
 primes

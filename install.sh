@@ -39,7 +39,7 @@ if [ "${TARGET}" = "release" ]; then
     # This requires sudo privileges.
     sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release || exit 1
     sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss
-    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target libms installation
+    cmake --build $BUILD_DIR -j $(nproc) --target libms installation || exit 1
 elif [ "${TARGET}" = "debug" ]; then
     sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
     sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss

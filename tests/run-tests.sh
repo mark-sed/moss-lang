@@ -716,6 +716,11 @@ function test_pso {
     expect_pass "pso.ms" $1
 }
 
+function test_ascending_primes {
+    expect_pass "ascending_primes.ms" $1
+    expect_out_eq "[2, 3, 5, 7, 13, 17, 19, 23, 29, 37, 47, 59, 67, 79, 89, 127, 137, 139, 149, 157, 167, 179, 239, 257, 269, 347, 349, 359, 367, 379, 389, 457, 467, 479, 569, 1237, 1249, 1259, 1279, 1289, 1367, 1459, 1489, 1567, 1579, 1789, 2347, 2357, 2389, 2459, 2467, 2579, 2689, 2789, 3457, 3467, 3469, 4567, 4679, 4789, 5689, 12347, 12379, 12457, 12479, 12569, 12589, 12689, 13457, 13469, 13567, 13679, 13789, 15679, 23459, 23567, 23689, 23789, 25679, 34589, 34679, 123457, 123479, 124567, 124679, 125789, 134789, 145679, 234589, 235679, 235789, 245789, 345679, 345689, 1234789, 1235789, 1245689, 1456789, 12356789, 23456789]" $1
+}
+
 function test_lib_moss_module {
     expect_pass "stdlib_tests/moss_module.ms" $1
     expect_out_eq "<module libms>\n<space Math>\n3\ntrue\n" $1
@@ -1070,6 +1075,7 @@ function run_all_tests {
     run_test factorial
     run_test collatz
     run_test pso
+    run_test ascending_primes
 
     # stdlib tests
     run_test lib_moss_module
