@@ -1,7 +1,7 @@
 /// 
 /// \file moss.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Entry point of the moss interpreter
@@ -22,7 +22,7 @@
 
 #define MOSS_VERSION_MAJOR 0  ///< Interpreter's major version
 #define MOSS_VERSION_MINOR 6  ///< Interpreter's minor version
-#define MOSS_VERSION_PATCH 0  ///< Interpreter's patch
+#define MOSS_VERSION_PATCH 1  ///< Interpreter's patch
 
 /// Moss version as a string
 #define MOSS_VERSION MACRO_TO_STR(MOSS_VERSION_MAJOR) "." MACRO_TO_STR(MOSS_VERSION_MINOR) "." MACRO_TO_STR(MOSS_VERSION_PATCH)

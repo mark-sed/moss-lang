@@ -9,6 +9,7 @@
 #include "interpreter.hpp"
 #include "clopts.hpp"
 #include "bytecode_writer.hpp"
+#include "ir_pipeline.hpp"
 #include <vector>
 
 using namespace moss;
@@ -35,6 +36,7 @@ int Repl::run() {
     bcgen::BytecodeGen cgen(bc);
 
     Interpreter *interpreter = new Interpreter(bc, &src_file, true);
+    ir::IRPipeline ipl;
 
     bool eof_reached = false;
     while (!eof_reached && !global_controls::exit_called) {
@@ -46,6 +48,8 @@ int Repl::run() {
                 eof_reached = true;
                 outs << "\n";
             }
+            // IR pipeline run
+            ipl.run(i);
 #ifndef NDEBUG
             if (!clopts::parse_only)
                 cgen.generate(i);

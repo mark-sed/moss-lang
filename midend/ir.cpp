@@ -78,3 +78,19 @@ std::ostream& Function::debug(std::ostream& os) const {
     os << "}";
     return os;
 }
+
+void Function::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Class::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Module::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Space::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}

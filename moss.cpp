@@ -14,6 +14,7 @@
 #include "bytecode_writer.hpp"
 #include "opcode.hpp"
 #include "mslib.hpp"
+#include "ir_pipeline.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -110,6 +111,8 @@ int main(int argc, const char *argv[]) {
 
         Parser parser(*main_file);
         main_mod = parser.parse(true);
+        ir::IRPipeline ipl;
+        ipl.run(main_mod);
         if (auto exc = dyn_cast<ir::Raise>(main_mod)) {
             // An exception was raised in the parser, lets report it straight away
             ir::StringLiteral *err_msg = dyn_cast<ir::StringLiteral>(exc->get_exception());

@@ -37,6 +37,9 @@ set(SOURCES
     frontend/scanner.cpp
     frontend/source.cpp
     midend/ir.cpp
+    midend/ir_pipeline.cpp
+    midend/ir_visitor.cpp
+    midend/method_analyzer.cpp
     stdlib/mslib.cpp
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp

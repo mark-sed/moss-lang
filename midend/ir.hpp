@@ -1,7 +1,7 @@
 /// 
 /// \file ir.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Internal representation of moss constructs.
@@ -14,6 +14,7 @@
 #include "source.hpp"
 #include "commons.hpp"
 #include "utils.hpp"
+#include "ir_visitor.hpp"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -27,6 +28,8 @@ namespace moss {
 
 /// Internal representation of code namespace
 namespace ir {
+
+class IRVisitor;
 
 /// IR class type for easy casting and checking
 enum IRType {
@@ -97,6 +100,9 @@ protected:
     IR(IRType ir_type, ustring name) : ir_type(ir_type), name(name), documentation() {}
 public:
     virtual ~IR() {}
+    virtual void accept(IRVisitor& visitor) {
+        (void)visitor;
+    };
 
     IRType get_type() { return ir_type; }
     ustring get_name() { return name; }
@@ -203,6 +209,8 @@ public:
     Module(ustring name) : Construct(ClassType, name) {}
     Module(ustring name, std::list<IR *> body) : Construct(ClassType, name, body) {}
 
+    void accept(IRVisitor& visitor) override;
+
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
@@ -222,6 +230,8 @@ public:
             this->name = std::to_string(annonymous_id++) + "s";
         }
     }
+
+    void accept(IRVisitor& visitor) override;
 
     bool is_anonymous() {
         return this->anonymous;
@@ -253,6 +263,8 @@ public:
         for (auto p : parents)
             delete p;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     std::vector<Expression *> get_parents() { return this->parents; }
     virtual bool can_be_annotated() override { return true; }
@@ -337,26 +349,30 @@ public:
 class Function : public Construct {
 private:
     std::vector<Argument *> args;
-    bool constructor;
-
+    bool constructor; ///< Denotes if function is a constructor for a class
+    bool method; ///< Denotes is function is non-static class method
 public:
     static const IRType ClassType = IRType::FUNCTION;
 
-    Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, bool constructor=false) 
-        : Construct(ClassType, name), args(args), constructor(constructor) {
+    Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody) 
+        : Construct(ClassType, name), args(args), constructor(false), method(false) {
         this->body = fnbody;
     }
-    Function(ustring name, std::vector<Argument *> args, bool constructor=false) 
-        : Construct(ClassType, name), args(args), constructor(constructor) {
+    Function(ustring name, std::vector<Argument *> args) 
+        : Construct(ClassType, name), args(args), constructor(false), method(false) {
     }
     ~Function() {
         for (auto a : args)
             delete a;
     }
 
+    void accept(IRVisitor& visitor) override;
+
     std::vector<Argument *> get_args() { return this->args; }
     void set_constructor(bool c) { this->constructor = c; }
     bool is_constructor() { return this->constructor; }
+    void set_method(bool c) { this->method = c; }
+    bool is_method() { return this->method; }
 
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
