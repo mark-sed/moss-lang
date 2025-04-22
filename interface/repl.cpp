@@ -36,7 +36,7 @@ int Repl::run() {
     bcgen::BytecodeGen cgen(bc);
 
     Interpreter *interpreter = new Interpreter(bc, &src_file, true);
-    ir::IRPipeline ipl;
+    ir::IRPipeline ipl(parser);
 
     bool eof_reached = false;
     while (!eof_reached && !global_controls::exit_called) {
@@ -49,7 +49,9 @@ int Repl::run() {
                 outs << "\n";
             }
             // IR pipeline run
-            ipl.run(i);
+            if (auto err = ipl.run(i)) {
+                i = err;
+            }
 #ifndef NDEBUG
             if (!clopts::parse_only)
                 cgen.generate(i);

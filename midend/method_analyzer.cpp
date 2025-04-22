@@ -1,4 +1,7 @@
 #include "method_analyzer.hpp"
+#include "diagnostics.hpp"
+#include "ir_visitor.hpp"
+#include "parser.hpp"
 
 using namespace moss;
 using namespace ir;
@@ -16,6 +19,10 @@ void MethodAnalyzer::visit(Class &cls) {
             check_constructor(*f, cls.get_name());
             LOGMAX("Setting " << f->get_name() << " as method");
             f->set_method(true);
+        } else if (auto l = dyn_cast<Lambda>(i)) {
+            parser_assert(l->get_name() != cls.get_name(), parser.create_diag(diags::LAMBDA_CONSTRUCTOR, l->get_name().c_str())); 
+            LOGMAX("Setting " << l->get_name() << " as method");
+            l->set_method(true);
         }
     }
 }

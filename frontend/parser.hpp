@@ -20,6 +20,11 @@
 
 namespace moss {
 
+/// This macro asserts that condition is true otherwise it raises a parser_error
+#define parser_assert(cond, msg) do { if(!(cond)) parser_error(msg); } while(0)
+
+void parser_error(diags::Diagnostic err_msg);
+
 /// \brief Moss token parsing into AST
 /// Parser can parse the whole file at once or go line by line. 
 class Parser {
@@ -132,14 +137,12 @@ private:
     }
 
     void scan_line();
-
+public:
     template<typename ... Args>
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
         return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);
     }
 
-    void parser_error(diags::Diagnostic err_msg);
-public:
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
                                lower_range_prec(false), reading_by_lines(false),
                                multi_line_parsing(0) {}

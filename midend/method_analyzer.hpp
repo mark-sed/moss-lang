@@ -19,6 +19,7 @@ namespace ir {
 
 class MethodAnalyzer : public IRVisitor {
 public:
+    MethodAnalyzer(Parser &parser) : IRVisitor(parser) {}
     virtual void visit(class Class &cls) override;
     void check_constructor(class Function &method, ustring class_name);
 };

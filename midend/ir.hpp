@@ -346,33 +346,37 @@ public:
     }
 };
 
-class Function : public Construct {
-private:
+struct FunctionInfo {
     std::vector<Argument *> args;
     bool constructor; ///< Denotes if function is a constructor for a class
     bool method; ///< Denotes is function is non-static class method
+};
+
+class Function : public Construct {
+private:
+    FunctionInfo info;
 public:
     static const IRType ClassType = IRType::FUNCTION;
 
     Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody) 
-        : Construct(ClassType, name), args(args), constructor(false), method(false) {
+        : Construct(ClassType, name), info{args, false, false} {
         this->body = fnbody;
     }
     Function(ustring name, std::vector<Argument *> args) 
-        : Construct(ClassType, name), args(args), constructor(false), method(false) {
+        : Construct(ClassType, name), info{args, false, false} {
     }
     ~Function() {
-        for (auto a : args)
+        for (auto a : info.args)
             delete a;
     }
 
     void accept(IRVisitor& visitor) override;
 
-    std::vector<Argument *> get_args() { return this->args; }
-    void set_constructor(bool c) { this->constructor = c; }
-    bool is_constructor() { return this->constructor; }
-    void set_method(bool c) { this->method = c; }
-    bool is_method() { return this->method; }
+    std::vector<Argument *> get_args() { return this->info.args; }
+    void set_constructor(bool c) { this->info.constructor = c; }
+    bool is_constructor() { return this->info.constructor; }
+    void set_method(bool c) { this->info.method = c; }
+    bool is_method() { return this->info.method; }
 
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
@@ -1155,22 +1159,24 @@ public:
 class Lambda : public Expression {
 private:
     static unsigned long annonymous_id;
-    std::vector<Argument *> args;
+    FunctionInfo info;
     Expression *body;
 public:
     static const IRType ClassType = IRType::LAMBDA;
 
     Lambda(ustring name, std::vector<Argument *> args, Expression *body) 
-        : Expression(ClassType, name), args(args), body(body) {
+        : Expression(ClassType, name), info{args, false, false}, body(body) {
         if (name.empty()) {
             this->name = std::to_string(annonymous_id++) + "l";
         }
     }
     ~Lambda() {
-        for (auto a : this->args)
+        for (auto a : this->info.args)
             delete a;
         delete body;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual void add_annotation(Annotation *ann) override {
         annotations.push_back(ann);
@@ -1178,13 +1184,16 @@ public:
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return false; }
 
-    std::vector<Argument *> get_args() { return this->args; }
+    void set_method(bool c) { this->info.method = c; }
+    bool is_method() { return this->info.method; }
+
+    std::vector<Argument *> get_args() { return this->info.args; }
     Expression *get_body() { return this->body; }
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(fun " << name << "(";
         bool first = true;
-        for (auto a: args) {
+        for (auto a: info.args) {
             if (first) {
                 os << *a;
                 first = false;

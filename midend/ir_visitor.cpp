@@ -1,9 +1,12 @@
 #include "ir_visitor.hpp"
 #include "ir.hpp"
 #include "logging.hpp"
+#include "parser.hpp"
 
 using namespace moss;
 using namespace ir;
+
+IRVisitor::IRVisitor(Parser &parser) : parser(parser) {}
 
 void PassManager::visit(Module &mod) {
     for (auto i : mod.get_body()) {
@@ -31,6 +34,10 @@ void PassManager::visit(Function &fun) {
     for (auto i : fun.get_body()) {
         i->accept(*this);
     }
+}
+
+void PassManager::visit(Lambda &fun) {
+    // TODO
 }
 
 void PassManager::add_module_pass(IRVisitor *p) { 

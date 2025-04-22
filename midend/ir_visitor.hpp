@@ -15,9 +15,14 @@
 #include "diagnostics.hpp"
 
 namespace moss {
+
+class Parser;
+
 namespace ir {
 
 class IRVisitor {
+protected:
+    Parser &parser;
 public:
     virtual void visit(class Module &mod) { 
         (void)mod; 
@@ -31,7 +36,11 @@ public:
     virtual void visit(class Function &fun) {
         (void)fun;
     }
+    virtual void visit(class Lambda &fun) {
+        (void)fun;
+    }
 
+    IRVisitor(Parser &parser);
     virtual ~IRVisitor() {};
 };
 
@@ -46,11 +55,14 @@ public:
     virtual void visit(class Space &spc) override;
     virtual void visit(class Class &cls) override;
     virtual void visit(class Function &fun) override;
+    virtual void visit(class Lambda &fun) override;
 
     void add_module_pass(IRVisitor *p);
     void add_space_pass(IRVisitor *p);
     void add_class_pass(IRVisitor *p);
     void add_function_pass(IRVisitor *p);
+
+    PassManager(Parser &parser) : IRVisitor(parser) {}
 };
 
 }

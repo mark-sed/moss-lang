@@ -1,12 +1,13 @@
 #include "ir_pipeline.hpp"
 #include "method_analyzer.hpp"
+#include "ir.hpp"
 
 using namespace moss;
 using namespace ir;
 
-IRPipeline::IRPipeline() {
+IRPipeline::IRPipeline(Parser &parser) : pm(parser), parser(parser) {
     // Method analyzer
-    add_class_pass(new MethodAnalyzer());
+    add_class_pass(new MethodAnalyzer(parser));
 }
 
 IRPipeline::~IRPipeline() {
@@ -15,8 +16,13 @@ IRPipeline::~IRPipeline() {
     }
 }
 
-void IRPipeline::run(ir::IR *decl) {
-    decl->accept(pm);
+ir::IR *IRPipeline::run(ir::IR *decl) {
+    try {
+        decl->accept(pm);
+    } catch (Raise *raise) {
+        return raise;
+    }
+    return nullptr;
 }
 
 void IRPipeline::add_module_pass(IRVisitor *p) { 

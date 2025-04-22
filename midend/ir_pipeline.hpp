@@ -21,8 +21,9 @@ class IRPipeline {
 private:
     std::list<IRVisitor *> pass_instances;
     PassManager pm;
+    Parser &parser;
 public:
-    IRPipeline();
+    IRPipeline(Parser &parser);
     ~IRPipeline();
 
     void add_module_pass(IRVisitor *p);
@@ -31,7 +32,7 @@ public:
     void add_function_pass(IRVisitor *p);
 
     PassManager &get_pm() { return this->pm; }
-    void run(ir::IR *decl);
+    ir::IR *run(ir::IR *decl);
 };
 
 }

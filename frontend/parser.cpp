@@ -6,11 +6,6 @@
 #include "clopts.hpp"
 #include <cassert>
 
-/// This macro asserts that condition is true otherwise it raises a parser_error
-/// This macro REQUIRES to be called withing Parser class as it calls its
-/// method. 
-#define parser_assert(cond, msg) do { if(!(cond)) parser_error(msg); } while(0)
-
 using namespace moss;
 using namespace ir;
 
@@ -266,7 +261,7 @@ void Parser::put_back() {
     }
 }
 
-void Parser::parser_error(diags::Diagnostic err_msg) {
+void moss::parser_error(diags::Diagnostic err_msg) {
     // TODO: Change to specific exception child type (such as TypeError)
     auto str_msg = error::format_error(err_msg);
     throw new Raise(new StringLiteral(str_msg));

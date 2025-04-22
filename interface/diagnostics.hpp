@@ -147,6 +147,7 @@ enum DiagID {
     DOC_STRING_AS_EXPR,     ///< a = d"something"
     CANNOT_BE_DOCUMENTED,   ///< Using docstring on some value it cannot store it
     DOC_STRING_NOT_AT_START,///< Doc-string in the middle of the body
+    LAMBDA_CONSTRUCTOR,     ///< Trying to make constructor a lambda
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -274,6 +275,7 @@ static const char * DIAG_MSGS[] = {
     "Doc-string cannot be used as an expression",
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
     "Doc-string can appear only at the beginning of the construct",
+    "Constructor ('%s') cannot be a lambda",
 };
 
 /// \brief Diagnostic message for error reporting

@@ -60,9 +60,9 @@ std::ostream& Function::debug(std::ostream& os) const {
     for (Annotation *a: this->annotations) {
         os << *a << "\n";
     }
-    os << (constructor ? "new " : "fun ") << name << "(";
+    os << (info.constructor ? "new " : "fun ") << name << "(";
     bool first = true;
-    for (auto a: args) {
+    for (auto a: info.args) {
         if (first) {
             os << *a;
             first = false;
@@ -80,6 +80,10 @@ std::ostream& Function::debug(std::ostream& os) const {
 }
 
 void Function::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Lambda::accept(IRVisitor& visitor) {
     visitor.visit(*this);
 }
 
