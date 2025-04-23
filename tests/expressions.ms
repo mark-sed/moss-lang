@@ -1,3 +1,5 @@
+#!/usr/bin/moss
+
 1 + 42 - 8 * 2
 "\n"
 (99 / 3) % 20
@@ -72,12 +74,46 @@ list1
 [] + [2, 4]
 "\n"
 
+// String multiplication
 "-" * 5
 "" * 10
+"hello there" * 0 // Empty
+"hi all" * -10 // Empty
 "\n"
 mult = 3
 st = ">+"
 st * mult 
 "\n"
 "🐈" * mult
+"\n"
+
+// List multiplication
+[1,2] * 0
+"\n"
+sto = 100
+[] * sto
+"\n"
+
+[1,2,3] * 3
+"\n"
+lstml1 = [true, false]
+lstml2 = lstml1 * 2
+assert(lstml1 != lstml2)
+lstml1
+"\n"
+lstml2
+"\n"
+
+lstml1 * -2
+"\n"
+lstml2 * (sto - 100)
+"\n"
+
+[[[]]] * 3
+"\n"
+dva = 2
+[[1], [2, [3]]] * dva
+"\n"
+onelst = [{"a": dva}]
+onelst * dva
 "\n"

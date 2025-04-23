@@ -301,7 +301,14 @@ function test_expressions {
 true\nfalse\n9\n255\n0\n6699\n-42\nfalse\nacfc
 hi\nthere\ntrue\ncaught
 [4, 5, 6, 1, 2, 3]\n[1, 2, 3, 4]\n[1, 2, 3]\n[1, 2, 3, 4, 5, 6]\n[1, 2]\n[]\n[2, 4]
------\n>+>+>+\n🐈🐈🐈\n" $1
+-----\n>+>+>+\n🐈🐈🐈
+[]\n[]
+[1, 2, 3, 1, 2, 3, 1, 2, 3]
+[true, false]\n[true, false, true, false]
+[]\n[]
+[[[]], [[]], [[]]]
+[[1], [2, [3]], [1], [2, [3]]]
+[{\"a\": 2}, {\"a\": 2}]\n" $1
 }
 
 function test_variables {

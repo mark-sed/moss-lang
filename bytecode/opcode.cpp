@@ -1554,8 +1554,8 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         // String repeating
         ustring ss1 = dyn_cast<StringValue>(s1)->get_value();
         IntConst i1 = dyn_cast<IntValue>(s2)->get_value();
-        if (ss1.size() == 0)
-            res = s1;
+        if (i1 <= 0 || ss1.empty())
+            res = new StringValue("");
         else if (ss1.size() == 1) {
             res = new StringValue(ustring(i1, ss1[0]));
         } else {
@@ -1564,6 +1564,22 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
             for (int i = 0; i < i1; ++i)
                 result += ss1;
             res = new StringValue(result);
+        }
+    } 
+    else if (isa<ListValue>(s1) && isa<IntValue>(s2)) {
+        // List repeating
+        auto l1 = dyn_cast<ListValue>(s1)->get_vals();
+        IntConst i2 = dyn_cast<IntValue>(s2)->get_value();
+        if (i2 <= 0 || l1.empty())
+            res = new ListValue();
+        else {
+            std::vector<Value *> result;
+            result.reserve(l1.size() * i2);  // optional but efficient
+
+            for (IntConst i = 0; i < i2; ++i) {
+                result.insert(result.end(), l1.begin(), l1.end());
+            }
+            res = new ListValue(result);
         }
     }
     else if (isa<ObjectValue>(s1)) {
