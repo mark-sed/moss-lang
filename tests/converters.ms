@@ -17,3 +17,15 @@ Paragraph1
 #Title2
 Paragraph2
 """
+
+fun foo(x) {
+    @!formatter
+    return x
+}
+
+fun foo2txt(x) {
+    @!converter("foo", "txt")
+    return x++"\n"
+}
+
+foo"Hello"

@@ -110,7 +110,7 @@ int main(int argc, const char *argv[]) {
         }
 
         Parser parser(*main_file);
-        main_mod = parser.parse(true);
+        main_mod = parser.parse();
         ir::IRPipeline ipl(parser);
         if (auto err = ipl.run(main_mod)) {
             main_mod = err;

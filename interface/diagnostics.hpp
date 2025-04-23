@@ -273,9 +273,9 @@ static const char * DIAG_MSGS[] = {
     "Annotation '%s' expects '%ld' arguments, but got '%ld'",
     "Only functions and lambdas can be annotated as 'converter', but got '%s'",
     "Found no suitable conversion pipeline from note fromat '%s' to '%s'",
-    "Doc-string cannot be used as an expression",
+    "Doc-string ('d\"\"') cannot be used as an expression",
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
-    "Doc-string can appear only at the beginning of the construct",
+    "Doc-string ('d\"\"') can appear only at the beginning of the construct",
     "Constructor cannot be a lambda",
 };
 

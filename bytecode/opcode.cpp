@@ -1173,7 +1173,7 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
         auto module_file = new SourceFile(path, SourceFile::SourceType::FILE);
         input_file = module_file;
         Parser parser(*module_file);
-        auto module_ir = parser.parse(false);
+        auto module_ir = parser.parse();
         if (auto exc = dyn_cast<ir::Raise>(module_ir)) {
             // Parser error... there is not VM so it is returned as a StringValue
             // place it into an exception and raise it correctly

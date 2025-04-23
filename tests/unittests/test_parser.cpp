@@ -1402,6 +1402,8 @@ ustring incorrect = R"(
 
 TEST(Parsing, Annotations){
     ustring code = R"(
+@!modular_module(true)
+
 @hidden(true) @max fun foo() {}
 
 @graph([1, 2, true])
@@ -1418,13 +1420,30 @@ fun bar(a, b) {
 
 @formatter
 fun md4(x) = x
+
+class Cls1 {
+    @!classy
+    A = 4
+
+    fun Cls1() {
+        @!constructed(4, "f")
+        a = 4
+        @!hihi
+    }
+}
+
+fun foo() {
+    @!foorious
+}
 )";
 
     IRType expected[] = {
         IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::LAMBDA,
-        
+        IRType::CLASS,
+        IRType::FUNCTION,
+
         IRType::END_OF_FILE
     };
 

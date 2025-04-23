@@ -571,7 +571,8 @@ function test_converters {
 Paragraph1
 
 Title2
-Paragraph2\n" $1
+Paragraph2
+Hello\n" $1
 }
 
 function test_strings {

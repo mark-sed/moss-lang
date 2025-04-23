@@ -50,6 +50,7 @@ private:
     ///        error, which can be interpreted by moss
     /// \return Parsed input into an IR class 
     ir::IR *declaration();
+    
     bool bind_docstring();
 
     /// Tries to parse an expression
@@ -165,7 +166,7 @@ public:
     /// Parses a moss file into an AST
     /// \return File parsed into a ir::Module. If there is an error then ir::Raise is thrown
     /// \throw ir::Raise with parser/scanner error to be rethrown by moss
-    ir::IR *parse(bool is_main=false);
+    ir::IR *parse();
 
     /// Parses a single line or multiple ones if it is a multi-line declaration into an AST
     /// \return Vector of parsed IRs. If there is an error then ir::Raise is thrown

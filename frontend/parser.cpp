@@ -48,7 +48,7 @@ static Operator token2operator(TokenType t) {
     }
 }
 
-IR *Parser::parse(bool is_main) {
+IR *Parser::parse() {
     LOG1("Started parsing module");
     reading_by_lines = false;
     SourceInfo mod_src_i(src_file, 0, 0, 0, 0);
@@ -462,20 +462,18 @@ IR *Parser::declaration() {
         throw new Raise(new StringLiteral(str_msg, srci), srci);
     }
 
-    // TODO: FIX - we need to create function IR before adding the body so that
-    //       annotations can be appended to it, otherwise even outter annotation
-    //       will be an issue as the list will be still full during parsing of
-    //       body and will try to append to it
     // Consume annotation and tie inner ones to parents and outter ones save
     // for next IR
     Annotation *annot = annotation();
+    bool was_inner_anot = false;
     while(annot) {
         LOGMAX("Parsing annotation: " << *annot);
         if (annot->is_inner()) {
             assert(!parents.empty() && "No top level IR?");
             auto parent = parents.back();
-            parser_assert(parent->can_be_documented(), create_diag(diags::CANNOT_BE_ANNOTATED, parent->get_name().c_str()));
+            parser_assert(parent->can_be_annotated(), create_diag(diags::CANNOT_BE_ANNOTATED, parent->get_name().c_str()));
             parents.back()->add_annotation(annot);
+            was_inner_anot = true;
         }
         else {
             outter_annots.push_back(annot);
@@ -814,6 +812,13 @@ IR *Parser::declaration() {
         decl = expr;
     }
 
+    if (!decl && !outter_annots.empty())
+        parser_error(create_diag(diags::DANGLING_ANNOTATION));
+
+    if (!decl && was_inner_anot) {
+        return nullptr;
+    }
+
     // Every declaration has to end with nl or semicolon or eof
     if(!no_end_needed && !match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
         // Dangling ')'
@@ -824,9 +829,7 @@ IR *Parser::declaration() {
             parser_error(create_diag(diags::EXPECTED_END));
         }
     }
-    if (!decl && !outter_annots.empty())
-        parser_error(create_diag(diags::DANGLING_ANNOTATION));
-
+    
     assert(decl && "Nothing parsed and no raise?");
     LOGMAX("Parsed declaration " << *decl);
     

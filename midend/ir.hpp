@@ -118,10 +118,12 @@ public:
     SourceInfo get_src_info() { return this->src_info; }
 
     virtual void add_annotation(Annotation *ann) {
+        assert(can_be_annotated() && "Adding annotation to not annotatable type");
         annotations.push_back(ann);
     }
 
     virtual void set_annotations(std::list<Annotation *> a) {
+        assert(can_be_annotated() && "Adding annotations to not annotatable type");
         annotations = a;
     }
 
@@ -129,6 +131,7 @@ public:
     virtual bool can_be_documented() { return false; }
 
     void add_documentation(ustring d) {
+        assert(can_be_documented() && "Adding documentation to non-documentable type");
         this->documentation += d;
     }
 
@@ -1614,14 +1617,6 @@ template<> inline ir::Statement *dyn_cast<>(ir::IR* i) {
     (void)i;
     assert(false && "TODO: Unimplemented dyn_cast to Statement");
     return nullptr;
-}
-
-namespace ir {
-
-inline bool can_be_annotated(IR *decl) {
-    return isa<Function>(decl) || isa<Module>(decl);
-}
-
 }
 
 }
