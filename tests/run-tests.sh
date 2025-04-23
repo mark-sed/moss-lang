@@ -574,6 +574,15 @@ Title2
 Paragraph2\n" $1
 }
 
+function test_strings {
+    expect_pass "strings.ms" $1
+    expect_out_eq '\\n\\tsdf\\0x12\\n
+|
+\\n\\treturn
+\\b\\t\\n
+' $1
+}
+
 function test_fstrings {
     expect_pass "fstrings.ms" $1
     expect_out_eq "v: 43 end
@@ -1063,6 +1072,7 @@ function run_all_tests {
     run_test supers
     run_test notes
     run_test converters
+    run_test strings
     run_test fstrings
     run_test docstrings
 

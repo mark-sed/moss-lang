@@ -1371,6 +1371,10 @@ ir::Expression *Parser::note() {
         // sequences and unescape has to be called by the formatter in that case
         auto prefix = dyn_cast<Variable>(expr);
         parser_assert(prefix, create_diag(diags::INVALID_NOTE_PREFIX));
+        if (prefix->get_name() == "r") {
+            // rString
+            return new StringLiteral(val->get_value(), curr_src_info());
+        }
         parser_assert(prefix->get_name() != "d", create_diag(diags::DOC_STRING_AS_EXPR));
         return new Note(prefix->get_name(), new StringLiteral(val->get_value(), curr_src_info()), curr_src_info());
     }
