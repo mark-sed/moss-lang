@@ -1550,6 +1550,22 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() * s2->as_float());
     }
+    else if (isa<StringValue>(s1) && isa<IntValue>(s2)) {
+        // String repeating
+        ustring ss1 = dyn_cast<StringValue>(s1)->get_value();
+        IntConst i1 = dyn_cast<IntValue>(s2)->get_value();
+        if (ss1.size() == 0)
+            res = s1;
+        else if (ss1.size() == 1) {
+            res = new StringValue(ustring(i1, ss1[0]));
+        } else {
+            ustring result;
+            result.reserve(ss1.size() * i1);
+            for (int i = 0; i < i1; ++i)
+                result += ss1;
+            res = new StringValue(result);
+        }
+    }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "*", s1, s2, dst);
     }

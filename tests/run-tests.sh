@@ -300,7 +300,8 @@ function test_expressions {
     expect_out_eq "27\n13\n261\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue
 true\nfalse\n9\n255\n0\n6699\n-42\nfalse\nacfc
 hi\nthere\ntrue\ncaught
-[4, 5, 6, 1, 2, 3]\n[1, 2, 3, 4]\n[1, 2, 3]\n[1, 2, 3, 4, 5, 6]\n[1, 2]\n[]\n[2, 4]\n" $1
+[4, 5, 6, 1, 2, 3]\n[1, 2, 3, 4]\n[1, 2, 3]\n[1, 2, 3, 4, 5, 6]\n[1, 2]\n[]\n[2, 4]
+-----\n>+>+>+\n🐈🐈🐈\n" $1
 }
 
 function test_variables {
