@@ -20,7 +20,7 @@ void MethodAnalyzer::visit(Class &cls) {
             LOGMAX("Setting " << f->get_name() << " as method");
             f->set_method(true);
         } else if (auto l = dyn_cast<Lambda>(i)) {
-            parser_assert(l->get_name() != cls.get_name(), parser.create_diag(diags::LAMBDA_CONSTRUCTOR, l->get_name().c_str())); 
+            parser_assert(l->get_name() != cls.get_name(), parser.create_diag(l->get_src_info(), diags::LAMBDA_CONSTRUCTOR)); 
             LOGMAX("Setting " << l->get_name() << " as method");
             l->set_method(true);
         }

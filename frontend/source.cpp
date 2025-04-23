@@ -7,6 +7,8 @@
 
 using namespace moss;
 
+const SourceFile SourceInfo::dummy_file("<internal>", SourceFile::SourceType::FILE);
+
 std::istream *SourceFile::get_new_stream() {
     switch(this->type) {
         case SourceFile::SourceType::FILE: {

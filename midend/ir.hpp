@@ -96,8 +96,9 @@ protected:
     ustring name;
     std::list<Annotation *> annotations;
     ustring documentation;
+    SourceInfo src_info;
 
-    IR(IRType ir_type, ustring name) : ir_type(ir_type), name(name), documentation() {}
+    IR(IRType ir_type, ustring name, SourceInfo src_info) : ir_type(ir_type), name(name), documentation(), src_info(src_info) {}
 public:
     virtual ~IR() {}
     virtual void accept(IRVisitor& visitor) {
@@ -113,6 +114,8 @@ public:
         os << "<IR: " << name << ">";
         return os;
     }
+
+    SourceInfo get_src_info() { return this->src_info; }
 
     virtual void add_annotation(Annotation *ann) {
         annotations.push_back(ann);
@@ -144,8 +147,8 @@ inline std::ostream& operator<< (std::ostream& os, IR &ir) {
 class Construct : public IR {
 protected:
     std::list<IR *> body;
-    Construct(IRType ir_type, ustring name) : IR(ir_type, name), body() {}
-    Construct(IRType ir_type, ustring name, std::list<IR *> body) : IR(ir_type, name), body(body) {}
+    Construct(IRType ir_type, ustring name, SourceInfo src_info) : IR(ir_type, name, src_info), body() {}
+    Construct(IRType ir_type, ustring name, std::list<IR *> body, SourceInfo src_info) : IR(ir_type, name, src_info), body(body) {}
 public:
     static const IRType ClassType = IRType::CONSTRUCT;
 
@@ -179,7 +182,7 @@ public:
 /// import, return or assert
 class Statement : public IR {
 protected:
-    Statement(IRType ir_type, ustring name) : IR(ir_type, name) {}
+    Statement(IRType ir_type, ustring name, SourceInfo src_info) : IR(ir_type, name, src_info) {}
 public:
     static const IRType ClassType = IRType::STATEMENT;
 
@@ -192,7 +195,7 @@ public:
 /// \brief Expression represents some value 
 class Expression : public IR {
 protected:
-    Expression(IRType ir_type, ustring name) : IR(ir_type, name) {}
+    Expression(IRType ir_type, ustring name, SourceInfo src_info) : IR(ir_type, name, src_info) {}
 public:
     static const IRType ClassType = IRType::EXPRESSION;
 
@@ -206,8 +209,8 @@ class Module : public Construct {
 public:
     static const IRType ClassType = IRType::MODULE;
 
-    Module(ustring name) : Construct(ClassType, name) {}
-    Module(ustring name, std::list<IR *> body) : Construct(ClassType, name, body) {}
+    Module(ustring name, SourceInfo src_info) : Construct(ClassType, name, src_info) {}
+    Module(ustring name, std::list<IR *> body, SourceInfo src_info) : Construct(ClassType, name, body, src_info) {}
 
     void accept(IRVisitor& visitor) override;
 
@@ -224,7 +227,7 @@ private:
 public:
     static const IRType ClassType = IRType::SPACE;
 
-    Space(ustring name) : Construct(ClassType, name) {
+    Space(ustring name, SourceInfo src_info) : Construct(ClassType, name, src_info), anonymous(false) {
         if (name.empty()) {
             this->anonymous = true;
             this->name = std::to_string(annonymous_id++) + "s";
@@ -256,8 +259,8 @@ private:
 public:
     static const IRType ClassType = IRType::CLASS;
 
-    Class(ustring name, std::vector<Expression *> parents) 
-        : Construct(ClassType, name), parents(parents) {
+    Class(ustring name, std::vector<Expression *> parents, SourceInfo src_info) 
+        : Construct(ClassType, name, src_info), parents(parents) {
     }
     ~Class() {
         for (auto p : parents)
@@ -300,9 +303,9 @@ private:
 public:
     static const IRType ClassType = IRType::ARGUMENT;
 
-    Argument(ustring name, std::vector<Expression *> types, Expression *default_value=nullptr)
-        : Expression(ClassType, name), types(types), default_value(default_value), vararg(false) {}
-    Argument(ustring name) : Expression(ClassType, name), default_value(nullptr), vararg(true) {}
+    Argument(ustring name, std::vector<Expression *> types, Expression *default_value, SourceInfo src_info)
+        : Expression(ClassType, name, src_info), types(types), default_value(default_value), vararg(false) {}
+    Argument(ustring name, SourceInfo src_info) : Expression(ClassType, name, src_info), default_value(nullptr), vararg(true) {}
     ~Argument() {
         for (auto t: types) {
             delete t;
@@ -358,12 +361,12 @@ private:
 public:
     static const IRType ClassType = IRType::FUNCTION;
 
-    Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody) 
-        : Construct(ClassType, name), info{args, false, false} {
+    Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, SourceInfo src_info) 
+        : Construct(ClassType, name, src_info), info{args, false, false} {
         this->body = fnbody;
     }
-    Function(ustring name, std::vector<Argument *> args) 
-        : Construct(ClassType, name), info{args, false, false} {
+    Function(ustring name, std::vector<Argument *> args, SourceInfo src_info) 
+        : Construct(ClassType, name, src_info), info{args, false, false} {
     }
     ~Function() {
         for (auto a : info.args)
@@ -403,7 +406,7 @@ class Else : public Construct {
 public:
     static const IRType ClassType = IRType::ELSE;
 
-    Else(std::list<IR *> elbody) : Construct(ClassType, "else") {
+    Else(std::list<IR *> elbody, SourceInfo src_info) : Construct(ClassType, "else", src_info) {
         this->body = elbody;
     }
 
@@ -425,8 +428,8 @@ private:
 public:
     static const IRType ClassType = IRType::IF;
 
-    If(Expression *cond, std::list<IR *> ifbody, Else *else_branch=nullptr) 
-           : Construct(ClassType, "if"), cond(cond), else_branch(else_branch) {
+    If(Expression *cond, std::list<IR *> ifbody, Else *else_branch, SourceInfo src_info) 
+           : Construct(ClassType, "if", src_info), cond(cond), else_branch(else_branch) {
         this->body = ifbody;
     }
     ~If() {
@@ -459,8 +462,8 @@ private:
 public:
     static const IRType ClassType = IRType::CASE;
 
-    Case(std::vector<Expression *> values, std::list<IR *> csbody, bool default_case=false) 
-           : Construct(ClassType, "case"), values(values), default_case(default_case) {
+    Case(std::vector<Expression *> values, std::list<IR *> csbody, bool default_case, SourceInfo src_info) 
+           : Construct(ClassType, "case", src_info), values(values), default_case(default_case) {
         this->body = csbody;
     }
     ~Case() {
@@ -504,8 +507,8 @@ private:
 public:
     static const IRType ClassType = IRType::SWITCH;
 
-    Switch(Expression *cond, std::list<IR *> cases) 
-           : Construct(ClassType, "switch"), cond(cond) {
+    Switch(Expression *cond, std::list<IR *> cases, SourceInfo src_info) 
+           : Construct(ClassType, "switch", src_info), cond(cond) {
         this->body = cases;
     }
     ~Switch() {
@@ -531,7 +534,7 @@ private:
 public:
     static const IRType ClassType = IRType::CATCH;
 
-    Catch(Argument *arg, std::list<IR *> ctbody) : Construct(ClassType, "catch"), arg(arg) {
+    Catch(Argument *arg, std::list<IR *> ctbody, SourceInfo src_info) : Construct(ClassType, "catch", src_info), arg(arg) {
         this->body = ctbody;
     }
     ~Catch() {
@@ -554,7 +557,7 @@ class Finally : public Construct {
 public:
     static const IRType ClassType = IRType::FINALLY;
 
-    Finally(std::list<IR *> fnbody) : Construct(ClassType, "finally") {
+    Finally(std::list<IR *> fnbody, SourceInfo src_info) : Construct(ClassType, "finally", src_info) {
         this->body = fnbody;
     }
 
@@ -576,8 +579,8 @@ private:
 public:
     static const IRType ClassType = IRType::TRY;
 
-    Try(std::vector<Catch *> catches, std::list<IR *> trbody, Finally *finally_stmt=nullptr) 
-           : Construct(ClassType, "try"), catches(catches), finally_stmt(finally_stmt) {
+    Try(std::vector<Catch *> catches, std::list<IR *> trbody, Finally *finally_stmt, SourceInfo src_info) 
+           : Construct(ClassType, "try", src_info), catches(catches), finally_stmt(finally_stmt) {
         this->body = trbody;
     }
     ~Try() {
@@ -613,8 +616,8 @@ private:
 public:
     static const IRType ClassType = IRType::WHILE;
 
-    While(Expression *cond, std::list<IR *> whbody) 
-           : Construct(ClassType, "while"), cond(cond) {
+    While(Expression *cond, std::list<IR *> whbody, SourceInfo src_info) 
+           : Construct(ClassType, "while", src_info), cond(cond) {
         this->body = whbody;
     }
     ~While() {
@@ -640,8 +643,8 @@ private:
 public:
     static const IRType ClassType = IRType::DO_WHILE;
 
-    DoWhile(Expression *cond, std::list<IR *> whbody) 
-           : Construct(ClassType, "do-while"), cond(cond) {
+    DoWhile(Expression *cond, std::list<IR *> whbody, SourceInfo src_info) 
+           : Construct(ClassType, "do-while", src_info), cond(cond) {
         this->body = whbody;
     }
     ~DoWhile() {
@@ -668,8 +671,8 @@ private:
 public:
     static const IRType ClassType = IRType::FOR_LOOP;
 
-    ForLoop(Expression *iterator, Expression *collection, std::list<IR *> frbody) 
-           : Construct(ClassType, "for"), iterator(iterator), collection(collection) {
+    ForLoop(Expression *iterator, Expression *collection, std::list<IR *> frbody, SourceInfo src_info) 
+           : Construct(ClassType, "for", src_info), iterator(iterator), collection(collection) {
         this->body = frbody;
     }
     ~ForLoop() {
@@ -697,7 +700,7 @@ private:
 public:
     static const IRType ClassType = IRType::ENUM;
 
-    Enum(ustring name, std::vector<ustring> values) : IR(ClassType, name), values(values) {}
+    Enum(ustring name, std::vector<ustring> values, SourceInfo src_info) : IR(ClassType, name, src_info), values(values) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "enum " << name << " {\n";
@@ -721,8 +724,8 @@ private:
 public:
     static const IRType ClassType = IRType::IMPORT;
 
-    Import(std::vector<Expression *> names, std::vector<ustring> aliases) 
-           : Statement(ClassType, "import"), names(names), aliases(aliases) {}
+    Import(std::vector<Expression *> names, std::vector<ustring> aliases, SourceInfo src_info) 
+           : Statement(ClassType, "import", src_info), names(names), aliases(aliases) {}
     ~Import() {
         for (auto name : names)
             delete name;
@@ -765,8 +768,8 @@ private:
 public:
     static const IRType ClassType = IRType::ASSERT;
 
-    Assert(Expression *cond, Expression *msg=nullptr) 
-           : Statement(ClassType, "assert"), cond(cond), msg(msg) {}
+    Assert(Expression *cond, Expression *msg, SourceInfo src_info) 
+           : Statement(ClassType, "assert", src_info), cond(cond), msg(msg) {}
     ~Assert() {
         delete cond;
         if (msg)
@@ -812,7 +815,7 @@ private:
 public:
     static const IRType ClassType = IRType::RAISE;
 
-    Raise(Expression *exception) : Statement(ClassType, "raise"), exception(exception) {}
+    Raise(Expression *exception, SourceInfo src_info) : Statement(ClassType, "raise", src_info), exception(exception) {}
     ~Raise() {
         delete exception;
     }
@@ -832,7 +835,7 @@ private:
 public:
     static const IRType ClassType = IRType::RETURN;
 
-    Return(Expression *expr) : Statement(ClassType, "return"), expr(expr) {}
+    Return(Expression *expr, SourceInfo src_info) : Statement(ClassType, "return", src_info), expr(expr) {}
     ~Return() {
         delete expr;
     }
@@ -849,7 +852,7 @@ class Break : public Statement {
 public:
     static const IRType ClassType = IRType::BREAK;
 
-    Break() : Statement(ClassType, "break") {}
+    Break(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "break";
@@ -861,7 +864,7 @@ class Continue : public Statement {
 public:
     static const IRType ClassType = IRType::CONTINUE;
 
-    Continue() : Statement(ClassType, "break") {}
+    Continue(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "continue";
@@ -876,8 +879,8 @@ private:
 public:
     static const IRType ClassType = IRType::ANNOTATION;
 
-    Annotation(ustring name, Expression *value, bool inner) 
-        : Statement(ClassType, name), value(value), inner(inner) {}
+    Annotation(ustring name, Expression *value, bool inner, SourceInfo src_info) 
+        : Statement(ClassType, name, src_info), value(value), inner(inner) {}
     ~Annotation() {
         delete value;
     }
@@ -897,7 +900,7 @@ class EndOfFile : public Statement {
 public:
     static const IRType ClassType = IRType::END_OF_FILE;
 
-    EndOfFile() : Statement(ClassType, "<end-of-file>") {}
+    EndOfFile(SourceInfo src_info) : Statement(ClassType, "<end-of-file>", src_info) {}
 };
 
 /// Types of operators
@@ -1012,8 +1015,8 @@ private:
 public:
     static const IRType ClassType = IRType::BINARY_EXPR;
 
-    BinaryExpr(Expression *left, Expression *right, Operator op) 
-              : Expression(ClassType, "<binary-expression>"),
+    BinaryExpr(Expression *left, Expression *right, Operator op, SourceInfo src_info) 
+              : Expression(ClassType, "<binary-expression>", src_info),
                 left(left), right(right), op(op) {}
     ~BinaryExpr() {
         // We need to check since in parse we might generate binexpr to then
@@ -1049,8 +1052,8 @@ private:
 public:
     static const IRType ClassType = IRType::UNARY_EXPR;
 
-    UnaryExpr(Expression *expr, Operator op) 
-             : Expression(ClassType, "<unary-expression>"), 
+    UnaryExpr(Expression *expr, Operator op, SourceInfo src_info) 
+             : Expression(ClassType, "<unary-expression>", src_info), 
                expr(expr), op(op) {}
     ~UnaryExpr() {
         delete expr;
@@ -1075,7 +1078,7 @@ private:
 public:
     static const IRType ClassType = IRType::VARIABLE;
 
-    Variable(ustring name, bool non_local=false) : Expression(ClassType, name), non_local(non_local) {}
+    Variable(ustring name, SourceInfo src_info, bool non_local=false) : Expression(ClassType, name, src_info), non_local(non_local) {}
 
     bool is_non_local() { return this->non_local; }
 
@@ -1091,7 +1094,7 @@ private:
 public:
     static const IRType ClassType = IRType::MULTI_VAR;
 
-    Multivar(std::vector<ir::Expression *> vars) : Expression(ClassType, "<multivar>"), vars(vars) {}
+    Multivar(std::vector<ir::Expression *> vars, SourceInfo src_info) : Expression(ClassType, "<multivar>", src_info), vars(vars) {}
     ~Multivar() {
         for (auto v: vars)
             delete v;
@@ -1119,7 +1122,7 @@ class AllSymbols : public Expression {
 public:
     static const IRType ClassType = IRType::ALL_SYMBOLS;
 
-    AllSymbols() : Expression(ClassType, "*") {}
+    AllSymbols(SourceInfo src_info) : Expression(ClassType, "*", src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "*";
@@ -1135,8 +1138,8 @@ private:
 public:
     static const IRType ClassType = IRType::TERNARY_IF;
 
-    TernaryIf(Expression *condition, Expression *value_true, Expression *value_false)
-        : Expression(ClassType, "<ternary-if>"),
+    TernaryIf(Expression *condition, Expression *value_true, Expression *value_false, SourceInfo src_info)
+        : Expression(ClassType, "<ternary-if>", src_info),
           condition(condition),
           value_true(value_true),
           value_false(value_false) {}
@@ -1164,8 +1167,8 @@ private:
 public:
     static const IRType ClassType = IRType::LAMBDA;
 
-    Lambda(ustring name, std::vector<Argument *> args, Expression *body) 
-        : Expression(ClassType, name), info{args, false, false}, body(body) {
+    Lambda(ustring name, std::vector<Argument *> args, Expression *body, SourceInfo src_info) 
+        : Expression(ClassType, name, src_info), info{args, false, false}, body(body) {
         if (name.empty()) {
             this->name = std::to_string(annonymous_id++) + "l";
         }
@@ -1215,8 +1218,8 @@ private:
 public:
     static const IRType ClassType = IRType::RANGE;
 
-    Range(Expression *start, Expression *end, Expression *second=nullptr)
-        : Expression(ClassType, "<range>"),
+    Range(Expression *start, Expression *end, Expression *second, SourceInfo src_info)
+        : Expression(ClassType, "<range>", src_info),
           start(start),
           end(end),
           second(second) {}
@@ -1247,8 +1250,8 @@ private:
 public:
     static const IRType ClassType = IRType::CALL;
 
-    Call(Expression *fun, std::vector<Expression *> args)
-        : Expression(ClassType, "<call>"), fun(fun), args(args) {}
+    Call(Expression *fun, std::vector<Expression *> args, SourceInfo src_info)
+        : Expression(ClassType, "<call>", src_info), fun(fun), args(args) {}
     ~Call() {
         delete fun;
         for (auto a : args) {
@@ -1281,7 +1284,7 @@ private:
 public:
     static const IRType ClassType = IRType::INT_LITERAL;
 
-    IntLiteral(opcode::IntConst value) : Expression(ClassType, "<int-literal>"), value(value) {}
+    IntLiteral(opcode::IntConst value, SourceInfo src_info) : Expression(ClassType, "<int-literal>", src_info), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << value;
@@ -1297,7 +1300,7 @@ private:
 public:
     static const IRType ClassType = IRType::FLOAT_LITERAL;
 
-    FloatLiteral(opcode::FloatConst value) : Expression(ClassType, "<float-literal>"), value(value) {}
+    FloatLiteral(opcode::FloatConst value, SourceInfo src_info) : Expression(ClassType, "<float-literal>", src_info), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << value;
@@ -1313,7 +1316,7 @@ private:
 public:
     static const IRType ClassType = IRType::BOOL_LITERAL;
 
-    BoolLiteral(opcode::BoolConst value) : Expression(ClassType, "<bool-literal>"), value(value) {}
+    BoolLiteral(opcode::BoolConst value, SourceInfo src_info) : Expression(ClassType, "<bool-literal>", src_info), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (value ? "true" : "false");
@@ -1329,7 +1332,7 @@ private:
 public:
     static const IRType ClassType = IRType::STRING_LITERAL;
 
-    StringLiteral(opcode::StringConst value) : Expression(ClassType, "<string-literal>"), value(value) {}
+    StringLiteral(opcode::StringConst value, SourceInfo src_info) : Expression(ClassType, "<string-literal>", src_info), value(value) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "\"" << utils::sanitize(value) << "\"";
@@ -1343,7 +1346,7 @@ class NilLiteral : public Expression {
 public:
     static const IRType ClassType = IRType::NIL_LITERAL;
 
-    NilLiteral() : Expression(ClassType, "<nil-literal>") {}
+    NilLiteral(SourceInfo src_info) : Expression(ClassType, "<nil-literal>", src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "nil";
@@ -1355,7 +1358,7 @@ class ThisLiteral : public Expression {
 public:
     static const IRType ClassType = IRType::THIS_LITERAL;
 
-    ThisLiteral() : Expression(ClassType, "<this-literal>") {}
+    ThisLiteral(SourceInfo src_info) : Expression(ClassType, "<this-literal>", src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "this";
@@ -1367,7 +1370,7 @@ class SuperLiteral : public Expression {
 public:
     static const IRType ClassType = IRType::SUPER_LITERAL;
 
-    SuperLiteral() : Expression(ClassType, "<super-literal>") {}
+    SuperLiteral(SourceInfo src_info) : Expression(ClassType, "<super-literal>", src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "super";
@@ -1382,7 +1385,7 @@ private:
 public:
     static const IRType ClassType = IRType::OPERATOR_LITERAL;
 
-    OperatorLiteral(Operator op) : Expression(ClassType, "<operator-literal>"), op(op) {}
+    OperatorLiteral(Operator op, SourceInfo src_info) : Expression(ClassType, "<operator-literal>", src_info), op(op) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << op << ")";
@@ -1399,7 +1402,7 @@ private:
 public:
     static const IRType ClassType = IRType::NOTE;
 
-    Note(ustring prefix, StringLiteral *note) : Expression(ClassType, "<note>"), prefix(prefix), note(note) {}
+    Note(ustring prefix, StringLiteral *note, SourceInfo src_info) : Expression(ClassType, "<note>", src_info), prefix(prefix), note(note) {}
     ~Note() {
         delete note;
     }
@@ -1428,13 +1431,13 @@ private:
 public:
     static const IRType ClassType = IRType::LIST;
 
-    List(std::vector<Expression *> value) 
-        : Expression(ClassType, "<list>"), value(value), comprehension(false),
+    List(std::vector<Expression *> value, SourceInfo src_info) 
+        : Expression(ClassType, "<list>", src_info), value(value), comprehension(false),
           result(nullptr), else_result(nullptr), condition(nullptr),
           list_compr_var(nullptr), list_compr_for(nullptr) {}
     List(Expression *result, std::vector<Expression *> assignments,
-         Expression *condition, Expression *else_result)
-        : Expression(ClassType, "<list>"), comprehension(true), result(result),
+         Expression *condition, Expression *else_result, SourceInfo src_info)
+        : Expression(ClassType, "<list>", src_info), comprehension(true), result(result),
           else_result(else_result), condition(condition), assignments(assignments),
           list_compr_var(nullptr), list_compr_for(nullptr) {
         assert((!else_result || (else_result && condition)) && "else without condition in list comprehension");
@@ -1521,8 +1524,8 @@ private:
 public:
     static const IRType ClassType = IRType::DICT;
 
-    Dict(std::vector<Expression *> keys, std::vector<Expression *> values)
-        : Expression(ClassType, "<dict>"), keys(keys), values(values) {
+    Dict(std::vector<Expression *> keys, std::vector<Expression *> values, SourceInfo src_info)
+        : Expression(ClassType, "<dict>", src_info), keys(keys), values(values) {
         assert((keys.size() == values.size()) && "mismatched amount of keys to values");
     }
     ~Dict() {

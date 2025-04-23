@@ -51,7 +51,8 @@ static Operator token2operator(TokenType t) {
 IR *Parser::parse(bool is_main) {
     LOG1("Started parsing module");
     reading_by_lines = false;
-    Module *m = new Module(this->src_file.get_module_name());
+    SourceInfo mod_src_i(src_file, 0, 0, 0, 0);
+    Module *m = new Module(this->src_file.get_module_name(), mod_src_i);
     parents.push_back(m);
 
     LOG2("Running scanner");
@@ -84,7 +85,7 @@ IR *Parser::parse(bool is_main) {
     // Append EOF, but only when not already present as it may be added by
     // an empty last line
     if (m->empty() || !isa<EndOfFile>(m->back()))
-        m->push_back(new ir::EndOfFile());
+        m->push_back(new ir::EndOfFile(curr_src_info()));
         
     LOG1("Finished parsing module");
     return m;
@@ -264,7 +265,8 @@ void Parser::put_back() {
 void moss::parser_error(diags::Diagnostic err_msg) {
     // TODO: Change to specific exception child type (such as TypeError)
     auto str_msg = error::format_error(err_msg);
-    throw new Raise(new StringLiteral(str_msg));
+    SourceInfo msg_src;
+    throw new Raise(new StringLiteral(str_msg, msg_src), msg_src);
 }
 
 void Parser::skip_ends() {
@@ -363,12 +365,12 @@ ir::Annotation *Parser::annotation() {
             if (mul_vals.size() == 1)
                 value = mul_vals[0];
             else
-                value = new List(mul_vals);
+                value = new List(mul_vals, curr_src_info());
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         }
         if (!value)
-            value = new NilLiteral();
-        decl = new Annotation(name->get_value(), value, inner);
+            value = new NilLiteral(curr_src_info());
+        decl = new Annotation(name->get_value(), value, inner, curr_src_info());
     }
     return decl;
 }
@@ -450,13 +452,14 @@ IR *Parser::declaration() {
 
     // end of file returns End IR
     if (match(TokenType::END_OF_FILE)) {
-        return new EndOfFile();
+        return new EndOfFile(curr_src_info());
     }
 
     if (check(TokenType::ERROR_TOKEN)) {
         auto err_tok = dynamic_cast<ErrorToken *>(advance());
         auto str_msg = error::format_error(diags::Diagnostic(err_tok, scanner));
-        throw new Raise(new StringLiteral(str_msg));
+        SourceInfo srci;
+        throw new Raise(new StringLiteral(str_msg, srci), srci);
     }
 
     // TODO: FIX - we need to create function IR before adding the body so that
@@ -504,7 +507,7 @@ IR *Parser::declaration() {
         } while (match(TokenType::COMMA) && name);
 
         --lower_range_prec;
-        decl = new Import(names, aliases);
+        decl = new Import(names, aliases, curr_src_info());
     }
 
     // if
@@ -522,10 +525,10 @@ IR *Parser::declaration() {
         }
         if (match(TokenType::ELSE)) {
             auto elsebody = body();
-            decl = new If(cond, ifbody, new Else(elsebody));
+            decl = new If(cond, ifbody, new Else(elsebody, curr_src_info()), curr_src_info());
         }
         else {
-            decl = new If(cond, ifbody);
+            decl = new If(cond, ifbody, nullptr, curr_src_info());
         }
         // This is true even for single declaration as that declaration itself
         // has to have an end. No need for second one.
@@ -542,7 +545,7 @@ IR *Parser::declaration() {
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         auto whbody = body();
-        decl = new While(cond, whbody);
+        decl = new While(cond, whbody, curr_src_info());
         no_end_needed = true;
     }
     else if (match(TokenType::DO)) {
@@ -553,7 +556,7 @@ IR *Parser::declaration() {
         auto cond = expression();
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        decl = new DoWhile(cond, whbody);
+        decl = new DoWhile(cond, whbody, curr_src_info());
     }
 
     // for
@@ -567,7 +570,7 @@ IR *Parser::declaration() {
         parser_assert(collection, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         auto frbody = body();
-        decl = new ForLoop(iterator, collection, frbody);
+        decl = new ForLoop(iterator, collection, frbody, curr_src_info());
         no_end_needed = true;
     }
 
@@ -581,7 +584,7 @@ IR *Parser::declaration() {
         auto sw_cases = cases();
         no_end_needed = true;
         --multi_line_parsing;
-        decl = new Switch(val, sw_cases);
+        decl = new Switch(val, sw_cases, curr_src_info());
     }
     else if (match(TokenType::CASE)) {
         parser_error(create_diag(diags::CASE_OUTSIDE_SWITCH));
@@ -602,7 +605,7 @@ IR *Parser::declaration() {
             parser_assert(arg, create_diag(diags::EXPR_EXPECTED));
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
             auto ctbody = body();
-            catches.push_back(new Catch(arg, ctbody));
+            catches.push_back(new Catch(arg, ctbody, curr_src_info()));
             if (!reading_by_lines)
                 skip_nls();
             else {
@@ -619,9 +622,9 @@ IR *Parser::declaration() {
         Finally *finallyStmt = nullptr;
         if (match(TokenType::FINALLY)) {
             auto fnbody = body();
-            finallyStmt = new Finally(fnbody);
+            finallyStmt = new Finally(fnbody, curr_src_info());
         }
-        decl = new Try(catches, trbody, finallyStmt);
+        decl = new Try(catches, trbody, finallyStmt, curr_src_info());
         no_end_needed = true;
     }
     else if (match(TokenType::CATCH)) {
@@ -637,28 +640,28 @@ IR *Parser::declaration() {
         std::vector<Expression *> args = expr_list();
         parser_assert((args.size() == 1 || args.size() == 2), create_diag(diags::ASSERT_EXPECTS_ARG));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        decl = new Assert(args[0], args.size() == 2 ? args[1] : nullptr);
+        decl = new Assert(args[0], args.size() == 2 ? args[1] : nullptr, curr_src_info());
     }
     else if (match(TokenType::RAISE)) {
         auto exc = expression();
         parser_assert(exc, create_diag(diags::EXPR_EXPECTED));
-        decl = new Raise(exc);
+        decl = new Raise(exc, curr_src_info());
     }
     else if (match(TokenType::RETURN)) { // TODO: Check if inside of a function
         auto exc = expression();
         if (!exc) {
-            decl = new Return(new NilLiteral());
+            decl = new Return(new NilLiteral(curr_src_info()), curr_src_info());
         }
         else {
-            decl = new Return(exc);
+            decl = new Return(exc, curr_src_info());
         }
     }
     // break / continue
     else if (match(TokenType::BREAK)) {
-        decl = new Break();
+        decl = new Break(curr_src_info());
     }
     else if (match(TokenType::CONTINUE)) {
-        decl = new Continue();
+        decl = new Continue(curr_src_info());
     }
     // enum
     else if (match(TokenType::ENUM)) {
@@ -690,7 +693,7 @@ IR *Parser::declaration() {
         }
 
         --multi_line_parsing;
-        decl = new Enum(name->get_value(), values);
+        decl = new Enum(name->get_value(), values, curr_src_info());
         no_end_needed = true;
     }
 
@@ -708,7 +711,7 @@ IR *Parser::declaration() {
             std::list<ir::Annotation *> cl_annts;
             cl_annts.insert(cl_annts.end(), std::make_move_iterator(outter_annots.begin()), std::make_move_iterator(outter_annots.end()));
             outter_annots.clear();
-            auto cldecl = new Class(name->get_value(), clparents);
+            auto cldecl = new Class(name->get_value(), clparents, curr_src_info());
             parents.push_back(cldecl);
             auto clbody = block();
             parents.pop_back();
@@ -731,7 +734,7 @@ IR *Parser::declaration() {
         ++multi_line_parsing;
         if (check(TokenType::ID)) {
             auto name = advance();
-            auto spcdecl = new Space(name->get_value());
+            auto spcdecl = new Space(name->get_value(), curr_src_info());
             parents.push_back(spcdecl);
             auto stbody = block();
             parents.pop_back();
@@ -740,7 +743,7 @@ IR *Parser::declaration() {
             no_end_needed = true;
         }
         else if (check(TokenType::LEFT_CURLY)) {
-            auto spcdecl = new Space("");
+            auto spcdecl = new Space("", curr_src_info());
             parents.push_back(spcdecl);
             auto stbody = block();
             parents.pop_back();
@@ -777,7 +780,7 @@ IR *Parser::declaration() {
         }
         skip_nls();
         if (check(TokenType::LEFT_CURLY)) {
-            decl = new Function(name, args);
+            decl = new Function(name, args, curr_src_info());
             // Assign outter annotations
             for (auto ann : outter_annots) {
                 decl->add_annotation(ann);
@@ -794,7 +797,7 @@ IR *Parser::declaration() {
         else if (match(TokenType::SET)) {
             auto lmbody = expression();
             parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
-            decl = new Lambda(name, args, lmbody);
+            decl = new Lambda(name, args, lmbody, curr_src_info());
             // Assign outter annotations
             for (auto ann : outter_annots) {
                 decl->add_annotation(ann);
@@ -916,7 +919,7 @@ std::list<ir::IR *> Parser::cases() {
         auto vals = expr_list();
         expect(TokenType::COLON, create_diag(diags::CASE_MISSING_COLON));
         auto swbody = body();
-        decls.push_back(new Case(vals, swbody, default_case));
+        decls.push_back(new Case(vals, swbody, default_case, curr_src_info()));
         skip_ends(); // Skip here so that we can check for } or eof
     }
 
@@ -985,7 +988,7 @@ Expression *Parser::silent() {
         // Cannot be chained and has the lowest precedence
         auto expr = unpack();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT), curr_src_info());
     }
 
     return assignment();
@@ -1000,7 +1003,7 @@ Expression *Parser::assignment() {
         is_set = true;
         auto right = assignment();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right,  Operator(OperatorKind::OP_SET));
+        expr = new BinaryExpr(expr, right,  Operator(OperatorKind::OP_SET), curr_src_info());
     }
     // TODO: Check for any compound assignment chains, which doesn't make sense
     // Current check only check if this is not after =
@@ -1016,7 +1019,7 @@ Expression *Parser::assignment() {
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
         // We cannot transform this into set and operation as then the left and
         // right pointers would be the same
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1026,7 +1029,7 @@ Expression *Parser::unpack() {
     if (match(TokenType::UNPACK)) {
         auto expr = ternary_if();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_UNPACK));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_UNPACK), curr_src_info());
     }
 
     return ternary_if();
@@ -1042,7 +1045,7 @@ Expression *Parser::ternary_if() {
         expect(TokenType::COLON, create_diag(diags::TERNARY_IF_MISSING_FALSE));
         auto val_false = ternary_if();
         parser_assert(val_false, create_diag(diags::EXPR_EXPECTED));
-        return new TernaryIf(expr, val_true, val_false);
+        return new TernaryIf(expr, val_true, val_false, curr_src_info());
     }
 
     return expr;
@@ -1056,7 +1059,7 @@ Expression *Parser::short_circuit() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = and_or_xor();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1070,7 +1073,7 @@ Expression *Parser::and_or_xor() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = op_not();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1080,7 +1083,7 @@ Expression *Parser::op_not() {
     if (match(TokenType::NOT)) {
         auto expr = op_not(); // Right associative
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_NOT), curr_src_info());
     }
 
     return eq_neq();
@@ -1096,7 +1099,7 @@ Expression *Parser::eq_neq() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = compare_gl();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1110,7 +1113,7 @@ Expression *Parser::compare_gl() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = membership();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1123,7 +1126,7 @@ Expression *Parser::membership() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "in"));
         auto right = range(); // Chaining in is not allowed, parenthesis have to be used
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        return new BinaryExpr(expr, right, Operator(OperatorKind::OP_IN));
+        return new BinaryExpr(expr, right, Operator(OperatorKind::OP_IN), curr_src_info());
     }
 
     return expr;
@@ -1162,7 +1165,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
     } while (match(TokenType::COMMA) && expr);
     parser_assert(found_eq, create_diag(diags::SET_EXPECTED_FOR_MULTIVAL));
     --lower_range_prec;
-    return new BinaryExpr(new Multivar(vars), expr, Operator(OperatorKind::OP_SET));
+    return new BinaryExpr(new Multivar(vars, curr_src_info()), expr, Operator(OperatorKind::OP_SET), curr_src_info());
 }
 
 Expression *Parser::range() {
@@ -1174,7 +1177,7 @@ Expression *Parser::range() {
         parser_assert(expr, create_diag(diags::NO_LHS_IN_RANGE));
         auto end = concatenation();
         parser_assert(end, create_diag(diags::EXPR_EXPECTED));
-        return new Range(expr, end);
+        return new Range(expr, end, nullptr, curr_src_info());
     }
     // expr,second..end
     else if (!lower_range_prec && match(TokenType::COMMA)) {
@@ -1190,12 +1193,12 @@ Expression *Parser::range() {
             parser_assert(is_id_or_member(expr), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
             parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
             auto res = concatenation();
-            return new BinaryExpr(new Multivar(vars), res, Operator(OperatorKind::OP_SET));
+            return new BinaryExpr(new Multivar(vars, curr_src_info()), res, Operator(OperatorKind::OP_SET), curr_src_info());
         }
         expect(TokenType::RANGE, create_diag(diags::RANGE_EXPECTED));
         auto end = concatenation();
         parser_assert(second, create_diag(diags::EXPR_EXPECTED));
-        return new Range(expr, end, second);
+        return new Range(expr, end, second, curr_src_info());
     }
 
     return expr;
@@ -1208,7 +1211,7 @@ Expression *Parser::concatenation() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "++"));
         auto right = add_sub();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_CONCAT));
+        expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_CONCAT), curr_src_info());
     }
 
     return expr;
@@ -1222,7 +1225,7 @@ Expression *Parser::add_sub() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = mul_div_mod();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1236,7 +1239,7 @@ Expression *Parser::mul_div_mod() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, op->get_value().c_str()));
         auto right = exponentiation();
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, token2operator(op->get_type()));
+        expr = new BinaryExpr(expr, right, token2operator(op->get_type()), curr_src_info());
     }
 
     return expr;
@@ -1249,7 +1252,7 @@ Expression *Parser::exponentiation() {
         parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "^"));
         auto right = exponentiation(); // Right associative, so call itself
         parser_assert(right, create_diag(diags::EXPR_EXPECTED));
-        expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_EXP));
+        expr = new BinaryExpr(expr, right, Operator(OperatorKind::OP_EXP), curr_src_info());
     }
 
     return expr;
@@ -1259,7 +1262,7 @@ Expression *Parser::unary_plus_minus() {
     if (match(TokenType::MINUS)) {
         auto expr = unary_plus_minus(); // Right associative
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_MINUS));
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_MINUS), curr_src_info());
     }
     else if (match(TokenType::PLUS)) {
         auto expr = unary_plus_minus();
@@ -1305,7 +1308,7 @@ std::vector<ir::Argument *> Parser::arg_list() {
             parser_assert(!vararg, create_diag(diags::MULTIPLE_VARARGS));
             auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
             parser_assert(!check({TokenType::COLON, TokenType::SET}), create_diag(diags::NOT_PURE_VARARG));
-            arg = new Argument(id->get_value());
+            arg = new Argument(id->get_value(), curr_src_info());
             vararg = true;
         }
         else {
@@ -1330,7 +1333,7 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto args = expr_list(false, true);
             skip_nls();
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-            expr = new Call(expr, args);
+            expr = new Call(expr, args, curr_src_info());
         }
         else if (match(TokenType::DOT)) {
             parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
@@ -1338,12 +1341,12 @@ Expression *Parser::call_access_subs(bool allow_star) {
                 parser_assert(allow_star, create_diag(diags::STAR_MEMBER_OUTSIDE_IMPORT)); 
                 parser_assert(expr, create_diag(diags::STAR_IMPORT_GLOBAL));
                 // Return since there cannot be anything else after this
-                return new BinaryExpr(expr, new AllSymbols(), Operator(OperatorKind::OP_ACCESS));
+                return new BinaryExpr(expr, new AllSymbols(curr_src_info()), Operator(OperatorKind::OP_ACCESS), curr_src_info());
             }
             else {
                 auto elem = note();
                 parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS));
+                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS), curr_src_info());
             }
         }
         else if (match(TokenType::LEFT_SQUARE)) {
@@ -1351,7 +1354,7 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto index = ternary_if();
             parser_assert(index, create_diag(diags::EXPR_EXPECTED));
             expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-            expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC));
+            expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC), curr_src_info());
         }
     }
     return expr;
@@ -1369,7 +1372,7 @@ ir::Expression *Parser::note() {
         auto prefix = dyn_cast<Variable>(expr);
         parser_assert(prefix, create_diag(diags::INVALID_NOTE_PREFIX));
         parser_assert(prefix->get_name() != "d", create_diag(diags::DOC_STRING_AS_EXPR));
-        return new Note(prefix->get_name(), new StringLiteral(val->get_value()));
+        return new Note(prefix->get_name(), new StringLiteral(val->get_value(), curr_src_info()), curr_src_info());
     }
 
     return expr;
@@ -1379,7 +1382,7 @@ Expression *Parser::scope() {
     if (match(TokenType::SCOPE)) {
         auto elem = constant();
         parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE));
+        return new UnaryExpr(elem, Operator(OperatorKind::OP_SCOPE), curr_src_info());
     }
 
     return constant();
@@ -1389,7 +1392,7 @@ ir::OperatorLiteral *Parser::operator_name() {
     // []
     if (match(TokenType::LEFT_SQUARE)) {
         if (match(TokenType::RIGHT_SQUARE)) {
-            return new OperatorLiteral(Operator(OperatorKind::OP_SUBSC));
+            return new OperatorLiteral(Operator(OperatorKind::OP_SUBSC), curr_src_info());
         } else {
             put_back();
         }
@@ -1401,7 +1404,7 @@ ir::OperatorLiteral *Parser::operator_name() {
           TokenType::SHORT_C_AND, TokenType::SHORT_C_OR, TokenType::AND,
           TokenType::OR, TokenType::NOT, TokenType::XOR, TokenType::IN})) {
         auto op = token2operator(advance()->get_type());
-        return new OperatorLiteral(op);
+        return new OperatorLiteral(op, curr_src_info());
     }
     return nullptr;
 }
@@ -1417,7 +1420,7 @@ Expression *Parser::fstring(FStringToken *fstr) {
             auto expr = expression();
             parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
             if (retv) {
-                retv = new BinaryExpr(retv, expr, Operator(OperatorKind::OP_CONCAT));
+                retv = new BinaryExpr(retv, expr, Operator(OperatorKind::OP_CONCAT), curr_src_info());
             } else {
                 retv = expr;
             }
@@ -1426,16 +1429,16 @@ Expression *Parser::fstring(FStringToken *fstr) {
             auto c = advance();
             txt = c->get_value();
             if (retv) {
-                retv = new BinaryExpr(retv, new StringLiteral(unescapeString(txt)), Operator(OperatorKind::OP_CONCAT));
+                retv = new BinaryExpr(retv, new StringLiteral(unescapeString(txt), curr_src_info()), Operator(OperatorKind::OP_CONCAT), curr_src_info());
             } else {
-                retv = new StringLiteral(unescapeString(txt));
+                retv = new StringLiteral(unescapeString(txt), curr_src_info());
             }
             txt = "";
         }
     } while (!match(TokenType::QUOTE));
     // FString has to end with single " no matter if it is multiline or not
     if (!retv)
-        return new StringLiteral("");
+        return new StringLiteral("", curr_src_info());
     return retv;
 }
 
@@ -1460,27 +1463,27 @@ Expression *Parser::constant() {
     }
     else if (match(TokenType::NON_LOCAL)) {
         auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
-        return new Variable(id->get_value(), true);
+        return new Variable(id->get_value(), curr_src_info(), true);
     }
     else if (check(TokenType::ID)) {
         auto id = advance();
-        return new Variable(id->get_value());
+        return new Variable(id->get_value(), curr_src_info());
     }
     else if (check(TokenType::INT)) {
         auto val = advance();
         // The value was parsed and checked, so no need to check for
         // correct conversion
-        return new IntLiteral(atol(val->get_value().c_str()));
+        return new IntLiteral(atol(val->get_value().c_str()), curr_src_info());
     }
     else if (check(TokenType::FLOAT)) {
         auto val = advance();
         // The value was parsed and checked, so no need to check for
         // correct conversion
-        return new FloatLiteral(std::stod(val->get_value()));
+        return new FloatLiteral(std::stod(val->get_value()), curr_src_info());
     }
     else if (check(TokenType::STRING)) {
         auto val = advance();
-        return new StringLiteral(unescapeString(val->get_value()));
+        return new StringLiteral(unescapeString(val->get_value()), curr_src_info());
     }
     else if (check(TokenType::FSTRING)) {
         auto val = advance();
@@ -1488,19 +1491,19 @@ Expression *Parser::constant() {
         return fstring(fstrtok);
     }
     else if (match(TokenType::TRUE)) {
-        return new BoolLiteral(true);
+        return new BoolLiteral(true, curr_src_info());
     }
     else if (match(TokenType::FALSE)) {
-        return new BoolLiteral(false);
+        return new BoolLiteral(false, curr_src_info());
     }
     else if (match(TokenType::NIL)) {
-        return new NilLiteral();
+        return new NilLiteral(curr_src_info());
     }
     else if (match(TokenType::THIS)) {
-        return new ThisLiteral();
+        return new ThisLiteral(curr_src_info());
     }
     else if (match(TokenType::SUPER)) {
-        return new SuperLiteral();
+        return new SuperLiteral(curr_src_info());
     }
     // lambda
     else if (match(TokenType::FUN)) {
@@ -1520,7 +1523,7 @@ Expression *Parser::constant() {
         expect(TokenType::SET, create_diag(diags::SET_EXPECTED));
         auto lmbody = expression();
         parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
-        return new Lambda(name, args, lmbody);
+        return new Lambda(name, args, lmbody, curr_src_info());
     }
     // list
     else if (match(TokenType::LEFT_SQUARE)) {
@@ -1557,7 +1560,7 @@ Expression *Parser::constant() {
                 skip_nls();
                 expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
                 --lower_range_prec;
-                return new List(first, assignments, condition, else_result);
+                return new List(first, assignments, condition, else_result, curr_src_info());
             }
             else if (match(TokenType::COMMA)){
                 skip_nls();
@@ -1571,7 +1574,7 @@ Expression *Parser::constant() {
         skip_nls();
         expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
         --lower_range_prec;
-        return new List(vals);
+        return new List(vals, curr_src_info());
     }
     // dict
     else if (match(TokenType::LEFT_CURLY)) {
@@ -1579,7 +1582,7 @@ Expression *Parser::constant() {
         std::vector<ir::Expression *> vals;
         if (match(TokenType::COLON)) {
             expect(TokenType::RIGHT_CURLY, create_diag(diags::MISSING_RIGHT_CURLY));
-            return new Dict(keys, vals);
+            return new Dict(keys, vals, curr_src_info());
         }
         ++lower_range_prec;
 
@@ -1600,7 +1603,7 @@ Expression *Parser::constant() {
         skip_nls();
         expect(TokenType::RIGHT_CURLY, create_diag(diags::MISSING_RIGHT_CURLY));
         parser_assert(!keys.empty(), create_diag(diags::EMPTY_DICT_WITHOUT_COLON));
-        return new Dict(keys, vals);
+        return new Dict(keys, vals, curr_src_info());
     }
     return nullptr;
 }
@@ -1638,7 +1641,7 @@ Argument *Parser::argument(bool allow_default_value) {
             default_value = expression();
             parser_assert(default_value, create_diag(diags::EXPR_EXPECTED));
         }
-        return new Argument(id->get_value(), types, default_value);
+        return new Argument(id->get_value(), types, default_value, curr_src_info());
     }
     else {
         parser_error(create_diag(diags::INCORRECT_ARGUMENT));

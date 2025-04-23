@@ -15,6 +15,7 @@
 #include "commons.hpp"
 #include "utils.hpp"
 #include <cassert>
+#include <optional>
 
 namespace moss {
 
@@ -275,7 +276,7 @@ static const char * DIAG_MSGS[] = {
     "Doc-string cannot be used as an expression",
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
     "Doc-string can appear only at the beginning of the construct",
-    "Constructor ('%s') cannot be a lambda",
+    "Constructor cannot be a lambda",
 };
 
 /// \brief Diagnostic message for error reporting
@@ -285,13 +286,13 @@ class Diagnostic {
 public:
     DiagID id;
     const File &src_f;
-    Token *token;
+    std::optional<SourceInfo> src_info;
     Scanner *scanner;
     ustring msg;
 
     template<typename ... Args>
-    Diagnostic(File &src_f, Token *token, Scanner *scanner, DiagID id, Args ... args) 
-               : id(id), src_f(src_f), token(token), scanner(scanner) {
+    Diagnostic(File &src_f, SourceInfo src_info, Scanner *scanner, DiagID id, Args ... args) 
+               : id(id), src_f(src_f), src_info(src_info), scanner(scanner) {
         static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
         assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
         if (sizeof...(Args) > 0)
@@ -304,7 +305,7 @@ public:
 
     template<typename ... Args>
     Diagnostic(File &src_f, DiagID id, Args ... args) 
-               : id(id), src_f(src_f), token(nullptr), scanner(nullptr) {
+               : id(id), src_f(src_f), src_info(std::nullopt), scanner(nullptr) {
         static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
         assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
         if (sizeof...(Args) > 0)

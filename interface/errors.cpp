@@ -77,7 +77,8 @@ ustring error::format_error(diags::Diagnostic msg) {
     else {
         const char *bar = "      | ";
         
-        SourceInfo info = msg.token->get_src_info();
+        assert(msg.src_info && "sanity check");
+        SourceInfo info = *msg.src_info;
 
         ss << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
         << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 

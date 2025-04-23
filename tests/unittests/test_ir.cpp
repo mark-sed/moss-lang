@@ -14,7 +14,8 @@ using namespace testing;
 
 /** Test correct casting */
 TEST(IR, Casting){
-    ir::Module *m = new ir::Module("m");
+    SourceInfo srci;
+    ir::Module *m = new ir::Module("m", srci);
     ir::IR *i = m;
 
     EXPECT_TRUE(isa<ir::Module>(*i));

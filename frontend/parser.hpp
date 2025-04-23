@@ -137,10 +137,20 @@ private:
     }
 
     void scan_line();
-public:
+
+    SourceInfo curr_src_info() {
+        assert(curr_token < tokens.size() && "oob");
+        return tokens[curr_token]->get_src_info();
+    }
+
     template<typename ... Args>
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
-        return diags::Diagnostic(this->src_file, tokens[curr_token], scanner, id, args ...);
+        return diags::Diagnostic(this->src_file, tokens[curr_token]->get_src_info(), scanner, id, args ...);
+    }
+public:
+    template<typename ... Args>
+    inline diags::Diagnostic create_diag(SourceInfo src_info, diags::DiagID id, Args ... args) {
+        return diags::Diagnostic(this->src_file, src_info, scanner, id, args ...);
     }
 
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
@@ -161,6 +171,9 @@ public:
     /// \return Vector of parsed IRs. If there is an error then ir::Raise is thrown
     /// \throw ir::Raise with parser/scanner error to be rethrown by moss
     std::vector<ir::IR *> parse_line();
+
+    SourceFile &get_src_file() { return this->src_file; }
+    Scanner *get_scanner() { return this->scanner; }
 };
 
 }

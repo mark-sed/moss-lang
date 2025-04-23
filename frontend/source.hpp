@@ -121,11 +121,13 @@ private:
     std::pair<unsigned, unsigned> lines; ///< Range of lines of the token
     std::pair<unsigned, unsigned> cols;  ///< Starting column and ending column
 
+    static const SourceFile dummy_file;
 public:
     SourceInfo(const SourceFile &file, unsigned line_start, unsigned line_end, unsigned col_start, unsigned col_end) 
         : file(file), lines(std::make_pair(line_start, line_end)), cols(std::make_pair(col_start, col_end)) {}
     SourceInfo(const SourceFile &file, std::pair<unsigned, unsigned> lines, std::pair<unsigned, unsigned> cols) 
         : file(file), lines(lines), cols(cols) {}
+    SourceInfo() : file(dummy_file), lines(std::make_pair(0, 0)), cols(std::make_pair(0, 0)) {}
 
     const SourceFile &get_file() { return file; }
     std::pair<unsigned, unsigned> get_lines() { return lines; }
