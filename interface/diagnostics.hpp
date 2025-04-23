@@ -149,6 +149,7 @@ enum DiagID {
     CANNOT_BE_DOCUMENTED,   ///< Using docstring on some value it cannot store it
     DOC_STRING_NOT_AT_START,///< Doc-string in the middle of the body
     LAMBDA_CONSTRUCTOR,     ///< Trying to make constructor a lambda
+    NON_NIL_RETURN_IN_CONSTR, ///< Constructor with return with a non-nil value
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -277,6 +278,7 @@ static const char * DIAG_MSGS[] = {
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
     "Doc-string ('d\"\"') can appear only at the beginning of the construct",
     "Constructor cannot be a lambda",
+    "Constructor can contain only 'return' or 'return nil'",
 };
 
 /// \brief Diagnostic message for error reporting

@@ -26,10 +26,7 @@ public:
     IRPipeline(Parser &parser);
     ~IRPipeline();
 
-    void add_module_pass(IRVisitor *p);
-    void add_space_pass(IRVisitor *p);
-    void add_class_pass(IRVisitor *p);
-    void add_function_pass(IRVisitor *p);
+    void add_pass(IRVisitor *p);
 
     PassManager &get_pm() { return this->pm; }
     ir::IR *run(ir::IR *decl);

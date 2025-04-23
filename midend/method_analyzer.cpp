@@ -26,3 +26,14 @@ void MethodAnalyzer::visit(Class &cls) {
         }
     }
 }
+
+void MethodAnalyzer::visit(Function &fun) {
+    this->in_constructor = fun.is_constructor();
+}
+
+void MethodAnalyzer::visit(Return &ret) {
+    if (in_constructor) {
+        auto rval = ret.get_expr();
+        parser_assert(!rval || isa<NilLiteral>(rval), parser.create_diag(ret.get_src_info(), diags::NON_NIL_RETURN_IN_CONSTR)); 
+    }
+}

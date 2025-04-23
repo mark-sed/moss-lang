@@ -413,6 +413,8 @@ public:
         this->body = elbody;
     }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "else {\n";
         for (auto d: body) {
@@ -440,6 +442,8 @@ public:
         if (else_branch)
             delete else_branch;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     Expression *get_cond() { return this->cond; }
     Else *get_else() { return this->else_branch; }
@@ -842,6 +846,8 @@ public:
     ~Return() {
         delete expr;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "return " << *expr;

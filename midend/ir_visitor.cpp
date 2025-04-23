@@ -9,13 +9,17 @@ using namespace ir;
 IRVisitor::IRVisitor(Parser &parser) : parser(parser) {}
 
 void PassManager::visit(Module &mod) {
+    for (auto p: passes) {
+        mod.accept(*p);
+    }
+
     for (auto i : mod.get_body()) {
         i->accept(*this);
     }
 }
 
 void PassManager::visit(Class &cls) {
-    for (auto p: class_passes) {
+    for (auto p: passes) {
         cls.accept(*p);
     }
 
@@ -25,14 +29,43 @@ void PassManager::visit(Class &cls) {
 }
 
 void PassManager::visit(Space &spc) {
+    for (auto p: passes) {
+        spc.accept(*p);
+    }
+
     for (auto i : spc.get_body()) {
         i->accept(*this);
     }
 }
 
 void PassManager::visit(Function &fun) {
+    for (auto p: passes) {
+        fun.accept(*p);
+    }
+
     for (auto i : fun.get_body()) {
         i->accept(*this);
+    }
+}
+
+void PassManager::visit(Else &els) {
+    for (auto i : els.get_body()) {
+        i->accept(*this);
+    }
+}
+
+void PassManager::visit(If &i) {
+    for (auto j : i.get_body()) {
+        j->accept(*this);
+    }
+    auto els = i.get_else();
+    if (els)
+        els->accept(*this);
+}
+
+void PassManager::visit(Return &ret) {
+    for (auto p: passes) {
+        ret.accept(*p);
     }
 }
 
@@ -40,18 +73,6 @@ void PassManager::visit(Lambda &fun) {
     // TODO
 }
 
-void PassManager::add_module_pass(IRVisitor *p) { 
-    module_passes.push_back(p);
-}
-
-void PassManager::add_space_pass(IRVisitor *p) { 
-    space_passes.push_back(p);
-}
-
-void PassManager::add_class_pass(IRVisitor *p) { 
-    class_passes.push_back(p);
-}
-
-void PassManager::add_function_pass(IRVisitor *p) { 
-    function_passes.push_back(p);
+void PassManager::add_pass(IRVisitor *p) { 
+    passes.push_back(p);
 }

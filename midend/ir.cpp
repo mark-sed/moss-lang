@@ -98,3 +98,15 @@ void Module::accept(IRVisitor& visitor) {
 void Space::accept(IRVisitor& visitor) {
     visitor.visit(*this);
 }
+
+void Return::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void If::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Else::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}

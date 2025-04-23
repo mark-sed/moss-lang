@@ -39,6 +39,15 @@ public:
     virtual void visit(class Lambda &fun) {
         (void)fun;
     }
+    virtual void visit(class Return &ret) {
+        (void)ret;
+    }
+    virtual void visit(class Else &els) {
+        (void)els;
+    }
+    virtual void visit(class If &i) {
+        (void)i;
+    }
 
     IRVisitor(Parser &parser);
     virtual ~IRVisitor() {};
@@ -46,21 +55,18 @@ public:
 
 class PassManager : public IRVisitor {
 private:
-    std::list<IRVisitor *> module_passes;
-    std::list<IRVisitor *> space_passes;
-    std::list<IRVisitor *> class_passes;
-    std::list<IRVisitor *> function_passes;
+    std::list<IRVisitor *> passes;
 public:
     virtual void visit(class Module &mod) override;
     virtual void visit(class Space &spc) override;
     virtual void visit(class Class &cls) override;
     virtual void visit(class Function &fun) override;
     virtual void visit(class Lambda &fun) override;
+    virtual void visit(class Return &ret) override;
+    virtual void visit(class Else &els) override;
+    virtual void visit(class If &i) override;
 
-    void add_module_pass(IRVisitor *p);
-    void add_space_pass(IRVisitor *p);
-    void add_class_pass(IRVisitor *p);
-    void add_function_pass(IRVisitor *p);
+    void add_pass(IRVisitor *p);
 
     PassManager(Parser &parser) : IRVisitor(parser) {}
 };

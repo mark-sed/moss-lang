@@ -18,10 +18,15 @@ namespace moss {
 namespace ir {
 
 class MethodAnalyzer : public IRVisitor {
+private:
+    bool in_constructor;
 public:
     MethodAnalyzer(Parser &parser) : IRVisitor(parser) {}
-    virtual void visit(class Class &cls) override;
     void check_constructor(class Function &method, ustring class_name);
+    
+    virtual void visit(class Class &cls) override;
+    virtual void visit(class Function &fun) override;
+    virtual void visit(class Return &ret) override;
 };
 
 }

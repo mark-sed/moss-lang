@@ -173,4 +173,31 @@ class SomeClass {
     delete err;
 }
 
+/// This tests that MethodAnalysis raises error there is non-nil return in a constructor
+TEST(MethodAnalysis, NonNilReturnInConstructor){
+    ustring code = R"(
+class SomeClass {
+    fun SomeClass(x) {
+        if (x == 4)
+            return
+        else
+            return "hi"
+    }
+}
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<ir::Module>(parser.parse());
+    ir::IRPipeline irp(parser);
+    auto err = irp.run(mod);
+    ASSERT_TRUE(err);
+    auto rs = dyn_cast<ir::Raise>(err);
+    ASSERT_TRUE(rs);
+
+    delete mod;
+    delete err;
+}
+
 }
