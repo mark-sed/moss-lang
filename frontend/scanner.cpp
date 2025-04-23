@@ -349,6 +349,19 @@ Token *Scanner::parse_multi_comment() {
     return err_tokenize("/*", "", error::msgs::UNTERMINATED_COMMENT, "");
 }
 
+Token *Scanner::parse_comment_or_shebang() {
+    auto next_c = advance();
+    while(next_c.is_utf || (next_c.c != '\n' && next_c.c != EOF)) {
+        next_c = advance();
+    }
+    ++this->line;
+    this->col = 0;
+    this->len = 0;
+    if (next_c.c == EOF)
+        return tokenize("\n", TokenType::END_OF_FILE);
+    return tokenize("\n", TokenType::END_NL);
+}
+
 Token *Scanner::parse_string(bool triple_quote, bool fstring) {
     ustring value = "";
     auto next_c = advance();
@@ -558,16 +571,7 @@ Token *Scanner::next_token() {
                 if (check_and_advance('='))
                     return tokenize("/=", TokenType::SET_DIV);
                 if (check_and_advance('/')) {
-                    auto next_c = advance();
-                    while(next_c.is_utf || (next_c.c != '\n' && next_c.c != EOF)) {
-                        next_c = advance();
-                    }
-                    ++this->line;
-                    this->col = 0;
-                    this->len = 0;
-                    if (next_c.c == EOF)
-                        return tokenize("\n", TokenType::END_OF_FILE);
-                    return tokenize("\n", TokenType::END_NL);
+                    return parse_comment_or_shebang();
                 }
                 if (check_and_advance('*')) {
                     return parse_multi_comment();
@@ -630,6 +634,15 @@ Token *Scanner::next_token() {
                 }
                 // Single quote string
                 return parse_string(false, false);
+            }
+            case '#': {
+                if (check_and_advance('!')) {
+                    if (line != 0) {
+                        return err_tokenize(c, "", error::msgs::MISPLACED_SHEBANG);
+                    }
+                    return parse_comment_or_shebang();
+                }
+                return err_tokenize(c, "Comment is done using '//' or did you mean shebang '#!'?", error::msgs::UNKNOWN_SYMBOL, "#");
             }
             case EOF: return tokenize(c, TokenType::END_OF_FILE);
             // Error cases with notes

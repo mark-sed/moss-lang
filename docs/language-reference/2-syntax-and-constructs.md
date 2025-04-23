@@ -81,6 +81,16 @@ Block comment
 */
 ```
 
+### Shebang
+
+Moss recognizes shebang to allow for direct execution of scripts. The shebang
+can appear only on the first line and moss treats it like a one line comment.
+
+```py
+#!/usr/bin/moss
+"Hello, World!"
+```
+
 ## If statement
 
 If has to be followed by a code block or an expression. The if condition has to

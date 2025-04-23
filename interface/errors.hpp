@@ -45,6 +45,7 @@ namespace error {
         inline msgtype TRAILING_SEPARATOR = "Trailing digit separators";
         inline msgtype MULTIPLE_SEPARATORS = "Multiple connected digit separators";
         inline msgtype EMPTY_FSTRING_EXPR = "Empty fstring expression";
+        inline msgtype MISPLACED_SHEBANG = "Shebang ('#!') can appear only on the first line of the file";
     }
 
     /// Namespace for terminal colorization 

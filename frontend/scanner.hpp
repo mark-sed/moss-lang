@@ -354,6 +354,7 @@ private:
     Token *parse_number(int start);
     Token *parse_string(bool triple_quote, bool fstring=false);
     Token *parse_multi_comment();
+    Token *parse_comment_or_shebang();
 
     ustring curr_line;
     unsigned curr_byte;
