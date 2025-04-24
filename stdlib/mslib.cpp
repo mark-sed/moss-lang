@@ -90,6 +90,20 @@ Value *rand_float(Interpreter *vm, Value *min, Value *max) {
     return new FloatValue(distrib(rng_device));
 }
 
+Value *round(Interpreter *vm, Value *n, Value *ndigits) {
+    (void)vm;
+    assert(isa<FloatValue>(n) || isa<IntValue>(n));
+    if (isa<NilValue>(ndigits)) {
+        if (isa<IntValue>(n)) return n->clone();
+        return new IntValue(std::round(n->as_float()));
+    } else {
+        auto nfc = dyn_cast<IntValue>(ndigits)->get_value();
+        double factor = std::pow(10.0, nfc);
+        auto rounded = std::round(n->as_float() * factor) / factor;
+        return new FloatValue(rounded);
+    }
+}
+
 Value *input(Interpreter *vm, Value *prompt) {
     (void)vm;
     auto msg = prompt->as_string();
@@ -207,6 +221,18 @@ Value *mslib::create_exception(Value *type, diags::Diagnostic dmsg) {
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+        {"abs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            (void)vm;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            if (auto vi = dyn_cast<IntValue>(args[0].value))
+                return new IntValue(std::abs(vi->get_value()));
+            else {
+                assert(isa<FloatValue>(args[0].value));
+                return new FloatValue(std::fabs(args[0].value->as_float()));
+            }
+        }},
         {"append", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             if (args[1].value->get_type() == BuiltIns::List) {
@@ -330,6 +356,10 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 1);
             assert(args[0].value->get_type() == BuiltIns::File);
             return MSFile::readlines(vm, args[0].value, err);
+        }},
+        {"round", [](Interpreter* vm, CallFrame* cf, Value*&) {
+            assert(cf->get_args().size() == 2);
+            return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));
         }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));

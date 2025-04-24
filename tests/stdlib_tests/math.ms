@@ -32,3 +32,60 @@ f_test(Math.tan, Math.pi)
 f_test(Math.tan, -Math.pi)
 f_test(Math.tan, Math.pi * 4)
 f_test(Math.tan, 42)
+
+round(3.1)
+"\n"
+round(3.51)
+"\n"
+round(0, 3)
+"\n"
+round(-100.123, 0)
+"\n"
+round(12)
+"\n"
+af = 7.71256
+round(af, 4)
+"\n"
+round(-0.123, 2)
+"\n"
+
+Math.abs(1)
+"\n"
+Math.abs(-123.45)
+"\n"
+Math.abs(0)
+"\n"
+Math.abs(-0.0)
+"\n"
+Math.abs(-42)
+"\n"
+Math.abs(Float("-inf"))
+"\n"
+Math.abs(Float("inf"))
+"\n"
+Math.abs(Float("-nan"))
+"\n"
+Math.abs(Float("nan"))
+"\n"
+
+lst1v = [1,2,3,4]
+Math.sum(lst1v, start=0)
+"\n"
+Math.sum([-1,-2,1,2], 5)
+"\n"
+Math.sum([])
+"\n"
+Math.sum([1.3, Float("inf"), 7, -8])
+"\n"
+
+class MyList {
+    fun MyList(x) {
+        this.x = x
+    }
+
+    fun __iter() = this.x
+}
+
+mls = MyList([10,20,30,40])
+Math.sum(mls, -10)
+"\n"

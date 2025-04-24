@@ -145,6 +145,9 @@ fun input(prompt="") {}
 @internal
 fun exit(code=0) {}
 
+@internal
+fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {}
+
 fun info(a) {
     docs = ""
     try {
@@ -233,6 +236,16 @@ space Math {
         //@return Square root of passed in argument
         //"""
         return x^0.5;
+    }
+
+    @internal
+    fun abs(n:[Int,Float]) {}
+
+    fun sum(nums, start:[Int,Float]=0) {
+        for (i : nums) {
+            start += i
+        }
+        return start
     }
 }
 
