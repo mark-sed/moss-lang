@@ -7,6 +7,7 @@
 #include "parser.hpp"
 #include "bytecode_reader.hpp"
 #include "bytecodegen.hpp"
+#include "ir_pipeline.hpp"
 #include <sstream>
 #include <cmath>
 #include <algorithm>
@@ -1174,6 +1175,10 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
         input_file = module_file;
         Parser parser(*module_file);
         auto module_ir = parser.parse();
+        ir::IRPipeline ipl(parser);
+        if (auto err = ipl.run(module_ir)) {
+            module_ir = err;
+        }
         if (auto exc = dyn_cast<ir::Raise>(module_ir)) {
             // Parser error... there is not VM so it is returned as a StringValue
             // place it into an exception and raise it correctly

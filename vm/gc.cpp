@@ -82,6 +82,14 @@ void TracingGC::blacken_value(Value *v) {
             mark_value(v);
         }
     }
+    else if (auto subv = dyn_cast<DictValue>(v)) {
+        for (auto [_, vals]: subv->get_vals()) {
+            for (auto [k, v]: vals) { 
+                mark_value(k);
+                mark_value(v);
+            }
+        }
+    }
     else if (auto subv = dyn_cast<ClassValue>(v)) {
         for (auto s : subv->get_supers()) {
             mark_value(s);
