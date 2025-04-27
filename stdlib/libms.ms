@@ -133,6 +133,12 @@ class __Range {
     }
 }
 
+@internal_bind("Type")
+class __Type {
+    //@internal
+    //fun Type() { }
+}
+
 @internal
 fun vardump(value) {}
 
@@ -147,6 +153,50 @@ fun exit(code=0) {}
 
 @internal
 fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {}
+
+@internal
+fun hash(obj) {}
+
+@internal
+fun type(obj) {}
+
+fun all(iterable, test:Function) {
+    for (i : iterable) {
+        if (not test(i))
+            return false
+    }
+    return true
+}
+
+fun all(iterable) {
+    for (i: iterable) {
+        if (not i)
+            return false
+    }
+    return true
+}
+
+fun any(iterable, test:Function) {
+    for (i : iterable) {
+        if (test(i))
+            return true
+    }
+    return false
+}
+
+fun any(iterable) {
+    for (i: iterable) {
+        if (i)
+            return true
+    }
+    return false
+}
+
+@internal
+fun chr(i:Int) {}
+
+@internal
+fun ord(c:String) {}
 
 fun info(a) {
     docs = ""

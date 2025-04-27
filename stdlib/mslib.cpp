@@ -253,6 +253,19 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args[0].value->get_type() == BuiltIns::String);
             return String::capitalize(vm, args[0].value, err);
         }},
+        {"chr", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 1);
+            auto ii = dyn_cast<IntValue>(cf->get_args()[0].value);
+            assert(ii);
+            auto iiv = ii->get_value();
+            if (iiv > 0x10ffff || iiv < 0) {
+                err = create_value_error(
+                    diags::Diagnostic(*vm->get_src_file(), 
+                        diags::CHR_NOT_IN_RANGE, ii->get_value()));
+            }
+            return new StringValue(ustring(1, ii->get_value()));
+        }},
         {"close", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
@@ -273,6 +286,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             assert(cf->get_args().size() == 2);
             return Float(vm, cf->get_arg("this"), cf->get_arg("v"));
+        }},
+        {"hash", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 1);
+            return new IntValue(moss::hash(cf->get_arg("obj"), vm));
         }},
         {"input", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -329,6 +347,19 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args[0].value->get_type() == BuiltIns::File);
             return MSFile::open(vm, args[0].value, err);
         }},
+        {"ord", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 1);
+            auto s = dyn_cast<StringValue>(cf->get_args()[0].value);
+            assert(s);
+            auto sv = s->get_value();
+            if (sv.size() != 1) {
+                err = create_value_error(
+                    diags::Diagnostic(*vm->get_src_file(), 
+                        diags::ORD_INCORRECT_LENGTH, sv.c_str()));
+            }
+            return new IntValue(static_cast<opcode::IntConst>(sv[0]));
+        }},
         {"pop", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             if (args[1].value->get_type() == BuiltIns::List) {
@@ -383,6 +414,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::tan(cf->get_args()[0].value->as_float()));
+        }},
+        {"type", [](Interpreter* vm, CallFrame* cf, Value*& err)  {
+            (void)err;
+            (void)vm;
+            assert(cf->get_args().size() == 1);
+            return cf->get_args()[0].value->get_type();
         }},
         {"upper", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();

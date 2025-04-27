@@ -52,3 +52,32 @@ d = {"a": 1, "b": 2, "c": 3}
 "\n"
 " ".join("hi!")
 "\n"
+
+// chr
+chr(42)
+"\n"
+try
+    chr(1114112)
+catch (e:ValueError)
+    "caught\n"
+
+chr(1114111) != "0"
+"\n"
+chr(0) != "0"
+"\n"
+try
+    chr(-6)
+catch (e:ValueError)
+    "caught\n"
+
+chr(109) ++ chr(111) ++ chr(115) ++ chr(115) ++ chr(10)
+
+// ord
+ord("*")
+"\n"
+try
+    ord("moss")
+catch(e:ValueError)
+    "caught\n"
+ord("m")
+"\n"

@@ -150,6 +150,8 @@ enum DiagID {
     DOC_STRING_NOT_AT_START,///< Doc-string in the middle of the body
     LAMBDA_CONSTRUCTOR,     ///< Trying to make constructor a lambda
     NON_NIL_RETURN_IN_CONSTR, ///< Constructor with return with a non-nil value
+    CHR_NOT_IN_RANGE,       ///< function chr argument outside of specified range
+    ORD_INCORRECT_LENGTH,   ///< Ord received string not character
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -279,6 +281,8 @@ static const char * DIAG_MSGS[] = {
     "Doc-string ('d\"\"') can appear only at the beginning of the construct",
     "Constructor cannot be a lambda",
     "Constructor can contain only 'return' or 'return nil'",
+    "Value '%ld' for function 'chr' not in range <0; 0x10ffff>",
+    "Value ('%s') for function 'ord' has to be exactly 1 character long String",
 };
 
 /// \brief Diagnostic message for error reporting

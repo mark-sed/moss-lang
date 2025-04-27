@@ -503,11 +503,12 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::CLASS;
 
-    ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
+    // If this is called by Type then Type is nullptr, so set type to this
+    ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type ? BuiltIns::Type : this) {}
     ClassValue(ustring name, std::list<ClassValue *> supers) 
-        : Value(ClassType, name, BuiltIns::Type), supers(supers) {}
+        : Value(ClassType, name,  BuiltIns::Type ? BuiltIns::Type : this), supers(supers) {}
     ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
-        : Value(ClassType, name, BuiltIns::Type, frm), supers(supers) {}
+        : Value(ClassType, name, BuiltIns::Type ? BuiltIns::Type : this, frm), supers(supers) {}
 
     virtual Value *clone() override {
         auto cpy = new ClassValue(this->name, this->supers);

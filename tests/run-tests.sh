@@ -879,7 +879,9 @@ Marek
 1, 2, 3, 4, 5
 [\"b\", 2] [\"c\", 3] [\"a\", 1]
 6-7-8-9
-h i !\n" $1
+h i !
+*\ncaught\ntrue\ntrue\ncaught\nmoss
+42\ncaught\n109\n" $1
 }
 
 function test_lib_random {
@@ -918,6 +920,18 @@ function test_lib_args {
 
     expect_pass "stdlib_tests/args.ms true someval ~ + -" $1
     expect_out_eq "[\"true\", \"someval\", \"~\", \"+\", \"-\"]" $1
+}
+
+function test_lib_types {
+    expect_pass "stdlib_tests/types.ms" $1
+    expect_out_eq "42\ntrue\ntrue\ncaught\ncaught
+<class Int>\ntrue\ntrue\n<class Space>\n<class Type>\n<class Note>\n<class Type>\n" $1
+}
+
+function test_lib_filters {
+    expect_pass "stdlib_tests/filters.ms" $1
+    expect_out_eq "true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
+false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\n" $1
 }
 
 function test_gc_local_vars {
@@ -1115,6 +1129,8 @@ function run_all_tests {
     run_test lib_math
     run_test lib_file
     run_test lib_args
+    run_test lib_types
+    run_test lib_filters
 
     # gc tests
     run_test gc_local_vars
