@@ -862,7 +862,8 @@ function test_lib_lists {
     expect_pass "stdlib_tests/lists.ms" $1 
     expect_out_eq "2\n0\n8\ncaught
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
-[1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]\n" $1
+[1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]
+[4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]\n" $1
 }
 
 function test_lib_strings {
@@ -931,7 +932,8 @@ function test_lib_types {
 function test_lib_filters {
     expect_pass "stdlib_tests/filters.ms" $1
     expect_out_eq "true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
-false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\n" $1
+false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse
+4\nawesome\ncaught\nhi\n9\n" $1
 }
 
 function test_gc_local_vars {

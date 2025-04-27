@@ -41,3 +41,12 @@ l_2.pop(-3)
 "\n"
 l_2
 "\n"
+
+[1,2,3,4].reverse()
+"\n"
+[].reverse()
+"\n"
+[true, false].reverse()
+"\n"
+[1,2,3,-4,-5][0..3].reverse()
+"\n"

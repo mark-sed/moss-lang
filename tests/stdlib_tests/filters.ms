@@ -39,3 +39,23 @@ any([1,2,3,4,5,6,"", 7], test=fun(x) = type(x) != Int)
 "\n"
 any([1,2,3,4,5,6,-7], test=fun(x) = type(x) != Int)
 "\n"
+
+// max
+max([1,2.5,3,4])
+"\n"
+fun len(x) {
+    return x.length()
+}
+max(["h", "hhh", "hello", "awesome"], key=len)
+"\n"
+
+try
+    max([])
+catch (e:ValueError)
+    "caught\n"
+
+max(["hi\n"])
+
+max("123456789", key=Int)
+"\n"
+// TODO: Add test for default value
