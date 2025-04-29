@@ -1,0 +1,8 @@
+hello
+YES
+96
+hello there
+Hello m'dam\
+Start\
+mid\a"txt"
+end\

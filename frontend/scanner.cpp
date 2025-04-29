@@ -367,10 +367,42 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
     auto next_c = advance();
     std::list<Token *> toks;
     while (next_c.is_utf || next_c.c != EOF) {
-        if (!next_c.is_utf && next_c.c == '"') {
-            // Check for escaped quote
-            if(value.empty() || value.back() != '\\') {
-                if (!triple_quote) {
+        if (!next_c.is_utf && next_c.c == '\\' && peek_nonutf() == '\n') {
+            advance();
+            ++this->line;
+            this->col = 0;
+            this->len = 0;
+            next_c = advance();
+            continue;
+        }
+        else if (!next_c.is_utf && next_c.c == '\\' && peek_nonutf() == '\\') {
+            advance();
+            value += "\\\\";
+            next_c = advance();
+            continue;
+        }
+        else if (!next_c.is_utf && next_c.c == '\\' && peek_nonutf() == '"') {
+            advance();
+            value += "\\\"";
+            next_c = advance();
+            continue;
+        }
+        else if (!next_c.is_utf && next_c.c == '"') {
+            if (!triple_quote) {
+                if (fstring) {
+                    toks.push_back(tokenize(value, TokenType::STRING));
+                    toks.push_back(tokenize("\"", TokenType::QUOTE));
+                    return tokenize_fstring(toks);
+                }
+                return tokenize(value, TokenType::STRING);
+            }
+            // Check if triple quote
+            else if(peek_nonutf() == '"') {
+                // found ""
+                advance();
+                if(peek_nonutf() == '"') {
+                    // Last quote in triple quote
+                    advance();
                     if (fstring) {
                         toks.push_back(tokenize(value, TokenType::STRING));
                         toks.push_back(tokenize("\"", TokenType::QUOTE));
@@ -378,24 +410,9 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
                     }
                     return tokenize(value, TokenType::STRING);
                 }
-                // Check if triple quote
-                else if(peek_nonutf() == '"') {
-                    // found ""
-                    advance();
-                    if(peek_nonutf() == '"') {
-                        // Last quote in triple quote
-                        advance();
-                        if (fstring) {
-                            toks.push_back(tokenize(value, TokenType::STRING));
-                            toks.push_back(tokenize("\"", TokenType::QUOTE));
-                            return tokenize_fstring(toks);
-                        }
-                        return tokenize(value, TokenType::STRING);
-                    }
-                    value += "\"\"";
-                    next_c = advance();
-                    continue;
-                }
+                value += "\"\"";
+                next_c = advance();
+                continue;
             }
         }
         else if (!next_c.is_utf && next_c.c == '\n') {
@@ -542,8 +559,15 @@ Token *Scanner::next_token() {
             }
             case '$': return tokenize(c, TokenType::NON_LOCAL);
             case '?': return tokenize(c, TokenType::QUESTION_M);
-            case '\\': return tokenize(c, TokenType::BACK_SLASH);
-            //case '\"': return parse_string(); 
+            case '\\': {
+                if (check_and_advance('\n')) {
+                    ++this->line;
+                    this->col = 0;
+                    this->len = 0;
+                    return tokenize("\\\n", TokenType::WS);
+                }
+                return tokenize(c, TokenType::BACK_SLASH);
+            }
             case '+': {
                 if (check_and_advance('+')) {
                     // ++ or ++=
