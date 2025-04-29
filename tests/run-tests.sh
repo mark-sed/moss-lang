@@ -926,7 +926,8 @@ function test_lib_args {
 function test_lib_types {
     expect_pass "stdlib_tests/types.ms" $1
     expect_out_eq "42\ntrue\ntrue\ncaught\ncaught
-<class Int>\ntrue\ntrue\n<class Space>\n<class Type>\n<class Note>\n<class Type>\n" $1
+<class Int>\ntrue\ntrue\n<class Space>\n<class Type>\n<class Note>\n<class Type>
+true\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\nfalse\ntrue\n" $1
 }
 
 function test_lib_filters {

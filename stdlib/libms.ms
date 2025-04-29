@@ -162,6 +162,9 @@ fun hash(obj) {}
 @internal
 fun type(obj) {}
 
+@internal
+fun id(obj) {}
+
 fun all(iterable, test:Function) {
     for (i : iterable) {
         if (not test(i))

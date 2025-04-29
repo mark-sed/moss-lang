@@ -94,7 +94,7 @@ Value *round(Interpreter *vm, Value *n, Value *ndigits) {
     (void)vm;
     assert(isa<FloatValue>(n) || isa<IntValue>(n));
     if (isa<NilValue>(ndigits)) {
-        if (isa<IntValue>(n)) return n->clone();
+        if (isa<IntValue>(n)) return n;
         return new IntValue(std::round(n->as_float()));
     } else {
         auto nfc = dyn_cast<IntValue>(ndigits)->get_value();
@@ -291,6 +291,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             assert(cf->get_args().size() == 1);
             return new IntValue(moss::hash(cf->get_arg("obj"), vm));
+        }},
+        {"id", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            (void)vm;
+            assert(cf->get_args().size() == 1);
+            return new IntValue(reinterpret_cast<opcode::IntConst>(cf->get_args()[0].value));
         }},
         {"input", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;

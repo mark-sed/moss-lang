@@ -32,3 +32,44 @@ type(md"#H1")
 "\n"
 type(Type)
 "\n"
+
+// id
+a = [1,2,3]
+b = a
+id(a) == id(b)
+"\n"
+
+id(true) == id(true)
+"\n"
+
+a = 5
+b = a
+id(a) == id(b)
+"\n"
+
+id(print) == id(print)
+"\n"
+f = print
+id(f) == id(print)
+
+"\n"
+id("hello") == id("hello")
+"\n"
+
+id(5678) == id(5678)
+"\n"
+
+fun f1(a, b:Bool) {
+    return "f11\n"
+}
+
+aa = f1
+
+fun f1(a) {
+    return "f1\n"
+}
+
+id(aa) == id(f1)
+"\n"
+id(f1) == id(f1)
+"\n"
