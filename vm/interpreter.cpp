@@ -107,6 +107,8 @@ void Interpreter::init_const_frame() {
 
     opcode::Register reg = 0;
     cf->store(reg++, BuiltIns::Nil);
+    cf->store(reg++, BuiltIns::True);
+    cf->store(reg++, BuiltIns::False);
     for (auto i : BuiltIns::IntConstants) {
         cf->store(reg++, i);
     }

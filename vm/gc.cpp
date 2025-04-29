@@ -197,11 +197,6 @@ void TracingGC::mark_roots(Interpreter *ivm) {
             mark_value(m);
         }
     }
-
-    // Interned values (they might be used later in the program so cannot be collected)
-    mark_value(BuiltIns::Nil);
-    mark_value(BuiltIns::True);
-    mark_value(BuiltIns::False);
 }
 
 void TracingGC::collect_garbage() {
