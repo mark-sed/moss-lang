@@ -25,6 +25,7 @@ class MemoryPool;
 namespace BuiltIns {
 
     void init_built_ins(MemoryPool *gf, opcode::Register &reg);
+    Value *get_interned_int(opcode::IntConst v);
 
     extern Value *Type;
     extern Value *Int;
@@ -66,6 +67,8 @@ namespace BuiltIns {
     extern Value *FileNotFoundError;
 
     extern Value *Nil;
+    extern Value *True;
+    extern Value *False;
     #define BUILT_INS_INT_CONSTANTS_AM 262
     extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
 

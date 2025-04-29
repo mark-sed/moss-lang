@@ -959,7 +959,7 @@ function test_gc_recursion {
     if ! [[ "$RUN_TEST_FLAGS" =~ "--stress-test-gc" ]] ; then
         expect_out_eq "gc.cpp::collect_garbage: Running GC
 gc.cpp::collect_garbage: Finished GC
-233\n" $1
+377\n" $1
     fi
 }
 

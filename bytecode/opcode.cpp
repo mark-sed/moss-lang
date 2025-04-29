@@ -374,7 +374,11 @@ void StoreConstSubscConst::exec(Interpreter *vm) {
 }
 
 void StoreIntConst::exec(Interpreter *vm) {
-    vm->store_const(dst, new IntValue(val));
+    //auto interned = BuiltIns::get_interned_int(val);
+    //if (interned)
+    //    vm->store_const(dst, interned);
+    //else
+        vm->store_const(dst, new IntValue(val));
 }
 
 void StoreFloatConst::exec(Interpreter *vm) {
@@ -383,7 +387,10 @@ void StoreFloatConst::exec(Interpreter *vm) {
 
 void StoreBoolConst::exec(Interpreter *vm) {
     // TODO: Load precreated value
-    vm->store_const(dst, new BoolValue(val));
+    if (val)
+        vm->store_const(dst, BuiltIns::True);
+    else
+        vm->store_const(dst, BuiltIns::False);
 }
 
 void StoreStringConst::exec(Interpreter *vm) {
@@ -404,7 +411,7 @@ void Jmp::exec(Interpreter *vm) {
 void JmpIfTrue::exec(Interpreter *vm) {
     auto *v = vm->load(src);
     auto bc = dyn_cast<BoolValue>(v);
-    op_assert(bc, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, v->get_name().c_str())));
+    op_assert(bc, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, v->get_type()->get_name().c_str())));
 
     if (bc->get_value())
         vm->set_bci(this->addr);
@@ -413,7 +420,7 @@ void JmpIfTrue::exec(Interpreter *vm) {
 void JmpIfFalse::exec(Interpreter *vm) {
     auto *v = vm->load(src);
     auto bc = dyn_cast<BoolValue>(v);
-    op_assert(bc, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, v->get_name().c_str())));
+    op_assert(bc, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BOOL_EXPECTED, v->get_type()->get_name().c_str())));
 
     if (!bc->get_value())
         vm->set_bci(this->addr);

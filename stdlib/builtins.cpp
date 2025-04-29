@@ -118,6 +118,16 @@ Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 
 Value *BuiltIns::Nil = new NilValue();
+Value *BuiltIns::True = new BoolValue(true);
+Value *BuiltIns::False = new BoolValue(false);
+
+Value *BuiltIns::get_interned_int(opcode::IntConst v) {
+    if (v >= 0 && v <= 256)
+        return BuiltIns::IntConstants[v];
+    else if (v < 0 && v >= -5)
+        return BuiltIns::IntConstants[256 - v]; // this will be -(-value) as it is negative
+    return nullptr;
+}
 
 Value *BuiltIns::IntConstants[BUILT_INS_INT_CONSTANTS_AM] = {
     new IntValue(0), new IntValue(1), new IntValue(2), new IntValue(3),

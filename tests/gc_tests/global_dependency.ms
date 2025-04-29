@@ -1,7 +1,7 @@
 a = "done"
 
 fun foo() {
-    lst = [1, "dva", a, 4] ++ "."
+    lst = [1000, "dva", a, 4000] ++ "."
     return lst
 }
 
