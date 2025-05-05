@@ -575,6 +575,16 @@ Paragraph2
 Hello\n" $1
 }
 
+function test_converters_pipeline {
+    expect_pass_log "converters_pipeline.ms" "-f D" $1
+    expect_out_eq "A2B:B2C:C2D:hi
+caught
+B2C:C2D:FromB
+A22B2:B22D:txt
+C22D:txt2
+A32B3:B32D:txt3\n" $1
+}
+
 function test_strings {
     expect_pass "strings.ms" $1
     expect_out_eq '\\n\\tsdf\\0x12\\n
@@ -1098,6 +1108,7 @@ function run_all_tests {
     run_test supers
     run_test notes
     run_test converters
+    run_test converters_pipeline
     run_test strings
     run_test fstrings
     run_test docstrings

@@ -5,6 +5,9 @@
 #include "values.hpp"
 #include <exception>
 #include <utility>
+#include <queue>
+#include <unordered_set>
+#include <map>
 
 using namespace moss;
 
@@ -17,16 +20,58 @@ void Interpreter::add_converter(ustring from, ustring to, FunValue *fun) {
     converters[std::make_pair(from, to)] = fun;
 }
 
-FunValue *Interpreter::get_converter(ustring from, ustring to) {
+std::vector<FunValue *> Interpreter::get_converter(ustring from, ustring to) {
     return Interpreter::get_converter(std::make_pair(from, to));
 }
 
-FunValue *Interpreter::get_converter(std::pair<ustring, ustring> key) {
+std::vector<FunValue *> Interpreter::get_converter(std::pair<ustring, ustring> key) {
     auto found = converters.find(key);
     if (found != converters.end()) {
-        return found->second;
+        return {found->second};
     }
-    return nullptr;
+
+    ustring source = key.first;
+    ustring target = key.second;
+
+    // Queue of formats to visit
+    std::queue<ustring> q;
+    // Track visited formats
+    std::unordered_set<ustring> visited;
+    // To reconstruct path: maps format to previous format and converter used
+    std::unordered_map<ustring, std::pair<ustring, FunValue*>> parent;
+
+    q.push(source);
+    visited.insert(source);
+
+    while (!q.empty()) {
+        ustring current = q.front();
+        q.pop();
+
+        for (const auto& [conv_key, func] : converters) {
+            const ustring& from = conv_key.first;
+            const ustring& to = conv_key.second;
+
+            if (from != current) continue;
+            if (visited.count(to)) continue;
+
+            visited.insert(to);
+            parent[to] = {from, func};
+
+            if (to == target) {
+                // Reconstruct path
+                std::vector<FunValue*> path;
+                for (ustring at = target; at != source; at = parent[at].first) {
+                    path.push_back(parent[at].second);
+                }
+                return path;
+            }
+
+            q.push(to);
+        }
+    }
+
+    // No path found
+    return {};
 }
 
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 

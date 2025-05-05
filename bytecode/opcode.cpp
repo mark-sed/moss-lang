@@ -1338,12 +1338,15 @@ void Output::exec(Interpreter *vm) {
     if (val_format != target_format) {
         auto key = std::make_pair(val_format, target_format);
         auto converter = Interpreter::get_converter(key);
-        // TODO: Handle multiple pipelining calls
 
-        op_assert(converter, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_CONVERTER,
+        op_assert(!converter.empty(), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_CONVERTER,
             val_format.c_str(), target_format.c_str())));
-        v = runtime_function_call(vm, converter, {v});
-        assert(v && "no return from converter?");
+    
+        assert(v);
+        for (auto f: converter) {
+            v = runtime_function_call(vm, f, {v});
+            assert(v && "no return from converter?");
+        }
     }
 
     auto ov = to_string(vm, v);
