@@ -339,6 +339,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args[0].value->get_type() == BuiltIns::String);
             return String::lower(vm, args[0].value, err);
         }},
+        {"lshift", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto ai = dyn_cast<IntValue>(cf->get_arg("a"));
+            assert(ai);
+            auto counti = dyn_cast<IntValue>(cf->get_arg("count"));
+            assert(counti);
+            return new IntValue(ai->get_value() << counti->get_value());
+        }},
         {"NilType", [](Interpreter*, CallFrame*, Value*&) {
             return new NilValue();
         }},
@@ -397,6 +406,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"round", [](Interpreter* vm, CallFrame* cf, Value*&) {
             assert(cf->get_args().size() == 2);
             return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));
+        }},
+        {"rshift", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto ai = dyn_cast<IntValue>(cf->get_arg("a"));
+            assert(ai);
+            auto counti = dyn_cast<IntValue>(cf->get_arg("count"));
+            assert(counti);
+            return new IntValue(ai->get_value() >> counti->get_value());
         }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));

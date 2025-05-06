@@ -89,3 +89,12 @@ class MyList {
 mls = MyList([10,20,30,40])
 Math.sum(mls, -10)
 "\n"
+
+lshift(1, 4)
+"\n"
+lshift(-4, 5)
+"\n"
+rshift(100, 3)
+"\n"
+rshift(1, 10)
+"\n"

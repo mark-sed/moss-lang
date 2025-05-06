@@ -165,6 +165,26 @@ fun type(obj) {}
 @internal
 fun id(obj) {}
 
+@internal
+fun lshift(a:Int, count:Int) {
+    d"""
+    Left shift
+    @param a Int value
+    @param count Amount to shift by
+    @return First argument shifted left by the amount in the second argument
+    """
+}
+
+@internal
+fun rshift(a:Int, count:Int) {
+    d"""
+    Right shift
+    @param a Int value
+    @param count Amount to shift by
+    @return First argument shifted right by the amount in the second argument
+    """
+}
+
 fun all(iterable, test:Function) {
     for (i : iterable) {
         if (not test(i))

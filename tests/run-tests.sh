@@ -914,7 +914,8 @@ function test_lib_math {
 0.00\n1.00\n-0.0\n0.00\n-0.0\n2.29
 3\n4\n0.000000\n-100.000000\n12\n7.712600\n-0.120000
 1\n123.450000\n0\n0.000000\n42\ninf\ninf\nnan\nnan
-10\n5\n0\ninf\n90\n" $1
+10\n5\n0\ninf\n90
+16\n-128\n12\n0\n" $1
 }
 
 function test_lib_file {
