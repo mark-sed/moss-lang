@@ -344,6 +344,9 @@ space Math {
         }
         return start
     }
+
+    @internal
+    fun log(x:[Int,Float], base:[Int,Float]) {}
 }
 
 /// Exceptions

@@ -98,3 +98,13 @@ rshift(100, 3)
 "\n"
 rshift(1, 10)
 "\n"
+
+Math.log(8, 2)
+"\n"
+
+fun ilog(x, base) = round(Math.log(x, base)) ++ "\n"
+
+ilog(1024, 2)
+ilog(1.0/8, 2)
+ilog(1, 4)
+ilog(0.01, 10)

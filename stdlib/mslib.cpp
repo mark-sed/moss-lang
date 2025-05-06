@@ -333,6 +333,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 2);
             return cf->get_arg("vals");
         }},
+        {"log", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto xf = cf->get_arg("x");
+            assert(xf);
+            auto basef = cf->get_arg("base");
+            assert(basef);
+            return new FloatValue(std::log(xf->as_float()) / std::log(basef->as_float()));
+        }},
         {"lower", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
