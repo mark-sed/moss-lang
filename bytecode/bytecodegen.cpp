@@ -240,18 +240,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Concat3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Concat(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Concat3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Concat(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Concat3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Concat(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());
@@ -293,18 +301,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Exp3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Exp(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Exp3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Exp(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Exp3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Exp(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());
@@ -346,18 +362,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Add3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Add(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Add3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Add(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Add3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Add(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());
@@ -399,18 +423,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Sub3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Sub(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Sub3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Sub(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Sub3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Sub(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());
@@ -452,18 +484,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Div3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Div(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Div3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Div(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Div3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Div(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());
@@ -505,18 +545,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Mul3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Mul(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Mul3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Mul(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Mul3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Mul(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());
@@ -558,18 +606,26 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
             if (auto irvar = dyn_cast<Variable>(expr->get_left())) {
                 assert(irvar && "Assigning to non-variable");
                 if (irvar->is_non_local()) {
-                    // TODO:
-                    assert(false && "TODO: Storing to a non-local variable");
+                    if (right->is_const()) {
+                        append(new Mod3(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    } else {
+                        append(new Mod(next_reg(), left->reg(), free_reg(right)));
+                        append(new StoreNonLoc(val_last_reg(), irvar->get_name()));
+                    }
+                    left->set_silent(true);
+                    return left;
+                } else {
+                    if (right->is_const()) {
+                        append(new Mod3(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    else {
+                        append(new Mod(left->reg(), left->reg(), free_reg(right)));
+                    }
+                    append(new StoreName(left->reg(), irvar->get_name()));
+                    left->set_silent(true);
+                    return left;
                 }
-                if (right->is_const()) {
-                    append(new Mod3(left->reg(), left->reg(), free_reg(right)));
-                }
-                else {
-                    append(new Mod(left->reg(), left->reg(), free_reg(right)));
-                }
-                append(new StoreName(left->reg(), irvar->get_name()));
-                left->set_silent(true);
-                return left;
             } else if (auto be = dyn_cast<BinaryExpr>(expr->get_left())) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
                     auto index = emit(be->get_right());

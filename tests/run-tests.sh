@@ -544,7 +544,8 @@ Hi\n2468\n43210
 function test_scopes {
     expect_pass "scopes.ms" $1
     expect_out_eq "5\n6\n2\n2\nhi\ncaught\ncaught\n2\n3
--1\n12\n5\ncaught\nchanged\nalso\n4\n-5\ncaught\n3\n1\n" $1
+-1\n12\n5\ncaught\nchanged\nalso\n4\n-5\ncaught\n3\n1
+2\nhi there\n" $1
 }
 
 function test_lambdas {
