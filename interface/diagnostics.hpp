@@ -152,6 +152,7 @@ enum DiagID {
     NON_NIL_RETURN_IN_CONSTR, ///< Constructor with return with a non-nil value
     CHR_NOT_IN_RANGE,       ///< function chr argument outside of specified range
     ORD_INCORRECT_LENGTH,   ///< Ord received string not character
+    EOF_INPUT,              ///< Reached EOF
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -283,6 +284,7 @@ static const char * DIAG_MSGS[] = {
     "Constructor can contain only 'return' or 'return nil'",
     "Value '%ld' for function 'chr' not in range <0; 0x10ffff>",
     "Value ('%s') for function 'ord' has to be exactly 1 character long String",
+    "End of input",
 };
 
 /// \brief Diagnostic message for error reporting

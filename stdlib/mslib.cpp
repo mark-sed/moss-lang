@@ -104,13 +104,20 @@ Value *round(Interpreter *vm, Value *n, Value *ndigits) {
     }
 }
 
-Value *input(Interpreter *vm, Value *prompt) {
+Value *input(Interpreter *vm, Value *prompt, Value *&err) {
     (void)vm;
     auto msg = prompt->as_string();
     if (!msg.empty())
         outs << msg;
     ustring line;
     std::getline(std::cin, line);
+    if (std::cin.eof()) {
+        err = create_eof_error(diags::Diagnostic(*vm->get_src_file(), diags::EOF_INPUT));
+        return nullptr;
+    } else if (std::cin.fail()) {
+        // TODO: Handle
+        assert(false && "error in input");
+    }
     return new StringValue(line);
 }
 
@@ -301,7 +308,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"input", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
             assert(cf->get_args().size() == 1);
-            return input(vm, cf->get_args()[0].value);
+            return input(vm, cf->get_args()[0].value, err);
         }},
         {"Int", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;

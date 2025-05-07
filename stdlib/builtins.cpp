@@ -65,6 +65,7 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "DivisionByZeroError", BuiltIns::DivisionByZeroError, gf);
     store_glob_val(reg++, "OSError", BuiltIns::OSError, gf);
     store_glob_val(reg++, "FileNotFoundError", BuiltIns::FileNotFoundError, gf);
+    store_glob_val(reg++, "EOFError", BuiltIns::EOFError, gf);
 
     store_glob_val(reg++, "cpp", BuiltIns::Cpp::CppSpace, gf);
     
@@ -113,6 +114,7 @@ Value *BuiltIns::MathError = new ClassValue("MathError");
 Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");
 Value *BuiltIns::OSError = new ClassValue("OSError");
 Value *BuiltIns::FileNotFoundError = new ClassValue("FileNotFoundError");
+Value *BuiltIns::EOFError = new ClassValue("EOFError");
 
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");

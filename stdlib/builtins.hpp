@@ -65,6 +65,7 @@ namespace BuiltIns {
     extern Value *DivisionByZeroError;
     extern Value *OSError;
     extern Value *FileNotFoundError;
+    extern Value *EOFError;
 
     extern Value *Nil;
     extern Value *True;

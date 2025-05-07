@@ -100,6 +100,12 @@ try {
     "Caught: "++e++"\n"
 }
 
+try {
+    raise EOFError("")
+} catch (e:EOFError) {
+    "Caught: "++e++"\n"
+}
+
 // Inheritance tests
 
 try {

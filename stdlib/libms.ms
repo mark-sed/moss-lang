@@ -479,3 +479,10 @@ class __FileNotFoundError : OSError {
         return "FileNotFoundError: " ++ this.msg
     }
 }
+
+@internal_bind("EOFError")
+class __EOFError : Exception {
+    fun __String() {
+        return "EOFError: " ++ this.msg
+    }
+}

@@ -855,6 +855,7 @@ Caught: DivisionByZeroError:
 Caught: ValueError: 
 Caught: OSError: 
 Caught: FileNotFoundError: 
+Caught: EOFError: 
 Caught: NameError: 
 Caught: SyntaxError: 
 Caught: IndexError: 
@@ -872,6 +873,9 @@ function test_lib_ranges {
 function test_lib_input {
     expect_pass_redir "stdlib_tests/input.ms" "stdlib_tests/input.ms" $1 
     expect_out_eq "> // input function test\n// this file is also read\n5//\n" $1
+
+    expect_pass_redir "stdlib_tests/input_eof.ms" "empty.ms" $1 
+    expect_out_eq "caught eof\n" $1
 }
 
 function test_lib_lists {

@@ -95,6 +95,10 @@ inline Value *create_file_not_found_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::FileNotFoundError, dmsg);
 }
 
+inline Value *create_eof_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::EOFError, dmsg);
+}
+
 inline Value *create_stop_iteration() {
     auto clt = dyn_cast<ClassValue>(BuiltIns::StopIteration);
     assert(clt && "Passed non class type value");
