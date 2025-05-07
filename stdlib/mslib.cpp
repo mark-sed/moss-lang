@@ -121,6 +121,15 @@ Value *input(Interpreter *vm, Value *prompt, Value *&err) {
     return new StringValue(line);
 }
 
+Value *hex(Interpreter *vm, Value *number) {
+    auto ni = dyn_cast<IntValue>(number);
+    assert(ni);
+    std::stringstream ss;
+    ss << std::hex << ni->get_value();
+    std::string hex_str = ss.str();
+    return new StringValue("0x" + hex_str);
+}
+
 Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base) {
     (void)vm;
     (void)ths;
@@ -298,6 +307,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             assert(cf->get_args().size() == 1);
             return new IntValue(moss::hash(cf->get_arg("obj"), vm));
+        }},
+        {"hex", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 1);
+            return hex(vm, cf->get_args()[0].value);
         }},
         {"id", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;

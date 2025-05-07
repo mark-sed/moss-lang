@@ -81,3 +81,11 @@ catch(e:ValueError)
     "caught\n"
 ord("m")
 "\n"
+
+// hex
+hex(0)
+"\n"
+hex(42)
+"\n"
+hex(12648430)
+"\n"

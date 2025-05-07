@@ -245,6 +245,9 @@ fun chr(i:Int) {}
 @internal
 fun ord(c:String) {}
 
+@internal
+fun hex(number:Int) {}
+
 fun info(a) {
     docs = ""
     try {

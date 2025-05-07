@@ -902,7 +902,8 @@ Marek
 6-7-8-9
 h i !
 *\ncaught\ntrue\ntrue\ncaught\nmoss
-42\ncaught\n109\n" $1
+42\ncaught\n109
+0x0\n0x2a\n0xc0ffee\n" $1
 }
 
 function test_lib_random {
