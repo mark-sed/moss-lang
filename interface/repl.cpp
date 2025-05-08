@@ -83,6 +83,7 @@ int Repl::run() {
                         errs << ex_code->as_string();
                         interpreter->set_exit_code(1);
                     }
+                    break;
                 } else {
                     interpreter->report_call_stack(errs);
                     errs << opcode::to_string(interpreter, v);
