@@ -576,6 +576,25 @@ Paragraph2
 Hello\n" $1
 }
 
+function test_generators {
+    expect_pass_log "generators.ms" "-f html" $1
+    expect_out_eq "<!DOCTYPE html>
+<html>
+<body>
+<h1> Moss generated html</h1>
+<p>Hello, World!</p>
+<h2> Heading 2</h2>
+<p>
+</p>
+<b>Not correct converter</b>
+<p>
+</p>
+<p>But works!</p>
+
+</body>
+</html>\n" $1
+}
+
 function test_converters_pipeline {
     expect_pass_log "converters_pipeline.ms" "-f D" $1
     expect_out_eq "A2B:B2C:C2D:hi
@@ -1117,6 +1136,7 @@ function run_all_tests {
     run_test notes
     run_test converters
     run_test converters_pipeline
+    run_test generators
     run_test strings
     run_test fstrings
     run_test docstrings

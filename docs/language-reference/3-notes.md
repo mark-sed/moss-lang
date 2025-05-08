@@ -285,7 +285,7 @@ Generators are called after all notes have been collected (script terminated).
 import out
 import sys
 
-@generator(out.Formats.LaTeX, out.Formats.PDF)
+@generator(out.Formats.PDF)
 @platform(sys.Platform.Linux) // Invoked only on Linux
 fun tex2pdf(s) {
     tmp = out.create_tmp(s)
@@ -301,7 +301,7 @@ generate more formats.
 import out
 import sys
 
-@generator(out.Formats.LaTeX, out.Formats.PDF)
+@generator(out.Formats.PDF)
 @platform(sys.Platform.Linux) // Invoked only on Linux
 fun tex2pdf(s) {
     tmp = out.create_out_tmp(s)
@@ -312,7 +312,7 @@ fun tex2pdf(s) {
     return out.out_path()
 }
 
-@generator(out.Formats.PDF, "pdfa")
+@generator("pdfa")
 @platform(sys.Platform.Linux)
 fun pdf2pdfa(path) {
     // Here out_path will be the actual one chosen by the user

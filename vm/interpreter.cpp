@@ -13,11 +13,27 @@ using namespace moss;
 
 gcs::TracingGC *Interpreter::gc = nullptr;
 ModuleValue *Interpreter::libms_mod = nullptr;
-std::map<std::pair<ustring, ustring>, FunValue *> Interpreter::converters{};
+T_Converters Interpreter::converters{};
+T_Generators Interpreter::generators{};
+std::vector<Value *> Interpreter::generator_notes{};
+bool Interpreter::running_generator = false;
 
 void Interpreter::add_converter(ustring from, ustring to, FunValue *fun) {
     LOGMAX("Adding a converter " << from << " to " << to << " on " << fun->get_name());
     converters[std::make_pair(from, to)] = fun;
+}
+
+void Interpreter::add_generator(ustring format, FunValue *fun) {
+    LOGMAX("Adding a generator " << format << " on " << fun->get_name());
+    generators[format] = fun;
+}
+
+bool Interpreter::is_generator(ustring format) {
+    for (const auto& [conv_key, func] : generators) {
+        if (conv_key == format)
+            return true;
+    }
+    return false;
 }
 
 std::vector<FunValue *> Interpreter::get_converter(ustring from, ustring to) {
@@ -72,6 +88,14 @@ std::vector<FunValue *> Interpreter::get_converter(std::pair<ustring, ustring> k
 
     // No path found
     return {};
+}
+
+FunValue * Interpreter::get_generator(ustring format) {
+    auto found = generators.find(format);
+    if (found != generators.end()) {
+        return {found->second};
+    }
+    return nullptr;
 }
 
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
@@ -163,7 +187,7 @@ void Interpreter::init_const_frame() {
 
 std::ostream& Interpreter::debug(std::ostream& os) const {
     os << "Interpreter {\n";
-    unsigned index = 0;
+    /*unsigned index = 0;
     for (auto f: frames) {
         if (index == 0)
             os << "\t[" << index << "] Global frame:\n" << *f << "\n";
@@ -175,10 +199,15 @@ std::ostream& Interpreter::debug(std::ostream& os) const {
     for (auto f: const_pools) {
         os << "\t[" << index << "] Constant frame:\n" << *f << "\n";
         ++index;
-    }
+    }*/
     os << "\tConverters:\n";
     for (auto [p, f]: converters) {
         os << "\"" << p.first << "\"->\"" << p.second << "\": " << f->dump() << "\n";
+    }
+    os << "\n";
+    os << "\tGenerators:\n";
+    for (auto [p, f]: generators) {
+        os << "\"" << p << "\": " << f->dump() << "\n";
     }
     os << "\n";
     os << "\tExit code: " << exit_code << "\n";

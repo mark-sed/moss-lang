@@ -193,9 +193,18 @@ void opcode::raise(Value *exc) {
     throw exc;
 }
 
+void output_generator_notes(Interpreter *vm) {
+    LOGMAX("Generating notes using generator");
+    Interpreter::running_generator = true;
+    auto lines = new ListValue(Interpreter::get_generator_notes());
+    auto generator = Interpreter::get_generator(clopts::get_note_format());
+    assert(generator && "non-existent generator");
+    runtime_function_call(vm, generator, {lines});
+}
+
 void End::exec(Interpreter *vm) {
-    (void) vm;
-    // No op
+    if (Interpreter::is_generator(clopts::get_note_format()) && vm->is_main())
+        output_generator_notes(vm);
 }
 
 void Load::exec(Interpreter *vm) {
@@ -1253,11 +1262,17 @@ std::vector<ustring> get_str_list_annot(Value *args, unsigned long arg_am, ustri
     if(auto argl = dyn_cast<ListValue>(args)) {
         for (auto v : argl->get_vals()) {
             auto els = dyn_cast<StringValue>(v);
+            // TODO: Change to error message for unexpected type in annotation
             op_assert(els, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
                 "String", v->get_type()->get_name().c_str())));
             extr.push_back(els->get_value());
         }
     } else {
+        auto argstr = dyn_cast<StringValue>(args);
+        if (argstr && arg_am == 1) {
+            return {argstr->get_value()};
+        }
+        // TODO: Change to error message for unexpected type in annotation
         raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
             "List of Strings", args->get_type()->get_name().c_str())));
     }
@@ -1307,6 +1322,11 @@ void Annotate::exec(Interpreter *vm) {
             d->get_type()->get_name().c_str())));
         auto args = get_str_list_annot(v, 2, name, vm);
         Interpreter::add_converter(args[0], args[1], fn);
+    } else if (name == "generator") {
+        op_assert(fn, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::GENERATOR_ON_NONFUN,
+            d->get_type()->get_name().c_str())));
+        auto args = get_str_list_annot(v, 1, name, vm);
+        Interpreter::add_generator(args[0], fn);
     }
 }
 
@@ -1335,7 +1355,12 @@ void Output::exec(Interpreter *vm) {
 
     auto val_format = get_value_format(v);
     auto target_format = clopts::get_note_format();
-    if (val_format != target_format) {
+    if (!Interpreter::running_generator && Interpreter::is_generator(target_format)) {
+        LOGMAX("Generator format selected so saving note for later call to generator");
+        Interpreter::add_generator_note(v);
+        return;
+    }
+    else if (val_format != target_format) {
         auto key = std::make_pair(val_format, target_format);
         auto converter = Interpreter::get_converter(key);
 

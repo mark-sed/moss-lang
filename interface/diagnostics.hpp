@@ -144,6 +144,7 @@ enum DiagID {
     EXPECTED_CLOSE_FSTRING_EXPR,  ///< More than 1 expression or missing }
     MISMATCHED_ANNOT_ARG_AM,///< Incorrect amount of arguments to an annotation
     CONVERTER_ON_NONFUN,    ///< Annotating non-function as a converter
+    GENERATOR_ON_NONFUN,    ///< Annotating non-function as a generator
     CANNOT_FIND_CONVERTER,  ///< No conversion from format of note to output format
     DOC_STRING_AS_EXPR,     ///< a = d"something"
     CANNOT_BE_DOCUMENTED,   ///< Using docstring on some value it cannot store it
@@ -276,6 +277,7 @@ static const char * DIAG_MSGS[] = {
     "Expected closing fstring expression barace ('}')",
     "Annotation '%s' expects '%ld' arguments, but got '%ld'",
     "Only functions and lambdas can be annotated as 'converter', but got '%s'",
+    "Only functions and lambdas can be annotated as 'generator', but got '%s'",
     "Found no suitable conversion pipeline from note fromat '%s' to '%s'",
     "Doc-string ('d\"\"') cannot be used as an expression",
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",

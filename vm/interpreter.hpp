@@ -35,6 +35,9 @@ namespace gcs {
     class TracingGC;
 }
 
+using T_Converters = std::map<std::pair<ustring, ustring>, FunValue *>;
+using T_Generators = std::map<ustring, FunValue *>;
+
 /// Structure that holds information about argument in a function call
 struct CallFrameArg {
     ustring name;
@@ -163,23 +166,27 @@ private:
 
     static gcs::TracingGC *gc;  ///< Garbage collector for this VM
     // TODO: change to unordered_map
-    static std::map<std::pair<ustring, ustring>, FunValue *> converters;
-
+    static T_Converters converters;
+    static T_Generators generators;
+    static std::vector<Value *> generator_notes;
+    
     opcode::Address bci;        ///< Current bytecode index
-
+    
     int exit_code;              ///< VM's exit code
-
+    
     bool bci_modified;
     bool stop;
     bool main;
-
+    
     MemoryPool *get_global_const_pool() { return this->const_pools.front(); };
     MemoryPool *get_const_pool() { return this->const_pools.back(); }
     MemoryPool *get_local_frame() { return this->frames.back(); }
-
+    
     void init_const_frame();
     opcode::Register init_global_frame();
 public:
+    static bool running_generator;
+
     Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();
 
@@ -309,6 +316,11 @@ public:
     static void add_converter(ustring from, ustring to, FunValue *fun);
     static std::vector<FunValue *> get_converter(ustring from, ustring to);
     static std::vector<FunValue *> get_converter(std::pair<ustring, ustring> key);
+    static void add_generator(ustring format, FunValue *fun);
+    static FunValue *get_generator(ustring format);
+    static bool is_generator(ustring format);
+    static void add_generator_note(Value *note) { Interpreter::generator_notes.push_back(note); }
+    static std::vector<Value *> get_generator_notes() { return Interpreter::generator_notes; }
 
     //void push_exception(Value *v) { exception_stack.push_back(v); }
     //void pop_exception() { exception_stack.pop_back(); }
