@@ -28,19 +28,6 @@ Value *mslib::get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
     return v;
 }
 
-void exit(Interpreter *vm, Value *code) {
-    if (auto i = dyn_cast<IntValue>(code)) {
-        vm->set_exit_code(i->get_value());
-    }
-    else {
-        // Print the passed in value and exit with 1
-        vm->set_exit_code(1);
-        errs << code->as_string() << "\n";
-    }
-    global_controls::exit_called = true;
-    vm->set_stop(true);
-}
-
 Value *vardump(Interpreter *vm, Value *v) {
     (void)vm;
     std::stringstream ss;
@@ -287,13 +274,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::cos(cf->get_args()[0].value->as_float()));
-        }},
-        {"exit", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
-            auto args = cf->get_args();
-            assert(args.size() == 1 && "Mismatch of args");
-            exit(vm, args[0].value);
-            return nullptr;
         }},
         {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;

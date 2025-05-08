@@ -150,8 +150,9 @@ fun print(... msgs, end="\n", separator=" ") {}
 @internal
 fun input(prompt="") {}
 
-@internal
-fun exit(code=0) {}
+fun exit(code=0) {
+    raise SystemExit(code)
+}
 
 @internal
 fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {}
@@ -487,5 +488,16 @@ class __FileNotFoundError : OSError {
 class __EOFError : Exception {
     fun __String() {
         return "EOFError: " ++ this.msg
+    }
+}
+
+@internal_bind("SystemExit")
+class __SystemExit : Exception {
+    fun SystemExit(code=0) {
+        this.msg = this.code = code
+    }
+
+    fun __String() {
+        return String(this.code)
     }
 }

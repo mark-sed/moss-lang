@@ -106,6 +106,12 @@ try {
     "Caught: "++e++"\n"
 }
 
+try {
+    raise SystemExit()
+} catch (e:SystemExit) {
+    "Caught: "++e++"\n"
+}
+
 // Inheritance tests
 
 try {

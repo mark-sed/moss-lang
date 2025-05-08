@@ -66,6 +66,7 @@ namespace BuiltIns {
     extern Value *OSError;
     extern Value *FileNotFoundError;
     extern Value *EOFError;
+    extern Value *SystemExit;
 
     extern Value *Nil;
     extern Value *True;

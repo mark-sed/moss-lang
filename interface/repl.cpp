@@ -62,6 +62,9 @@ int Repl::run() {
 
 #ifndef NDEBUG
         if (!clopts::parse_only && !clopts::output_only) {
+#else
+        if (!clopts::output_only) {
+#endif
             //LOGMAX(*bc);
             try {
                 interpreter->run();
@@ -69,31 +72,35 @@ int Repl::run() {
                 if (line_irs.size() != 0)
                     outs << "\n";
             } catch (Value *v) {
-                interpreter->report_call_stack(errs);
-                errs << opcode::to_string(interpreter, v);
-                interpreter->restore_to_global_frame();
-                interpreter->set_bci(interpreter->get_code()->get_code().size());
+                if (v->get_type() == BuiltIns::SystemExit) {
+                    auto se = dyn_cast<ObjectValue>(v);
+                    assert(se);
+                    auto ex_code = se->get_attr("code", interpreter);
+                    assert(ex_code);
+                    if (auto ci = dyn_cast<IntValue>(ex_code)) {
+                        interpreter->set_exit_code(ci->get_value());
+                    } else {
+                        errs << ex_code->as_string();
+                        interpreter->set_exit_code(1);
+                    }
+                } else {
+                    interpreter->report_call_stack(errs);
+                    errs << opcode::to_string(interpreter, v);
+                    interpreter->restore_to_global_frame();
+                    interpreter->set_bci(interpreter->get_code()->get_code().size());
+                }
             }
         }
-#else
-        if (!clopts::output_only) {
-            try {
-                interpreter->run();
-                // TODO: Also dont print if line is silent
-                if (line_irs.size() != 0)
-                    outs << "\n";
-            } catch (Value *v) {
-                interpreter->report_call_stack(errs);
-                errs << opcode::to_string(interpreter, v);
-                interpreter->restore_to_global_frame();
-                interpreter->set_bci(interpreter->get_bci());
-            }
-        }
-#endif
 
         for (auto i : line_irs) {
             delete i;
         }
+    }
+
+    // Output notes if generator is used
+    if (Interpreter::is_generator(clopts::get_note_format()) && interpreter->is_main() && interpreter->get_exit_code() == 0) {
+        assert(!Interpreter::running_generator);
+        opcode::output_generator_notes(interpreter);
     }
 
     if (clopts::output) {

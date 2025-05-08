@@ -190,10 +190,28 @@ int main(int argc, const char *argv[]) {
         try {
             interpreter->run();
         } catch (Value *v) {
-            // Print call stack
-            interpreter->report_call_stack(errs);
-            errs << opcode::to_string(interpreter, v);
-            interpreter->set_exit_code(1);
+            if (v->get_type() == BuiltIns::SystemExit) {
+                auto se = dyn_cast<ObjectValue>(v);
+                assert(se);
+                auto ex_code = se->get_attr("code", interpreter);
+                assert(ex_code);
+                if (auto ci = dyn_cast<IntValue>(ex_code)) {
+                    interpreter->set_exit_code(ci->get_value());
+                } else {
+                    errs << ex_code->as_string();
+                    interpreter->set_exit_code(1);
+                }
+            } else {
+                // Print call stack
+                interpreter->report_call_stack(errs);
+                errs << opcode::to_string(interpreter, v);
+                interpreter->set_exit_code(1);
+            }
+        }
+        // Output notes if generator is used
+        if (Interpreter::is_generator(clopts::get_note_format()) && interpreter->is_main() && exit_code == 0) {
+            assert(!Interpreter::running_generator);
+            opcode::output_generator_notes(interpreter);
         }
 
         LOGMAX(*interpreter);

@@ -798,7 +798,7 @@ function test_lib_constants {
 
 function test_lib_exit {
     expect_pass "stdlib_tests/exit.ms" $1
-    expect_out_eq "hi\n" $1
+    expect_out_eq "caught 42\nhi\n" $1
 
     expect_fail_exec "exit(\"bye\")" "bye" $1
     expect_fail_exec "exit(42)" "" $1
@@ -887,6 +887,7 @@ Caught: ValueError:
 Caught: OSError: 
 Caught: FileNotFoundError: 
 Caught: EOFError: 
+Caught: 0
 Caught: NameError: 
 Caught: SyntaxError: 
 Caught: IndexError: 
