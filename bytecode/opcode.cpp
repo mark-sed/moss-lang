@@ -193,7 +193,7 @@ void opcode::raise(Value *exc) {
     throw exc;
 }
 
-void output_generator_notes(Interpreter *vm) {
+void opcode::output_generator_notes(Interpreter *vm) {
     LOGMAX("Generating notes using generator");
     Interpreter::running_generator = true;
     auto lines = new ListValue(Interpreter::get_generator_notes());
@@ -203,8 +203,7 @@ void output_generator_notes(Interpreter *vm) {
 }
 
 void End::exec(Interpreter *vm) {
-    if (Interpreter::is_generator(clopts::get_note_format()) && vm->is_main())
-        output_generator_notes(vm);
+    (void)vm;
 }
 
 void Load::exec(Interpreter *vm) {

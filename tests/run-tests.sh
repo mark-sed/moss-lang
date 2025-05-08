@@ -9,6 +9,7 @@ OUTP_STD=/tmp/.moss_test_std.txt
 TEST_DIR="" # Directory where the test are located
 POSITIONAL_ARGS=()
 RUN_TEST_FLAGS="${RUN_TEST_FLAGS:=}" # Additional flags for run
+PROG_ARGS=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -62,7 +63,7 @@ function run_exec {
 }
 
 function run_log {
-    CMD="$MOSS ${RUN_TEST_FLAGS} ${@:2} ${TEST_DIR}$1"
+    CMD="$MOSS ${RUN_TEST_FLAGS} ${@:2} ${TEST_DIR}$1 ${PROG_ARGS}"
     $CMD &>$OUTP_STD
     RETCODE=$(echo $?)
 }
@@ -577,6 +578,7 @@ Hello\n" $1
 }
 
 function test_generators {
+    PROG_ARGS="continue"
     expect_pass_log "generators.ms" "-f html" $1
     expect_out_eq "<!DOCTYPE html>
 <html>
@@ -590,9 +592,25 @@ function test_generators {
 <p>
 </p>
 <p>But works!</p>
-
 </body>
 </html>\n" $1
+
+    PROG_ARGS="exit0"
+    expect_pass_log "generators.ms" "-f html" $1
+    expect_out_eq "<!DOCTYPE html>
+<html>
+<body>
+<h1> Moss generated html</h1>
+<p>Hello, World!</p>
+</body>
+</html>\n" $1
+
+    # If exit with failure then we dont want to generate any output document as
+    # it will be inclomplete anyway and there might be missing resources.
+    PROG_ARGS="exit1"
+    expect_fail_log "generators.ms" "-f html" "" $1
+
+    PROG_ARGS=""
 }
 
 function test_converters_pipeline {

@@ -29,7 +29,7 @@ fun html_gen(txts) {
     for (t: txts) {
         t
     }
-    html"""
+    html"""\
 </body>
 </html>
 """
@@ -37,6 +37,12 @@ fun html_gen(txts) {
 
 md"# Moss generated html"
 "Hello, World!"
+
+if (args[0] == "exit0") {
+    exit(0)
+} else if (args[0] == "exit1") {
+    exit(1)
+}
 
 md"""## Heading 2"""
 """\n"""

@@ -491,5 +491,12 @@ void Interpreter::run() {
             global_controls::trigger_gc = false;
         }
     }
+    // Output notes if generator is used
+    if (!running_generator && is_generator(clopts::get_note_format()) && main && exit_code == 0) {
+        auto pre_call_glob_exit = global_controls::exit_called;
+        global_controls::exit_called = false;
+        opcode::output_generator_notes(this);
+        global_controls::exit_called = pre_call_glob_exit;
+    }
     LOG1("Finished interpreter");
 }

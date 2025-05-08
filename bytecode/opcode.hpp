@@ -219,6 +219,8 @@ bool is_type_eq_or_subtype(Value *t1, Value *t2);
 
 bool eq(Value *s1, Value *s2, Interpreter *vm);
 
+void output_generator_notes(Interpreter *vm);
+
 FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err);
 
 opcode::IntConst hash_obj(ObjectValue *obj, Interpreter *vm);

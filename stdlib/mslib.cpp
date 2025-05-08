@@ -37,11 +37,8 @@ void exit(Interpreter *vm, Value *code) {
         vm->set_exit_code(1);
         errs << code->as_string() << "\n";
     }
-    // Jump to end of file bc
-    vm->set_bci(vm->get_code_size()-1);
     global_controls::exit_called = true;
     vm->set_stop(true);
-    // No need to set any return as we jump to the end
 }
 
 Value *vardump(Interpreter *vm, Value *v) {
@@ -296,7 +293,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto args = cf->get_args();
             assert(args.size() == 1 && "Mismatch of args");
             exit(vm, args[0].value);
-            return nullptr; // Won’t be used, return early in dispatch()
+            return nullptr;
         }},
         {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -506,9 +503,6 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
     // Matching function name to execute internal implementation
     if (it != registry.end()) {
         ret_v = it->second(vm, cf, err);
-        // Special case for `exit`, return early to prevent BCI override
-        if (name == "exit")
-            return;
     } else {
         err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::INTERNAL_WITHOUT_BODY, name.c_str()));
     }
