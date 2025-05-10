@@ -169,6 +169,7 @@ private:
     static T_Converters converters;
     static T_Generators generators;
     static std::vector<Value *> generator_notes;
+    bool enable_code_output; // TODO: Should this be static?
     
     opcode::Address bci;        ///< Current bytecode index
     
@@ -321,6 +322,8 @@ public:
     static bool is_generator(ustring format);
     static void add_generator_note(Value *note) { Interpreter::generator_notes.push_back(note); }
     static std::vector<Value *> get_generator_notes() { return Interpreter::generator_notes; }
+    void set_enable_code_output(bool s) { this->enable_code_output = s; }
+    bool is_enable_code_output() { return this->enable_code_output; }
 
     //void push_exception(Value *v) { exception_stack.push_back(v); }
     //void pop_exception() { exception_stack.pop_back(); }

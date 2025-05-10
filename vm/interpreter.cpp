@@ -99,8 +99,8 @@ FunValue * Interpreter::get_generator(ustring format) {
 }
 
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
-        : code(code), src_file(src_file), bci(0), exit_code(0),
-          bci_modified(false), stop(false), main(main) {
+        : code(code), src_file(src_file), enable_code_output(false), bci(0),
+          exit_code(0), bci_modified(false), stop(false), main(main) {
     if (main && !gc) {
         gc = new gcs::TracingGC(this);
     }

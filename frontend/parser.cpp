@@ -48,6 +48,22 @@ static Operator token2operator(TokenType t) {
     }
 }
 
+void Parser::check_code_output(Module *m, ir::IR *decl) {
+    if (enable_code_output && !isa<ir::Note>(decl)) {
+        auto annt = dyn_cast<ir::Annotation>(decl);
+        if (!annt || annt->get_name() != "enable_code_output") {
+            std::stringstream code_str;
+            code_str << "```\n";
+            auto src_i = decl->get_src_info();
+            for (unsigned l = src_i.get_lines().first; l <= src_i.get_lines().second; ++l) {
+                code_str << scanner->get_src_text()[l] << "\n";
+            }
+            code_str << "```\n";
+            m->push_back(new ir::Note("md", new ir::StringLiteral(code_str.str(), src_i), src_i));
+        }
+    }
+}
+
 IR *Parser::parse() {
     LOG1("Started parsing module");
     reading_by_lines = false;
@@ -79,6 +95,7 @@ IR *Parser::parse() {
             return raise;
         }
         assert(decl && "Declaration in parser is nullptr");
+        check_code_output(m, decl);
         m->push_back(decl);
     }
 
@@ -368,6 +385,14 @@ ir::Annotation *Parser::annotation() {
                 value = new List(mul_vals, curr_src_info());
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         }
+        
+        // @!enable_code_output is also a parser annotation
+        if (name->get_value() == "enable_code_output" && !value) {
+            enable_code_output = true;
+        } else if (name->get_value() == "disable_code_output" && !value) {
+            enable_code_output = false;
+        }
+
         if (!value)
             value = new NilLiteral(curr_src_info());
         decl = new Annotation(name->get_value(), value, inner, curr_src_info());
@@ -472,7 +497,13 @@ IR *Parser::declaration() {
             assert(!parents.empty() && "No top level IR?");
             auto parent = parents.back();
             parser_assert(parent->can_be_annotated(), create_diag(diags::CANNOT_BE_ANNOTATED, parent->get_name().c_str()));
-            parents.back()->add_annotation(annot);
+            // For module we want to output the annotation as IR
+            if (parents.size() == 1) {
+                LOGMAX("Outputting module annotation");
+                return annot;
+            } else {
+                parents.back()->add_annotation(annot);
+            }
             was_inner_anot = true;
         }
         else {
@@ -484,6 +515,7 @@ IR *Parser::declaration() {
 
     // import
     if (match(TokenType::IMPORT)) {
+        auto importsrci = curr_src_info();
         std::vector<ir::Expression *> names;
         std::vector<ustring> aliases;
         ++lower_range_prec;
@@ -505,11 +537,13 @@ IR *Parser::declaration() {
         } while (match(TokenType::COMMA) && name);
 
         --lower_range_prec;
-        decl = new Import(names, aliases, curr_src_info());
+        importsrci.update_ends(curr_src_info());
+        decl = new Import(names, aliases, importsrci);
     }
 
     // if
     else if (match(TokenType::IF)) {
+        auto ifsrci = curr_src_info();
         expect(TokenType::LEFT_PAREN, create_diag(diags::IF_REQUIRES_PARENTH));
         auto cond = expression();
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
@@ -522,11 +556,15 @@ IR *Parser::declaration() {
             skip_nls(1);
         }
         if (match(TokenType::ELSE)) {
+            auto elsesrci = curr_src_info();
             auto elsebody = body();
-            decl = new If(cond, ifbody, new Else(elsebody, curr_src_info()), curr_src_info());
+            elsesrci.update_ends(curr_src_info());
+            ifsrci.update_ends(curr_src_info());
+            decl = new If(cond, ifbody, new Else(elsebody, elsesrci), ifsrci);
         }
         else {
-            decl = new If(cond, ifbody, nullptr, curr_src_info());
+            ifsrci.update_ends(curr_src_info());
+            decl = new If(cond, ifbody, nullptr, ifsrci);
         }
         // This is true even for single declaration as that declaration itself
         // has to have an end. No need for second one.
@@ -538,15 +576,18 @@ IR *Parser::declaration() {
 
     // while / do while
     else if (match(TokenType::WHILE)) {
+        auto whilesrci = curr_src_info();
         expect(TokenType::LEFT_PAREN, create_diag(diags::WHILE_REQUIRES_PARENTH));
         auto cond = expression();
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         auto whbody = body();
-        decl = new While(cond, whbody, curr_src_info());
+        whilesrci.update_ends(curr_src_info());
+        decl = new While(cond, whbody, whilesrci);
         no_end_needed = true;
     }
     else if (match(TokenType::DO)) {
+        auto dosrc = curr_src_info();
         auto whbody = body();
         skip_nls();
         expect(TokenType::WHILE, create_diag(diags::NO_WHILE_AFTER_DO));
@@ -554,11 +595,13 @@ IR *Parser::declaration() {
         auto cond = expression();
         parser_assert(cond, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        decl = new DoWhile(cond, whbody, curr_src_info());
+        dosrc.update_ends(curr_src_info());
+        decl = new DoWhile(cond, whbody, dosrc);
     }
 
     // for
     else if (match(TokenType::FOR)) {
+        auto forsrci = curr_src_info();
         expect(TokenType::LEFT_PAREN, create_diag(diags::FOR_REQUIRES_PARENTH));
         auto iterator = expression();
         parser_assert(is_id_or_member(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
@@ -568,12 +611,14 @@ IR *Parser::declaration() {
         parser_assert(collection, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
         auto frbody = body();
-        decl = new ForLoop(iterator, collection, frbody, curr_src_info());
+        forsrci.update_ends(curr_src_info());
+        decl = new ForLoop(iterator, collection, frbody, forsrci);
         no_end_needed = true;
     }
 
     // switch
     else if (match(TokenType::SWITCH)) {
+        auto swtsrci = curr_src_info();
         expect(TokenType::LEFT_PAREN, create_diag(diags::SWITCH_REQUIRES_PARENTH));
         auto val = expression();
         parser_assert(val, create_diag(diags::EXPR_EXPECTED));
@@ -582,7 +627,8 @@ IR *Parser::declaration() {
         auto sw_cases = cases();
         no_end_needed = true;
         --multi_line_parsing;
-        decl = new Switch(val, sw_cases, curr_src_info());
+        swtsrci.update_ends(curr_src_info());
+        decl = new Switch(val, sw_cases, swtsrci);
     }
     else if (match(TokenType::CASE)) {
         parser_error(create_diag(diags::CASE_OUTSIDE_SWITCH));
@@ -594,16 +640,19 @@ IR *Parser::declaration() {
     // try
     // TODO: Should we allow try ... finally without catch as Python does?
     else if (match(TokenType::TRY)) {
+        SourceInfo trysrci = curr_src_info();
         auto trbody = body();
         skip_nls();
         std::vector<Catch *> catches;
         while (match(TokenType::CATCH)) {
+            auto catchsrci = curr_src_info();
             expect(TokenType::LEFT_PAREN, create_diag(diags::CATCH_REQUIRES_PARENTH));
             auto arg = argument();
             parser_assert(arg, create_diag(diags::EXPR_EXPECTED));
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
             auto ctbody = body();
-            catches.push_back(new Catch(arg, ctbody, curr_src_info()));
+            catchsrci.update_ends(curr_src_info());
+            catches.push_back(new Catch(arg, ctbody, catchsrci));
             if (!reading_by_lines)
                 skip_nls();
             else {
@@ -619,10 +668,13 @@ IR *Parser::declaration() {
         }
         Finally *finallyStmt = nullptr;
         if (match(TokenType::FINALLY)) {
+            auto finsrci = curr_src_info();
             auto fnbody = body();
-            finallyStmt = new Finally(fnbody, curr_src_info());
+            finsrci.update_ends(curr_src_info());
+            finallyStmt = new Finally(fnbody, finsrci);
         }
-        decl = new Try(catches, trbody, finallyStmt, curr_src_info());
+        trysrci.update_ends(curr_src_info());
+        decl = new Try(catches, trbody, finallyStmt, trysrci);
         no_end_needed = true;
     }
     else if (match(TokenType::CATCH)) {
@@ -663,6 +715,7 @@ IR *Parser::declaration() {
     }
     // enum
     else if (match(TokenType::ENUM)) {
+        SourceInfo enumsrci = curr_src_info();
         ++multi_line_parsing;
         auto name = expect(TokenType::ID, create_diag(diags::ENUM_REQUIRES_NAME));
         skip_nls();
@@ -691,7 +744,8 @@ IR *Parser::declaration() {
         }
 
         --multi_line_parsing;
-        decl = new Enum(name->get_value(), values, curr_src_info());
+        enumsrci.update_ends(curr_src_info());
+        decl = new Enum(name->get_value(), values, enumsrci);
         no_end_needed = true;
     }
 
@@ -715,6 +769,7 @@ IR *Parser::declaration() {
             parents.pop_back();
             cldecl->set_body(clbody);
             decl = cldecl;
+            decl->get_src_info().update_ends(curr_src_info());
             // Assign outter annotations
             for (auto ann : cl_annts) {
                 decl->add_annotation(ann);
@@ -738,6 +793,7 @@ IR *Parser::declaration() {
             parents.pop_back();
             spcdecl->set_body(stbody);
             decl = spcdecl;
+            decl->get_src_info().update_ends(curr_src_info());
             no_end_needed = true;
         }
         else if (check(TokenType::LEFT_CURLY)) {
@@ -747,6 +803,7 @@ IR *Parser::declaration() {
             parents.pop_back();
             spcdecl->set_body(stbody);
             decl = spcdecl;
+            decl->get_src_info().update_ends(curr_src_info());
             no_end_needed = true;
         }
         else {
@@ -790,7 +847,9 @@ IR *Parser::declaration() {
             if (name.empty()) {
                 parser_error(create_diag(diags::ANONYMOUS_FUN));
             }
-            dyn_cast<Function>(decl)->set_body(fnbody);
+            auto fn = dyn_cast<Function>(decl);
+            fn->set_body(fnbody);
+            fn->get_src_info().update_ends(curr_src_info());
         }
         else if (match(TokenType::SET)) {
             auto lmbody = expression();

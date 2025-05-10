@@ -91,6 +91,7 @@ private:
     void emit(ir::Assert *asr);
     void emit(ir::Break *br);
     void emit(ir::Continue *ct);
+    void emit(ir::Annotation *annt);
     void emit(ir::IR *decl);
     void emit(std::list<ir::IR *> block);
 

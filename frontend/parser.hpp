@@ -38,6 +38,7 @@ private:
     int lower_range_prec;
     bool reading_by_lines;
     int multi_line_parsing;
+    bool enable_code_output;
 
     std::list<ir::IR *> parents;
     std::list<ir::Annotation *> outter_annots;
@@ -52,6 +53,7 @@ private:
     ir::IR *declaration();
     
     bool bind_docstring();
+    void check_code_output(ir::Module *m, ir::IR *decl);
 
     /// Tries to parse an expression
     /// 
@@ -156,7 +158,7 @@ public:
 
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
                                lower_range_prec(false), reading_by_lines(false),
-                               multi_line_parsing(0) {}
+                               multi_line_parsing(0), enable_code_output(false) {}
     ~Parser() {
         delete scanner;
         for (auto *t: tokens)

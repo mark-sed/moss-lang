@@ -1329,6 +1329,20 @@ void Annotate::exec(Interpreter *vm) {
     }
 }
 
+void AnnotateMod::exec(Interpreter *vm) {
+    auto *v = vm->load(val);
+    assert(v && "Cannot load val");
+    if (name == "enable_code_output") {
+        op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::ENABLE_CODE_OUT_ARG_SET)));
+        vm->set_enable_code_output(true);
+    } else if (name == "disable_code_output") {
+        op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::DISABLE_CODE_OUT_ARG_SET)));
+        vm->set_enable_code_output(false);
+    } else {
+        raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::UNKNOWN_MODULE_ANNOTATION, name.c_str())));
+    }
+}
+
 void Document::exec(Interpreter *vm) {
     auto d = vm->load(dst);
     assert(d && "loading non-existent register");
@@ -1372,8 +1386,13 @@ void Output::exec(Interpreter *vm) {
             assert(v && "no return from converter?");
         }
     }
-
     auto ov = to_string(vm, v);
+    
+    // notebook output
+    if (vm->is_enable_code_output() && target_format == "md" && val_format == "txt") {
+        ov = "_[Output]:_\n```\n" + ov + "```\n";
+    }
+    
     clopts::get_note_stream() << ov;
     if (clopts::print_notes)
         outs << ov;

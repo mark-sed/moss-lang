@@ -1461,9 +1461,6 @@ void BytecodeGen::emit(ir::Import *im) {
 }
 
 void BytecodeGen::emit(ir::Module *mod) {
-    for (auto val: mod->get_annotations()) {
-        assert(false && "TOOD: Missing module annotation generation");
-    }
     if (!mod->get_documentation().empty()) {
         auto doc_var = next_reg();
         auto str_var = next_creg();
@@ -1697,6 +1694,11 @@ void BytecodeGen::emit(ir::Continue *ct) {
     append(new opcode::Jmp(0, opcode::Jmp::JMPState::NOT_SET_CONTINUE));
 }
 
+void BytecodeGen::emit(ir::Annotation *annt) {
+    auto annot_val = emit(annt->get_value(), true);
+    append(new AnnotateMod(annt->get_name(), free_reg(annot_val)));
+}
+
 void BytecodeGen::emit(ir::IR *decl) {
     assert(decl && "emitting nullptr");
     if (auto mod = dyn_cast<Module>(decl)) {
@@ -1752,6 +1754,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto c = dyn_cast<ir::Continue>(decl)) {
         emit(c);
+    }
+    else if (auto a = dyn_cast<ir::Annotation>(decl)) {
+        emit(a);
     }
     else if (isa<EndOfFile>(decl)) {
         append(new End());

@@ -115,7 +115,7 @@ public:
         return os;
     }
 
-    SourceInfo get_src_info() { return this->src_info; }
+    SourceInfo &get_src_info() { return this->src_info; }
 
     virtual void add_annotation(Annotation *ann) {
         assert(can_be_annotated() && "Adding annotation to not annotatable type");
@@ -885,11 +885,12 @@ class Annotation : public Statement {
 private:
     Expression *value;
     bool inner;
+    bool module_annotation;
 public:
     static const IRType ClassType = IRType::ANNOTATION;
 
     Annotation(ustring name, Expression *value, bool inner, SourceInfo src_info) 
-        : Statement(ClassType, name, src_info), value(value), inner(inner) {}
+        : Statement(ClassType, name, src_info), value(value), inner(inner), module_annotation(false) {}
     ~Annotation() {
         delete value;
     }
@@ -903,6 +904,8 @@ public:
 
     Expression *get_value() { return this->value; }
     bool is_inner() { return this->inner; }
+    void set_is_module_annotation(bool ma) { this->module_annotation = ma; }
+    bool is_module_annotation() { return this->module_annotation; }
 };
 
 class EndOfFile : public Statement {

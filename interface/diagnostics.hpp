@@ -154,6 +154,9 @@ enum DiagID {
     CHR_NOT_IN_RANGE,       ///< function chr argument outside of specified range
     ORD_INCORRECT_LENGTH,   ///< Ord received string not character
     EOF_INPUT,              ///< Reached EOF
+    ENABLE_CODE_OUT_ARG_SET,///< When someone sets arguments for enable code output annotation
+    DISABLE_CODE_OUT_ARG_SET,///< Same as above but disabled
+    UNKNOWN_MODULE_ANNOTATION, ///< Annotation name that is not known
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -287,6 +290,9 @@ static const char * DIAG_MSGS[] = {
     "Value '%ld' for function 'chr' not in range <0; 0x10ffff>",
     "Value ('%s') for function 'ord' has to be exactly 1 character long String",
     "End of input",
+    "Annotation 'enable_code_output' does not take any arguments",
+    "Annotation 'disable_code_output' does not take any arguments",
+    "Unknown module annotation name '%s'",
 };
 
 /// \brief Diagnostic message for error reporting

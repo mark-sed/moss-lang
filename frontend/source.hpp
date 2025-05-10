@@ -132,6 +132,13 @@ public:
     const SourceFile &get_file() { return file; }
     std::pair<unsigned, unsigned> get_lines() { return lines; }
     std::pair<unsigned, unsigned> get_cols() { return cols; }
+    void set_lines(std::pair<unsigned, unsigned> l) { this->lines = l; }
+    void set_cols(std::pair<unsigned, unsigned> c) { this->cols = c; }
+    void set_end_line(unsigned l) { this->lines = std::make_pair(this->lines.first, l); }
+    void update_ends(SourceInfo srci) {
+        this->lines = std::make_pair(this->lines.first, srci.lines.second);
+        this->cols = std::make_pair(this->cols.first, srci.cols.second);
+    }
 };
 
 std::optional<ustring> get_file_path(ustring file);

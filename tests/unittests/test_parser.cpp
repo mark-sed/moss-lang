@@ -1438,6 +1438,7 @@ fun foo() {
 )";
 
     IRType expected[] = {
+        IRType::ANNOTATION,
         IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::LAMBDA,

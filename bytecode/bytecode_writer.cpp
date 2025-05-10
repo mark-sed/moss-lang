@@ -234,6 +234,10 @@ void BytecodeWriter::write(Bytecode *code) {
             write_string(o->name);
             write_register(o->val);
         }
+        else if (auto o = dyn_cast<opcode::AnnotateMod>(op_gen)){
+            write_string(o->name);
+            write_register(o->val);
+        }
         else if (auto o = dyn_cast<opcode::Document>(op_gen)){
             write_register(o->dst);
             write_string(o->val);
