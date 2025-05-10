@@ -714,6 +714,11 @@ function test_enable_code_output {
     expect_file_eq $OUTP_STD "${TEST_DIR}enable_code_output_expected.md" $1
 }
 
+function test_static_methods {
+    expect_pass "static_methods.ms" $1
+    expect_out_eq "caught\nid, 6\ncaught\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -1173,6 +1178,7 @@ function run_all_tests {
     run_test memberships
     run_test escaping
     run_test enable_code_output
+    run_test static_methods
 
     run_test fibonacci
     run_test factorial
