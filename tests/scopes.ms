@@ -139,3 +139,34 @@ fun compound_non_loc() {
 }
 
 compound_non_loc()
+
+a = "hi"
+b = 40
+
+fun compound_glob() {
+    a = "hi\n"
+    b = -400
+
+    fun f2() {
+        a = "\n"
+        b = 5
+        ::a ++= " there"
+        ::a ++= a
+        ::b ^= 0
+        ::b += 2
+        ::b -= 1
+        ::b /= 2 // 1
+        ::b *= b
+        ::b %= 3
+    }
+
+    ~f2()
+    b
+    "\n"
+    a
+}
+
+~compound_glob()
+a
+b
+"\n"

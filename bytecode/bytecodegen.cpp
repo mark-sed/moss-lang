@@ -293,6 +293,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Concat3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Concat(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -354,6 +365,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Exp3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Exp(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -415,6 +437,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Add3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Add(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -476,6 +509,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Sub3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Sub(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -537,6 +581,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Div3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Div(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -598,6 +653,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Mul3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Mul(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
@@ -659,6 +725,17 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     append(new StoreAttr(retv->reg(), free_reg(leftE), rightE->get_name()));
                     return retv;
                 }
+            } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
+                assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
+                if (right->is_const()) {
+                    append(new Mod3(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                } else {
+                    append(new Mod(next_reg(), left->reg(), free_reg(right)));
+                    append(new StoreGlobal(val_last_reg(), ue->get_expr()->get_name()));
+                }
+                left->set_silent(true);
+                return left;
             } else {
                 assert(false && "Missing assignment type");
             }
