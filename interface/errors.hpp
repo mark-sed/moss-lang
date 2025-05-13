@@ -131,7 +131,7 @@ namespace error {
 
     /// Prints warning to std::wcerr
     /// \param msg Message to print 
-    void warning(const char *msg);
+    void warning(diags::Diagnostic msg);
 
     /// Exits program with passed in code
     /// \param code Error code to exit with 

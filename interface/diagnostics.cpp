@@ -15,7 +15,8 @@ Diagnostic::Diagnostic(File &src_f, Token *token, Scanner *scanner, DiagID id, A
 }*/
 
 Diagnostic::Diagnostic(ErrorToken *token, Scanner *scanner) 
-            : id(DiagID::SYNTAX_ERROR), src_f(token->get_src_info().get_file()), src_info(token->get_src_info()), scanner(scanner) {
+            : id(DiagID::SYNTAX_ERROR), src_f(token->get_src_info().get_file()), 
+              src_info(token->get_src_info()), scanner(scanner), warning(false) {
     this->msg = token->get_report();
 }
 

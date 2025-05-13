@@ -28,7 +28,7 @@ namespace diags {
 
 /// \brief ID of diagnostic error
 /// This value corresponds to the error message tied to this error type
-enum DiagID {
+enum DiagID : unsigned {
     UNKNOWN = 0,            ///< This value should not be reported
     SYNTAX_ERROR,           ///< Error with syntax (in scanner)
     EXPECTED_END,           ///< Missing ; or nl 
@@ -295,16 +295,32 @@ static const char * DIAG_MSGS[] = {
     "Unknown module annotation name '%s'",
 };
 
+/// \brief ID of diagnostic error
+/// This value corresponds to the error message tied to this error type
+enum WarningID : unsigned {
+    WARN_UNKNOWN = 0,       ///< This value should not be reported
+
+    NUMBER_OF_WARNING_IDS   ///< This value should not be reported it can be used to get the amount of IDs
+};
+
+/// This array holds messages (formatting strings) corresponding to WarningID.
+/// \note There has to be an entry for every value in WarningID, but the last one
+///       used for getting the enum size. 
+static const char * WARNING_MSGS[] = {
+    "Unknown error",
+};
+
 /// \brief Diagnostic message for error reporting
 /// This class holds all resources needed to provide detailed error report to
 /// the user. 
 class Diagnostic {
 public:
-    DiagID id;
+    unsigned id;
     const File &src_f;
     std::optional<SourceInfo> src_info;
     Scanner *scanner;
     ustring msg;
+    bool warning;
 
     template<typename ... Args>
     Diagnostic(File &src_f, SourceInfo src_info, Scanner *scanner, DiagID id, Args ... args) 
@@ -315,6 +331,28 @@ public:
             this->msg = utils::formatv(DIAG_MSGS[id], args ...);
         else
             this->msg = DIAG_MSGS[id];
+    }
+
+    // Warning
+    template<typename ... Args>
+    Diagnostic(bool warning, File &src_f, SourceInfo src_info, Scanner *scanner, WarningID id, Args ... args) 
+               : id(id), src_f(src_f), src_info(src_info), scanner(scanner), warning(warning) {
+        static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
+        static_assert(WarningID::NUMBER_OF_WARNING_IDS == sizeof(WARNING_MSGS)/sizeof(char *) && "Mismatch in warning IDs and messages");
+        
+        if (!warning) {
+            assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
+            if (sizeof...(Args) > 0)
+                this->msg = utils::formatv(DIAG_MSGS[id], args ...);
+            else
+                this->msg = DIAG_MSGS[id];
+        } else {
+            assert(id < std::end(WARNING_MSGS)-std::begin(WARNING_MSGS) && "Warning ID does not have a corresponding message");
+            if (sizeof...(Args) > 0)
+                this->msg = utils::formatv(WARNING_MSGS[id], args ...);
+            else
+                this->msg = WARNING_MSGS[id];
+        }
     }
 
     Diagnostic(ErrorToken *token, Scanner *scanner);
@@ -328,6 +366,27 @@ public:
             this->msg = utils::formatv(DIAG_MSGS[id], args ...);
         else
             this->msg = DIAG_MSGS[id];
+    }
+
+    template<typename ... Args>
+    Diagnostic(bool warning, File &src_f, WarningID id, Args ... args) 
+               : id(id), src_f(src_f), src_info(std::nullopt), scanner(nullptr), warning(warning) {
+        static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
+        static_assert(WarningID::NUMBER_OF_WARNING_IDS == sizeof(WARNING_MSGS)/sizeof(char *) && "Mismatch in warning IDs and messages");
+        
+        if (!warning) {
+            assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
+            if (sizeof...(Args) > 0)
+                this->msg = utils::formatv(DIAG_MSGS[id], args ...);
+            else
+                this->msg = DIAG_MSGS[id];
+        } else {
+            assert(id < std::end(WARNING_MSGS)-std::begin(WARNING_MSGS) && "Warning ID does not have a corresponding message");
+            if (sizeof...(Args) > 0)
+                this->msg = utils::formatv(WARNING_MSGS[id], args ...);
+            else
+                this->msg = WARNING_MSGS[id];
+        }
     }
 };
 

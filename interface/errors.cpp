@@ -68,11 +68,19 @@ void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit
 ustring error::format_error(diags::Diagnostic msg) {
     std::stringstream ss;
     if (!msg.scanner) {
-        ss << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
-            << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ": "
-            << msg.msg << (msg.msg.back() != '?' ? "." : "") << error::colors::colorize(error::colors::GRAY) 
-            << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
-            << error::colors::reset() << std::endl;
+        if (!msg.warning)
+            ss << error::colors::colorize(error::colors::LIGHT_RED) << "error";
+        else
+            ss << error::colors::colorize(error::colors::YELLOW) << "warning";
+        ss << error::colors::reset() << ": "
+           << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << error::colors::reset() << ": "
+           << msg.msg << (msg.msg.back() != '?' ? "." : "");
+        if (!msg.warning)
+            ss << error::colors::colorize(error::colors::GRAY) << " [EDx";
+        else
+            ss << error::colors::colorize(error::colors::BROWN) << " [WDx";
+        ss << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
+           << error::colors::reset() << std::endl;
     }
     else {
         const char *bar = "      | ";
@@ -80,13 +88,21 @@ ustring error::format_error(diags::Diagnostic msg) {
         assert(msg.src_info && "sanity check");
         SourceInfo info = *msg.src_info;
 
-        ss << error::colors::colorize(error::colors::LIGHT_RED) << "error" << error::colors::reset() << ": "
-        << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
-        << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
+        if (!msg.warning)
+            ss << error::colors::colorize(error::colors::LIGHT_RED) << "error";
+        else
+            ss << error::colors::colorize(error::colors::YELLOW) << "warning";
+        ss << error::colors::reset() << ": "
+           << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
+           << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
 
-        ss << bar << msg.msg << (msg.msg.back() != '?' ? "." : "") << error::colors::colorize(error::colors::GRAY) 
-        << " [EDx" << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
-        << error::colors::reset() << std::endl;
+        ss << bar << msg.msg << (msg.msg.back() != '?' ? "." : "");
+        if (!msg.warning)
+            ss << error::colors::colorize(error::colors::GRAY) << " [EDx";
+        else
+            ss << error::colors::colorize(error::colors::BROWN) << " [WDx";
+        ss << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
+           << error::colors::reset() << std::endl;
 
         const long LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
         const long LINE_LEN_POST = 20;
@@ -136,9 +152,10 @@ void error::error(diags::Diagnostic msg) {
     error::exit(error::ErrorCode::RUNTIME);
 }
 
-void error::warning(const char *msg) {
-    /* TODO: Check if no-warn is set */
-    errs << colors::colorize(colors::PURPLE) << "warning: " << colors::reset() << msg << "." << std::endl;
+void error::warning(diags::Diagnostic msg) {
+    assert(msg.warning && "non-warning passed to warning");
+    // TODO: Check that -W is set if -W error then raise this also as an exception
+    errs << format_error(msg);
 }
 
 [[noreturn]] void error::exit(error::ErrorCode code) {
