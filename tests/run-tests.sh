@@ -720,6 +720,11 @@ function test_static_methods {
     expect_out_eq "caught\nid, 6\ncaught\n" $1
 }
 
+function test_type_casting {
+    expect_pass "type_casting.ms" $1
+    expect_out_eq "42\ntrue\n42\n42.000000\ncaught\ncaught\ncaught\n" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -1180,6 +1185,7 @@ function run_all_tests {
     run_test escaping
     run_test enable_code_output
     run_test static_methods
+    run_test type_casting
 
     run_test fibonacci
     run_test factorial

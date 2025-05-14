@@ -157,6 +157,8 @@ enum DiagID : unsigned {
     ENABLE_CODE_OUT_ARG_SET,///< When someone sets arguments for enable code output annotation
     DISABLE_CODE_OUT_ARG_SET,///< Same as above but disabled
     UNKNOWN_MODULE_ANNOTATION, ///< Annotation name that is not known
+    NO_TYPE_CONV_F_DEFINED,  ///< When class does not have __Int
+    TYPE_CANNOT_BE_CONV,     ///< Passed non convertable value
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -293,6 +295,8 @@ static const char * DIAG_MSGS[] = {
     "Annotation 'enable_code_output' does not take any arguments",
     "Annotation 'disable_code_output' does not take any arguments",
     "Unknown module annotation name '%s'",
+    "Object of type '%s' cannot be converted to %s — %s method has to be defined",
+    "Type '%s' cannot be converted to %s",
 };
 
 /// \brief ID of diagnostic error
@@ -324,7 +328,7 @@ public:
 
     template<typename ... Args>
     Diagnostic(File &src_f, SourceInfo src_info, Scanner *scanner, DiagID id, Args ... args) 
-               : id(id), src_f(src_f), src_info(src_info), scanner(scanner) {
+               : id(id), src_f(src_f), src_info(src_info), scanner(scanner), warning(false) {
         static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
         assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
         if (sizeof...(Args) > 0)
@@ -359,7 +363,7 @@ public:
 
     template<typename ... Args>
     Diagnostic(File &src_f, DiagID id, Args ... args) 
-               : id(id), src_f(src_f), src_info(std::nullopt), scanner(nullptr) {
+               : id(id), src_f(src_f), src_info(std::nullopt), scanner(nullptr), warning(false) {
         static_assert(DiagID::NUMBER_OF_IDS == sizeof(DIAG_MSGS)/sizeof(char *) && "Mismatch in error IDs and messages");
         assert(id < std::end(DIAG_MSGS)-std::begin(DIAG_MSGS) && "Diagnostics ID does not have a corresponding message");
         if (sizeof...(Args) > 0)

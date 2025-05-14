@@ -67,7 +67,7 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \param args Arguments to pass in there the 0th arg is `this` argument
 /// \param constr_class If set them this is taken as constructor call and object is pushed
 /// \return Value returned by the function
-Value *runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
+Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
     LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
 #ifndef NDEBUG
     auto pre_call_cf_size = vm->get_call_frame_size();
@@ -128,15 +128,15 @@ Value *runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value
     return ret_v;
 }
 
-Value *runtime_function_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
+Value *opcode::runtime_function_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
     return runtime_call(vm, funV, args, nullptr, true);
 }
 
-Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
+Value *opcode::runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
     return runtime_call(vm, funV, args, nullptr, false);
 }
 
-Value *runtime_constructor_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class) {
+Value *opcode::runtime_constructor_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class) {
     return runtime_call(vm, funV, args, constr_class, false);
 }
 

@@ -224,6 +224,11 @@ void output_generator_notes(Interpreter *vm);
 
 FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err);
 
+Value *runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call);
+Value *runtime_function_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args);
+Value *runtime_method_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args);
+Value *runtime_constructor_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class);
+
 opcode::IntConst hash_obj(ObjectValue *obj, Interpreter *vm);
 
 /// Base Opcode class

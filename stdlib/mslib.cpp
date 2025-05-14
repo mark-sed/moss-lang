@@ -114,7 +114,30 @@ Value *hex(Interpreter *vm, Value *number) {
     return new StringValue("0x" + hex_str);
 }
 
-Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base) {
+Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
+    if (!isa<ObjectValue>(v)) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_CANNOT_BE_CONV, v->get_type()->get_name().c_str(), tname));
+        return nullptr;
+    }
+    
+    Value *rval = nullptr;
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    auto int_f = opcode::lookup_method(vm, v, fname, {}, did);
+    if (int_f) {
+        rval = opcode::runtime_method_call(vm, int_f, {v});
+    } else {
+        if (did == diags::DiagID::UNKNOWN) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_TYPE_CONV_F_DEFINED, v->get_type()->get_name().c_str(), tname, fname));
+        } else {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fname, diags::DIAG_MSGS[did]));
+        }
+        return nullptr;
+    }
+    assert(rval && "Nothing returned?");
+    return rval;
+}
+
+Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base, Value *&err) {
     (void)vm;
     (void)ths;
     IntValue *base_int = nullptr;
@@ -139,13 +162,15 @@ Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base) {
     if (auto fv = dyn_cast<FloatValue>(v)) {
         return new IntValue(static_cast<opcode::IntConst>(fv->get_value()));
     }
-    
-    // TODO: Raise error 
-    assert(false && "Incorrect arg type");
-    return new IntValue(0);
+    assert(!base && "v should be String if base is not null");
+    auto rval = call_type_converter(vm, v, "Int", "__Int", err);
+    if (!err && rval && !isa<IntValue>(rval)) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Int", rval->get_type()->get_name().c_str()));
+    }
+    return rval;
 }
 
-Value *Float(Interpreter *vm, Value *ths, Value *v) {
+Value *Float(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     (void)vm;
     (void)ths;
 
@@ -166,12 +191,14 @@ Value *Float(Interpreter *vm, Value *ths, Value *v) {
     if (auto fv = dyn_cast<IntValue>(v)) {
         return new FloatValue(static_cast<opcode::FloatConst>(fv->get_value()));
     }
-    
-    assert(false && "Incorrect arg type");
-    return new FloatValue(0.0);
+    auto rval = call_type_converter(vm, v, "Float", "__Float", err);
+    if (!err && rval && !isa<FloatValue>(rval)) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Float", rval->get_type()->get_name().c_str()));
+    }
+    return rval;
 }
 
-Value *Bool(Interpreter *vm, Value *ths, Value *v) {
+Value *Bool(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     (void)vm;
     (void)ths;
 
@@ -195,8 +222,30 @@ Value *Bool(Interpreter *vm, Value *ths, Value *v) {
     if (auto dv = dyn_cast<DictValue>(v)) {
         return new BoolValue(dv->size() != 0);
     }
+    if (isa<ObjectValue>(v)) {
+        auto rval = call_type_converter(vm, v, "Bool", "__Bool", err);
+        if (!err && rval && !isa<BoolValue>(rval)) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Bool", rval->get_type()->get_name().c_str()));
+        }
+        return rval;
+    }
     
     return new BoolValue(true);
+}
+
+Value *String_String(Interpreter *vm, Value *ths, Value *v, Value *&err) {
+    (void)ths;
+    if (isa<ObjectValue>(v)) {
+        Value *trash_err = nullptr;
+        auto rval = call_type_converter(vm, v, "String", "__String", trash_err);
+        if (rval && !trash_err) {
+            if (!isa<StringValue>(rval)) {
+                rval = new StringValue(rval->as_string());
+            }
+            return rval;
+        }
+    }
+    return new StringValue(v->as_string());
 }
 
 Value *Note(Interpreter *vm, Value *ths, Value *format, Value *value) {
@@ -245,7 +294,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
             assert(cf->get_args().size() == 2);
-            return Bool(vm, cf->get_arg("this"), cf->get_arg("v"));
+            return Bool(vm, cf->get_arg("this"), cf->get_arg("v"), err);
         }},
         {"capitalize", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
@@ -278,7 +327,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
             assert(cf->get_args().size() == 2);
-            return Float(vm, cf->get_arg("this"), cf->get_arg("v"));
+            return Float(vm, cf->get_arg("this"), cf->get_arg("v"), err);
         }},
         {"hash", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -305,7 +354,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             auto args = cf->get_args();
             assert((args.size() == 2 || args.size() == 3));
-            return Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base"));
+            return Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base"), err);
         }},
         /*{"join", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
@@ -435,8 +484,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             (void)vm;
             assert(cf->get_args().size() == 2);
-            assert(cf->get_arg("v"));
-            return new StringValue(cf->get_arg("v")->as_string());
+            return String_String(vm, cf->get_arg("this"), cf->get_arg("v"), err);
         }},
         {"strip", [](Interpreter*, CallFrame* cf, Value*&) {
             auto strv = dyn_cast<StringValue>(cf->get_args()[0].value)->get_value();
