@@ -127,7 +127,7 @@ namespace error {
     /// Formats Diagnostics error into a string message with colors (unless
     /// output redirection is detected).
     /// \return Formatted Diagnostics error
-    ustring format_error(diags::Diagnostic msg);
+    ustring format_error(diags::Diagnostic msg, bool warning_as_error=false);
 
     /// Prints warning to std::wcerr
     /// \param msg Message to print 

@@ -241,6 +241,15 @@ function expect_err_eq_rx {
     fi
 }
 
+
+function expect_err_eq {
+    outstr=$(cat $OUTP_ERR)
+    if ! cmp  "$OUTP_ERR" <(printf "$1") ; then
+        failed $2 "Output differs"
+        printf "Expected:\n-------\n${1}\n"
+        printf "Got:\n----\n${outstr}\n"
+    fi
+}
 function expect_file_eq {
     res=$(diff $1 $2)
     if [[ $? -ne 0 ]]; then
@@ -725,6 +734,32 @@ function test_type_casting {
     expect_out_eq "42\ntrue\n42\n42.000000\ncaught\ncaught\ncaught\n" $1
 }
 
+function test_warnings {
+    local out_exp="start
+-9223372036854775807
+9223372036854775807
+inf
+-0.000000
+-inf\n"
+    # no -W means -W ignore
+    expect_pass "warnings.ms" $1
+    expect_err_eq "" $1
+    expect_out_eq "$out_exp" $1
+    expect_pass_log "warnings.ms" "-Wi" $1
+    expect_err_eq "" $1
+    expect_out_eq "$out_exp" $1
+
+    # -W error has to fail
+    expect_fail_log "warnings.ms" "-W error" "error:" $1
+
+    # -W all outputs errors to stderr and continues
+    expect_pass_log "warnings.ms" "-W all" $1
+    # pass_log will concat the streams, but beware that the highlights will be
+    # offset and so for a new version it is better to copy $OUTP_STD or
+    # just create single tests for this one warning
+    expect_file_eq $OUTP_STD "${TEST_DIR}warnings_expected.txt" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -1186,6 +1221,7 @@ function run_all_tests {
     run_test enable_code_output
     run_test static_methods
     run_test type_casting
+    run_test warnings
 
     run_test fibonacci
     run_test factorial

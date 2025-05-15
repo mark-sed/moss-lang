@@ -27,3 +27,10 @@ moss: error: assert_file.ms:1:8:
   2 | assert()
     | ~~~~~~~^
 ```
+
+## Warnings
+
+Warnings should take the same shape as errors with the code snippet and such.
+It should have its own IDs and use different colors to easily distinguish them
+from errors.
+Stack trace is pointless unless called from a in runtime as a function.

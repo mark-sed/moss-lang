@@ -65,10 +65,10 @@ void error::error(error::ErrorCode code, const char *msg, File *src_f, bool exit
     }
 }
 
-ustring error::format_error(diags::Diagnostic msg) {
+ustring error::format_error(diags::Diagnostic msg, bool warning_as_error) {
     std::stringstream ss;
     if (!msg.scanner) {
-        if (!msg.warning)
+        if (!msg.warning || warning_as_error)
             ss << error::colors::colorize(error::colors::LIGHT_RED) << "error";
         else
             ss << error::colors::colorize(error::colors::YELLOW) << "warning";
@@ -88,7 +88,7 @@ ustring error::format_error(diags::Diagnostic msg) {
         assert(msg.src_info && "sanity check");
         SourceInfo info = *msg.src_info;
 
-        if (!msg.warning)
+        if (!msg.warning || warning_as_error)
             ss << error::colors::colorize(error::colors::LIGHT_RED) << "error";
         else
             ss << error::colors::colorize(error::colors::YELLOW) << "warning";
@@ -154,8 +154,13 @@ void error::error(diags::Diagnostic msg) {
 
 void error::warning(diags::Diagnostic msg) {
     assert(msg.warning && "non-warning passed to warning");
-    // TODO: Check that -W is set if -W error then raise this also as an exception
-    errs << format_error(msg);
+    if (clopts::get_warning_level() == clopts::WarningLevel::WL_ALL) {
+        errs << format_error(msg);
+    } else if (clopts::get_warning_level() == clopts::WarningLevel::WL_ERROR) {
+        LOGMAX("-W error set so existing with warning");
+        errs << format_error(msg, true);
+        std::exit(1);
+    }
 }
 
 [[noreturn]] void error::exit(error::ErrorCode code) {

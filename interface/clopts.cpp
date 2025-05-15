@@ -14,6 +14,7 @@ args::ValueFlag<std::string> note_format(note_group, "<format-name>", "Converts 
 static std::ostream *output_note_file = nullptr; ///< Stream into which output notes, this has to be explicitly deleted
 
 static std::vector<ustring> program_args;
+static WarningLevel warn_level = WarningLevel::WL_IGNORE;
 
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     args::HelpFlag help(interface_group, "help", "Display available options", {'h', "help"});
@@ -50,6 +51,20 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
 
     for (;rest != end; ++rest) {
         program_args.push_back(*rest);
+    }
+
+    if (warning) {
+        auto war_val = args::get(warning);
+        if (war_val == "ignore" || war_val == "i") {
+            warn_level = WarningLevel::WL_IGNORE;
+        } else if (war_val == "all" || war_val == "a") {
+            warn_level = WarningLevel::WL_ALL;
+        } else if (war_val == "error" || war_val == "e") {
+            warn_level = WarningLevel::WL_ERROR;
+        } else {
+            // TODO: Word more nicely and add explanation for the levels
+            error::error(error::ErrorCode::ARGUMENT, ustring("Unknown -W value '" + args::get(warning) + "'! Value can be one for these: all, error, ignore").c_str());
+        }
     }
 }
 
@@ -100,4 +115,8 @@ bool moss::clopts::use_color() {
 ustring moss::clopts::get_note_format() {
     if (!note_format) return "txt";
     return args::get(note_format);
+}
+
+WarningLevel moss::clopts::get_warning_level() {
+    return warn_level;
 }

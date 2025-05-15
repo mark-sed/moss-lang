@@ -23,6 +23,8 @@ inline args::ArgumentParser arg_parser("\b\bMoss Language Interpreter");
 inline args::Group interpreter_group(arg_parser, "Interpreter options:");
 inline args::Positional<std::string> file_name(interpreter_group, "<file name>", "Input moss program to run");
 inline args::ValueFlag<std::string> code(interpreter_group, "<code>", "String of moss code to be run", {'e', "execute"});
+// Note: values in here must match those in enum WarningLevels bellow
+inline args::ValueFlag<std::string> warning(interpreter_group, "[all, error, ignore]", "Warning level", {'W', "warning"});
 
 // Bytecode flags
 inline args::Group bc_group(arg_parser, "Moss bytecode options:");
@@ -63,6 +65,12 @@ inline args::Flag use_repl_mode(debugging_group, "use-repl-mode", "Runs moss as 
 
 inline args::Group interface_group(arg_parser, "Interface options:");
 
+enum WarningLevel {
+    WL_IGNORE,
+    WL_ALL,
+    WL_ERROR,
+};
+
 /// Interpreter argument parsing. It also accepts the program arguments
 /// \param argc Number of arguments including the program name
 /// \param argv Arguments including the program name
@@ -87,6 +95,8 @@ std::string get_logging_list();
 bool use_color();
 
 std::vector<ustring> get_program_args();
+
+WarningLevel get_warning_level();
 
 }
 

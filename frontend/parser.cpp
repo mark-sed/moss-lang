@@ -5,6 +5,8 @@
 #include "errors.hpp"
 #include "clopts.hpp"
 #include <cassert>
+#include <climits>
+#include <cmath>
 
 using namespace moss;
 using namespace ir;
@@ -1538,14 +1540,48 @@ Expression *Parser::constant() {
     else if (check(TokenType::INT)) {
         auto val = advance();
         // The value was parsed and checked, so no need to check for
-        // correct conversion
+        // correct conversion, but we need to check for under/overflow
+        char *end;
+        errno = 0;
+        opcode::IntConst ival = std::strtol(val->get_value().c_str(), &end, 10);
+        if (errno == ERANGE) {
+            error::warning(diags::Diagnostic(true, this->src_file, curr_src_info(), scanner, diags::WarningID::INT_CANNOT_FIT, val->get_value().c_str()));
+            // We set the long to max value as in C++ it is UB
+            ival = std::numeric_limits<opcode::IntConst>::max();
+            errno = 0;
+        }
+        assert(*end == '\0' && "std::strtol fail");
         return new IntLiteral(atol(val->get_value().c_str()), curr_src_info());
     }
     else if (check(TokenType::FLOAT)) {
         auto val = advance();
-        // The value was parsed and checked, so no need to check for
-        // correct conversion
-        return new FloatLiteral(std::stod(val->get_value()), curr_src_info());
+        try {
+            return new FloatLiteral(std::stod(val->get_value()), curr_src_info());
+#ifndef NDEBUG 
+        } catch (const std::invalid_argument &e) {
+            assert(false && "std::stod failed");
+#endif
+        } catch (const std::out_of_range& e) {
+            error::warning(diags::Diagnostic(true, this->src_file, curr_src_info(), scanner, diags::WarningID::FLOAT_CANNOT_FIT, val->get_value().c_str()));
+            // Handle overflow/underflow
+            auto str = val->get_value();
+            std::size_t e_pos = str.find_first_of("eE");
+            if (e_pos != std::string::npos) {
+                try {
+                    int exponent = std::stoi(str.substr(e_pos + 1));
+                    if (exponent > 0) {
+                        return new FloatLiteral(std::numeric_limits<opcode::FloatConst>::infinity(), curr_src_info());
+                    } else {
+                        return new FloatLiteral(0.0, curr_src_info());  // Underflow
+                    }
+                } catch (...) {
+                    // Malformed exponent, fallback
+                }
+            }
+
+            // Fallback: if no exponent or malformed, assume overflow
+            return new FloatLiteral(std::numeric_limits<opcode::FloatConst>::infinity(), curr_src_info());
+        }
     }
     else if (check(TokenType::STRING)) {
         auto val = advance();
