@@ -108,3 +108,20 @@ ilog(1024, 2)
 ilog(1.0/8, 2)
 ilog(1, 4)
 ilog(0.01, 10)
+
+Math.divmod(5, 2)
+"\n"
+Math.divmod(2500, 42)
+"\n"
+try
+    Math.divmod(7, 0)
+catch (e:DivisionByZeroError)
+    "caught\n"
+
+r, q = Math.divmod(5.4, 2.3)
+r
+"\n"
+q
+"\n"
+Math.divmod(2.3, 45)
+"\n"

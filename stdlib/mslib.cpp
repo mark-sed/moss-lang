@@ -130,6 +130,34 @@ Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
     return ats;
 }
 
+Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
+    ListValue *res = new ListValue();
+    if (isa<FloatValue>(x) || isa<FloatValue>(y)) {
+        if (y->as_float() == 0.0) {
+            err = mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO));
+            return nullptr;
+        }
+        opcode::FloatConst quotient = std::floor(x->as_float() / y->as_float());
+        res->push(new FloatValue(quotient));
+        opcode::FloatConst remainder = std::fmod(x->as_float(), y->as_float());
+        res->push(new FloatValue(remainder));
+    } else {
+        auto xi = dyn_cast<IntValue>(x);
+        assert(xi);
+        auto yi = dyn_cast<IntValue>(y);
+        assert(yi);
+        if (yi->get_value() == 0.0) {
+            err = mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::DIV_BY_ZERO));
+            return nullptr;
+        }
+        auto divres = std::ldiv(xi->get_value(), yi->get_value());
+        res->push(new IntValue(divres.quot));
+        res->push(new IntValue(divres.rem));
+    }
+    assert(res->size() == 2);
+    return res;
+}
+
 Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
     if (!isa<ObjectValue>(v)) {
         err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_CANNOT_BE_CONV, v->get_type()->get_name().c_str(), tname));
@@ -348,6 +376,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::cos(cf->get_args()[0].value->as_float()));
+        }},
+        {"divmod", [](Interpreter* vm, CallFrame* cf, Value *&err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            return divmod(vm, cf->get_arg("x"), cf->get_arg("y"), err);
         }},
         {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;

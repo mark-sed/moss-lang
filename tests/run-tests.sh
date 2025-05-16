@@ -1004,7 +1004,8 @@ function test_lib_math {
 1\n123.450000\n0\n0.000000\n42\ninf\ninf\nnan\nnan
 10\n5\n0\ninf\n90
 16\n-128\n12\n0
-3.000000\n10\n-3\n0\n-2\n" $1
+3.000000\n10\n-3\n0\n-2
+[2, 1]\n[59, 22]\ncaught\n2.000000\n0.800000\n[0.000000, 2.300000]\n" $1
 }
 
 function test_lib_file {

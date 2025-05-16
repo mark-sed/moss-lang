@@ -356,6 +356,9 @@ space Math {
 
     @internal
     fun log(x:[Int,Float], base:[Int,Float]) {}
+
+    @internal
+    fun divmod(x:[Int,Float], y:[Int,Float]) {}
 }
 
 /// Exceptions
