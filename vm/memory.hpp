@@ -111,6 +111,14 @@ public:
 
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;
+
+    std::list<ustring> get_sym_table_keys() {
+        std::list<ustring> keys;
+        for (auto &[k, _]: sym_table) {
+            keys.push_back(k);
+        }
+        return keys;
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, MemoryPool &pool) {

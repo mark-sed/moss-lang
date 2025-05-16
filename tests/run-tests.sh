@@ -1043,6 +1043,16 @@ false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse
 4\nawesome\ncaught\nhi\n9\n" $1
 }
 
+function test_lib_attrs {
+    expect_pass "stdlib_tests/attrs.ms" $1
+    expect_out_eq '["MyValue", "__Bool", "__Float", "__Int", "__String", "foo", "x"]
+["MyValue", "__Bool", "__Float", "__Int", "__String", "foo"]
+["NAME", "TheirValue"]
+[]
+["MyValue", "SomeClas", "TheirValue", "moss", "mv", "tv"]
+' $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -1247,6 +1257,7 @@ function run_all_tests {
     run_test lib_args
     run_test lib_types
     run_test lib_filters
+    run_test lib_attrs
 
     # gc tests
     run_test gc_local_vars

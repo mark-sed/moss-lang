@@ -114,6 +114,22 @@ Value *hex(Interpreter *vm, Value *number) {
     return new StringValue("0x" + hex_str);
 }
 
+Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
+    MemoryPool *frame = nullptr;
+    ListValue *ats = new ListValue();
+    if (obj) {
+        frame = obj->get_attrs();
+    } else {
+        frame = vm->get_global_frame();
+    }
+    if (!frame)
+        return ats;
+    for (auto name: frame->get_sym_table_keys()) {
+        ats->push(new StringValue(name));
+    }
+    return ats;
+}
+
 Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
     if (!isa<ObjectValue>(v)) {
         err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_CANNOT_BE_CONV, v->get_type()->get_name().c_str(), tname));
@@ -290,6 +306,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
             }
+        }},
+        {"attrs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() <= 1);
+            Value *obj = nullptr;
+            if (args.size() == 1) {
+                obj = args[0].value;
+            }
+            return attrs(vm, obj, err);
         }},
         {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;

@@ -167,6 +167,11 @@ fun type(obj) {}
 fun id(obj) {}
 
 @internal
+fun attrs() {}
+@internal
+fun attrs(obj) {}
+
+@internal
 fun lshift(a:Int, count:Int) {
     d"""
     Left shift
