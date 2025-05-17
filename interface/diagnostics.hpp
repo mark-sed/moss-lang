@@ -126,6 +126,7 @@ enum DiagID : unsigned {
     DIV_BY_ZERO,            ///< Division by 0
     FDIV_BY_ZERO,           ///< Float division by 0
     CANNOT_CREATE_ATTR,     ///< Creating attribute on non-modifiable value
+    CANNOT_DELETE_ATTR,     ///< Deleting attribute of non-modifiable value
     NON_LOC_IN_GLOB,        ///< Use of $ in global frame
     NO_NON_LOC_BINDING,     ///< Cannot bind $ var
     SPACE_IMPORT_AS_ITSELF, ///< ::Name
@@ -264,6 +265,7 @@ static const char * DIAG_MSGS[] = {
     "Division by zero",
     "Float division by zero",
     "Cannot assign to attributes for type '%s'",
+    "Cannot delete attribues for type '%s'",
     "Accessing non-local variable ('%s') cannot appear on global scope",
     "No binding for non-local variable '%s'",
     "Cannot import space as itself",

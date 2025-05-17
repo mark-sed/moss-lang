@@ -1051,6 +1051,10 @@ function test_lib_attrs {
 ["NAME", "TheirValue"]
 []
 ["MyValue", "SomeClas", "TheirValue", "moss", "mv", "tv"]
+true, true, false, true, false, true, true, true
+a, 42, scf, caught
+-7, scf, scf, caught
+caught, caught, caught, caught
 ' $1
 }
 

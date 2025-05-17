@@ -158,6 +158,8 @@ public:
     /// Sets (new or overrides) attribute name to value v
     void set_attr(ustring name, Value *v, bool internal_access=false);
 
+    bool del_attr(ustring name, Interpreter *vm);
+
     void set_attrs(MemoryPool *p);
     void copy_attrs(MemoryPool *p);
     MemoryPool *get_attrs() { return this->attrs; }

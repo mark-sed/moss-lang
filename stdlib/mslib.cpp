@@ -377,6 +377,23 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::cos(cf->get_args()[0].value->as_float()));
         }},
+        {"delattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            auto obj = cf->get_arg("obj");
+            assert(obj);
+            if (!obj->is_modifiable()) {
+                err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_DELETE_ATTR, obj->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            auto name = dyn_cast<StringValue>(cf->get_arg("name"));
+            assert(name);
+            if (!obj->del_attr(name->get_value(), vm)) {
+                err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED, obj->get_type()->get_name().c_str(), name->get_value().c_str()));
+                return nullptr;
+            }
+            return BuiltIns::Nil;
+        }},
         {"divmod", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             auto args = cf->get_args();
             assert(args.size() == 2);
@@ -386,6 +403,25 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             assert(cf->get_args().size() == 2);
             return Float(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+        }},
+        {"getattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            auto name = dyn_cast<StringValue>(cf->get_arg("name"));
+            assert(name);
+            auto obj = cf->get_arg("obj");
+            assert(name);
+            auto attr_ret = get_attr(obj, name->get_value(), vm, err);
+            return attr_ret;
+        }},
+        {"hasattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            auto name = dyn_cast<StringValue>(cf->get_arg("name"));
+            assert(name);
+            auto obj = cf->get_arg("obj");
+            assert(name);
+            return new BoolValue(obj->has_attr(name->get_value(), vm));
         }},
         {"hash", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -529,6 +565,22 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto counti = dyn_cast<IntValue>(cf->get_arg("count"));
             assert(counti);
             return new IntValue(ai->get_value() >> counti->get_value());
+        }},
+        {"setattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
+            (void)err;
+            assert(cf->get_args().size() == 3);
+            auto obj = cf->get_arg("obj");
+            assert(obj);
+            if (!obj->is_modifiable()) {
+                err = err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR, obj->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            auto name = dyn_cast<StringValue>(cf->get_arg("name"));
+            assert(name);
+            auto value = cf->get_arg("value");
+            assert(value);
+            obj->set_attr(name->get_value(), value);
+            return BuiltIns::Nil;
         }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));

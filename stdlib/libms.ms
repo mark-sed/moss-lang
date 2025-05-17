@@ -172,6 +172,18 @@ fun attrs() {}
 fun attrs(obj) {}
 
 @internal
+fun hasattr(obj, name:String) {}
+
+@internal
+fun getattr(obj, name:String) {}
+
+@internal
+fun setattr(obj, name:String, value) {}
+
+@internal
+fun delattr(obj, name:String) {}
+
+@internal
 fun lshift(a:Int, count:Int) {
     d"""
     Left shift

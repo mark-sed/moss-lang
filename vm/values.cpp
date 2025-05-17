@@ -97,6 +97,15 @@ void Value::set_attr(ustring name, Value *v, bool internal_access) {
     attrs->store_name(reg, name);
 }
 
+bool Value::del_attr(ustring name, Interpreter *vm) {
+    assert((this->is_modifiable()) && "Deleting attribute for non-modifiable value");
+    if (!attrs || !has_attr(name, vm)) {
+        return false;
+    }
+    attrs->remove_name(name);
+    return true;
+}
+
 void Value::annotate(ustring name, Value *val) {
     assert(!isa<FunValueList>(this) && "Annotating fun list not a function");
     annotations[name] = val;
