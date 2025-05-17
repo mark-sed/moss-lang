@@ -15,6 +15,8 @@
 #include <cmath>
 #include <chrono>
 #include <thread>
+#include <bitset>
+#include <climits>
 
 using namespace moss;
 using namespace mslib;
@@ -108,10 +110,35 @@ Value *input(Interpreter *vm, Value *prompt, Value *&err) {
 Value *hex(Interpreter *vm, Value *number) {
     auto ni = dyn_cast<IntValue>(number);
     assert(ni);
+    bool is_negative = ni->get_value() < 0;
     std::stringstream ss;
-    ss << std::hex << ni->get_value();
+    ss << std::hex << std::abs(ni->get_value());
     std::string hex_str = ss.str();
-    return new StringValue("0x" + hex_str);
+    return new StringValue((is_negative ? "-0x" : "0x") + hex_str);
+}
+
+Value *bin(Interpreter *vm, Value *number) {
+    auto ni = dyn_cast<IntValue>(number);
+    assert(ni);
+    std::stringstream ss;
+    bool is_negative = ni->get_value() < 0;
+    ss << std::bitset<sizeof(opcode::IntConst) * CHAR_BIT>(std::abs(ni->get_value()));
+    std::string bin_str = ss.str();
+    size_t non_zero_pos = bin_str.find_first_not_of('0');
+    if (non_zero_pos != std::string::npos) {
+        return new StringValue((is_negative ? "-0b" : "0b") + bin_str.substr(non_zero_pos));
+    }
+    return new StringValue("0b0");
+}
+
+Value *oct(Interpreter *vm, Value *number) {
+    auto ni = dyn_cast<IntValue>(number);
+    assert(ni);
+    bool is_negative = ni->get_value() < 0;
+    std::stringstream ss;
+    ss << std::oct << std::abs(ni->get_value());
+    std::string oct_str = ss.str();
+    return new StringValue((is_negative ? "-0q" : "0q") + oct_str);
 }
 
 Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
@@ -344,6 +371,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             return attrs(vm, obj, err);
         }},
+        {"bin", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return bin(vm, args[0].value);
+        }},
         {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
             assert(cf->get_args().size() == 2);
@@ -505,6 +538,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             assert(cf->get_args().size() == 3);
             return Note(vm, cf->get_arg("this"), cf->get_arg("format"), cf->get_arg("value"));
+        }},
+        {"oct", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return oct(vm, args[0].value);
         }},
         {"open", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();

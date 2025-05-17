@@ -266,6 +266,12 @@ fun ord(c:String) {}
 @internal
 fun hex(number:Int) {}
 
+@internal
+fun oct(number:Int) {}
+
+@internal
+fun bin(number:Int) {}
+
 fun info(a) {
     docs = ""
     try {

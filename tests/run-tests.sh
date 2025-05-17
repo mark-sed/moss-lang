@@ -986,7 +986,9 @@ Marek
 h i !
 *\ncaught\ntrue\ntrue\ncaught\nmoss
 42\ncaught\n109
-0x0\n0x2a\n0xc0ffee\n" $1
+0x0\n0x2a\n0xc0ffee\n-0x2
+0b1100\n0b0\n0b1\n0b1000\n-0b1000
+0q10\n0q52\n-0q10\n" $1
 }
 
 function test_lib_random {
