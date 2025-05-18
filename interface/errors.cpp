@@ -159,7 +159,7 @@ void error::warning(diags::Diagnostic msg) {
     } else if (clopts::get_warning_level() == clopts::WarningLevel::WL_ERROR) {
         LOGMAX("-W error set so existing with warning");
         errs << format_error(msg, true);
-        std::exit(1);
+        std::exit(error::ErrorCode::RUNTIME);
     }
 }
 

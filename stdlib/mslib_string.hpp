@@ -19,6 +19,8 @@
 
 namespace moss {
 namespace mslib {
+
+/// Moss String function space
 namespace String {
 
 Value *capitalize(Interpreter *vm, Value * ths, Value *&err);

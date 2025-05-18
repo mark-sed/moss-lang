@@ -29,6 +29,7 @@ using mslib_dispatcher = std::function<Value*(Interpreter*, CallFrame*, Value*&)
 
 class FunctionRegistry {
 public:
+    /// \return Moss stdlin function registery (map of function names and their c++ functions)
     static const std::unordered_map<std::string, mslib_dispatcher>& get_registry();
 };
 

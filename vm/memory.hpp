@@ -1,7 +1,7 @@
 /// 
 /// \file memory.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Memory pools for the vm
@@ -112,6 +112,7 @@ public:
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;
 
+    /// \return list of all the keys in the symbol table
     std::list<ustring> get_sym_table_keys() {
         std::list<ustring> keys;
         for (auto &[k, _]: sym_table) {

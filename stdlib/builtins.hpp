@@ -1,7 +1,7 @@
 /// 
 /// \file builtins.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Moss bytecode interpreter
@@ -24,7 +24,11 @@ class MemoryPool;
 ///        and instantiate it in builtins.cpp
 namespace BuiltIns {
 
+    /// Has to be called to store built ins in global frame
+    /// Without calling this all the values will be GCed
     void init_built_ins(MemoryPool *gf, opcode::Register &reg);
+
+    /// \return interned int or nullptr if it is not interned
     Value *get_interned_int(opcode::IntConst v);
 
     extern Value *Type;

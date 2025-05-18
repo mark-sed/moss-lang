@@ -1,7 +1,7 @@
 /// 
 /// \file interpreter.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Moss bytecode interpreter
@@ -166,14 +166,15 @@ private:
 
     static gcs::TracingGC *gc;  ///< Garbage collector for this VM
     // TODO: change to unordered_map
-    static T_Converters converters;
-    static T_Generators generators;
-    static std::vector<Value *> generator_notes;
-    bool enable_code_output; // TODO: Should this be static?
+    static T_Converters converters; ///< Mapping of formats and their converters
+    static T_Generators generators; ///< Mapping of formats and their generators
+    static std::vector<Value *> generator_notes; ///< List of notes to be passed to a generator
+    // TODO: Should this be static?
+    bool enable_code_output; ///< When enabled then output will be enclosed as the output of code notes
     
-    opcode::Address bci;        ///< Current bytecode index
+    opcode::Address bci; ///< Current bytecode index
     
-    int exit_code;              ///< VM's exit code
+    int exit_code; ///< VM's exit code
     
     bool bci_modified;
     bool stop;
@@ -186,7 +187,7 @@ private:
     void init_const_frame();
     opcode::Register init_global_frame();
 public:
-    static bool running_generator;
+    static bool running_generator; ///< When true it means that the currently run code is generator of the output
 
     Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();
@@ -266,6 +267,7 @@ public:
     size_t get_call_frame_size() {
         return this->call_frames.size();
     }
+    /// Outputs call stack in the VM
     std::ostream& report_call_stack(std::ostream& os);
 
     /// Pushes a new empty call frame into call frame stack
@@ -314,12 +316,16 @@ public:
     }
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
 
+    /// Adds a new converter from to type into the list of converters
     static void add_converter(ustring from, ustring to, FunValue *fun);
     static std::vector<FunValue *> get_converter(ustring from, ustring to);
     static std::vector<FunValue *> get_converter(std::pair<ustring, ustring> key);
+    /// Adds a new generator to the list of all generators
     static void add_generator(ustring format, FunValue *fun);
     static FunValue *get_generator(ustring format);
+    /// \return true if there exists generator for given format (even if there is also a convertor)
     static bool is_generator(ustring format);
+    /// Pushes a new note for a generator
     static void add_generator_note(Value *note) { Interpreter::generator_notes.push_back(note); }
     static std::vector<Value *> get_generator_notes() { return Interpreter::generator_notes; }
     void set_enable_code_output(bool s) { this->enable_code_output = s; }

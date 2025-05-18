@@ -19,6 +19,8 @@
 
 namespace moss {
 namespace mslib {
+
+/// moss List function space
 namespace List {
 
 Value *append(Interpreter *vm, Value * ths, Value *v, Value *&err);

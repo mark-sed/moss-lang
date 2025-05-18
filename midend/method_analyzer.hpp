@@ -17,12 +17,16 @@
 namespace moss {
 namespace ir {
 
+/// Does analysis of methods
+/// - Marks class methods
+/// - Checks returns in constructors
 class MethodAnalyzer : public IRVisitor {
 private:
     bool in_constructor;
+
+    void check_constructor(class Function &method, ustring class_name);
 public:
     MethodAnalyzer(Parser &parser) : IRVisitor(parser) {}
-    void check_constructor(class Function &method, ustring class_name);
     
     virtual void visit(class Class &cls) override;
     virtual void visit(class Function &fun) override;

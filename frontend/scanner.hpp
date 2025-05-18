@@ -1,7 +1,7 @@
 /// 
 /// \file scanner.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Tokenization and lexical analysis of moss code
@@ -259,11 +259,15 @@ inline std::ostream& operator<< (std::ostream& os, Token &t) {
     return t.debug(os);
 }
 
+/// Object that represents FString
+/// FString is parsed into a list of tokens, where it is string parts with the
+/// expression parts
 class FStringToken : public Token {
 private:
     std::list<Token *> tokens;
 public:
-    FStringToken(std::list<Token *> tokens, SourceInfo src_info) : Token("<fstring>", TokenType::FSTRING, src_info), tokens(tokens) {}
+    FStringToken(std::list<Token *> tokens, SourceInfo src_info) 
+        : Token("<fstring>", TokenType::FSTRING, src_info), tokens(tokens) {}
     ~FStringToken() {}
 
     std::list<Token *> &get_tokens() { return this->tokens; }

@@ -1,7 +1,7 @@
 /// 
 /// \file gc.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Tracing moss garbage collector
@@ -58,6 +58,7 @@ public:
     /// Once import of a module is done, it should be popped
     static void pop_currently_imported_module();
 
+    /// Adds a new removed memory pool for collection
     static void push_popped_frame(MemoryPool *f);
 #ifndef NDEBUG
     static ModuleValue *top_currently_imported_module();

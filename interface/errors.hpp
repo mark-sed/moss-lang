@@ -1,7 +1,7 @@
 /// 
 /// \file errors.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Error handling
@@ -129,7 +129,8 @@ namespace error {
     /// \return Formatted Diagnostics error
     ustring format_error(diags::Diagnostic msg, bool warning_as_error=false);
 
-    /// Prints warning to std::wcerr
+    /// Prints warning to std::cerr if warnings are enabled.
+    /// \note If -W error is set then it will also exit with 1 (runtime error)
     /// \param msg Message to print 
     void warning(diags::Diagnostic msg);
 

@@ -1,7 +1,7 @@
 /// 
 /// \file values.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Moss VM types
@@ -95,14 +95,15 @@ public:
     virtual Value *clone() = 0;
     virtual ~Value();
 
-    static std::list<Value *> all_values;
-    static size_t allocated_bytes;
-    static size_t next_gc;
+    static std::list<Value *> all_values; ///< Holds all ever allocated values (for GC)
+    static size_t allocated_bytes; ///< Number of currently allocated bytes for values (this lowers with delete)
+    static size_t next_gc; ///< Threshold in bytes for next GC run
 
     /// We need to store any allocation to all object list for GC to collect it
     /// once not used
     void *operator new(size_t size);
 
+    /// Custom delete operator for adjusting the allocated_bytes number
     static void operator delete(void * p, size_t size);
 
     void set_marked(bool m) { this->marked = m; }
@@ -123,20 +124,27 @@ public:
     virtual opcode::StringConst dump() {
         return as_string();
     }
+    /// Converts numeric type to float. The type has to be checked if it is
+    /// numeric otherwise assert is raised or 0.0 returned
     virtual opcode::FloatConst as_float() {
         // FIXME: raise error
         assert(false && "as_float requested on non numerical value");
         return 0.0;
     }
+    /// Moss's __iter method for the value
     virtual Value *iter(Interpreter *vm);
+    /// Moss's __next method for the value
     virtual Value *next(Interpreter *vm);
+    /// Set of indexed values
     virtual void set_subsc(Interpreter *vm, Value *obj, Value *val);
+    /// Hash of the value
     virtual opcode::IntConst hash() {
         assert(!is_hashable() && "Calling hash on non-hashable type");
         assert(false && "Missing hash implementation");
         return 0;
     }
 
+    /// Adds an annotation to the value (if possible)
     void annotate(ustring name, Value *val);
     std::map<ustring, Value *> get_annotations() { return this->annotations; }
     bool has_annotation(ustring name) {
@@ -158,6 +166,7 @@ public:
     /// Sets (new or overrides) attribute name to value v
     void set_attr(ustring name, Value *v, bool internal_access=false);
 
+    /// Removes and attribute
     bool del_attr(ustring name, Interpreter *vm);
 
     void set_attrs(MemoryPool *p);

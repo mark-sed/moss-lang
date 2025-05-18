@@ -74,7 +74,7 @@ add_executable(
 # Standard moss library modules
 add_custom_command(
     OUTPUT libms.msb
-    COMMAND ${PROJECT_NAME} --output-only -o ${LIBMS_PATH}/libms.msb ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/libms.ms
+    COMMAND ${PROJECT_NAME} -W all --output-only -o ${LIBMS_PATH}/libms.msb ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/libms.ms
     COMMENT "Building libms"
     VERBATIM
 )

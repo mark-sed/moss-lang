@@ -20,6 +20,7 @@ class Parser;
 
 namespace ir {
 
+/// Visitor for visitor design patter for modifying and analyzing IR
 class IRVisitor {
 protected:
     Parser &parser;
@@ -53,6 +54,7 @@ public:
     virtual ~IRVisitor() {};
 };
 
+/// Manages passes (Visitors) and visits sub IRs
 class PassManager : public IRVisitor {
 private:
     std::list<IRVisitor *> passes;
@@ -66,6 +68,7 @@ public:
     virtual void visit(class Else &els) override;
     virtual void visit(class If &i) override;
 
+    /// Adds a new pass to the manager to run
     void add_pass(IRVisitor *p);
 
     PassManager(Parser &parser) : IRVisitor(parser) {}

@@ -17,19 +17,24 @@
 namespace moss {
 namespace ir {
 
+/// Holds IRVisitors (passes), which will be applied to IR
 class IRPipeline {
 private:
     std::list<IRVisitor *> pass_instances;
     PassManager pm;
     Parser &parser;
 public:
+    /// Constructs new default pipeline 
     IRPipeline(Parser &parser);
     ~IRPipeline();
 
+    /// Runs the whole pipeline
+    ir::IR *run(ir::IR *decl);
+    
+    /// Registers a new visitor pass in the pass pipeline (at the current end)
     void add_pass(IRVisitor *p);
 
     PassManager &get_pm() { return this->pm; }
-    ir::IR *run(ir::IR *decl);
 };
 
 }

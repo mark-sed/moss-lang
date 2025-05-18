@@ -1,7 +1,7 @@
 /// 
 /// \file parser.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Semantical analysis of code and AST generation
@@ -63,6 +63,7 @@ private:
     ///         not an expression on the input
     ir::Expression *expression(bool allow_set=false);
 
+    /// Tries to parse an annotation
     ir::Annotation *annotation();
 
     /// Tries to parse a block of code
@@ -135,12 +136,14 @@ private:
     /// \throw ir::Raise if incorrect escape sequence is used 
     ustring unescapeString(ustring str);
 
+    /// Adds new tokens to the current token list
     void spill_tokens(std::list<Token *> ts) {
         this->tokens.insert(tokens.begin()+curr_token, ts.begin(), ts.end());
     }
 
     void scan_line();
 
+    /// \return SourceInfo for the currently parsed token
     SourceInfo curr_src_info() {
         assert(curr_token < tokens.size() && "oob");
         return tokens[curr_token]->get_src_info();

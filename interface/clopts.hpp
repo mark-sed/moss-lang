@@ -1,7 +1,7 @@
 /// 
 /// \file clopts.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Command line options handler
@@ -65,6 +65,7 @@ inline args::Flag use_repl_mode(debugging_group, "use-repl-mode", "Runs moss as 
 
 inline args::Group interface_group(arg_parser, "Interface options:");
 
+/// Possible values for -W option
 enum WarningLevel {
     WL_IGNORE,
     WL_ALL,
@@ -92,10 +93,13 @@ ustring get_note_format();
 /// \return value passed to set verbose level (should be a csv of file::method values)
 std::string get_logging_list();
 
+/// \return true if colored output should be used
 bool use_color();
 
+/// \return Arguments for the interpreted moss program
 std::vector<ustring> get_program_args();
 
+/// \return Wargning level selected by user
 WarningLevel get_warning_level();
 
 }

@@ -1,7 +1,7 @@
 /// 
 /// \file values_cpp.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Moss VM types that enclose C++ types
@@ -15,6 +15,7 @@
 namespace moss {
 namespace t_cpp {
 
+    /// C++ value encompased in a Moss value
     class CppValue : public Value {
     public:
         CppValue(TypeKind ClassType, ustring name, Value *type) 
@@ -37,6 +38,7 @@ namespace t_cpp {
         }
     };
     
+    /// C++'s std::fstream as a moss value
     class FStreamValue : public CppValue {
     private:
         std::fstream *fs;
