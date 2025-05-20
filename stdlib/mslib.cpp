@@ -697,7 +697,7 @@ void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
 
     auto return_reg = vm->get_call_frame()->get_return_reg();
     auto caller_addr = vm->get_call_frame()->get_caller_addr();
-    vm->drop_call_frame();
+    vm->pop_call_frame();
     if (!ret_v)
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);
