@@ -108,6 +108,7 @@ Value *input(Interpreter *vm, Value *prompt, Value *&err) {
 }
 
 Value *hex(Interpreter *vm, Value *number) {
+    (void)vm;
     auto ni = dyn_cast<IntValue>(number);
     assert(ni);
     bool is_negative = ni->get_value() < 0;
@@ -118,6 +119,7 @@ Value *hex(Interpreter *vm, Value *number) {
 }
 
 Value *bin(Interpreter *vm, Value *number) {
+    (void)vm;
     auto ni = dyn_cast<IntValue>(number);
     assert(ni);
     std::stringstream ss;
@@ -132,6 +134,7 @@ Value *bin(Interpreter *vm, Value *number) {
 }
 
 Value *oct(Interpreter *vm, Value *number) {
+    (void)vm;
     auto ni = dyn_cast<IntValue>(number);
     assert(ni);
     bool is_negative = ni->get_value() < 0;
@@ -142,6 +145,7 @@ Value *oct(Interpreter *vm, Value *number) {
 }
 
 Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
+    (void)err;
     MemoryPool *frame = nullptr;
     ListValue *ats = new ListValue();
     if (obj) {
@@ -306,6 +310,7 @@ Value *Bool(Interpreter *vm, Value *ths, Value *v, Value *&err) {
 
 Value *String_String(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     (void)ths;
+    (void)err;
     if (isa<ObjectValue>(v)) {
         Value *trash_err = nullptr;
         auto rval = call_type_converter(vm, v, "String", "__String", trash_err);
@@ -508,6 +513,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return cf->get_arg("vals");
         }},
         {"log", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)vm;
+            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
             auto xf = cf->get_arg("x");
@@ -523,6 +530,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return String::lower(vm, args[0].value, err);
         }},
         {"lshift", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)vm;
+            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
             auto ai = dyn_cast<IntValue>(cf->get_arg("a"));
@@ -597,6 +606,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));
         }},
         {"rshift", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)vm;
+            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
             auto ai = dyn_cast<IntValue>(cf->get_arg("a"));
@@ -611,7 +622,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto obj = cf->get_arg("obj");
             assert(obj);
             if (!obj->is_modifiable()) {
-                err = err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR, obj->get_type()->get_name().c_str()));
+                err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_CREATE_ATTR, obj->get_type()->get_name().c_str()));
                 return nullptr;
             }
             auto name = dyn_cast<StringValue>(cf->get_arg("name"));
