@@ -56,7 +56,7 @@ public:
         cpy->spilled_values = spilled_values;
         return cpy;
     }
-    virtual ~MemoryPool() {
+    ~MemoryPool() {
         // Values are deleted by gc
     }
 

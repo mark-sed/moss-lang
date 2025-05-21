@@ -44,6 +44,7 @@ inline args::Flag print_notes(note_group, "print-notes", "Outputs notes also to 
 
 // GC flags
 inline args::Group gc_group(arg_parser, "Garbage collector options:");
+// TODO: Maybe make this (and its uses) debug only
 inline args::Flag delete_values_on_exit(gc_group, "delete-values-on-exit", "Deletes all values left by GC on exit", {"delete-values-on-exit"});
 
 #ifndef NDEBUG

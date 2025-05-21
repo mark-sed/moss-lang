@@ -37,8 +37,8 @@ Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs)
 
 Value::~Value() {
     // Values will be deleted by gc
-    //if (attrs)
-    //    delete attrs;
+    if (attrs)
+        gcs::TracingGC::push_popped_frame(attrs);
 }
 
 Value *Value::iter(Interpreter *vm) {
@@ -272,6 +272,7 @@ std::ostream& ModuleValue::debug(std::ostream& os) const {
 }
 
 ModuleValue::~ModuleValue()  {
+    delete vm->get_code();
     delete vm->get_src_file();
     delete vm;
     // Attrs need to be set to nullptr as ~Value will be called, but
