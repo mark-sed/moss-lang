@@ -62,6 +62,10 @@ inline args::Flag stress_test_gc(debugging_group, "stress-test-gc", "Runs GC aft
 
 inline args::Flag use_repl_mode(debugging_group, "use-repl-mode", "Runs moss as if it was repl, allowing for redirected input", {"use-repl-mode"});
 
+inline args::Flag allocation_stats(debugging_group, "allocation-statistics", "Outputs allocation statistics", {"allocation-statistics"});
+
+inline args::Flag no_load_libms(debugging_group, "no-load-libms", "Standard library won't be loaded - this is only for debugging and will cause failures", {"no-load-libms"});
+
 #endif
 
 inline args::Group interface_group(arg_parser, "Interface options:");

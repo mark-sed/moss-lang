@@ -69,13 +69,26 @@ private:
     bool runtime_call;
     Value *extern_return_value;
 public:
+#ifndef NDEBUG
+    static long allocated;
+#endif
     CallFrame(Value *function=nullptr) : function(function),
                                          return_reg(0),
                                          caller_addr(0),
                                          constructor_call(false),
                                          extern_module_call(false),
                                          runtime_call(false),
-                                         extern_return_value(nullptr) {}
+                                         extern_return_value(nullptr) {
+#ifndef NDEBUG
+        ++allocated;
+#endif
+    }
+
+    ~CallFrame() {
+#ifndef NDEBUG
+        --allocated;
+#endif
+    }
 
     /// Pushes a Value as a new argument into the call frame stack
     void push_back(Value *v) { args.push_back(CallFrameArg(v)); }

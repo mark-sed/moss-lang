@@ -2,6 +2,7 @@
 #include "builtins.hpp"
 #include "logging.hpp"
 #include "mslib.hpp"
+#include "gc.hpp"
 #include <new>
 
 using namespace moss;
@@ -138,6 +139,14 @@ void Value::operator delete(void * p, size_t size) {
     ::operator delete(p, size);
 }
 
+FunValue::~FunValue() {
+    for(auto a: args)
+        delete a;
+    for (auto c: closures) {
+        gcs::TracingGC::push_popped_frame(c);
+    }
+}
+
 Value *StringValue::next(Interpreter *vm) {
     (void)vm;
     if (this->iterator >= this->value.size()) {
@@ -271,7 +280,7 @@ std::ostream& ModuleValue::debug(std::ostream& os) const {
     return os;
 }
 
-ModuleValue::~ModuleValue()  {
+ModuleValue::~ModuleValue() {
     delete vm->get_code();
     delete vm->get_src_file();
     delete vm;

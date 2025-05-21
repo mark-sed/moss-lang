@@ -519,7 +519,7 @@ public:
     ClassValue(ustring name, std::list<ClassValue *> supers) 
         : Value(ClassType, name,  BuiltIns::Type ? BuiltIns::Type : this), supers(supers) {}
     ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
-        : Value(ClassType, name, BuiltIns::Type ? BuiltIns::Type : this, frm), supers(supers) {}
+        : Value(ClassType, name, (BuiltIns::Type ? BuiltIns::Type : this), frm), supers(supers) {}
 
     virtual Value *clone() override {
         auto cpy = new ClassValue(this->name, this->supers);
@@ -737,10 +737,7 @@ public:
              opcode::Address body_addr) 
             : Value(ClassType, name, BuiltIns::Function), args(args), vm(vm), body_addr(body_addr) {}
 
-    ~FunValue() {
-        for(auto a: args)
-            delete a;
-    }
+    ~FunValue();
 
     virtual Value *clone() override {
         return new FunValue(this->name, this->args, this->vm, this->body_addr);

@@ -37,6 +37,9 @@ private:
     bool global;
     bool marked;
 public:
+#ifndef NDEBUG
+    static long allocated;
+#endif
     MemoryPool(bool holds_consts=false, bool global=false) : pool_fun_owner(nullptr), holds_consts(holds_consts), global(global), marked(false) {
         if (!global && !holds_consts) {
             // TODO: Fine tune these values
@@ -48,6 +51,9 @@ public:
         else {
             pool = std::vector<Value *>(BC_RESERVED_REGS+256, nullptr);
         }
+#ifndef NDEBUG
+        ++allocated;
+#endif
     }
     MemoryPool *clone() {
         auto cpy = new MemoryPool(holds_consts, global);
@@ -58,6 +64,9 @@ public:
     }
     ~MemoryPool() {
         // Values are deleted by gc
+#ifndef NDEBUG
+        --allocated;
+#endif
     }
 
     /// Stores a value into a register

@@ -11,6 +11,10 @@
 
 using namespace moss;
 
+#ifndef NDEBUG
+long CallFrame::allocated = 0;
+#endif
+
 gcs::TracingGC *Interpreter::gc = nullptr;
 ModuleValue *Interpreter::libms_mod = nullptr;
 T_Converters Interpreter::converters{};
@@ -114,6 +118,9 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         // Init libms module
         glob_reg = init_global_frame();
     }
+#ifndef NDEBUG
+    if (!clopts::no_load_libms)
+#endif
     if (!libms_mod && main) {
         // Loading a module will also create an interpreter and so we need to
         // set a flag to not try to load it again

@@ -4,6 +4,10 @@
 
 using namespace moss;
 
+#ifndef NDEBUG
+long MemoryPool::allocated = 0;
+#endif
+
 void MemoryPool::store(opcode::Register reg, Value *v) {
     while (reg >= static_cast<opcode::Register>(pool.size())) {
         LOGMAX("No more space, resizing pool from: " << pool.size() << " to " << pool.size()+(pool.size()/4));

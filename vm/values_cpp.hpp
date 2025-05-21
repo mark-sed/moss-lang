@@ -21,6 +21,8 @@ namespace t_cpp {
         CppValue(TypeKind ClassType, ustring name, Value *type) 
             : Value(ClassType, name, type) {}
     
+        ~CppValue() {}
+
         virtual Value *clone() override {
             assert(false && "Cannot coppy CppValue");
             return nullptr;
