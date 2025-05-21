@@ -93,6 +93,7 @@ Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_li
         cf->get_args().back().name = "this";
     }
 
+    Value *ret_v = nullptr;
     if (funV->get_vm() != vm) {
         LOGMAX("Function detected as external, doing cross module call");
         cf->set_extern_module_call(true);
@@ -106,6 +107,7 @@ Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_li
             assert(pre_call_cf_size == vm->get_call_frame_size());
             throw v;
         }
+        ret_v = cf->get_extern_return_value();
         LOGMAX("Popping call frame");
         vm->pop_call_frame();
     }
@@ -121,10 +123,11 @@ Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_li
             vm->pop_call_frame();
             throw v;
         }
+        ret_v = cf->get_extern_return_value();
     }
-    auto ret_v = cf->get_extern_return_value();
     LOGMAX("Runtime call finished");
     assert(pre_call_cf_size == vm->get_call_frame_size());
+    assert(ret_v && "return value not extracted");
     return ret_v;
 }
 
@@ -382,10 +385,10 @@ void StoreConstSubscConst::exec(Interpreter *vm) {
 }
 
 void StoreIntConst::exec(Interpreter *vm) {
-    //auto interned = BuiltIns::get_interned_int(val);
-    //if (interned)
-    //    vm->store_const(dst, interned);
-    //else
+    auto interned = BuiltIns::get_interned_int(val);
+    if (interned)
+        vm->store_const(dst, interned);
+    else
         vm->store_const(dst, new IntValue(val));
 }
 
@@ -394,7 +397,6 @@ void StoreFloatConst::exec(Interpreter *vm) {
 }
 
 void StoreBoolConst::exec(Interpreter *vm) {
-    // TODO: Load precreated value
     if (val)
         vm->store_const(dst, BuiltIns::True);
     else
@@ -407,8 +409,7 @@ void StoreStringConst::exec(Interpreter *vm) {
 }
 
 void StoreNilConst::exec(Interpreter *vm) {
-    // TODO: Load precreated value
-    vm->store_const(dst, new NilValue());
+    vm->store_const(dst, BuiltIns::Nil);
 }
 
 void Jmp::exec(Interpreter *vm) {

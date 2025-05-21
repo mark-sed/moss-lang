@@ -53,6 +53,7 @@ public:
         auto cpy = new MemoryPool(holds_consts, global);
         cpy->pool = pool;
         cpy->sym_table = sym_table;
+        cpy->spilled_values = spilled_values;
         return cpy;
     }
     virtual ~MemoryPool() {

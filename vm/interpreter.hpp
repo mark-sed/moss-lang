@@ -71,6 +71,7 @@ private:
 public:
     CallFrame(Value *function=nullptr) : function(function),
                                          return_reg(0),
+                                         caller_addr(0),
                                          constructor_call(false),
                                          extern_module_call(false),
                                          runtime_call(false),

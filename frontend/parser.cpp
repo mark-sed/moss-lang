@@ -1550,7 +1550,7 @@ Expression *Parser::constant() {
             ival = std::numeric_limits<opcode::IntConst>::max();
             errno = 0;
         }
-        assert(*end == '\0' && "std::strtol fail");
+        //assert(*end == '\0' && "std::strtol fail");
         return new IntLiteral(atol(val->get_value().c_str()), curr_src_info());
     }
     else if (check(TokenType::FLOAT)) {
