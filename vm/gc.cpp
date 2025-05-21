@@ -1,6 +1,7 @@
 #include "gc.hpp"
 #include "values.hpp"
 #include "logging.hpp"
+#include <unordered_set>
 
 using namespace moss;
 using namespace gcs;
@@ -17,9 +18,6 @@ void TracingGC::pop_currently_imported_module() {
 }
 
 void TracingGC::push_popped_frame(MemoryPool *f) {
-    // Check if it already is present
-    if (std::find(popped_frames.begin(), popped_frames.end(), f) != popped_frames.end())
-        return;
     popped_frames.push_back(f);
 }
 
@@ -51,6 +49,20 @@ void TracingGC::sweep() {
             delete v;
         }
     }
+
+    // Remove duplicates
+    // This should be done here as this will be run once when GC runs but
+    // but push_popped_frame every time when value with attrs is deleted
+    std::unordered_set<MemoryPool*> seen;
+    for (auto it = popped_frames.begin(); it != popped_frames.end(); ) {
+        if (seen.find(*it) != seen.end()) {
+            it = popped_frames.erase(it); // Duplicate: erase
+        } else {
+            seen.insert(*it);
+            ++it; // Unique: keep going
+        }
+    }
+
     std::list<MemoryPool *>::iterator fi = popped_frames.begin();
     while (fi != popped_frames.end()) {
         auto f = *fi;
