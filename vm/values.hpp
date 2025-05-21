@@ -444,6 +444,8 @@ public:
     DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
     DictValue();
 
+    ~DictValue() {}
+
     virtual Value *clone() override {
         return new DictValue(this->vals);
     }

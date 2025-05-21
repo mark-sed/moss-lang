@@ -47,10 +47,8 @@ Value::~Value() {
 #ifndef NDEBUG
     --allocated;
 #endif
-    // Values will be deleted by gc
-    // FIXME: This should be possible but causes issues with stress-test-gc
-    //if (attrs)
-    //    gcs::TracingGC::push_popped_frame(attrs);
+    if (attrs)
+        gcs::TracingGC::push_popped_frame(attrs);
 }
 
 Value *Value::iter(Interpreter *vm) {
@@ -153,10 +151,9 @@ void Value::operator delete(void * p, size_t size) {
 FunValue::~FunValue() {
     for(auto a: args)
         delete a;
-    // FIXME: This should be possible but causes issues with stress-test-gc
-    //for (auto c: closures) {
-    //    gcs::TracingGC::push_popped_frame(c);
-    //}
+    for (auto c: closures) {
+        gcs::TracingGC::push_popped_frame(c);
+    }
 }
 
 Value *StringValue::next(Interpreter *vm) {

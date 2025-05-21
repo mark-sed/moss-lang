@@ -17,6 +17,9 @@ void TracingGC::pop_currently_imported_module() {
 }
 
 void TracingGC::push_popped_frame(MemoryPool *f) {
+    // Check if it already is present
+    if (std::find(popped_frames.begin(), popped_frames.end(), f) != popped_frames.end())
+        return;
     popped_frames.push_back(f);
 }
 
