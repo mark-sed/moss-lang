@@ -238,6 +238,7 @@ int main(int argc, const char *argv[]) {
         outs << "\n=== Allocation statistics on exit ===\n";
         outs << "  Mem pool left allocated: " << MemoryPool::allocated << "\n";
         outs << "  Call frames left allocated: " << CallFrame::allocated << "\n";
+        outs << "  Values left allocated: " << Value::allocated << "\n";
     }
 #endif
 

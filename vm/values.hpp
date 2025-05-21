@@ -92,6 +92,9 @@ protected:
 
     static int tab_depth;
 public:
+#ifndef NDEBUG
+    static long allocated;
+#endif
     virtual Value *clone() = 0;
     virtual ~Value();
 
@@ -520,6 +523,7 @@ public:
         : Value(ClassType, name,  BuiltIns::Type ? BuiltIns::Type : this), supers(supers) {}
     ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
         : Value(ClassType, name, (BuiltIns::Type ? BuiltIns::Type : this), frm), supers(supers) {}
+    ~ClassValue() {}
 
     virtual Value *clone() override {
         auto cpy = new ClassValue(this->name, this->supers);

@@ -10,6 +10,10 @@ using namespace moss;
 // Forward declaration for clang to match the overloaded delete call
 void operator delete(void* ptr, std::size_t size) noexcept;
 
+#ifndef NDEBUG
+    long Value::allocated = 0;
+#endif
+
 int Value::tab_depth = 0;
 size_t Value::allocated_bytes = 0;
 size_t Value::next_gc = 1024 * 1024;
@@ -34,12 +38,19 @@ opcode::IntConst moss::hash(Value *v, Interpreter *vm) {
 Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
         : marked(false), kind(kind), type(type), name(name), 
           attrs(attrs), annotations{} {
+#ifndef NDEBUG
+    ++allocated;
+#endif
 }
 
 Value::~Value() {
+#ifndef NDEBUG
+    --allocated;
+#endif
     // Values will be deleted by gc
-    if (attrs)
-        gcs::TracingGC::push_popped_frame(attrs);
+    // FIXME: This should be possible but causes issues with stress-test-gc
+    //if (attrs)
+    //    gcs::TracingGC::push_popped_frame(attrs);
 }
 
 Value *Value::iter(Interpreter *vm) {
@@ -142,9 +153,10 @@ void Value::operator delete(void * p, size_t size) {
 FunValue::~FunValue() {
     for(auto a: args)
         delete a;
-    for (auto c: closures) {
-        gcs::TracingGC::push_popped_frame(c);
-    }
+    // FIXME: This should be possible but causes issues with stress-test-gc
+    //for (auto c: closures) {
+    //    gcs::TracingGC::push_popped_frame(c);
+    //}
 }
 
 Value *StringValue::next(Interpreter *vm) {
