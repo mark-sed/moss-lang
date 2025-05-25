@@ -35,6 +35,8 @@ public:
 
 Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
 
+Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err);
+
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources
 /// \param name Name of the function to execute

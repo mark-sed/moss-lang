@@ -189,7 +189,7 @@ Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
     return res;
 }
 
-Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
+Value *mslib::call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
     if (!isa<ObjectValue>(v)) {
         err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_CANNOT_BE_CONV, v->get_type()->get_name().c_str(), tname));
         return nullptr;
@@ -306,22 +306,6 @@ Value *Bool(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     }
     
     return new BoolValue(true);
-}
-
-Value *String_String(Interpreter *vm, Value *ths, Value *v, Value *&err) {
-    (void)ths;
-    (void)err;
-    if (isa<ObjectValue>(v)) {
-        Value *trash_err = nullptr;
-        auto rval = call_type_converter(vm, v, "String", "__String", trash_err);
-        if (rval && !trash_err) {
-            if (!isa<StringValue>(rval)) {
-                rval = new StringValue(rval->as_string());
-            }
-            return rval;
-        }
-    }
-    return new StringValue(v->as_string());
 }
 
 Value *Note(Interpreter *vm, Value *ths, Value *format, Value *value) {
@@ -601,6 +585,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args[0].value->get_type() == BuiltIns::File);
             return MSFile::readlines(vm, args[0].value, err);
         }},
+        {"replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            if (args[1].value->get_type() == BuiltIns::String) {
+                return String::replace(vm, cf->get_arg("this"), cf->get_arg("target"), cf->get_arg("value"), cf->get_arg("count"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"round", [](Interpreter* vm, CallFrame* cf, Value*&) {
             assert(cf->get_args().size() == 2);
             return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));
@@ -644,7 +637,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             (void)vm;
             assert(cf->get_args().size() == 2);
-            return String_String(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+            return String::String_constructor(vm, cf->get_arg("this"), cf->get_arg("v"), err);
         }},
         {"strip", [](Interpreter*, CallFrame* cf, Value*&) {
             auto strv = dyn_cast<StringValue>(cf->get_args()[0].value)->get_value();

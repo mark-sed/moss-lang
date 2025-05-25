@@ -72,6 +72,19 @@ inline ustring formatv(const char *format, Args&& ... args) {
     return std::string(buf.get(), buf.get() + size - 1);
 }
 
+/// Replaces n or all occurences of target to value in string str.
+/// \param count if negative then all occurences are replaces
+inline ustring replace_n(ustring str, const ustring& target, const ustring& value, int count=-1) {
+    if (target.empty() || count == 0) return str;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(target, start_pos)) != ustring::npos && count != 0) {
+        str.replace(start_pos, target.length(), value);
+        start_pos += value.length();
+        --count;
+    }
+    return str;
+}
+
 }
 
 #endif//_UTILS_HPP_

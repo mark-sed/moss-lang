@@ -52,6 +52,9 @@ class __String {
     @internal
     fun lower() {}
 
+    @internal
+    fun replace(target:String, value:String, count:Int=-1) {}
+
     fun join(iterable) {
         // TODO: Internal candidate
         r = ""

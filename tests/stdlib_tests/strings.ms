@@ -109,3 +109,41 @@ oct(42)
 "\n"
 oct(-8)
 "\n"
+
+"hello world\n".replace("world", "moss")
+"banana".replace("a", "o")
+"\n"
+"abcabcabc\n".replace("abc", "x", count=-1)
+
+"aaa".replace("a", "b", 2)
+"\n"
+"111222111".replace("1", "x", 1) 
+"\n"
+"ababab".replace("ab", "cd", 2)
+"\n"
+
+"hello world".replace(" ", "")
+"\n"
+"abracadabra".replace("a", "")
+"\n"
+
+// TODO
+//"abc".replace("", "-")
+//"\n"
+//"".replace("", "X")
+//"\n"
+
+"unchanged".replace("a", "a")
+"\n"
+"repeat\n".replace("e", "gg", 0)
+
+"hello\n".replace("z", "x")
+"".replace("a", "b")
+
+"café\n".replace("é", "e")
+"Hello".replace("h", "y")
+"\n"
+
+"vAv".replace("v", "✅")
+"\n"
+"✅ Value\n".replace("✅", "❌")
