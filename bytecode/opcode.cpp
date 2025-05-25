@@ -1151,7 +1151,7 @@ void SetType::exec(Interpreter *vm) {
             tv = vm->load_type(name);
         }
 
-        op_assert(tv && isa<ClassValue>(tv), mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_A_TYPE, tv->as_string().c_str())));
+        op_assert(tv && (isa<ClassValue>(tv) || isa<EnumTypeValue>(tv)), mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_A_TYPE, tv->as_string().c_str())));
     }
     fv->set_type(index, tv);
 }
