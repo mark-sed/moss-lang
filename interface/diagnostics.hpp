@@ -158,8 +158,16 @@ enum DiagID : unsigned {
     ENABLE_CODE_OUT_ARG_SET,///< When someone sets arguments for enable code output annotation
     DISABLE_CODE_OUT_ARG_SET,///< Same as above but disabled
     UNKNOWN_MODULE_ANNOTATION, ///< Annotation name that is not known
-    NO_TYPE_CONV_F_DEFINED,  ///< When class does not have __Int
-    TYPE_CANNOT_BE_CONV,     ///< Passed non convertable value
+    NO_TYPE_CONV_F_DEFINED, ///< When class does not have __Int
+    TYPE_CANNOT_BE_CONV,    ///< Passed non convertable value
+    SHORT_HEX_ESC_SEQ,      ///< When HEX escape sequence is not 2 values
+    SHORT_OCT_ESC_SEQ,      ///< When OCT escape sequence is not 3 values
+    SHORT_UNICODE16_ESC_SEQ,///< When UNICODE escape sequence is not 4 values
+    SHORT_UNICODE32_ESC_SEQ,///< When UNICODE escape sequence is not 8 values
+    INCORRECT_HEX_ESC_SEQ,  ///< Incorrect value which is not hexadecimal
+    INCORRECT_OCT_ESC_SEQ,  ///< Incorrect value which is not octal
+    INCORRECT_UNICODE16_ESC_SEQ, ///< Incorrect value which is not decimal
+    INCORRECT_UNICODE32_ESC_SEQ, ///< Incorrect value which is not decimal
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -299,6 +307,14 @@ static const char * DIAG_MSGS[] = {
     "Unknown module annotation name '%s'",
     "Object of type '%s' cannot be converted to %s — %s method has to be defined",
     "Type '%s' cannot be converted to %s",
+    "Short hexadecimal escape sequence (has to be 2 values — '\\xhh')",
+    "Short octal escape sequence (has to be 3 values — '\\qooo')",
+    "Short 16-bit unicode escape sequence (has to be 4 — '\\uxxxx')",
+    "Short 32-bit unicode escape sequence (has to be 8 values — '\\Uxxxxxxxx')",
+    "Incorrect hexadecimal value in escape sequence ('%s')",
+    "Incorrect octal value in escape sequence ('%s')",
+    "Incorrect 16-bit unicode value in escape sequence ('%s')",
+    "Incorrect 32-bit unicode value in escape sequence ('%s') — perhaps you meant to use 16-bit sequence, which uses '\\uxxxx'",
 };
 
 /// \brief ID of diagnostic error

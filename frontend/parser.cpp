@@ -7,6 +7,8 @@
 #include <cassert>
 #include <climits>
 #include <cmath>
+#include <codecvt>
+#include <locale>
 
 using namespace moss;
 using namespace ir;
@@ -1751,6 +1753,16 @@ Argument *Parser::argument(bool allow_default_value) {
     return nullptr;
 }
 
+static std::string unicode2UTF8(char16_t codepoint) {
+    std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> conv;
+    return conv.to_bytes(codepoint);
+}
+
+static std::string unicode2UTF8(char32_t codepoint) {
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+    return conv.to_bytes(codepoint);
+}
+
 ustring Parser::unescapeString(ustring str) {
     std::stringstream res;
     bool backslash = false;
@@ -1758,51 +1770,85 @@ ustring Parser::unescapeString(ustring str) {
         char c = str[i];
         if(backslash) {
             switch(c) {
-            case '\"': 
-                res << '\"';
-            break;
-            case '\\': 
-                res << '\\';
-            break;
-            case 'a': 
-                res << '\a';
-            break;
-            case 'b': 
-                res << '\b';
-            break;
-            case 'f': 
-                res << '\f';
-            break;
-            case 'n': 
-                res << '\n';
-            break;
-            case 'r': 
-                res << '\r';
-            break;
-            case 't': 
-                res << '\t';
-            break;
-            case 'v': 
-                res << '\v';
-            break;
-            // TODO: https://en.cppreference.com/w/cpp/language/escape
-            case 'x':
-            case 'X':
-                assert(false && "Hexadecimal escape sequences are not yet implemented");
-            break;
-            case 'q':
-            case 'Q':
-                assert(false && "Octal escape sequences are not yet implemented");
-            break;
-            case 'u':
-            case 'U':
-                assert(false && "Unicode escape sequences are not yet implemented");
-            break;
-            case 'N': // TODO: Should this be kept?
-                assert(false && "Named unicode escape sequences are not yet implemented");
-            break;
-            default:
-                parser_error(create_diag(diags::UNKNOWN_ESC_SEQ, c));
+                case '\"': 
+                    res << '\"';
+                break;
+                case '\\': 
+                    res << '\\';
+                break;
+                case 'a': 
+                    res << '\a';
+                break;
+                case 'b': 
+                    res << '\b';
+                break;
+                case 'f': 
+                    res << '\f';
+                break;
+                case 'n': 
+                    res << '\n';
+                break;
+                case 'r': 
+                    res << '\r';
+                break;
+                case 't': 
+                    res << '\t';
+                break;
+                case 'v': 
+                    res << '\v';
+                break;
+                // TODO: https://en.cppreference.com/w/cpp/language/escape
+                case 'x':
+                case 'X': {
+                    parser_assert(i+2 < str.length(), create_diag(diags::SHORT_HEX_ESC_SEQ));
+                    auto v = str.substr(i+1, 2);
+                    char *end;
+                    errno = 0;
+                    auto ival = std::strtol(v.c_str(), &end, 16);
+                    parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_HEX_ESC_SEQ, v.c_str()));
+                    res << static_cast<char>(ival);
+                    i+=2;
+                }
+                break;
+                case 'q':
+                case 'Q': {
+                    parser_assert(i+3 < str.length(), create_diag(diags::SHORT_OCT_ESC_SEQ));
+                    auto v = str.substr(i+1, 3);
+                    char *end;
+                    errno = 0;
+                    auto ival = std::strtol(v.c_str(), &end, 8);
+                    parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_OCT_ESC_SEQ, v.c_str()));
+                    res << static_cast<char>(ival);
+                    i+=3;
+                }
+                break;
+                case 'u': {
+                    parser_assert(i+4 < str.length(), create_diag(diags::SHORT_UNICODE16_ESC_SEQ));
+                    auto v = str.substr(i+1, 4);
+                    char *end;
+                    errno = 0;
+                    auto ival = std::strtol(v.c_str(), &end, 16);
+                    parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_UNICODE16_ESC_SEQ, v.c_str()));
+                    res << unicode2UTF8(static_cast<char16_t>(ival));
+                    i+=4;
+                }
+                break;
+                case 'U': {
+                    parser_assert(i+8 < str.length(), create_diag(diags::SHORT_UNICODE32_ESC_SEQ));
+                    auto v = str.substr(i+1, 8);
+                    char *end;
+                    errno = 0;
+                    auto ival = std::strtol(v.c_str(), &end, 16);
+                    parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_UNICODE32_ESC_SEQ, v.c_str()));
+                    res << unicode2UTF8(static_cast<char32_t>(ival));
+                    i+=8;
+                }
+                break;
+                case 'N': // TODO: Should this be kept?
+                    assert(false && "Named unicode escape sequences are not yet implemented");
+                break;
+                default:
+                    parser_error(create_diag(diags::UNKNOWN_ESC_SEQ, c));
             }
             backslash = false;
             continue;

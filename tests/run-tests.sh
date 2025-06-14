@@ -633,6 +633,15 @@ function test_strings {
 |
 \\n\\treturn
 \\b\\t\\n
+*
+ABCDEF
+*
+ABCDEF
+true
+true
+Ω
+Ω
+> 🐉中ñ
 ' $1
 }
 
