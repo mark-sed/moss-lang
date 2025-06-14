@@ -1844,8 +1844,8 @@ ustring Parser::unescapeString(ustring str) {
                     i+=8;
                 }
                 break;
-                case 'N': // TODO: Should this be kept?
-                    assert(false && "Named unicode escape sequences are not yet implemented");
+                case 'N':
+                    parser_error(create_diag(diags::UNIMPLEMENTED_SYNTAX_FEATURE, "Named unicode escape sequences ('\\N{name}') are not yet implemented"));
                 break;
                 default:
                     parser_error(create_diag(diags::UNKNOWN_ESC_SEQ, c));

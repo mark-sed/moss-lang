@@ -168,6 +168,7 @@ enum DiagID : unsigned {
     INCORRECT_OCT_ESC_SEQ,  ///< Incorrect value which is not octal
     INCORRECT_UNICODE16_ESC_SEQ, ///< Incorrect value which is not decimal
     INCORRECT_UNICODE32_ESC_SEQ, ///< Incorrect value which is not decimal
+    UNIMPLEMENTED_SYNTAX_FEATURE, ///< When something is missing in parser and is returned as a syntax error, but is unimplemented
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -315,6 +316,7 @@ static const char * DIAG_MSGS[] = {
     "Incorrect octal value in escape sequence ('%s')",
     "Incorrect 16-bit unicode value in escape sequence ('%s')",
     "Incorrect 32-bit unicode value in escape sequence ('%s') — perhaps you meant to use 16-bit sequence, which uses '\\uxxxx'",
+    "Unimplemented syntax feature. %s",
 };
 
 /// \brief ID of diagnostic error

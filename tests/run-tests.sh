@@ -643,6 +643,16 @@ true
 Ω
 > 🐉中ñ
 ' $1
+
+    expect_fail_exec '"\xA"' "Short hexadecimal" $1
+    expect_fail_exec '"\Q01"' "Short octal" $1
+    expect_fail_exec '"\uA32"' "Short 16-bit unicode" $1
+    expect_fail_exec '"\UA32845"' "Short 32-bit unicode" $1
+
+    expect_fail_exec '"\xAG"' "Incorrect hexadecimal" $1
+    expect_fail_exec '"\q080"' "Incorrect octal" $1
+    expect_fail_exec '"\u08Y3"' "Incorrect 16-bit unicode" $1
+    expect_fail_exec '"\U081336AZ"' "Incorrect 32-bit unicode" $1
 }
 
 function test_fstrings {
