@@ -14,7 +14,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 if (MSVC)
     #add_compile_options(/W4 /WX)
     add_compile_options(/MD)
-    # TODO: Add moss directory to windows
+    set(LIBMS_PATH "$ENV{LOCALAPPDATA}\\moss")
+    set(MOSS_PATH "$ENV{LOCALAPPDATA}\\moss\\bin")
+    file(MAKE_DIRECTORY ${LIBMS_PATH})
+    file(MAKE_DIRECTORY ${MOSS_PATH})
 else()
     add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete)
     set(LIBMS_PATH "/lib/moss")
@@ -85,12 +88,23 @@ add_custom_target(
 )
 
 # Making moss a command
-add_custom_command(
-    OUTPUT binmoss
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_BINARY_DIR}/moss
-            ${MOSS_PATH}
-)
+
+if (MSVC)
+    add_custom_command(
+        OUTPUT binmoss    
+        #message(STATUS "To have moss runnable from your CMD add ${CMAKE_CURRENT_BINARY_DIR}/Debug to your PATH")
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_BINARY_DIR}/Debug/moss.exe
+                ${MOSS_PATH}
+    )
+else()
+    add_custom_command(
+        OUTPUT binmoss
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_BINARY_DIR}/moss
+                ${MOSS_PATH}
+    )
+endif()
 
 add_custom_target(
     installation

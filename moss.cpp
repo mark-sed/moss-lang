@@ -18,7 +18,7 @@
 #include <iostream>
 #include <filesystem>
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#ifdef __windows__
 #include <Windows.h>
 #endif
 
@@ -43,7 +43,7 @@ static SourceFile *get_input() {
 
 int main(int argc, const char *argv[]) {
     // On Windows we need to set the output to accept utf8 strings
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#ifdef __windows__
     // Set console code page to UTF-8 so console known how to interpret string data
     SetConsoleOutputCP(CP_UTF8);
     // Enable buffering to prevent VS from chopping up UTF-8 byte sequences

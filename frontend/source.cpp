@@ -48,6 +48,17 @@ std::ostream *BytecodeFile::create_out_stream() {
     return f;
 }
 
+#ifdef __windows__
+#include <windows.h>
+#include <shlobj.h>
+
+ustring getLocalAppDataPath() {
+    char path[MAX_PATH];
+    SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path);  // For %LOCALAPPDATA% (Roaming)
+    return ustring(path);
+}
+#endif
+
 std::optional<ustring> moss::get_file_path(ustring file) {
     auto filep = std::filesystem::path(file);
     if (std::filesystem::exists(global_controls::pwd / filep))
@@ -56,8 +67,11 @@ std::optional<ustring> moss::get_file_path(ustring file) {
     if (std::filesystem::exists(std::filesystem::path("/lib/moss") / filep)) {
         return (std::filesystem::path("/lib/moss") / filep).string();
     }
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-    // TODO: Search Windows lib directories
+#elif defined(__windows__)
+    static std::filesystem::path LIB_PATH = std::filesystem::path(getLocalAppDataPath()+"/moss");
+    if (std::filesystem::exists(LIB_PATH / filep)) {
+        return (LIB_PATH / filep).string();
+    }
 #endif
 
     return std::nullopt;
