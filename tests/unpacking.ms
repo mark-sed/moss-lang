@@ -100,3 +100,49 @@ try
     ~print(<<clsx)
 catch(e:TypeError)
     "caught\n"
+
+// Dict unpacking
+
+fun foov(a, b, c) {
+    return a ++ b ++ c ++ "\n"
+}
+
+argdict = {"c": "C", "a": "A", "b": "B"}
+foov(<<argdict)
+
+argdict2 = {"a": 1}
+foov(<<argdict2, c=3, b=2)
+
+fun foov2() {
+    return "called\n"
+}
+
+foov2(<<{:})
+
+fun foov3(a:Int) {
+    return "foov3\n"
+}
+
+try
+    foov3(<<{
+        "a": true
+    })
+catch (e: TypeError) {
+    "caught\n"
+}
+
+try
+    foov3(<<{:})
+catch (e: TypeError) {
+    "caught\n"
+}
+
+foov3(<<{:}, 2)
+
+fun foov4(a, b="B", c:String="C") {
+    return a++b++c++"\n"
+}
+
+foov4(<<{"a": "a"})
+foov4(b="b", <<{"a": "A"}, c="c")
+foov4(4, <<{:})

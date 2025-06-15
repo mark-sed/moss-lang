@@ -1067,6 +1067,15 @@ void PushUnpacked::exec(Interpreter *vm) {
         for (auto elem: vstr->get_value()) {
             vm->get_call_frame()->push_back(new StringValue(ustring(1, elem)));
         }
+    } else if (auto vdct = dyn_cast<DictValue>(v)) {
+        for (auto elem: vdct->get_vals()) {
+            for (auto [k, v]: elem.second) {
+                auto kname = dyn_cast<StringValue>(k);
+                op_assert(kname, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::KEYWORD_NOT_A_STRING,
+                    k->get_type()->get_name().c_str())));
+                vm->get_call_frame()->push_back(kname->get_value(), v);
+            }
+        }
     } else {
         raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE,
                 v->get_type()->get_name().c_str())));

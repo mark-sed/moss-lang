@@ -718,7 +718,8 @@ caught
 0 1 2 3 0
 | a b c | 2
 | 0 1 2 |
-\ncaught\n" $1
+\ncaught
+ABC\n123\ncalled\ncaught\ncaught\nfoov3\naBC\nAbc\n4BC\n" $1
 }
 
 function test_equalities {
