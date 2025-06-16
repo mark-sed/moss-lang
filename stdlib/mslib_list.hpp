@@ -27,6 +27,8 @@ Value *append(Interpreter *vm, Value * ths, Value *v, Value *&err);
 
 Value *pop(Interpreter *vm, Value *ths, Value *index, Value *&err);
 
+Value *List(Interpreter *vm, Value *ths, Value *iterable, Value *&err);
+
 }
 }
 }

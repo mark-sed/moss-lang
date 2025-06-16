@@ -85,7 +85,9 @@ class __NilType {
 @internal_bind("List")
 class __List {
     @internal
-    fun List(... vals) {}
+    fun List() {}
+    @internal
+    fun List(iterable) {}
 
     @internal
     fun length() {}

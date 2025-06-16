@@ -41,3 +41,20 @@ Value *List::pop(Interpreter *vm, Value *ths, Value *index, Value *&err) {
     }
     return removed;
 }
+
+Value *List::List(Interpreter *vm, Value *ths, Value *iterable, Value *&err) {
+    (void)ths;
+    auto iterator = iterable->iter(vm);
+    ListValue *lv = new ListValue();
+    try {
+        while(true) {
+            lv->push(iterator->next(vm));
+        }
+    } catch (Value *exc) {
+        if (exc->get_type() != BuiltIns::StopIteration) {
+            err = exc;
+            return nullptr;
+        }
+    }
+    return lv;
+}

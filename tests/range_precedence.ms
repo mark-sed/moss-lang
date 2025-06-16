@@ -5,8 +5,6 @@
 [1, 4..5] // 1, range
 "\n"
 
-List(List(1,2), 2)
-"\n"
 fun add(a, b) {
     return a + b
 }

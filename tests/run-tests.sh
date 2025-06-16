@@ -688,7 +688,6 @@ function test_range_precedence {
     expect_out_eq "[[1], [3]]
 [[1, 2], [3], 5, <object of class Range>]
 [1, <object of class Range>]
-[[1, 2], 2]
 [1, 1]
 [1, \"two\", true, [8, 9], []]
 6
@@ -934,7 +933,9 @@ function test_lib_type_constructors {
 false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
 Hi\n55\n<class String>\nnil
 nil
-[]\n[1]\n[true, nil, 2, 4]\n[[1, 2], 2, [2, 1]]
+[]\n[1, 2, 3]\n[true, nil, 2, 4]\n["H", "e", "l", "l", "o"]
+[5, 6, 7, 8]\n[5, 6, 7, 8]\n[]
+[0, 1, 2, 3, 4, 5]\n[0, 1, 2, 3, 4, 5]\n[]
 Exception: Some exception\n' $1
 }
 

@@ -65,12 +65,56 @@ NilType()
 
 List()
 "\n"
-List(1)
+List([1,2,3])
 "\n"
-List(true, nil, 2, 4)
+List([true, nil, 2, 4])
 "\n"
-l1 = List(1,2)
-List(l1, 2, l1[1..-1])
+List("Hello")
+"\n"
+
+class IterableClass {
+    fun IterableClass(l) {
+        this.l = l
+    }
+
+    fun __iter() {
+        return this.l
+    }
+}
+
+ic = IterableClass([5,6,7,8])
+List(ic)
+"\n"
+List(ic)
+"\n"
+List(IterableClass(""))
+"\n"
+
+class NextClass {
+    fun NextClass(max) {
+        this.max = max
+    }
+
+    fun __iter() {
+        this.i = 0
+        return this;
+    }
+
+    fun __next() {
+        if (this.i > this.max)
+            raise StopIteration()
+        v = this.i
+        this.i += 1
+        return v
+    }
+}
+
+nc = NextClass(5)
+List(nc)
+"\n"
+List(nc)
+"\n"
+List(NextClass(-8))
 "\n"
 
 e1 = Exception("Some exception")

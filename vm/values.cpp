@@ -52,13 +52,11 @@ Value::~Value() {
 }
 
 Value *Value::iter(Interpreter *vm) {
-    assert(!isa<ObjectValue>(this) && "object value should be handled in caller");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
 }
 
 Value *Value::next(Interpreter *vm) {
-    assert(!isa<ObjectValue>(this) && "object value should be handled in caller");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
 }
@@ -154,6 +152,37 @@ FunValue::~FunValue() {
     for (auto c: closures) {
         gcs::TracingGC::push_popped_frame(c);
     }
+}
+
+Value *ObjectValue::iter(Interpreter *vm) {
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    FunValue *iterf = opcode::lookup_method(vm, this, "__iter", {}, did);
+    Value *iterator = this;
+    if (iterf) {
+        // When iter is found then call it and use the return value otherwise use the object itself
+        iterator = opcode::runtime_method_call(vm, iterf, {iterator});
+        // If the returned value is primitive iterable (List or String or Dict) call its iter
+        if (isa<ListValue>(iterator) || isa<StringValue>(iterator) || isa<DictValue>(iterator)) {
+            iterator = iterator->iter(vm);
+        }
+    }
+    return iterator;
+}
+
+Value *ObjectValue::next(Interpreter *vm) {
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    // We use this as the iterator as next should be called on the iterator returned from iter
+    FunValue *nextf = opcode::lookup_method(vm, this, "__next", {}, did);
+    Value *retv = nullptr;
+    if (nextf) {
+        retv = opcode::runtime_method_call(vm, nextf, {this});
+    } else {
+        if (did == diags::DiagID::UNKNOWN)
+            opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, this->get_type()->get_name().c_str())));
+        else
+            opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__next", diags::DIAG_MSGS[did])));
+    }
+    return retv;
 }
 
 Value *StringValue::next(Interpreter *vm) {

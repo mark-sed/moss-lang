@@ -492,9 +492,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
-        {"List", [](Interpreter*, CallFrame* cf, Value*&) {
+        {"List", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value *{
+            if (cf->get_args().size() == 1)
+                return new ListValue();
             assert(cf->get_args().size() == 2);
-            return cf->get_arg("vals");
+            return List::List(vm, cf->get_arg("this"), cf->get_arg("iterable"), err);
         }},
         {"log", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)vm;

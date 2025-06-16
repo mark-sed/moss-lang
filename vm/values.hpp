@@ -577,6 +577,9 @@ public:
         return cpy;
     }
 
+    virtual Value *iter(Interpreter *vm) override;
+    virtual Value *next(Interpreter *vm) override;
+
     virtual inline bool is_modifiable() override { return true; }
     virtual inline bool is_hashable() override { return true; }
 
