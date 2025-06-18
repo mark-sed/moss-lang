@@ -120,6 +120,7 @@ public:
     virtual inline bool is_modifiable() { return false; }
     /// When mutable, then the value can change
     virtual inline bool is_hashable() = 0;
+    virtual inline bool is_iterable() { return false; }
 
     virtual std::ostream& debug(std::ostream& os) const = 0;
 
@@ -309,6 +310,7 @@ public:
     virtual opcode::IntConst hash() override {
         return std::hash<opcode::StringConst>{}(value);
     }
+    virtual inline bool is_iterable() override { return true; }
 
     opcode::StringConst get_value() { return this->value; }
 
@@ -375,6 +377,7 @@ public:
     }
 
     virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; }
 
     std::vector<Value *> get_vals() { return this->vals; }
 
@@ -451,6 +454,7 @@ public:
     }
 
     virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; }
 
     std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> get_vals() { return this->vals; }
 
@@ -582,6 +586,7 @@ public:
 
     virtual inline bool is_modifiable() override { return true; }
     virtual inline bool is_hashable() override { return true; }
+    virtual inline bool is_iterable() override { return true; }
 
     virtual opcode::StringConst as_string() const override {
         return "<object of class " + this->type->get_name() + ">";
@@ -677,6 +682,7 @@ public:
     virtual opcode::IntConst hash() override {
         return std::hash<opcode::StringConst>{}(format+value->get_value());
     }
+    virtual inline bool is_iterable() override { return true; }
 
     StringValue *get_value() { return this->value; }
     opcode::StringConst get_format() { return this->format; }

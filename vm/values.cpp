@@ -52,11 +52,13 @@ Value::~Value() {
 }
 
 Value *Value::iter(Interpreter *vm) {
+    assert(!this->is_iterable() && "Value is marked as iterable but does not override iter");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
 }
 
 Value *Value::next(Interpreter *vm) {
+    assert(!this->is_iterable() && "Value is marked as iterable but does not override next");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
 }
@@ -162,7 +164,7 @@ Value *ObjectValue::iter(Interpreter *vm) {
         // When iter is found then call it and use the return value otherwise use the object itself
         iterator = opcode::runtime_method_call(vm, iterf, {iterator});
         // If the returned value is primitive iterable (List or String or Dict) call its iter
-        if (isa<ListValue>(iterator) || isa<StringValue>(iterator) || isa<DictValue>(iterator)) {
+        if (!isa<ObjectValue>(iterator) && iterator->is_iterable()) {
             iterator = iterator->iter(vm);
         }
     }

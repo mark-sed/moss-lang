@@ -146,3 +146,42 @@ fun foov4(a, b="B", c:String="C") {
 foov4(<<{"a": "a"})
 foov4(b="b", <<{"a": "A"}, c="c")
 foov4(4, <<{:})
+
+// multiple unpacks
+
+fun foo1(... argsz) {
+    ~print(<<argsz)    
+}
+
+fun foo2(... argsz1) {
+    ~foo1(argsz1)
+}
+
+fun foo3(... argsz2) {
+    ~foo2(<<argsz2)
+}
+
+~foo3(1, 2, 3, "hi", [1,2])
+
+class CIter {
+    fun CIter(max) {
+        this.max = max
+    }
+
+    fun __iter() {
+        this.i = 0
+        return this
+    }
+
+    fun __next() {
+        if (this.i > this.max)
+            raise StopIteration()
+        v = this.i
+        this.i += 1
+        return v
+    }
+}
+
+ci = CIter(4)
+~foo3(<<ci)
+~foo3(<<ci)

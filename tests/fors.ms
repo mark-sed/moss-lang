@@ -125,3 +125,22 @@ try
     for (iwi : WrongNext()) {}
 catch (e:TypeError)
     "caught\n"
+
+@formatter
+fun md(t) {
+    return t[2..t.length()]
+}
+
+@converter("md", "txt")
+fun md2txt(t) = t
+
+
+note_str = md"# Some md header"
+for (i : note_str) {
+    i
+}
+"\n"
+for (i : md"# Some more") {
+    i
+}
+"\n"

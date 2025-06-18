@@ -358,7 +358,8 @@ fc1\n1\nfc1\nnone\nnone\n" $1
 function test_fors {
     expect_pass "fors.ms" $1
     expect_out_eq "Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579
-Pos: [], Vel: []\ndone\ncaught\n" $1
+Pos: [], Vel: []\ndone\ncaught
+Some md header\nSome more\n" $1
 }
 
 function test_try_catch {
@@ -718,7 +719,8 @@ caught
 | a b c | 2
 | 0 1 2 |
 \ncaught
-ABC\n123\ncalled\ncaught\ncaught\nfoov3\naBC\nAbc\n4BC\n" $1
+ABC\n123\ncalled\ncaught\ncaught\nfoov3\naBC\nAbc\n4BC
+[1, 2, 3, \"hi\", [1, 2]]\n[0, 1, 2, 3, 4]\n[0, 1, 2, 3, 4]\n" $1
 }
 
 function test_equalities {
