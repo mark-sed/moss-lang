@@ -138,9 +138,6 @@ void TracingGC::blacken_value(Value *v) {
     else if (auto subv = dyn_cast<SuperValue>(v)) {
         mark_value(subv->get_instance());
     }
-    else if (auto subv = dyn_cast<NoteValue>(v)) {
-        mark_value(subv->get_value());
-    }
 }
 
 void TracingGC::trace_refs() {

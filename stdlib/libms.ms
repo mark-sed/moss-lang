@@ -71,7 +71,7 @@ class __String {
 }
 
 @internal_bind("Note")
-class __Note {
+class __Note : String {
     @internal
     fun Note(value:String="", format:String="txt") {}
 }

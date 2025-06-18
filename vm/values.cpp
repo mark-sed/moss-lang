@@ -390,7 +390,10 @@ StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String",
 }
 
 NoteValue::NoteValue(opcode::StringConst format, StringValue *value) 
-        : Value(ClassType, "Note", BuiltIns::Note), format(format), value(value) {
+        : StringValue(value->get_value()), format(format) {
+    this->type = BuiltIns::Note;
+    this->name = "Note";
+    this->kind = NoteValue::ClassType;
     if(BuiltIns::Note->get_attrs())
         this->attrs = BuiltIns::Note->get_attrs()->clone();
     set_attr("format", new StringValue(format), true);

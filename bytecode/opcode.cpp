@@ -237,12 +237,12 @@ void LoadAttr::exec(Interpreter *vm) {
     // TODO: Raise type error if type cannot have attributes, such as function
     auto attr = v->get_attr(this->name, vm);
     // This could possibly be an object or a class
-    if (!attr && (isa<ObjectValue>(v) || isa<ClassValue>(v))) {
+    if (!attr && v->get_type() && !isa<EnumTypeValue>(v)) {
         ClassValue *cls = nullptr;
-        if (isa<ObjectValue>(v)) {
-            cls = dyn_cast<ClassValue>(v->get_type());
-        } else {
+        if (isa<ClassValue>(v)) {
             cls = dyn_cast<ClassValue>(v);
+        } else {
+            cls = dyn_cast<ClassValue>(v->get_type());
         }
 
         for (auto sup: cls->get_all_supers()) {
@@ -935,7 +935,7 @@ void Return::exec(Interpreter *vm) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
             rv_str = new StringValue(ret_v->as_string());
-        ret_v =  new NoteValue(cf->get_function()->get_name(), rv_str);
+        ret_v = new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 
     if (cf->is_extern_module_call() || cf->is_runtime_call()) {

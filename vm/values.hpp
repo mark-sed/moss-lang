@@ -294,7 +294,7 @@ public:
 
 /// Moss string value
 class StringValue : public Value {
-private:
+protected:
     opcode::StringConst value;
     size_t iterator;
 public:
@@ -556,6 +556,9 @@ public:
     }
 
     std::list<ClassValue *> get_supers() { return this->supers; }
+    void push_parent(ClassValue *c) {
+        this->supers.push_back(c);
+    }
     
     bool has_parent(ClassValue *c) {
         return std::find(supers.begin(), supers.end(), c) != supers.end();
@@ -664,10 +667,9 @@ public:
     virtual std::ostream& debug(std::ostream& os) const override;
 };
 
-class NoteValue : public Value {
+class NoteValue : public StringValue{
 private:
     opcode::StringConst format;
-    StringValue *value;
 
 public:
     static const TypeKind ClassType = TypeKind::NOTE;
@@ -675,38 +677,23 @@ public:
     NoteValue(opcode::StringConst format, StringValue *value);
 
     virtual Value *clone() override {
-        return new NoteValue(this->format, this->value);
+        return new NoteValue(this->format, dyn_cast<StringValue>(this));
     }
 
     virtual inline bool is_hashable() override { return true; }
     virtual opcode::IntConst hash() override {
-        return std::hash<opcode::StringConst>{}(format+value->get_value());
+        return std::hash<opcode::StringConst>{}(format+value);
     }
     virtual inline bool is_iterable() override { return true; }
 
-    StringValue *get_value() { return this->value; }
     opcode::StringConst get_format() { return this->format; }
 
-    virtual opcode::StringConst as_string() const override {
-        return value->get_value();
-    }
-
-    virtual Value *iter(Interpreter *vm) override {
-        return value->iter(vm);
-    }
-
-    virtual Value *next(Interpreter *vm) override {
-        // This should not be really called as iter returns value::iter
-        // But this might be called explicitly
-        return value->next(vm);
-    }
-
     virtual opcode::StringConst dump() override {
-        return format + value->dump();
+        return format + dyn_cast<StringValue>(this)->dump();
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Note(" << format << "\"" << utils::sanitize(value->get_value()) << "\")";
+        os << "Note(" << format << "\"" << utils::sanitize(value) << "\")";
         return os;
     }
 };
@@ -1017,8 +1004,14 @@ bool isa(Value* t) {
 
 template<class T>
 T *dyn_cast(Value* t) {
-    if (!isa<T>(t)) return nullptr;
-    return dynamic_cast<T *>(t);
+    if constexpr (std::is_same_v<T, StringValue>) {
+        // special case for StringValue when NoteValue (its child) is passed in
+        if (!isa<StringValue>(t) && !isa<NoteValue>(t)) return nullptr;
+        return dynamic_cast<StringValue*>(t);
+    } else {
+        if (!isa<T>(t)) return nullptr;
+        return dynamic_cast<T *>(t);
+    }
 }
 
 }
