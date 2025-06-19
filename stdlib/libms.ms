@@ -140,6 +140,78 @@ class __Range {
     }
 }
 
+class Complex {
+    fun Complex(real:[Int,Float]=0, imag:[Int,Float]=0) {
+        this.real = real
+        this.imag = imag
+    }
+
+    // TODO:
+    // @internal
+    //fun Complex(value:String) {}
+
+    fun (==)(other:Complex) {
+        return this.real == other.real and this.imag == other.imag
+    }
+    fun (==)(other:[Float,Int]) {
+        return this.real == other and this.imag == 0
+    }
+
+    fun (!=)(other:Complex) {
+        return this.real != other.real or this.imag != other.imag
+    }
+    fun (!=)(other:[Float,Int]) {
+        return this.real != other or this.imag != 0
+    }
+
+    fun (+)(other:Complex) {
+        return ::Complex(this.real + other.real, this.imag + other.imag)
+    }
+    fun (+)(other:[Float,Int]) {
+        return ::Complex(this.real + other, this.imag)
+    }
+
+    fun (-)(other:Complex) {
+        return ::Complex(this.real - other.real, this.imag - other.imag)
+    }
+    fun (-)(other:[Float,Int]) {
+        return ::Complex(this.real - other, this.imag)
+    }
+    fun (-)() {
+        return ::Complex(-this.real, -this.imag)
+    }
+
+    fun (*)(other:Complex) {
+        r = this.real * other.real - this.imag * other.imag
+        i = this.real * other.imag + this.imag * other.real
+        return ::Complex(r, i)
+    }
+    fun (*)(other:[Float,Int]) {
+        return ::Complex(this.real * other, this.imag * other)
+    }
+
+    fun (/)(other:Complex) {
+        denom = other.real ^ 2.0 + other.imag ^ 2.0
+        if (denom == 0)
+            raise DivisionByZeroError("Complex division by zero")
+        r = (this.real * other.real + this.imag * other.imag) / denom
+        i = (this.imag * other.real - this.real * other.imag) / denom
+        return ::Complex(r, i)
+    }
+    fun (/)(other:[Float,Int]) {
+        denom = other ^ 2.0
+        if (denom == 0)
+            raise DivisionByZeroError("Complex division by zero")
+        r = (this.real * other) / denom
+        i = (this.imag * other) / denom
+        return ::Complex(r, i)
+    }
+
+    fun __String() {
+        return this.real ++ (this.imag >= 0 ? "+" : "") ++ this.imag ++ "i"
+    }
+}
+
 @internal_bind("Type")
 class __Type {
     //@internal

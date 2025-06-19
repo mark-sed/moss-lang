@@ -44,11 +44,11 @@ Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
     bool first = true;
     for (auto v : msgs_list->get_vals()) {
         if (first) {
-            outs << v->as_string();
+            outs << opcode::to_string(vm, v);
             first = false;
         }
         else {
-            outs << separator->as_string() << v->as_string();
+            outs << opcode::to_string(vm, separator) << opcode::to_string(vm, v);
         }
     }
     outs << end->as_string();

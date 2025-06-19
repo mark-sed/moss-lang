@@ -1064,6 +1064,15 @@ function test_lib_types {
 true\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\nfalse\ntrue\n" $1
 }
 
+function test_lib_complex {
+    expect_pass "stdlib_tests/complex.ms" $1
+    expect_out_eq "1-2i\n1,-2\ntrue\n5+0i\nfalse\nfalse\ntrue
+-1.500000+3.200000i\n6-2i\n-0.500000+1.200000i\n-4-2i\n5-10i
+true\n0.400000-2.300000i\ncaught\n-1+2i\ntrue\nfalse\nfalse\ntrue
+0+0i\n0-2i\n15.000000+0i\n8+0i\n18+27i\n0+0i\n5.000000-1.500000i\ncaught
+4+6i\n3-4i\n23+2i\n1.000000+2.000000i\n8+0i\n3-1i\n2-2i\n3.000000+4.000000i\n" $1
+}
+
 function test_lib_filters {
     expect_pass "stdlib_tests/filters.ms" $1
     expect_out_eq "true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
@@ -1293,6 +1302,7 @@ function run_all_tests {
     run_test lib_file
     run_test lib_args
     run_test lib_types
+    run_test lib_complex
     run_test lib_filters
     run_test lib_attrs
 
