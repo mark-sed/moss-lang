@@ -934,7 +934,7 @@ void Return::exec(Interpreter *vm) {
     if (cf->get_function()->has_annotation("formatter") && !isa<NoteValue>(ret_v)) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
-            rv_str = new StringValue(ret_v->as_string());
+            rv_str = new StringValue(to_string(vm, ret_v));
         ret_v = new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 
@@ -977,7 +977,7 @@ void ReturnConst::exec(Interpreter *vm) {
     if (cf->get_function()->has_annotation("formatter") && !isa<NoteValue>(ret_v)) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
-            rv_str = new StringValue(ret_v->as_string());
+            rv_str = new StringValue(to_string(vm, ret_v));
         ret_v =  new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 

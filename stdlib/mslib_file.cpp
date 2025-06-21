@@ -79,6 +79,6 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     auto fsv = ths->get_attr("__fstream", vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
-    *(fsfs->get_fs()) << content->as_string();
+    *(fsfs->get_fs()) << opcode::to_string(vm, content);
     return BuiltIns::Nil;
 }

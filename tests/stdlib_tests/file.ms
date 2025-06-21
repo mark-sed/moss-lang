@@ -27,3 +27,27 @@ f3 = open(path2, "r")
 f3.readlines()[0]
 ~f3.close()
 "\n"
+
+class LoremIpsum {
+
+    fun LoremIpsum(am:Int) {
+        this.am = am
+    }
+
+    fun __String() {
+        t = ""
+        for (i : 0..this.am) {
+            t ++= "Lorem Ipsum\n"
+        }
+        return t
+    }
+}
+
+f4 = open(".created_file_2.txt", "w")
+~f4.write(LoremIpsum(2))
+~f4.close()
+
+f5 = open(".created_file_2.txt", "r")
+for (l: f5.readlines())
+    l ++ "\n"
+~f5.close()

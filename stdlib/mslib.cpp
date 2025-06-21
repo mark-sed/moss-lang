@@ -51,7 +51,7 @@ Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
             outs << opcode::to_string(vm, separator) << opcode::to_string(vm, v);
         }
     }
-    outs << end->as_string();
+    outs << opcode::to_string(vm, end);
     return BuiltIns::Nil;
 }
 
@@ -92,7 +92,7 @@ Value *round(Interpreter *vm, Value *n, Value *ndigits) {
 
 Value *input(Interpreter *vm, Value *prompt, Value *&err) {
     (void)vm;
-    auto msg = prompt->as_string();
+    auto msg = opcode::to_string(vm, prompt);
     if (!msg.empty())
         outs << msg;
     ustring line;
@@ -225,7 +225,7 @@ Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base, Value *&err) {
         assert(base_int && "TODO: Raise type exception as base is not int");
         char *pend;
         errno = 0;
-        auto vi = std::strtol(sv->as_string().c_str(), &pend, base_int->get_value());
+        auto vi = std::strtol(sv->get_value().c_str(), &pend, base_int->get_value());
         if (*pend != '\0')
             assert(false && "TODO: Raise error value is not int");
         if (errno != 0) {
@@ -254,7 +254,7 @@ Value *Float(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     if (auto sv = dyn_cast<StringValue>(v)) {
         char *pend;
         errno = 0;
-        double vf = std::strtod(sv->as_string().c_str(), &pend);
+        double vf = std::strtod(sv->get_value().c_str(), &pend);
         if (*pend != '\0')
             assert(false && "TODO: Raise error value is not int");
         if (errno != 0) {

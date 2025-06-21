@@ -29,3 +29,21 @@ fun foo2txt(x) {
 }
 
 foo"Hello"
+
+class Foo1 {
+    fun __String() {
+        return "Foo1Class\n"
+    }
+}
+
+@formatter
+fun md1(x) {
+    return Foo1()
+}
+
+fun md12txt(n) {
+    @!converter("md1", "txt")
+    return n
+}
+
+md1"this will not show"

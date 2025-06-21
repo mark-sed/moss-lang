@@ -584,7 +584,8 @@ Paragraph1
 
 Title2
 Paragraph2
-Hello\n" $1
+Hello
+Foo1Class\n" $1
 }
 
 function test_generators {
@@ -1041,9 +1042,11 @@ function test_lib_file {
     expect_pass "stdlib_tests/file.ms" $1 
     expect_out_eq "caught\ncaught\n<C++ value of type std::fstream>
 [\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]
-written line\n" $1
+written line
+Lorem Ipsum
+Lorem Ipsum\n" $1
     rm -f $DATA_FILE
-    rm -r ".created_file_t.txt1"
+    rm -r ".created_file_t.txt1" ".created_file_2.txt"
 }
 
 function test_lib_args {

@@ -80,7 +80,7 @@ int Repl::run() {
                     if (auto ci = dyn_cast<IntValue>(ex_code)) {
                         interpreter->set_exit_code(ci->get_value());
                     } else {
-                        errs << ex_code->as_string();
+                        errs << opcode::to_string(interpreter, ex_code);
                         interpreter->set_exit_code(1);
                     }
                     break;
