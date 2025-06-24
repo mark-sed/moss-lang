@@ -607,8 +607,24 @@ IR *Parser::declaration() {
     else if (match(TokenType::FOR)) {
         auto forsrci = curr_src_info();
         expect(TokenType::LEFT_PAREN, create_diag(diags::FOR_REQUIRES_PARENTH));
+        ++lower_range_prec;
         auto iterator = expression();
-        parser_assert(is_id_or_member(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
+        --lower_range_prec;
+        if (match(TokenType::COMMA)) {
+            std::vector<ir::Expression *> vars = {iterator};
+            Expression *expr = nullptr;
+            ++lower_range_prec;
+            do {
+                skip_nls();
+                expr = expression(true);
+                if (expr) {
+                    parser_assert(is_id_or_member(expr), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+                    vars.push_back(expr);
+                }
+            } while (match(TokenType::COMMA) && expr);
+            iterator = new Multivar(vars, curr_src_info());
+        }
+        parser_assert(is_id_or_member(iterator) || isa<Multivar>(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
         parser_assert(iterator, create_diag(diags::EXPR_EXPECTED));
         expect(TokenType::COLON, create_diag(diags::FOR_MISSING_COLON));
         auto collection = expression();

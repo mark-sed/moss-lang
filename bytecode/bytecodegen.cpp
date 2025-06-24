@@ -1471,6 +1471,8 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     auto i_expr = forlp->get_iterator();
     if (isa<Variable>(i_expr)) {
         iter = next_reg();
+    } else if (auto mva = dyn_cast<Multivar>(i_expr)) {
+        assert(false && "TODO: For multivar");
     } else {
         auto iter_reg = emit(i_expr, true);
         iter = free_reg(iter_reg);
