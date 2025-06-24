@@ -170,6 +170,8 @@ enum DiagID : unsigned {
     INCORRECT_UNICODE32_ESC_SEQ, ///< Incorrect value which is not decimal
     UNIMPLEMENTED_SYNTAX_FEATURE, ///< When something is missing in parser and is returned as a syntax error, but is unimplemented
     KEYWORD_NOT_A_STRING,   ///< When a keyword/argument in a unpacked function call dict is not a string
+    MULTIPLE_3DOT_MULTIVAR, ///< When there is more than 1 ...var in multivar
+    COMMA_FOR_MULTIVAR_EXPECTED, ///< When there is a sure multivar (...a), but no comma after it
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -319,6 +321,8 @@ static const char * DIAG_MSGS[] = {
     "Incorrect 32-bit unicode value in escape sequence ('%s') — perhaps you meant to use 16-bit sequence, which uses '\\uxxxx'",
     "Unimplemented syntax feature. %s",
     "All keywords in a function call with unpacked Dict have to be a String, but found '%s'",
+    "Only one variable in multi-variable assignment can be `...`",
+    "`...` multivar expects list of variables after the first one",
 };
 
 /// \brief ID of diagnostic error

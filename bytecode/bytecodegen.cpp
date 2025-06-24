@@ -209,6 +209,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 assert("Non-assignable expression");
                 return nullptr;
             } else if (auto mva = dyn_cast<Multivar>(expr->get_left())) {
+                assert(mva->get_rest_index() == -1 && "TODO: Unimplemented rest assignment");
                 if (right->is_const()) {
                     append(new opcode::StoreConst(next_reg(), free_reg(right)));
                     right = last_reg();

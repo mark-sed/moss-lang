@@ -1672,4 +1672,64 @@ fun ()(a) { return a + b; }
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Multivars){
+    ustring code = R"(
+...a, b, c = [[1, 2], [3, 4], [5, 6]]
+a, b = c
+::c, h.g = g
+...::c, a, ::g, a.g = slist
+a, b, c, d, e, f, g = hoo
+a, b, c, d, e, f, ...g = hoo
+a, b, c, ...d, e, f, g = hoo
+
+for(...a, b, c : [[1, 2, -1], [3, 4, -2], [5, 6, -3]]) {}
+for(a, b, c : [[1, 2, -1], [3, 4, -2], [5, 6, -3]]) {}
+for(a.b, ...b, ::c : foo) {}
+for(a.b, ::c : g) {}
+)";
+
+    IRType expected[] = {
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::BINARY_EXPR,
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+        IRType::FOR_LOOP,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+a, b, = c
+a,b,c += 4
+...a, ...b = c
+a, ...b, c, ...a = a
+a, b, c, 5 = foo
+for(a, b, ...c, ...d : g) {}
+...a = foo1
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 }

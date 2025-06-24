@@ -608,6 +608,10 @@ IR *Parser::declaration() {
         auto forsrci = curr_src_info();
         expect(TokenType::LEFT_PAREN, create_diag(diags::FOR_REQUIRES_PARENTH));
         ++lower_range_prec;
+        int rest_index = -1;
+        if (match(TokenType::THREE_DOTS)) {
+            rest_index = 0;
+        }
         auto iterator = expression();
         --lower_range_prec;
         if (match(TokenType::COMMA)) {
@@ -616,13 +620,17 @@ IR *Parser::declaration() {
             ++lower_range_prec;
             do {
                 skip_nls();
+                if (match(TokenType::THREE_DOTS)) {
+                    parser_assert(rest_index == -1, create_diag(diags::MULTIPLE_3DOT_MULTIVAR));
+                    rest_index = static_cast<int>(vars.size());
+                }
                 expr = expression(true);
                 if (expr) {
                     parser_assert(is_id_or_member(expr), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
                     vars.push_back(expr);
                 }
             } while (match(TokenType::COMMA) && expr);
-            iterator = new Multivar(vars, curr_src_info());
+            iterator = new Multivar(vars, rest_index, curr_src_info());
         }
         parser_assert(is_id_or_member(iterator) || isa<Multivar>(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
         parser_assert(iterator, create_diag(diags::EXPR_EXPECTED));
@@ -1214,7 +1222,7 @@ Expression *Parser::membership() {
     return expr;
 }
 
-Expression *Parser::list_of_vars(Expression *first, Expression *second) {
+Expression *Parser::list_of_vars(Expression *first, Expression *second, int rest_index) {
     parser_assert(is_id_or_member(first), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
     parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
     std::vector<ir::Expression *> vars = {first, second};
@@ -1223,6 +1231,10 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
     bool found_eq = false;
     do {
         skip_nls();
+        if (match(TokenType::THREE_DOTS)) {
+            parser_assert(rest_index == -1, create_diag(diags::MULTIPLE_3DOT_MULTIVAR));
+            rest_index = static_cast<int>(vars.size());
+        }
         expr = expression(true);
         if (expr) {
             if (auto be = dyn_cast<BinaryExpr>(expr)) {
@@ -1236,7 +1248,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
                     break;
                 }
                 else {
-                    assert(false && "TODO: Handle");
+                    parser_error(create_diag(diags::SET_EXPECTED_FOR_MULTIVAL));
                 }
             }
             else {
@@ -1247,7 +1259,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second) {
     } while (match(TokenType::COMMA) && expr);
     parser_assert(found_eq, create_diag(diags::SET_EXPECTED_FOR_MULTIVAL));
     --lower_range_prec;
-    return new BinaryExpr(new Multivar(vars, curr_src_info()), expr, Operator(OperatorKind::OP_SET), curr_src_info());
+    return new BinaryExpr(new Multivar(vars, rest_index, curr_src_info()), expr, Operator(OperatorKind::OP_SET), curr_src_info());
 }
 
 Expression *Parser::range() {
@@ -1264,18 +1276,22 @@ Expression *Parser::range() {
     // expr,second..end
     else if (!lower_range_prec && match(TokenType::COMMA)) {
         parser_assert(expr, create_diag(diags::NO_LHS_IN_RANGE));
+        int rest_index = -1;
+        if (match(TokenType::THREE_DOTS)) {
+            rest_index = 1;
+        }
         auto second = concatenation();
         parser_assert(second, create_diag(diags::EXPR_EXPECTED));
         // List of value to assing to
         if (match(TokenType::COMMA)) {
-            return list_of_vars(expr, second);
+            return list_of_vars(expr, second, rest_index);
         }
         else if (match(TokenType::SET)) {
             std::vector<ir::Expression *> vars = {expr, second};
             parser_assert(is_id_or_member(expr), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
             parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
             auto res = concatenation();
-            return new BinaryExpr(new Multivar(vars, curr_src_info()), res, Operator(OperatorKind::OP_SET), curr_src_info());
+            return new BinaryExpr(new Multivar(vars, rest_index, curr_src_info()), res, Operator(OperatorKind::OP_SET), curr_src_info());
         }
         expect(TokenType::RANGE, create_diag(diags::RANGE_EXPECTED));
         auto end = concatenation();
@@ -1554,6 +1570,26 @@ Expression *Parser::constant() {
     else if (check(TokenType::ID)) {
         auto id = advance();
         return new Variable(id->get_value(), curr_src_info());
+    }
+    else if (match(TokenType::THREE_DOTS)) {
+        ++lower_range_prec;
+        auto first = expression();
+        parser_assert(first, create_diag(diags::ID_EXPECTED));
+        expect(TokenType::COMMA, create_diag(diags::COMMA_FOR_MULTIVAR_EXPECTED));
+        parser_assert(!match(TokenType::THREE_DOTS), create_diag(diags::MULTIPLE_3DOT_MULTIVAR));
+        auto second = concatenation();
+        parser_assert(second, create_diag(diags::ID_EXPECTED));
+        --lower_range_prec;
+        // List of value to assing to
+        if (match(TokenType::COMMA)) {
+            return list_of_vars(first, second, 0);
+        }
+        expect(TokenType::SET, create_diag(diags::SET_EXPECTED_FOR_MULTIVAL));
+        std::vector<ir::Expression *> vars = {first, second};
+        parser_assert(is_id_or_member(first), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+        parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+        auto res = concatenation();
+        return new BinaryExpr(new Multivar(vars, 0, curr_src_info()), res, Operator(OperatorKind::OP_SET), curr_src_info());
     }
     else if (check(TokenType::INT)) {
         auto val = advance();

@@ -78,7 +78,7 @@ private:
     ir::OperatorLiteral *operator_name();
     ir::Argument *argument(bool allow_default_value=false);
     std::list<ir::IR *> cases();
-    ir::Expression *list_of_vars(ir::Expression *first, ir::Expression *second);
+    ir::Expression *list_of_vars(ir::Expression *first, ir::Expression *second, int rest_index);
     ir::Expression *fstring(FStringToken *fstr);
 
     ir::Expression *unpack();

@@ -1103,26 +1103,30 @@ public:
 class Multivar : public Expression {
 private:
     std::vector<ir::Expression *> vars;
+    int rest_index;
 public:
     static const IRType ClassType = IRType::MULTI_VAR;
 
-    Multivar(std::vector<ir::Expression *> vars, SourceInfo src_info) : Expression(ClassType, "<multivar>", src_info), vars(vars) {}
+    Multivar(std::vector<ir::Expression *> vars, int rest_index, SourceInfo src_info) : Expression(ClassType, "<multivar>", src_info), vars(vars), rest_index(rest_index) {}
     ~Multivar() {
         for (auto v: vars)
             delete v;
     }
 
     std::vector<ir::Expression *> get_vars() { return this->vars; }
+    int get_rest_index() { return this->rest_index; }
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         bool first = true;
+        int index = 0;
         for (auto v: vars) {
             if (first) {
-                os << "(" << *v;
+                os << "(" << (index == rest_index ? "..." : "") << *v;
                 first = false;
             } else {
-                os << "," << *v;
+                os << "," << (index == rest_index ? "..." : "") << *v;
             }
+            ++index;
         }
         os << ")";
         return os;
