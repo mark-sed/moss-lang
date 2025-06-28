@@ -209,18 +209,47 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 assert("Non-assignable expression");
                 return nullptr;
             } else if (auto mva = dyn_cast<Multivar>(expr->get_left())) {
-                assert(mva->get_rest_index() == -1 && "TODO: Unimplemented rest assignment");
                 if (right->is_const()) {
                     append(new opcode::StoreConst(next_reg(), free_reg(right)));
                     right = last_reg();
                 }
+                // Cast the value into a List to have __iter be called over objects
+                //     PUSH_CALL_FRAME
+                //     LOAD  %102, "List"
+                //     LOAD  %103, "a"
+                //     PUSH_ARG  %103
+                //     CALL  %104, %102
+                append(new PushCallFrame());
+                auto list_reg = next_reg();
+                append(new Load(list_reg, "List"));
+                append(new PushArg(free_reg(right)));
+                append(new opcode::Call(next_reg(), list_reg));
+                right = last_reg();
+
                 auto vars = mva->get_vars();
-                for (size_t i = 0; i < vars.size(); ++i) {
-                    // TODO: Add opcode::SubscRest which will get 1 value or list
-                    append(new opcode::StoreIntConst(next_reg(), i));
-                    auto stor_reg = val_last_reg();
-                    append(new opcode::Subsc3(next_reg(), right->reg(), stor_reg));
-                    append(new StoreName(val_last_reg(), vars[i]->get_name()));
+                if (mva->get_rest_index() > -1) {
+                    // Create list of vars
+                    auto vars_list = next_reg();
+                    append(new BuildList(vars_list));
+                    auto dst_reg = curr_reg;
+                    for (size_t i = 0; i < vars.size(); ++i) {
+                        auto name_reg = next_creg();
+                        append(new StoreName(name_reg, vars[i]->get_name()));
+                        append(new opcode::StoreIntConst(next_creg(), name_reg));
+                        append(new ListPushConst(vars_list, val_last_creg()));
+                    }
+                    append(new StoreIntConst(next_creg(), mva->get_rest_index()));
+                    append(new SubscRest(vars_list, right->reg(), val_last_creg()));
+                } else {
+                    for (size_t i = 0; i < vars.size(); ++i) {
+                        append(new opcode::StoreIntConst(next_creg(), i));
+                        auto stor_reg = val_last_creg();
+                        if (i == vars.size()-1)
+                            append(new opcode::SubscLast(next_reg(), right->reg(), stor_reg));
+                        else
+                            append(new opcode::Subsc3(next_reg(), right->reg(), stor_reg));
+                        append(new StoreName(val_last_reg(), vars[i]->get_name()));
+                    }
                 }
                 right->set_silent(true);
                 return right;

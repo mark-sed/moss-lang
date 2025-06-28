@@ -2334,6 +2334,62 @@ void Subsc3::exec(Interpreter *vm) {
         vm->store(dst, res);
 }
 
+void SubscLast::exec(Interpreter *vm) {
+    auto lstv = vm->load(src1);
+    auto indexv = vm->load_const(src2);
+    auto res = subsc(lstv, indexv, dst, vm);
+    if (res)
+        vm->store(dst, res);
+    // Check that the src2 index is the last one
+    auto lst = dyn_cast<ListValue>(lstv);
+    assert(lst && "casting to List was not called when subsclast was generated?");
+    auto index = dyn_cast<IntValue>(indexv);
+    assert(index && "subsclast was generated with non-int value");
+    op_assert(static_cast<IntConst>(lst->get_vals().size()) == index->get_value() + 1, 
+        mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TOO_MANY_VALS_UNPACK, index->get_value())));
+}
+
+void SubscRest::exec(Interpreter *vm) {
+    auto varsv = vm->load(dst);
+    auto valsv = vm->load(src1);
+    auto indexv = vm->load_const(src2);
+
+    auto vars = dyn_cast<ListValue>(varsv);
+    assert(vars && "vars are not a list");
+    auto vals = dyn_cast<ListValue>(valsv);
+    assert(valsv && "vals are not a list");
+    auto index = dyn_cast<IntValue>(indexv);
+    assert(index && "index is not an int");
+
+    // Unpacking nothing is valid, so don't count the ...value
+    op_assert(vars->size() - 1 <= vals->size(), 
+        mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TOO_FEW_VALS_UNPACK, index->get_value(), vals->size())));
+
+    auto iv = index->get_value();
+    auto regs = vars->get_vals();
+    auto values = vals->get_vals();
+    // Copy up to the index of rest
+    IntConst i = 0;
+    for (; i < iv; ++i) {
+        auto r = dyn_cast<IntValue>(regs[i]);
+        assert(r && "Non-int value was stored as register in vars");
+        vm->store(r->get_value(), values[i]);
+    }
+    // Copy from the back up to index of rest
+    IntConst back_iter = 0;
+    for (IntConst j = vars->size()-1; j > iv; --j, ++back_iter) {
+        auto r = dyn_cast<IntValue>(regs[j]);
+        assert(r && "Non-int value was stored as register in vars");
+        vm->store(r->get_value(), values[values.size() - back_iter - 1]);
+    }
+    // Extract whats left from i to j
+    std::vector<Value*> rest_vals(values.begin() + i, values.end() - back_iter);
+
+    auto r = dyn_cast<IntValue>(regs[iv]);
+    assert(r && "Non-int value was stored as rest register in vars");
+    vm->store(r->get_value(), new ListValue(rest_vals));
+}
+
 void Not::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
     Value *res = nullptr;

@@ -685,6 +685,21 @@ Constructor
 Some space\n" $1
 }
 
+function test_multivar {
+    expect_pass "multivar.ms" $1
+    expect_out_eq "1 2 3 4
+true nil 5
+caught
+false 0 true 4
+1 2 3 [4, 5, 6, 7]
+[0, 1, 2, 3, 4, 5, 6] 7 8
+q r [3, 4, 5, 6, 7, 8] t u v
+1 []
+[] 2
+1 2 [3, 4, 5, 6, 7] 8 9
+hi there []\n" $1
+}
+
 function test_range_precedence {
     expect_pass "range_precedence.ms" $1
     expect_out_eq "[[1], [3]]
@@ -1263,6 +1278,7 @@ function run_all_tests {
     run_test strings
     run_test fstrings
     run_test docstrings
+    run_test multivar
 
     run_test basic_import
     run_test import_calls

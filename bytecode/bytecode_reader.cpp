@@ -641,6 +641,18 @@ Bytecode *BytecodeReader::read() {
                 auto reg3 = read_register();
                 bc->push_back(new Subsc3(reg1, reg2, reg3));
             } break;
+            case opcode::OpCodes::SUBSCLAST: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto reg3 = read_register();
+                bc->push_back(new SubscLast(reg1, reg2, reg3));
+            } break;
+            case opcode::OpCodes::SUBSCREST: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto reg3 = read_register();
+                bc->push_back(new SubscRest(reg1, reg2, reg3));
+            } break;
             case opcode::OpCodes::NOT: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();

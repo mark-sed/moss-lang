@@ -137,8 +137,6 @@ xxh - NOT       %dst, %src1
 xxh - NEG       %dst, %src1
 xxh - XOR       %dst, %src1, %src2
 xxh - SUBSC     %dst, %src, %index
-xxh - SUBSCLAST %dst, %src, %index
-xxh - SUBSCREST %dst, %src, %from, %to
 
 xxh - CONCAT2   %dst, #val, %src2
 xxh - EXP2      %dst, #val, %src2
@@ -177,6 +175,8 @@ xxh - AND3      %dst, %src1, #val
 xxh - OR3       %dst, %src1, #val
 xxh - XOR3      %dst, %src1, #val
 xxh - SUBSC3    %dst, %src, #index
+xxh - SUBSCLAST %dst, %src, #index
+xxh - SUBSCREST %vars, %vals, #index
 
 xxh - ASSERT    %src, %msg
 

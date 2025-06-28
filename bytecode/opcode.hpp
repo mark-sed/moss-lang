@@ -143,7 +143,7 @@ enum OpCodes : opcode_t {
     OR2, //       %dst, #val, %src2
     XOR2, //      %dst, #val, %src2
     SUBSC2, //    %dst, #src, %index
-
+    
     CONCAT3, //   %dst, %src1, #val
     EXP3, //      %dst, %src1, #val
     ADD3, //      %dst, %src1, #val
@@ -162,6 +162,8 @@ enum OpCodes : opcode_t {
     OR3, //       %dst, %src1, #val
     XOR3, //      %dst, %src1, #val
     SUBSC3, //    %dst, %src, #index
+    SUBSCLAST, // %dst, %src, #index
+    SUBSCREST, // %vars, %vals, #index
 
     NOT, //       %dst, %src1
     NEG, //       %dst, %src1
@@ -1748,6 +1750,20 @@ class Subsc3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSC3;
     Subsc3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSC3", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class SubscLast : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SUBSCLAST;
+    SubscLast(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSCLAST", dst, src1, csrc2) {}
+    void exec(Interpreter *vm) override;
+};
+
+class SubscRest : public BinExprOpCode {
+public:
+    static const OpCodes ClassType = OpCodes::SUBSCREST;
+    SubscRest(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSCREST", dst, src1, csrc2) {}
     void exec(Interpreter *vm) override;
 };
 

@@ -172,6 +172,8 @@ enum DiagID : unsigned {
     KEYWORD_NOT_A_STRING,   ///< When a keyword/argument in a unpacked function call dict is not a string
     MULTIPLE_3DOT_MULTIVAR, ///< When there is more than 1 ...var in multivar
     COMMA_FOR_MULTIVAR_EXPECTED, ///< When there is a sure multivar (...a), but no comma after it
+    TOO_MANY_VALS_UNPACK,   ///< When multivar is missing a var to fully unpack
+    TOO_FEW_VALS_UNPACK,    ///< When multivar has more vars to unpack than values
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -323,6 +325,8 @@ static const char * DIAG_MSGS[] = {
     "All keywords in a function call with unpacked Dict have to be a String, but found '%s'",
     "Only one variable in multi-variable assignment can be `...`",
     "`...` multivar expects list of variables after the first one",
+    "Too many values to unpack (expected %ld values)",
+    "Not enough values to unpack (expected at least %ld values, but got %ld)",
 };
 
 /// \brief ID of diagnostic error

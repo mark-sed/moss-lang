@@ -165,6 +165,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Or3(0, 1, 2));
     bc->push_back(new opcode::Xor3(0, 1, 2));
     bc->push_back(new opcode::Subsc3(0, 1, 2));
+    bc->push_back(new opcode::SubscLast(0, 1, 2));
+    bc->push_back(new opcode::SubscRest(0, 1, 2));
 
     bc->push_back(new opcode::Not(0, 1));
     bc->push_back(new opcode::Neg(0, 1));

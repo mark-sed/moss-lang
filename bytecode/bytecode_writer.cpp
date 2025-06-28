@@ -246,7 +246,7 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->src);
         }
         // Binary expressions
-        else if (opc >= OpCodes::CONCAT && opc <= OpCodes::SUBSC3){
+        else if (opc >= OpCodes::CONCAT && opc <= OpCodes::SUBSCREST){
             auto binExp = dynamic_cast<opcode::BinExprOpCode *>(op_gen);
             write_register(binExp->dst);
             write_register(binExp->src1);
