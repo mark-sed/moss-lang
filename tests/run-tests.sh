@@ -697,7 +697,15 @@ q r [3, 4, 5, 6, 7, 8] t u v
 1 []
 [] 2
 1 2 [3, 4, 5, 6, 7] 8 9
-hi there []\n" $1
+hi there []
+1 2\n3 4\n5 6
+1 2\n3 4\n5 6
+b: 2\nc: 3\na: 1
+a [2, 3, 4, 5] c d
+a [2, 3, 4, 5] c d
+[] 1
+[] 2
+caught\n" $1
 }
 
 function test_range_precedence {

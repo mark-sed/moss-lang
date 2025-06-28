@@ -194,6 +194,7 @@ enum OpCodes : opcode_t {
 
     SWITCH, //    %src, %listvals, %listaddr, addr_def
     FOR, //       %i, %iterator, addr
+    FOR_MULTI, // %vars, %iterator, addr, #index
     ITER, // %iterator, %collection
 
     OPCODES_AMOUNT
@@ -2302,6 +2303,31 @@ public:
         auto casted = dyn_cast<For>(other);
         if (!casted) return false;
         return casted->index == index && casted->collection == collection && casted->addr == addr;
+    }
+};
+
+class ForMulti : public OpCode {
+public:
+    Register vars;
+    Register collection;
+    Address  addr;
+    Register unpack;
+
+    static const OpCodes ClassType = OpCodes::FOR_MULTI;
+
+    ForMulti(Register vars, Register collection, Address addr, Register unpack)
+        : OpCode(ClassType, "FOR_MULTI"), vars(vars), collection(collection), addr(addr), unpack(unpack) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << vars << ", %" << collection << ", " << addr << ", #" << unpack;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ForMulti>(other);
+        if (!casted) return false;
+        return casted->vars == vars && casted->collection == collection && casted->addr == addr && casted->unpack == unpack;
     }
 };
 

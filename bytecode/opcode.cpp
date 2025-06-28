@@ -8,6 +8,7 @@
 #include "bytecode_reader.hpp"
 #include "bytecodegen.hpp"
 #include "ir_pipeline.hpp"
+#include "mslib_list.hpp"
 #include <sstream>
 #include <cmath>
 #include <algorithm>
@@ -2349,6 +2350,44 @@ void SubscLast::exec(Interpreter *vm) {
         mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TOO_MANY_VALS_UNPACK, index->get_value())));
 }
 
+static void subsc_rest(Interpreter *vm, ListValue *vars, ListValue *vals, IntValue *index) {
+    auto iv = index->get_value();
+    // Unpacking nothing is valid, so don't count the ...value
+    op_assert(vars->size() - (iv >= 0 ? 1 : 0) <= vals->size(), 
+        mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TOO_FEW_VALS_UNPACK, index->get_value(), vals->size())));
+
+    auto regs = vars->get_vals();
+    auto values = vals->get_vals();
+    if (iv >= 0) {
+        // Copy up to the index of rest
+        IntConst i = 0;
+        for (; i < iv; ++i) {
+            auto r = dyn_cast<IntValue>(regs[i]);
+            assert(r && "Non-int value was stored as register in vars");
+            vm->store(r->get_value(), values[i]);
+        }
+        // Copy from the back up to index of rest
+        IntConst back_iter = 0;
+        for (IntConst j = vars->size()-1; j > iv; --j, ++back_iter) {
+            auto r = dyn_cast<IntValue>(regs[j]);
+            assert(r && "Non-int value was stored as register in vars");
+            vm->store(r->get_value(), values[values.size() - back_iter - 1]);
+        }
+        // Extract whats left from i to j
+        std::vector<Value*> rest_vals(values.begin() + i, values.end() - back_iter);
+
+        auto r = dyn_cast<IntValue>(regs[iv]);
+        assert(r && "Non-int value was stored as rest register in vars");
+        vm->store(r->get_value(), new ListValue(rest_vals));
+    } else {
+        for (size_t i = 0; i < regs.size(); ++i) {
+            auto r = dyn_cast<IntValue>(regs[i]);
+            assert(r && "Non-int value was stored as register in vars");
+            vm->store(r->get_value(), values[i]);
+        }
+    }
+}
+
 void SubscRest::exec(Interpreter *vm) {
     auto varsv = vm->load(dst);
     auto valsv = vm->load(src1);
@@ -2361,33 +2400,7 @@ void SubscRest::exec(Interpreter *vm) {
     auto index = dyn_cast<IntValue>(indexv);
     assert(index && "index is not an int");
 
-    // Unpacking nothing is valid, so don't count the ...value
-    op_assert(vars->size() - 1 <= vals->size(), 
-        mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TOO_FEW_VALS_UNPACK, index->get_value(), vals->size())));
-
-    auto iv = index->get_value();
-    auto regs = vars->get_vals();
-    auto values = vals->get_vals();
-    // Copy up to the index of rest
-    IntConst i = 0;
-    for (; i < iv; ++i) {
-        auto r = dyn_cast<IntValue>(regs[i]);
-        assert(r && "Non-int value was stored as register in vars");
-        vm->store(r->get_value(), values[i]);
-    }
-    // Copy from the back up to index of rest
-    IntConst back_iter = 0;
-    for (IntConst j = vars->size()-1; j > iv; --j, ++back_iter) {
-        auto r = dyn_cast<IntValue>(regs[j]);
-        assert(r && "Non-int value was stored as register in vars");
-        vm->store(r->get_value(), values[values.size() - back_iter - 1]);
-    }
-    // Extract whats left from i to j
-    std::vector<Value*> rest_vals(values.begin() + i, values.end() - back_iter);
-
-    auto r = dyn_cast<IntValue>(regs[iv]);
-    assert(r && "Non-int value was stored as rest register in vars");
-    vm->store(r->get_value(), new ListValue(rest_vals));
+    subsc_rest(vm, vars, vals, index);
 }
 
 void Not::exec(Interpreter *vm) {
@@ -2654,20 +2667,37 @@ void Switch::exec(Interpreter *vm) {
         vm->set_bci(default_addr);
 }
 
-void For::exec(Interpreter *vm) {
-    auto coll = vm->load(this->collection);
-    assert(coll && "sanity check");
+static void unpack_val(Interpreter *vm, Value *v, Register index, IntValue *unpack) {
+    // ths is ignored so lets not create extra value
+    Value *err = nullptr;
+    auto lv = mslib::List::List(vm, nullptr, v, err);
+    if (err != nullptr) {
+        raise(err);
+    }
+    auto indexv = vm->load(index);
+    auto vars = dyn_cast<ListValue>(indexv);
+    assert(vars && "multivar index is not list of vars");
+    auto vals = dyn_cast<ListValue>(lv);
+    assert(vals && "List did not return a ListValue");
+    subsc_rest(vm, vars, vals, unpack);
+}
+
+static void op_for(Interpreter *vm, Value *coll, Register index, Address addr, bool multi=false, IntValue *unpack=nullptr) {
     if (isa<ObjectValue>(coll)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *nextf = lookup_method(vm, coll, "__next", {}, did);
+        FunValue *nextf = opcode::lookup_method(vm, coll, "__next", {}, did);
         if (nextf) {
             try {
                 auto v = runtime_method_call(vm, nextf, {coll});
                 assert(v && "sanity check");
-                vm->store(this->index, v);
+                if (!multi) {
+                    vm->store(index, v);
+                } else {
+                    unpack_val(vm, v, index, unpack);
+                }
             } catch (Value *v) {
                 if (v->get_type() == BuiltIns::StopIteration) {
-                    vm->set_bci(this->addr);
+                    vm->set_bci(addr);
                 }
                 else
                     throw v;
@@ -2682,15 +2712,35 @@ void For::exec(Interpreter *vm) {
         try {
             auto v = coll->next(vm);
             assert(v && "sanity check");
-            vm->store(this->index, v);
+            if (!multi) {
+                vm->store(index, v);
+            } else {
+                unpack_val(vm, v, index, unpack);
+            }
         } catch (Value *v) {
             if (v->get_type() == BuiltIns::StopIteration) {
                 // We are still in __next and need to pop it
-                vm->set_bci(this->addr);
+                vm->set_bci(addr);
             } else
                 throw v;
         }
     }
+}
+
+void For::exec(Interpreter *vm) {
+    auto coll = vm->load(this->collection);
+    assert(coll && "sanity check");
+    op_for(vm, coll, index, addr);
+}
+
+void ForMulti::exec(Interpreter *vm) {
+    auto coll = vm->load(this->collection);
+    assert(coll && "sanity check");
+    auto unpackv = vm->load_const(this->unpack);
+    assert(unpackv && "sanity check");
+    auto unpack_i = dyn_cast<IntValue>(unpackv);
+    assert(unpack_i && "Unpack index is not int value");
+    op_for(vm, coll, vars, addr, true, unpack_i);
 }
 
 void Iter::exec(Interpreter *vm) {

@@ -204,6 +204,7 @@ xxh - CREATE_RANGE8     %dst, #start, #step, #end
 
 xxh - SWITCH        %listvals, %listaddr, addr_def
 xxh - FOR           %i, %iterator, addr
+xxh - FOR_MULTI     %vars, %iterator, addr, #unpack
 xxh - ITER          %iterator, %collection
 ```
 

@@ -363,6 +363,12 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->collection);
             write_address(o->addr);
         }
+        else if (auto o = dyn_cast<opcode::ForMulti>(op_gen)){
+            write_register(o->vars);
+            write_register(o->collection);
+            write_address(o->addr);
+            write_register(o->unpack);
+        }
         else if (auto o = dyn_cast<opcode::Iter>(op_gen)){
             write_register(o->iterator);
             write_register(o->collection);

@@ -48,3 +48,45 @@ b1, c1, ...d1, e1, f1 = SomeIterClass([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 g1, h1, ...i1 = SomeIterClass(["hi", "there"])
 ~print(g1, h1, i1)
+
+for (a, b, ...c : [[1, 2], [3, 4], [5, 6]]) {
+    ~print(a, b)
+}
+
+class F {
+    fun F(x) {
+        this.x = x
+    }
+
+    fun __iter() {
+        return this.x
+    }
+
+}
+
+for (a, b : [F([1, 2]), F([3, 4]), F([5, 6])]) {
+    ~print(a, b)
+}
+
+for (k, v : {"a": 1, "b": 2, "c": 3}) {
+    ~print(f"{k}: {v}")
+}
+
+for (a, ...b, c, d : [["a", 2, 3, 4, 5, "c", "d"], ["a", 2, 3, 4, 5, "c", "d"]]) {
+    ~print(a, b, c, d)
+}
+
+for (...a, b : [[1], [2]]) {
+    ~print(a, b)
+}
+
+for (m, ...n : []) {
+    ~print(m, n)
+}
+
+try 
+    for (m, ...n : [[]]) {
+        ~print(m, n)
+    }
+catch (e:ValueError)
+    "caught\n"

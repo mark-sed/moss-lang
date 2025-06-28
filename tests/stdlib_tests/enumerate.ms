@@ -1,5 +1,5 @@
-for (i: Enumerate([1,2,3])) {
-    i[0] ++ ". " ++ i[1] ++ "\n"
+for (a, b: Enumerate([1,2,3])) {
+    a ++ ". " ++ b ++ "\n"
 }
 for (i: Enumerate([1,2,3])) {
     i

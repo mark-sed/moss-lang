@@ -231,9 +231,8 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                     // Create list of vars
                     auto vars_list = next_reg();
                     append(new BuildList(vars_list));
-                    auto dst_reg = curr_reg;
                     for (size_t i = 0; i < vars.size(); ++i) {
-                        auto name_reg = next_creg();
+                        auto name_reg = next_reg();
                         append(new StoreName(name_reg, vars[i]->get_name()));
                         append(new opcode::StoreIntConst(next_creg(), name_reg));
                         append(new ListPushConst(vars_list, val_last_creg()));
@@ -1499,27 +1498,50 @@ void BytecodeGen::emit(ir::DoWhile *whstmt) {
 void BytecodeGen::emit(ir::ForLoop *forlp) {
     Register iter = 0;
     auto i_expr = forlp->get_iterator();
+    auto mva = dyn_cast<Multivar>(i_expr);
     if (isa<Variable>(i_expr)) {
         iter = next_reg();
-    } else if (auto mva = dyn_cast<Multivar>(i_expr)) {
-        assert(false && "TODO: For multivar");
+    } else if (mva) {
+        iter = next_reg();
+        append(new BuildList(iter));
+        for (size_t i = 0; i < mva->get_vars().size(); ++i) {
+            auto name_reg = next_reg();
+            append(new StoreNilConst(next_creg()));
+            append(new StoreConst(name_reg, val_last_creg()));
+            append(new StoreName(name_reg, mva->get_vars()[i]->get_name()));
+            append(new opcode::StoreIntConst(next_creg(), name_reg));
+            append(new ListPushConst(iter, val_last_creg()));
+        }
     } else {
         auto iter_reg = emit(i_expr, true);
         iter = free_reg(iter_reg);
     }
-    append(new StoreNilConst(next_creg()));
-    append(new StoreConst(iter, val_last_creg()));
-    append(new StoreName(iter, forlp->get_iterator()->get_name()));
+    if (!mva) {
+        append(new StoreNilConst(next_creg()));
+        append(new StoreConst(iter, val_last_creg()));
+        append(new StoreName(iter, forlp->get_iterator()->get_name()));
+    }
     auto collection = emit(forlp->get_collection(), true);
     auto new_iter = next_reg();
     append(new opcode::Iter(new_iter, free_reg(collection)));
     auto pre_for_bc = get_curr_address() + 1;
-    auto for_op = new opcode::For(iter, new_iter, 0);
-    append(for_op);
-    emit(forlp->get_body());
-    update_jmps(pre_for_bc, get_curr_address()+1, get_curr_address()+2, pre_for_bc);
-    append(new Jmp(pre_for_bc));
-    for_op->addr = get_curr_address() + 1;
+    if (!mva) {
+        auto for_op = new opcode::For(iter, new_iter, 0);
+        append(for_op);
+        emit(forlp->get_body());
+        update_jmps(pre_for_bc, get_curr_address()+1, get_curr_address()+2, pre_for_bc);
+        append(new Jmp(pre_for_bc));
+        for_op->addr = get_curr_address() + 1;
+    } else {
+        auto unpack_reg = next_creg();
+        append(new StoreIntConst(unpack_reg, mva->get_rest_index()));
+        auto for_op = new opcode::ForMulti(iter, new_iter, 0, unpack_reg);
+        append(for_op);
+        emit(forlp->get_body());
+        update_jmps(pre_for_bc, get_curr_address()+1, get_curr_address()+2, pre_for_bc);
+        append(new Jmp(pre_for_bc));
+        for_op->addr = get_curr_address() + 1;
+    }
 }
 
 void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {

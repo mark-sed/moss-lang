@@ -784,6 +784,13 @@ Bytecode *BytecodeReader::read() {
                 auto addr = read_address();
                 bc->push_back(new For(reg1, reg2, addr));
             } break;
+            case opcode::OpCodes::FOR_MULTI: {
+                auto reg1 = read_register();
+                auto reg2 = read_register();
+                auto addr = read_address();
+                auto reg3 = read_register();
+                bc->push_back(new ForMulti(reg1, reg2, addr, reg3));
+            } break;
             case opcode::OpCodes::ITER: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
