@@ -151,11 +151,11 @@ class __Range {
         return r
     }
 }
-/*
+
 class Enumerate {
     fun Enumerate(iterable, start:Int=0) {
         this.iterable = iterable
-        this.start = 0
+        this.start = start
     }
 
     fun __iter() {
@@ -170,11 +170,6 @@ class Enumerate {
         return r
     }
 }
-
-fun enumerate(obj, start:Int=0) {
-    return Enumerate(obj, start)
-}*/
-
 
 class Complex {
     fun Complex(real:[Int,Float]=0, imag:[Int,Float]=0) {

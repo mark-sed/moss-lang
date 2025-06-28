@@ -1114,6 +1114,11 @@ caught, caught, caught, caught
 ' $1
 }
 
+function test_lib_enumerate {
+    expect_pass "stdlib_tests/enumerate.ms" $1
+    expect_out_eq "0. 1\n1. 2\n2. 3\n[0, 1][1, 2][2, 3]\n[100, 9][101, 8][102, 7][103, 6][104, 5]\n" $1
+}
+
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
     expect_out_eq "gc.cpp::sweep: Deleting: LIST(List)
@@ -1326,6 +1331,7 @@ function run_all_tests {
     run_test lib_complex
     run_test lib_filters
     run_test lib_attrs
+    run_test lib_enumerate
 
     # gc tests
     run_test gc_local_vars
