@@ -147,3 +147,8 @@ oct(-8)
 "vAv".replace("v", "✅")
 "\n"
 "✅ Value\n".replace("✅", "❌")
+
+"abc".__iter()
+"\n"
+"abc".__next()
+"\n"

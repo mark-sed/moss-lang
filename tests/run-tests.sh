@@ -1005,7 +1005,8 @@ function test_lib_lists {
     expect_out_eq "2\n0\n8\ncaught
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]
-[4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]\n" $1
+[4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]
+[1, 2, 3]\n1\n" $1
 }
 
 function test_lib_strings {
@@ -1029,7 +1030,8 @@ h i !
 0b1100\n0b0\n0b1\n0b1000\n-0b1000
 0q10\n0q52\n-0q10
 hello moss\nbonono\nxxx\nbba\nx11222111\ncdcdab\nhelloworld\nbrcdbr\nunchanged
-repeat\nhello\ncafe\nHello\n✅A✅\n❌ Value\n" $1
+repeat\nhello\ncafe\nHello\n✅A✅\n❌ Value
+abc\na\n" $1
 }
 
 function test_lib_random {

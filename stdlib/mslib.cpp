@@ -330,6 +330,18 @@ Value *mslib::create_exception(Value *type, diags::Diagnostic dmsg) {
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+        {"__iter", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return args[0].value->iter(vm);
+        }},
+        {"__next", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return args[0].value->next(vm);
+        }},
         {"abs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             (void)vm;

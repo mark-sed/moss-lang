@@ -68,6 +68,12 @@ class __String {
         }
         return r
     }
+
+    @internal
+    fun __iter() {}
+    
+    @internal
+    fun __next() {}
 }
 
 @internal_bind("Note")
@@ -99,6 +105,12 @@ class __List {
     fun pop(index:Int=-1) {}
 
     fun reverse() = this[-1..-this.length()-1]
+
+    @internal
+    fun __iter() {}
+
+    @internal
+    fun __next() {}
 }
 
 @internal_bind("Range")
@@ -139,6 +151,30 @@ class __Range {
         return r
     }
 }
+/*
+class Enumerate {
+    fun Enumerate(iterable, start:Int=0) {
+        this.iterable = iterable
+        this.start = 0
+    }
+
+    fun __iter() {
+        this.i = this.start
+        this.iter = this.iterable.__iter()
+        return this
+    }
+
+    fun __next() {
+        r = [this.i, this.iter.__next()]
+        this.i += 1
+        return r
+    }
+}
+
+fun enumerate(obj, start:Int=0) {
+    return Enumerate(obj, start)
+}*/
+
 
 class Complex {
     fun Complex(real:[Int,Float]=0, imag:[Int,Float]=0) {
