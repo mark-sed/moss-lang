@@ -343,7 +343,6 @@ fun any(iterable) {
     return false
 }
 
-// TODO: Place in its space?
 enum ValType {
     MISSING,
     NONE
@@ -357,10 +356,23 @@ fun max(iterable, key=nil, def_val=ValType.MISSING) {
             curr_max = i
         }
     }
-    // FIXME: Not working correctly
-    /*if (curr_max == ValType.NONE && def_val != ValType.MISSING)
+    if (curr_max == ValType.NONE && def_val != ValType.MISSING)
         return def_val
-    else */if (curr_max == ValType.NONE)
+    else if (curr_max == ValType.NONE)
+        raise ValueError("max() iterable is empty\n")
+    return curr_max
+}
+
+fun min(iterable, key=nil, def_val=ValType.MISSING) {
+    curr_max = ValType.NONE
+    for (i: iterable) {
+        if (curr_max == ValType.NONE || (key != nil && key(i) < key(curr_max)) || i < curr_max) {
+            curr_max = i
+        }
+    }
+    if (curr_max == ValType.NONE && def_val != ValType.MISSING)
+        return def_val
+    else if (curr_max == ValType.NONE)
         raise ValueError("max() iterable is empty\n")
     return curr_max
 }

@@ -1105,7 +1105,7 @@ function test_lib_filters {
     expect_pass "stdlib_tests/filters.ms" $1
     expect_out_eq "true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
 false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse
-4\nawesome\ncaught\nhi\n9\n" $1
+4\nawesome\ncaught\nhi\n9\nnil\ncaught\nhi\n1\nnil\n" $1
 }
 
 function test_lib_attrs {

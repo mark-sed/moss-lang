@@ -334,7 +334,9 @@ EnumValue::EnumValue(EnumTypeValue *type, ustring name) : Value(ClassType, name,
 
 Value *EnumValue::clone() {
     assert(isa<EnumTypeValue>(this->type) && "Incorrect type for enum value");
-    return new EnumValue(dyn_cast<EnumTypeValue>(this->type), this->name);
+    // Enum value cannot be cloned as its type is dependent on the pointer and
+    // there should not be any need to clone
+    return this;
 }
 
 void DictValue::push(Value *k, Value *v, Interpreter *vm) {

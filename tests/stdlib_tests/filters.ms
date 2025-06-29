@@ -58,4 +58,19 @@ max(["hi\n"])
 
 max("123456789", key=Int)
 "\n"
-// TODO: Add test for default value
+
+max([], def_val=nil)
+"\n"
+
+try
+    min([])
+catch (e:ValueError)
+    "caught\n"
+
+min(["hi\n"])
+
+min("123456789", key=Int)
+"\n"
+
+min([], def_val=nil)
+"\n"
