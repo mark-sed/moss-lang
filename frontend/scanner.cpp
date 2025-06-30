@@ -391,7 +391,9 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
             if (!triple_quote) {
                 if (fstring) {
                     toks.push_back(tokenize(value, TokenType::STRING));
+                    this->len = 0;
                     toks.push_back(tokenize("\"", TokenType::QUOTE));
+                    this->len = 0;
                     return tokenize_fstring(toks);
                 }
                 return tokenize(value, TokenType::STRING);
@@ -405,7 +407,9 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
                     advance();
                     if (fstring) {
                         toks.push_back(tokenize(value, TokenType::STRING));
+                        this->len = 0;
                         toks.push_back(tokenize("\"", TokenType::QUOTE));
+                        this->len = 0;
                         return tokenize_fstring(toks);
                     }
                     return tokenize(value, TokenType::STRING);
