@@ -213,3 +213,9 @@ env
 ~modifier4(env)
 env
 "\n"
+
+fun p(... msg, end="\n", separator=" ") {
+    ~print(<<msg, separator=separator, end=end)
+}
+
+~p(1,2,3,end="!\n", separator=",")

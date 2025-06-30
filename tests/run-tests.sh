@@ -334,7 +334,8 @@ function test_functions {
 []\n[1, 2, 3, 4]\n1[2]\n1[2, 3, 4]\n0[1, \"ok\", false, nil]\ntrue[1]
 1\n0\n0\n42\nhello from greet\ngoo inner fun
 2\nhi!\ntrue
-5\n5\n5\n8\n8\n<object of class MyClass1>\n9\nFIRST\nFIRST\nFIRST\n" $1
+5\n5\n5\n8\n8\n<object of class MyClass1>\n9\nFIRST\nFIRST\nFIRST
+1,2,3!\n" $1
 }
 
 function test_ifs {

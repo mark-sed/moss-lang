@@ -936,7 +936,7 @@ bool Parser::bind_docstring() {
         if (tt->get_value() == "d" && peek(1)->get_type() == TokenType::STRING) {
             advance();
             auto val = advance();
-            assert(!parents.empty() && "No top level IR?");
+            parser_assert(!parents.empty(), create_diag(diags::DOC_STRING_IN_REPL));
             auto parent = parents.back();
             parser_assert(parent->can_be_documented(), create_diag(diags::CANNOT_BE_DOCUMENTED, parent->get_name().c_str()));
             if (auto mdl = dyn_cast<Module>(parent)) {

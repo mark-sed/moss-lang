@@ -150,6 +150,7 @@ enum DiagID : unsigned {
     DOC_STRING_AS_EXPR,     ///< a = d"something"
     CANNOT_BE_DOCUMENTED,   ///< Using docstring on some value it cannot store it
     DOC_STRING_NOT_AT_START,///< Doc-string in the middle of the body
+    DOC_STRING_IN_REPL,     ///< When trying to document repl
     LAMBDA_CONSTRUCTOR,     ///< Trying to make constructor a lambda
     NON_NIL_RETURN_IN_CONSTR, ///< Constructor with return with a non-nil value
     CHR_NOT_IN_RANGE,       ///< function chr argument outside of specified range
@@ -303,6 +304,7 @@ static const char * DIAG_MSGS[] = {
     "Doc-string ('d\"\"') cannot be used as an expression",
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
     "Doc-string ('d\"\"') can appear only at the beginning of the construct",
+    "REPL cannot be documented",
     "Constructor cannot be a lambda",
     "Constructor can contain only 'return' or 'return nil'",
     "Value '%ld' for function 'chr' not in range <0; 0x10ffff>",
