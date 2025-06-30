@@ -126,6 +126,9 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         // set a flag to not try to load it again
         Interpreter::libms_mod = opcode::load_module(this, "libms");
         assert(libms_mod && "TODO: Raise Could not load libms");
+        // Constants should be loaded after libms so that the values can contain
+        // libms attributes/methods
+        BuiltIns::init_constant_variables(Interpreter::libms_mod->get_vm()->get_global_frame());
     }
     // We don't spill in libms itself so check that it was loaded
     if (libms_mod) {

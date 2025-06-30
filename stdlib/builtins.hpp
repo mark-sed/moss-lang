@@ -28,6 +28,8 @@ namespace BuiltIns {
     /// Without calling this all the values will be GCed
     void init_built_ins(MemoryPool *gf, opcode::Register &reg);
 
+    void init_constant_variables(MemoryPool *gf);
+
     /// \return interned int or nullptr if it is not interned
     Value *get_interned_int(opcode::IntConst v);
 
