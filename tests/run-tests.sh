@@ -338,6 +338,11 @@ function test_functions {
 1,2,3!\n" $1
 }
 
+function test_function_overwriting {
+    expect_pass "function_overwriting.ms" $1
+    expect_out_eq "foo2\nbar3\nbar3\nf1\nf2\ng2\ng3\nga\nbaz3\nbaz3\nh1\nh2\nl2\nP2\nP3\nP4\n" $1
+}
+
 function test_ifs {
     expect_pass "ifs.ms" $1
     expect_out_eq "0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
@@ -942,9 +947,9 @@ List(1) [
   ]
 ]\nEnum {}
 Class MyClass : Int, Float {
-  \"MyClass\": Fun(MyClass @104),
+  \"MyClass\": Fun(MyClass(n:[Int, Float]) @104),
   \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n @114)
+  \"get_n\": Fun(get_n() @114)
 }\n' $1
 }
 
@@ -1295,6 +1300,7 @@ function run_all_tests {
     run_test fstrings
     run_test docstrings
     run_test multivar
+    run_test function_overwriting
 
     run_test basic_import
     run_test import_calls

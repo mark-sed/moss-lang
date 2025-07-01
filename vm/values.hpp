@@ -15,6 +15,7 @@
 #include "memory.hpp"
 #include "clopts.hpp"
 #include "builtins.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <sstream>
@@ -783,7 +784,7 @@ public:
 
     Interpreter *get_vm() { return this->vm; }
 
-    ustring get_args_as_str() {
+    ustring get_args_as_str() const {
         std::stringstream os;
         bool first = true;
         for (auto a: args) {
@@ -808,6 +809,31 @@ public:
         return os.str();
     }
 
+    /// Checks if this function matches by name and arugments other function
+    bool equals(FunValue *other) {
+        if (args.size() != other->args.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < args.size(); ++i) {
+            auto a1 = args[i];
+            auto a2 = other->args[i];
+            if (a1->vararg || a2->vararg) {
+                if (a1->vararg != a2->vararg) {
+                    return false;
+                }
+                continue;
+            }
+            if (a1->types.size() != a2->types.size()) {
+                return false;
+            }
+            // We care only for the type/untyped and if it is a vararg
+            if(!std::is_permutation(a1->types.begin(), a1->types.end(), a2->types.begin())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     virtual opcode::StringConst as_string() const override {
         std::stringstream ss;
         ss << "<function " << name << " at " << std::hex << static_cast<const void*>(this) << ">";
@@ -815,7 +841,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Fun(" << name << " @" << body_addr;
+        os << "Fun(" << name << "(" << get_args_as_str() << ") @" << body_addr;
         if (!annotations.empty()) {
             os << " annots[";
             bool first = true;
@@ -851,7 +877,7 @@ public:
         return std::hash<ustring>{}("0fl_"+name);
     }
 
-    std::vector<FunValue *> get_funs() { return this->funs; }
+    std::vector<FunValue *> &get_funs() { return this->funs; }
     void push_back(FunValue *f) { this->funs.push_back(f); }
     FunValue *back() {
         assert(!funs.empty() && "no functions in funlist");

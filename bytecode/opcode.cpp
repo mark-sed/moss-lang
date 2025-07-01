@@ -1081,7 +1081,6 @@ void PushUnpacked::exec(Interpreter *vm) {
         raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE,
                 v->get_type()->get_name().c_str())));
     }
-    // TODO: Dict unpack as named
 }
 
 void CreateFun::exec(Interpreter *vm) {
@@ -1094,14 +1093,17 @@ void CreateFun::exec(Interpreter *vm) {
     }
     auto f = vm->get_top_frame()->load_name(name, vm);
     if (f && (isa<FunValue>(f) || isa<FunValueList>(f))) {
+        // In here we alway push the function into the function list as it is
+        // not fully initialized and the possible override happens after
+        // types are set (FUN_BEGIN)
         if (auto fv = dyn_cast<FunValue>(f)) {
             vm->store(this->fun, new FunValueList(std::vector<FunValue *>{fv, funval}));
             vm->store_name(this->fun, name);
         }
         else {
-            vm->store(this->fun, funval);
             auto fvl = dyn_cast<FunValueList>(f);
             fvl->push_back(funval);
+            vm->store(this->fun, fvl);
         }
     }
     else {
@@ -1127,6 +1129,23 @@ void FunBegin::exec(Interpreter *vm) {
     auto fv = load_last_fun(fun, vm);
     // Set address to the opcode after jump which is after this
     fv->set_body_addr(vm->get_bci()+2);
+    // Now we can see it this function should override some other in the
+    // possible FunValueList
+    auto v = vm->load(fun);
+    if (auto fvl = dyn_cast<FunValueList>(v)) {
+        for (size_t i = 0; i < fvl->get_funs().size() - 1; ++i) {
+            if (fv->equals(fvl->get_funs()[i])) {
+                if (fvl->get_funs().size() == 2) {
+                    vm->store(fun, fv);
+                } else {
+                    fvl->get_funs()[i] = fv;
+                    // Remove the last one, which is fv
+                    fvl->get_funs().pop_back();
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void SetDefault::exec(Interpreter *vm) {
