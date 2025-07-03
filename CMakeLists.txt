@@ -47,6 +47,7 @@ set(SOURCES
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp
     stdlib/mslib_string.cpp
+    stdlib/subprocess.cpp
     interface/commons.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp
@@ -74,17 +75,30 @@ add_executable(
     ${SOURCES}
 )
 
+# Function to compile moss module into msb
+function(moss_compile NAME)
+    set(INPUT_MS "${CMAKE_CURRENT_SOURCE_DIR}/stdlib/${NAME}.ms")
+    set(OUTPUT_MSB "${LIBMS_PATH}/${NAME}.msb")
+
+    add_custom_command(
+        OUTPUT ${OUTPUT_MSB}
+        COMMAND ${PROJECT_NAME} -W all --output-only -o ${OUTPUT_MSB} ${INPUT_MS}
+        COMMENT "Building ${NAME}"
+        VERBATIM
+    )
+
+    add_custom_target(build_${NAME} ALL DEPENDS ${OUTPUT_MSB})
+endfunction()
+
 # Standard moss library modules
-add_custom_command(
-    OUTPUT libms.msb
-    COMMAND ${PROJECT_NAME} -W all --output-only -o ${LIBMS_PATH}/libms.msb ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/libms.ms
-    COMMENT "Building libms"
-    VERBATIM
-)
+# Any module added here has to be added to libms target bellow (as `build_name`)
+moss_compile(libms)
+moss_compile(subprocess)
 
 add_custom_target(
     libms
-    DEPENDS libms.msb
+    DEPENDS build_libms
+    DEPENDS build_subprocess
 )
 
 # Making moss a command

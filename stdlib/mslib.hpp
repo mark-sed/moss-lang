@@ -30,7 +30,7 @@ using mslib_dispatcher = std::function<Value*(Interpreter*, CallFrame*, Value*&)
 class FunctionRegistry {
 public:
     /// \return Moss stdlin function registery (map of function names and their c++ functions)
-    static const std::unordered_map<std::string, mslib_dispatcher>& get_registry();
+    static const std::unordered_map<std::string, mslib_dispatcher>& get_registry(ustring module_name);
 };
 
 Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
@@ -39,9 +39,10 @@ Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const c
 
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources
+/// \param module_name Name of the module where the function resides
 /// \param name Name of the function to execute
 /// \param err Possible exception from execution
-void dispatch(Interpreter *vm, ustring name, Value *&err);
+void dispatch(Interpreter *vm, ustring module_name, ustring name, Value *&err);
 
 Value *create_exception(Value *type, ustring msg);
 Value *create_exception(Value *type, diags::Diagnostic dmsg);

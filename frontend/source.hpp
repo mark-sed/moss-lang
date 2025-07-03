@@ -42,6 +42,12 @@ public:
     /// or the stream/string name.
     /// \return Name or path of this file
     virtual ustring get_name() const { return this->path; }
+    
+    /// \return Name that is stemmed -- just the file name without path and
+    ///         extensions.
+    ustring get_module_name() {
+        return std::filesystem::path(get_name()).stem().string();
+    }
 };
 
 /// \brief Representation of source file
@@ -92,12 +98,6 @@ public:
     virtual ustring get_name() const override {
         if (type == SourceType::STRING) return "<one-liner>";
         return path_or_code;
-    }
- 
-    /// \return Name that is stemmed -- just the file name without path and
-    ///         extensions.
-    ustring get_module_name() {
-        return std::filesystem::path(get_name()).stem().string();
     }
 };
 

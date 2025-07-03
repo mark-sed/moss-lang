@@ -7,6 +7,7 @@
 #include "mslib_list.hpp"
 #include "mslib_string.hpp"
 #include "mslib_file.hpp"
+#include "subprocess.hpp"
 #include <functional>
 #include <iostream>
 #include <cstdlib>
@@ -328,8 +329,8 @@ Value *mslib::create_exception(Value *type, diags::Diagnostic dmsg) {
     return create_exception(type, error::format_error(dmsg));
 }
 
-const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry() {
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry(ustring module_name) {
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> libms_registry = {
         {"__iter", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             auto args = cf->get_args();
@@ -685,13 +686,28 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return MSFile::write(vm, cf->get_arg("this"), cf->get_arg("content"), err);
         }},
     };
-    return registry;
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> subprocess_registry = subprocess::get_registry();
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> empty_registry{};
+
+    // Based on module name return correct function registry
+    if (module_name == "libms")
+        return libms_registry;
+    else if (module_name == "subprocess")
+        return subprocess_registry;
+    else {
+        // We want to raise exception, not to assert, this will make it so
+        // that the "internal" function will not be found.
+        // It could also be modified so that the exception reads specification
+        // that the module registry was not found, but it is pretty much the
+        // same. 
+        return empty_registry;
+    }
 };
 
-void mslib::dispatch(Interpreter *vm, ustring name, Value *&err) {
+void mslib::dispatch(Interpreter *vm, ustring module_name, ustring name, Value *&err) {
     auto cf = vm->get_call_frame();
 
-    const auto& registry = FunctionRegistry::get_registry();
+    const auto& registry = FunctionRegistry::get_registry(module_name);
     Value *ret_v = nullptr;
 
     auto it = registry.find(name);

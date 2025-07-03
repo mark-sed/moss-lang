@@ -759,7 +759,9 @@ void call(Interpreter *vm, Register dst, Value *funV) {
 
     if (fun->has_annotation(annots::INTERNAL)) {
         Value *err = nullptr;
-        mslib::dispatch(vm, fun->get_name(), err);
+        ustring name = fun->get_name();
+        ustring module_name = fun->get_vm()->get_src_file()->get_module_name();
+        mslib::dispatch(vm, module_name, name, err);
         if (err) {
             raise(err);
             return;
