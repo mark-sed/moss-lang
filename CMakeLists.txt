@@ -94,7 +94,7 @@ if (MSVC)
         OUTPUT binmoss    
         #message(STATUS "To have moss runnable from your CMD add ${CMAKE_CURRENT_BINARY_DIR}/Debug to your PATH")
         COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_BINARY_DIR}/Debug/moss.exe
+                ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/moss.exe
                 ${MOSS_PATH}
     )
 else()
