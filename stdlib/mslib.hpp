@@ -71,6 +71,10 @@ inline Value *create_not_implemented_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::NotImplementedError, dmsg);
 }
 
+inline Value *create_not_implemented_error(ustring msg) {
+    return create_exception(BuiltIns::NotImplementedError, msg);
+}
+
 inline Value *create_parser_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::ParserError, dmsg);
 }

@@ -26,6 +26,7 @@ namespace subprocess {
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
 Value *system(Interpreter *vm, Value *cmd, Value *&err);
+Value *run(Interpreter *vm, CallFrame *cf, Value *command, Value *comb_str, Value *capture_out, Value *&err);
 
 }
 }
