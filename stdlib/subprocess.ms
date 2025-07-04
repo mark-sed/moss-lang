@@ -4,4 +4,4 @@ and return codes.
 """
 
 @internal
-fun run(cmd) {}
+fun system(cmd:String) {}
