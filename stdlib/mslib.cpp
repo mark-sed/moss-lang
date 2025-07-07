@@ -145,6 +145,12 @@ Value *oct(Interpreter *vm, Value *number) {
     return new StringValue((is_negative ? "-0q" : "0q") + oct_str);
 }
 
+Value *callable(Interpreter *vm, Value *obj) {
+    (void)vm;
+    bool is_callable = isa<FunValue>(obj) || isa<FunValueList>(obj) || isa<ClassValue>(obj);
+    return new BoolValue(is_callable);
+}
+
 Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
     (void)err;
     MemoryPool *frame = nullptr;
@@ -389,6 +395,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 1);
             assert(args[0].value->get_type() == BuiltIns::String);
             return String::capitalize(vm, args[0].value, err);
+        }},
+        {"callable", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            auto args = cf->get_args();
+            assert(cf->get_args().size() == 1);
+            return callable(vm, args[0].value);
         }},
         {"chr", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;

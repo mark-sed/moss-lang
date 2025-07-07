@@ -292,6 +292,9 @@ fun setattr(obj, name:String, value) {}
 fun delattr(obj, name:String) {}
 
 @internal
+fun callable(obj) {}
+
+@internal
 fun lshift(a:Int, count:Int) {
     d"""
     Left shift

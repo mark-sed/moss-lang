@@ -73,3 +73,31 @@ id(aa) == id(f1)
 "\n"
 id(f1) == id(f1)
 "\n"
+
+a = 43
+callable(a)
+"\n"
+callable(print)
+"\n"
+b = md"Hi"
+callable(b)
+"\n"
+
+fun foo() {}
+
+callable(foo)
+"\n"
+callable(foo())
+"\n"
+
+class Cls1 {
+    fun Cls1(a) {}
+
+    fun bar(a, b) { return a; }
+}
+
+callable(Cls1);
+"\n"
+
+callable(Cls1.bar)
+"\n"
