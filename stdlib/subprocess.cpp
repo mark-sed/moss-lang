@@ -1,11 +1,17 @@
 #include "subprocess.hpp"
 #include "opcode.hpp"
 #include <cstdlib>
+#include <vector>
+#include <stdexcept>
 
 #ifdef __windows__
 #include <windows.h>
-#include <vector>
-#include <stdexcept>
+#else
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <sstream>
+#include <array>
 #endif
 
 using namespace moss;
@@ -37,6 +43,12 @@ Value *subprocess::system(Interpreter *vm, Value *cmd, Value *&err) {
     return new IntValue(static_cast<opcode::IntConst>(result));
 }
 
+struct command_result {
+    ustring stdout_text;
+    ustring stderr_text;
+    int exit_code;
+};
+
 #ifndef __windows__
 std::pair<int, ustring> run_command(const ustring& cmd, Value *&err) {
     ustring result;
@@ -66,13 +78,83 @@ std::pair<int, ustring> run_command(const ustring& cmd, Value *&err) {
 
     return std::make_pair(exit_code, result);
 }
-#else
-struct command_result {
-    ustring stdout_text;
-    ustring stderr_text;
-    int exit_code;
-};
 
+command_result run_command_separate(const ustring& command, bool combine_streams, Value *&err) {
+    int stdout_pipe[2], stderr_pipe[2];
+    if (pipe(stdout_pipe) == -1) {
+        // FIXME: Correct error
+        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        return {"", "", -127};
+    }
+
+    if (!combine_streams && pipe(stderr_pipe) == -1) {
+        close(stdout_pipe[0]); close(stdout_pipe[1]);
+        // FIXME: Correct error
+        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        return {"", "", -127};
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        // FIXME: Correct error
+        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        return {"", "", -127};
+    }
+
+    if (pid == 0) {
+        // Child process
+        dup2(stdout_pipe[1], STDOUT_FILENO);
+
+        if (combine_streams) {
+            dup2(stdout_pipe[1], STDERR_FILENO);  // redirect stderr → stdout
+        } else {
+            dup2(stderr_pipe[1], STDERR_FILENO);  // separate stderr
+        }
+
+        // Close unused pipe ends
+        close(stdout_pipe[0]); close(stdout_pipe[1]);
+        if (!combine_streams) {
+            close(stderr_pipe[0]); close(stderr_pipe[1]);
+        }
+
+        // Execute via shell
+        execl("/bin/sh", "sh", "-c", command.c_str(), (char*)nullptr);
+        _exit(127); // only reached if exec fails
+    }
+
+    // Parent process
+    close(stdout_pipe[1]);
+    if (!combine_streams) close(stderr_pipe[1]);
+
+    auto read_fd = [](int fd) -> std::string {
+        std::string output;
+        std::array<char, 4096> buffer;
+        ssize_t count;
+        while ((count = read(fd, buffer.data(), buffer.size())) > 0) {
+            output.append(buffer.data(), count);
+        }
+        return output;
+    };
+
+    std::string stdout_output = read_fd(stdout_pipe[0]);
+    std::string stderr_output;
+
+    if (!combine_streams) {
+        stderr_output = read_fd(stderr_pipe[0]);
+        close(stderr_pipe[0]);
+    }
+
+    close(stdout_pipe[0]);
+
+    int status;
+    waitpid(pid, &status, 0);
+    int exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+
+    return {stdout_output, stderr_output, exit_code};
+}
+
+
+#else
 command_result run_command_separate(const ustring& command, bool combine_streams, Value *&err) {
     SECURITY_ATTRIBUTES sa{ sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
 
@@ -172,21 +254,10 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
     if (!capture_out_b->get_value()) {
         code_v = subprocess::system(vm, command, err);
     } else {
-#ifdef __windows__
-    auto cmd_res = run_command_separate(cmds->get_value(), combine_b->get_value(), err);
-    code_v = new IntValue(cmd_res.exit_code);
-    stdout_v = new StringValue(cmd_res.stdout_text);
-    stderr_v = new StringValue(cmd_res.stderr_text);
-#else
-    if (!combine_b->get_value()) {
-        // FIXME: run with combined
-        err = create_not_implemented_error("Subprocess.run option for non combined output (combine_streams=false) is not yet implemented.\n");
-        return nullptr;
-    }
-    auto [code, result] = run_command(cmds->get_value(),  err);
-    code_v = new IntValue(code);
-    stdout_v = new StringValue(result);
-#endif
+        auto cmd_res = run_command_separate(cmds->get_value(), combine_b->get_value(), err);
+        code_v = new IntValue(cmd_res.exit_code);
+        stdout_v = new StringValue(cmd_res.stdout_text);
+        stderr_v = new StringValue(cmd_res.stderr_text);
     }
 
     if (!code_v) {
