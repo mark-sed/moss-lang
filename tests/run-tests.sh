@@ -1086,8 +1086,8 @@ function test_lib_args {
     expect_pass "stdlib_tests/args.ms" $1
     expect_out_eq "[]" $1
 
-    expect_pass "stdlib_tests/args.ms true someval ~ + -" $1
-    expect_out_eq "[\"true\", \"someval\", \"~\", \"+\", \"-\"]" $1
+    expect_pass "stdlib_tests/args.ms true someval 8 + -" $1
+    expect_out_eq "[\"true\", \"someval\", \"8\", \"+\", \"-\"]" $1
 }
 
 function test_lib_types {
