@@ -45,8 +45,11 @@ class ClsIt {
 
 ", ".join([1,2,3,4,5])
 "\n"
-d = {"a": 1, "b": 2, "c": 3}
-" ".join(d)
+// TODO: Fix once dict order is set
+//d = {"a": 1, "b": 2, "c": 3}
+//" ".join(d)
+e1 = {"a": 1}
+" ".join(e1)
 "\n"
 "-".join(ClsIt([6,7,8,9]))
 "\n"

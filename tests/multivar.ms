@@ -68,9 +68,13 @@ for (a, b : [F([1, 2]), F([3, 4]), F([5, 6])]) {
     ~print(a, b)
 }
 
-for (k, v : {"a": 1, "b": 2, "c": 3}) {
-    ~print(f"{k}: {v}")
+dict1 = {"a": 1, "b": 2, "c": 3}
+dict2 = {:}
+for (k, v : dict1) {
+    dict2[k] = v
 }
+// TODO uncomment once eq is added
+//assert(dict1 == dict2, "not equal dicts") 
 
 for (a, ...b, c, d : [["a", 2, 3, 4, 5, "c", "d"], ["a", 2, 3, 4, 5, "c", "d"]]) {
     ~print(a, b, c, d)
