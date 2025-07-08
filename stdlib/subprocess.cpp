@@ -2,6 +2,12 @@
 #include "opcode.hpp"
 #include <cstdlib>
 
+#ifdef __windows__
+#include <windows.h>
+#include <vector>
+#include <stdexcept>
+#endif
+
 using namespace moss;
 using namespace mslib;
 using namespace subprocess;
@@ -32,17 +38,19 @@ Value *subprocess::system(Interpreter *vm, Value *cmd, Value *&err) {
 }
 
 #ifndef __windows__
-std::pair<int, std::string> run_command(const std::string& cmd, Value *&err) {
-    std::string result;
+std::pair<int, ustring> run_command(const ustring& cmd, Value *&err) {
+    ustring result;
     constexpr std::size_t buffer_size = 4096;
     char buffer[buffer_size];
 
     // Run command with stderr redirected to stdout
-    std::string full_cmd = cmd + " 2>&1";
+    ustring full_cmd = cmd + " 2>&1";
 
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(full_cmd.c_str(), "r"), pclose);
     if (!pipe) {
-        throw std::runtime_error("popen() failed!");
+        // FIXME: Correct error
+        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        return {-127, ""};
     }
 
     while (fgets(buffer, buffer_size, pipe.get()) != nullptr) {
@@ -57,6 +65,97 @@ std::pair<int, std::string> run_command(const std::string& cmd, Value *&err) {
     }
 
     return std::make_pair(exit_code, result);
+}
+#else
+struct command_result {
+    ustring stdout_text;
+    ustring stderr_text;
+    int exit_code;
+};
+
+command_result run_command_separate(const ustring& command, bool combine_streams, Value *&err) {
+    SECURITY_ATTRIBUTES sa{ sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
+
+    HANDLE stdout_read, stdout_write;
+    HANDLE stderr_read, stderr_write;
+
+    // Create pipes for stdout and stderr
+    if (!combine_streams) {
+        if (!CreatePipe(&stdout_read, &stdout_write, &sa, 0) ||
+                !CreatePipe(&stderr_read, &stderr_write, &sa, 0)) {
+            // FIXME: Correct error
+            err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+            return {"", "", -127};
+        }
+    } else {
+        if (!CreatePipe(&stdout_read, &stdout_write, &sa, 0)) {
+            // FIXME: Correct error
+            err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+            return {"", "", -127};
+        }
+    }
+
+    // Prevent parent from inheriting the read ends
+    SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0);
+    if (!combine_streams)
+        SetHandleInformation(stderr_read, HANDLE_FLAG_INHERIT, 0);
+
+    STARTUPINFOA si = {};
+    PROCESS_INFORMATION pi = {};
+    si.cb = sizeof(si);
+    si.hStdOutput = stdout_write;
+    if (!combine_streams)
+        si.hStdError = stderr_write;
+    else
+        si.hStdError = stdout_write;
+    si.dwFlags |= STARTF_USESTDHANDLES;
+
+    ustring cmd = "cmd.exe /C " + command;
+    if (!CreateProcessA(
+            NULL, &cmd[0], NULL, NULL, TRUE,
+            0, NULL, NULL, &si, &pi)) {
+        CloseHandle(stdout_read); CloseHandle(stdout_write);
+        if (!combine_streams)
+            CloseHandle(stderr_read); CloseHandle(stderr_write);
+        // FIXME: Correct error
+        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        return {"", "", -127};
+    }
+
+    // Close write ends in parent
+    CloseHandle(stdout_write);
+    if (!combine_streams)
+        CloseHandle(stderr_write);
+
+    auto read_all = [](HANDLE h) -> ustring {
+        ustring result;
+        char buffer[4096];
+        DWORD read;
+        while (ReadFile(h, buffer, sizeof(buffer) - 1, &read, NULL) && read > 0) {
+            buffer[read] = '\0';
+            result += buffer;
+        }
+        return result;
+    };
+
+    ustring stdout_output = read_all(stdout_read);
+    ustring stderr_output;
+    if (!combine_streams)
+        stderr_output = read_all(stderr_read);
+
+    CloseHandle(stdout_read);
+    if (!combine_streams)
+        CloseHandle(stderr_read);
+
+    // Wait and get exit code
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    DWORD exit_code = -1;
+    GetExitCodeProcess(pi.hProcess, &exit_code);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return { stdout_output, stderr_output, static_cast<int>(exit_code) };
 }
 #endif
 
@@ -74,18 +173,19 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
         code_v = subprocess::system(vm, command, err);
     } else {
 #ifdef __windows__
-    err = create_not_implemented_error("Function subprocess.run is not yet implemented for Windows systems.\n");
-    return nullptr;
+    auto cmd_res = run_command_separate(cmds->get_value(), combine_b->get_value(), err);
+    code_v = new IntValue(cmd_res.exit_code);
+    stdout_v = new StringValue(cmd_res.stdout_text);
+    stderr_v = new StringValue(cmd_res.stderr_text);
 #else
     if (!combine_b->get_value()) {
-        // FIXME: run without combined
-        err = create_not_implemented_error("Subprocess.run option for non combined output (combine_output=false) is not yet implemented.\n");
+        // FIXME: run with combined
+        err = create_not_implemented_error("Subprocess.run option for non combined output (combine_streams=false) is not yet implemented.\n");
         return nullptr;
-    } else {
-        auto [code, result] = run_command(cmds->get_value(), err);
-        code_v = new IntValue(code);
-        stdout_v = new StringValue(result);
     }
+    auto [code, result] = run_command(cmds->get_value(),  err);
+    code_v = new IntValue(code);
+    stdout_v = new StringValue(result);
 #endif
     }
 
