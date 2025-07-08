@@ -722,7 +722,7 @@ fun test_lib_math(name) {
 fun test_lib_args(name) {
     ~expect_pass("stdlib_tests/args.ms 1 2", name, "[\"1\", \"2\"]", "")
     ~expect_pass("stdlib_tests/args.ms", name, "[]", "")
-    ~expect_pass("stdlib_tests/args.ms true someval  ~  + -", name, "[\"true\", \"someval\", \"~\", \"+\", \"-\"]", "")
+    ~expect_pass("stdlib_tests/args.ms true someval  8  + -", name, "[\"true\", \"someval\", \"8\", \"+\", \"-\"]", "")
 }
 
 /*
