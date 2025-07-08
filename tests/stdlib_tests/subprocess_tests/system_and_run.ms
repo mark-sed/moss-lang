@@ -11,7 +11,7 @@ assert(result.stderr == "", "err output differs")
 
 result2 = subprocess.run("echo_non_existent_command", combine_streams=true)
 assert(result2.command == "echo_non_existent_command", "not saved command")
-assert(result2.return_code != 127, "incorrect return code")
+assert(result2.return_code != 0, "incorrect return code")
 assert(result2.stdout != "", "output differs")
 assert(result2.stderr == "", "err output differs")
 
