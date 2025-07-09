@@ -95,6 +95,42 @@ fun expect_pass(test:String, name:String, expected_out:String=nil, expected_err:
     return true
 }
 
+fun expect_fail(test:String, name:String, expected_out:String=nil, expected_err:String=nil, args:String="") {
+    result = run(test, name, args)
+    // Normalize \r\n on windows to \n
+    result.stdout = result.stdout.replace("\r", "")
+    result.stderr = result.stderr.replace("\r", "")
+    msg = "Program was supposed to fail, but passed."
+    failed = false
+    if (result.return_code == 0) {
+        msg ++= " Return code differs."
+        failed = true
+    }
+    if (expected_out != nil) {
+        if (result.stdout != expected_out) {
+            msg ++= " Stdout differs."
+            failed = true;
+        }
+    }
+    if (expected_err != nil) {
+        if (result.stderr != expected_err) {
+            msg ++= " Stderr differs."
+            failed = true;
+        }
+    }
+    if (failed) {
+        ~fail(name, msg)
+        ~print(f"Command:\n--------\n{result.command}")
+        ~print(f"Expected output:\n--------\n{expected_out}")
+        ~print(f"Output:\n--------\n{result.stdout}")
+        ~print(f"Expected error:\n--------\n{expected_err}")
+        ~print(f"Error output:\n--------\n{result.stderr}")
+        ~print(f"Return code: {result.return_code}")
+        return false
+    }
+    return true
+}
+
 //---- TESTS ----//
 
 space Tests {
@@ -398,12 +434,10 @@ fun test_generators(name) {
 
     // If exit with failure then we dont want to generate any output document as
     // it will be inclomplete anyway and there might be missing resources.
-
-    // FIXME:
-    //~expect_fail("generators.ms exit1", args="-f html") $1
+    ~expect_fail("generators.ms exit1", name, args="-f html")
 }
 
-/*fun test_strings(name) {
+fun test_strings(name) {
     ~expect_pass("strings.ms", name, """\\n\\tsdf\\0x12\\n
 |
 \\n\\treturn
@@ -418,7 +452,17 @@ true
 Ω
 > 🐉中ñ
 """, "")
-}*/
+
+    ~expect_fail(r""" "\xA" """, "", /*rx_err="Short hexadecimal"*/ args="-e")
+    ~expect_fail(r""" "\Q01" """, "", /*rx_err="Short octal"*/ args="-e")
+    ~expect_fail(r""" "\uA32" """, "", /*rx_err="Short 16-bit unicode"*/ args="-e")
+    ~expect_fail(r""" "\UA32845" """, "", /*rx_err="Short 32-bit unicode"*/ args="-e")
+
+    ~expect_fail(r""" "\xAG" """, "", /*rx_err="Incorrect hexadecimal"*/ args="-e")
+    ~expect_fail(r""" "\q080" """, "", /*rx_err="Incorrect octal"*/ args="-e")
+    ~expect_fail(r""" "\u08Y3" """, "", /*rx_err="Incorrect 16-bit unicode"*/ args="-e")
+    ~expect_fail(r""" "\U081336AZ" """, "", /*rx_err="Incorrect 32-bit unicode"*/ args="-e")
+}
 
 fun test_fstrings(name) {
     ~expect_pass("fstrings.ms", name, """v: 43 end
@@ -725,6 +769,87 @@ fun test_lib_args(name) {
     ~expect_pass("stdlib_tests/args.ms true someval  8  + -", name, "[\"true\", \"someval\", \"8\", \"+\", \"-\"]", "")
 }
 
+fun test_lib_types(name) {
+    ~expect_pass("stdlib_tests/types.ms", name, """42\ntrue\ntrue\ncaught\ncaught
+<class Int>\ntrue\ntrue\n<class Space>\n<class Type>\n<class Note>\n<class Type>
+true\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\nfalse\ntrue
+false\ntrue\nfalse\ntrue\nfalse\ntrue\ntrue\n""", "")
+}
+
+fun test_lib_complex(name) {
+    ~expect_pass("stdlib_tests/complex.ms", name, """1-2i\n1,-2\ntrue\n5+0i\nfalse\nfalse\ntrue
+-1.500000+3.200000i\n6-2i\n-0.500000+1.200000i\n-4-2i\n5-10i
+true\n0.400000-2.300000i\ncaught\n-1+2i\ntrue\nfalse\nfalse\ntrue
+0+0i\n0-2i\n15.000000+0i\n8+0i\n18+27i\n0+0i\n5.000000-1.500000i\ncaught
+4+6i\n3-4i\n23+2i\n1.000000+2.000000i\n8+0i\n3-1i\n2-2i\n3.000000+4.000000i\n""", "")
+}
+
+fun test_lib_filters(name) {
+    ~expect_pass("stdlib_tests/filters.ms", name, """true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
+false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse
+4\nawesome\ncaught\nhi\n9\nnil\ncaught\nhi\n1\nnil\n""", "")
+}
+
+fun test_lib_attrs(name) {
+    ~expect_pass("stdlib_tests/attrs.ms", name, r"""["MyValue", "__Bool", "__Float", "__Int", "__String", "foo", "x"]
+["MyValue", "__Bool", "__Float", "__Int", "__String", "foo"]
+["NAME", "TheirValue"]
+[]
+["MyValue", "SomeClas", "TheirValue", "moss", "mv", "tv"]
+true, true, false, true, false, true, true, true
+a, 42, scf, caught
+-7, scf, scf, caught
+caught, caught, caught, caught
+""", "")
+}
+
+fun test_lib_enumerate(name) {
+    ~expect_pass("stdlib_tests/enumerate.ms", name, """0. 1\n1. 2\n2. 3\n[0, 1][1, 2][2, 3]
+[100, 9][101, 8][102, 7][103, 6][104, 5]\n""", "")
+}
+
+fun test_lib_subprocess_system_and_run(name) {
+    // Note: Since the output might shuffle we need to test the outputs
+    // inside of the test
+    ~expect_pass("stdlib_tests/subprocess_tests/system_and_run.ms", name, "hi!\nno_cap\n", "")
+}
+
+fun test_gc_local_vars(name) {
+    ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: ENUM(MyEnum)
+gc.cpp::sweep: Deleting: ENUM_VALUE(A)
+gc.cpp::sweep: Deleting: ENUM_VALUE(B)
+gc.cpp::sweep: Deleting: ENUM_VALUE(C)
+gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: LIST(List)\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
+}
+
+fun test_gc_recursion(name) {
+    if (::EXTRA_FLAGS == "--stress-test-gc")
+        return
+    // This test just checks that GC is triggered without any special mode
+    // If this fails it might be because of changes in gc threshold (next_gc) 
+    ~expect_pass("gc_tests/recursion.ms", name, "377\n", """gc.cpp::collect_garbage: Running GC
+gc.cpp::collect_garbage: Finished GC\n""", args="--v1=gc.cpp::collect_garbage")
+}
+
+fun test_gc_global_dependency(name) {
+    ~expect_pass("gc_tests/global_dependency.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: INT(Int)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: INT(Int)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
+}
+
 /*
 
 fun test_(name) {
@@ -760,7 +885,7 @@ fun run_all_tests() {
     ~run_test("empty")
     //~run_test("bc_read_write")
     //~run_test("note_options")
-//
+
     ~run_test("output")
     ~run_test("expressions")
     ~run_test("variables")
@@ -793,12 +918,12 @@ fun run_all_tests() {
     ~run_test("converters")
     ~run_test("converters_pipeline")
     ~run_test("generators")
-    //~run_test("strings")
+    ~run_test("strings")
     ~run_test("fstrings")
     ~run_test("docstrings")
     ~run_test("multivar")
     ~run_test("function_overwriting")
-//
+
     //~run_test("basic_import")
     ~run_test("import_calls")
     ~run_test("space_imports")
@@ -839,20 +964,20 @@ fun run_all_tests() {
     ~run_test("lib_math")
     //~run_test("lib_file")
     ~run_test("lib_args")
-    //~run_test("lib_types")
-    //~run_test("lib_complex")
-    //~run_test("lib_filters")
-    //~run_test("lib_attrs")
-    //~run_test("lib_enumerate")
-//
-    //~run_test("lib_subprocess_system_and_run")
-//
-    //// gc tests
-    //~run_test("gc_local_vars")
-    //~run_test("gc_recursion")
-    //~run_test("gc_global_dependency")
-//
-    ////repl tests
+    ~run_test("lib_types")
+    ~run_test("lib_complex")
+    ~run_test("lib_filters")
+    ~run_test("lib_attrs")
+    ~run_test("lib_enumerate")
+
+    ~run_test("lib_subprocess_system_and_run")
+
+    // gc tests
+    ~run_test("gc_local_vars")
+    ~run_test("gc_recursion")
+    ~run_test("gc_global_dependency")
+
+    //repl tests
     //~run_test("repl_output")
     //~run_test("repl_exceptions")
 }
