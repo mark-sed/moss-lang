@@ -1025,11 +1025,13 @@ bool isa(Value& t) {
 
 template<class T>
 bool isa(Value* t) {
+    assert(t && "Passed nullptr to isa");
     return t->get_kind() == T::ClassType;
 }
 
 template<class T>
 T *dyn_cast(Value* t) {
+    assert(t && "Passed nullptr to dyn_cast");
     if constexpr (std::is_same_v<T, StringValue>) {
         // special case for StringValue when NoteValue (its child) is passed in
         if (!isa<StringValue>(t) && !isa<NoteValue>(t)) return nullptr;

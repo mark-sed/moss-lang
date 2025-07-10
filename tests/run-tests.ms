@@ -51,16 +51,23 @@ fun fail(name:String, msg:String) {
     ~print(f"FAIL: {name}: {msg}")
 }
 
-fun run(test:String, name:String, args:String="") {
+fun run(test:String, name:String, args:String="", use_repl:Bool=false) {
     path = ::TEST_DIR++test
     // For Windows replace slashes
     if (::TEST_DIR.length() > 0 && ::TEST_DIR[-1] == "\\")
         path = path.replace("/", "\\")
-    return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
+    if (not use_repl)
+        return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
+    return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} --use-repl-mode < {path}")
 }
 
-fun expect_pass(test:String, name:String, expected_out:String=nil, expected_err:String=nil, args:String="") {
-    result = run(test, name, args)
+fun expect_pass(test:String,
+                name:String,
+                expected_out:String=nil,
+                expected_err:String=nil,
+                args:String="",
+                use_repl:Bool=false) {
+    result = run(test, name, args, use_repl)
     // Normalize \r\n on windows to \n
     result.stdout = result.stdout.replace("\r", "")
     result.stderr = result.stderr.replace("\r", "")
@@ -95,7 +102,11 @@ fun expect_pass(test:String, name:String, expected_out:String=nil, expected_err:
     return true
 }
 
-fun expect_fail(test:String, name:String, expected_out:String=nil, expected_err:String=nil, args:String="") {
+fun expect_fail(test:String,
+                name:String,
+                expected_out:String=nil,
+                expected_err:String=nil,
+                args:String="") {
     result = run(test, name, args)
     // Normalize \r\n on windows to \n
     result.stdout = result.stdout.replace("\r", "")
@@ -850,6 +861,14 @@ gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
 }
 
+fun test_repl_output(name) {
+    ~expect_pass("repl_output.ms", name, /*rx_err=".*moss> moss> moss> 5\nmoss> hi\n.*\n.*\n.*<object of class Cls1>\nmoss> 5\nmoss> moss> moss> moss> moss> moss>",*/ use_repl=true)
+}
+
+fun test_repl_exceptions(name) {
+    ~expect_pass("repl_exceptions.ms", name, /*rx_err="Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo\(a\) at <repl>\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*",*/ use_repl=true)
+}
+
 /*
 
 fun test_(name) {
@@ -978,8 +997,8 @@ fun run_all_tests() {
     ~run_test("gc_global_dependency")
 
     //repl tests
-    //~run_test("repl_output")
-    //~run_test("repl_exceptions")
+    ~run_test("repl_output")
+    ~run_test("repl_exceptions")
 }
 
 if (EXTRA_FLAGS != "")
