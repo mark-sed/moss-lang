@@ -20,11 +20,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& cffi::get_regist
             assert(args.size() == 1);
             return cffi::dlopen(vm, cf, args[0].value, err);
         }},
-        {"define", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+        {"cfun", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             auto args = cf->get_args();
             assert(args.size() == 4);
-            return cffi::define(vm, cf, cf->get_arg("this"), cf->get_arg("name"), cf->get_arg("return_type"), cf->get_arg("arg_types"), err);
+            return cffi::cfun(vm, cf, cf->get_arg("this"), cf->get_arg("name"), cf->get_arg("return_type"), cf->get_arg("arg_types"), err);
         }},
         {"close", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
@@ -91,7 +91,7 @@ Value *cffi::dlclose(Interpreter *vm, Value *ths, Value *&err) {
     return nullptr;
 }
 
-Value *cffi::define(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err) {
+Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err) {
     auto name_s = mslib::get_string(name);
     auto argst = mslib::get_list(arg_types);
 

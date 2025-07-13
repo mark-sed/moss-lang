@@ -27,7 +27,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
 Value *dlopen(Interpreter *vm, CallFrame *cf, Value *path, Value *&err);
 Value *dlclose(Interpreter *vm, Value *ths, Value *&err);
-Value *define(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err);
+Value *cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err);
 
 }
 }
