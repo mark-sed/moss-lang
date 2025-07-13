@@ -1,12 +1,7 @@
 #include "cffi.hpp"
 #include "values_cpp.hpp"
 #include <unordered_map>
-
-#ifndef __windows__
-#include <dlfcn.h>
-#else
-#include <windows.h>
-#endif
+#include <ffi.h>
 
 using namespace moss;
 using namespace mslib;
@@ -31,13 +26,12 @@ static Value *windows_dlopen(Interpreter *vm, ustring path, Value *&err) {
 }
 #else
 static Value *posix_dlopen(Interpreter *vm, ustring path, Value *&err) {
-    void* handle = dlopen(path.c_str(), RTLD_LAZY);
-    if (!handle) {
-        const char *dlsym_error = dlerror();
-        err = create_not_implemented_error(ustring("cffi.dlopen failed, but exception is not implemented. ")+dlsym_error);
+    ffi_cif cif;
+    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, &ffi_type_void, nullptr) != FFI_OK) {
+        err = create_not_implemented_error("cffi.dlopen failed, but exception is not implemented.");
         return nullptr;
     }
-    return new t_cpp::VoidStar(handle);
+    return new t_cpp::CPP_Ffi_cif(cif);
 }
 #endif
 

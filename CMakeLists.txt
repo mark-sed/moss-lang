@@ -10,6 +10,8 @@ endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -DDEVELOPER")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBFFI REQUIRED libffi)
 
 if (MSVC)
     #add_compile_options(/W4 /WX)
@@ -130,10 +132,15 @@ add_custom_target(
 )
 
 
+# Include libffi headers
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBFFI_INCLUDE_DIRS})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${LIBFFI_CFLAGS_OTHER})
+
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} msvcrt)
+    target_link_libraries(${PROJECT_NAME} msvcrt ${LIBFFI_LIBRARIES})
 else()
-    target_link_libraries(${PROJECT_NAME} m)
+    target_link_libraries(${PROJECT_NAME} m ${LIBFFI_LIBRARIES})
 endif()
 
 # testsmoss target
@@ -167,6 +174,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_link_libraries(
         testsmoss
         gtest_main
+        ${LIBFFI_LIBRARIES}
     )
 
     # GTest include

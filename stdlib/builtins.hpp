@@ -85,6 +85,7 @@ namespace BuiltIns {
         extern Value *CppSpace;
         extern Value *FStream;
         extern Value *VoidStar;
+        extern Value *Ffi_cif;
     }
 }
 }

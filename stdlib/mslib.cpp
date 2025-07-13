@@ -226,12 +226,12 @@ Value *mslib::call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std
     auto fun = dyn_cast<FunValue>(funv);
     auto subres_class_v = fun->get_vm()->load_name(name);
     if (!subres_class_v) {
-        err = mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name));
+        err = mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
         return nullptr;
     }
     auto subres_class = dyn_cast<ClassValue>(subres_class_v);
     if (!subres_class) {
-        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, name, subres_class_v->get_type()->get_name().c_str()));
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, name.c_str(), subres_class_v->get_type()->get_name().c_str()));
         return nullptr;
     }
     diags::DiagID did = diags::DiagID::UNKNOWN;
@@ -241,9 +241,9 @@ Value *mslib::call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std
         res = opcode::runtime_constructor_call(vm, constr, args, subres_class);
     } else {
         if (did == diags::DiagID::UNKNOWN) {
-            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name));
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
         } else {
-            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, name, diags::DIAG_MSGS[did]));
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, name.c_str(), diags::DIAG_MSGS[did]));
         }
         return nullptr;
     }

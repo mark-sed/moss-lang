@@ -11,6 +11,7 @@
 #define _VALUES_CPP_HPP_
 
 #include "values.hpp"
+#include <ffi.h>
 
 namespace moss {
 namespace t_cpp {
@@ -74,6 +75,23 @@ namespace t_cpp {
         }
 
         void *get_value() { return this->value; }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+    };
+
+    class CPP_Ffi_cif : public CppValue {
+    private:
+        ffi_cif value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_FFI_CIF;
+    
+        CPP_Ffi_cif(ffi_cif value) : CppValue(ClassType, "ffi_cif", BuiltIns::Cpp::Ffi_cif), value(value) {}
+        ~CPP_Ffi_cif() {
+        }
+
+        ffi_cif get_value() { return this->value; }
     
         virtual Value *clone() override {
             return this;
