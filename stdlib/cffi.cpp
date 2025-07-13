@@ -12,13 +12,27 @@ using namespace moss;
 using namespace mslib;
 using namespace cffi;
 
+union FFIResult {
+    int cint;
+    unsigned int cunsigned_int;
+    short cshort;
+    unsigned short cunsigned_short;
+    char cchar;
+    unsigned char cunsigned_char;
+    long clong;
+    unsigned long cunsigned_long;
+    float cfloat;
+    double cdouble;
+    void *cvoid_star;
+};
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& cffi::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
-        {"dlopen", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+        {"call", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             auto args = cf->get_args();
-            assert(args.size() == 1);
-            return cffi::dlopen(vm, cf, args[0].value, err);
+            assert(args.size() == 2);
+            return cffi::call(vm, cf, cf->get_arg("this"), cf->get_arg("args"), err);
         }},
         {"cfun", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
@@ -31,6 +45,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& cffi::get_regist
             auto args = cf->get_args();
             assert(args.size() == 1);
             return cffi::dlclose(vm, args[0].value, err);
+        }},
+        {"dlopen", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return cffi::dlopen(vm, cf, args[0].value, err);
         }},
     };
     return registry;
@@ -91,6 +111,70 @@ Value *cffi::dlclose(Interpreter *vm, Value *ths, Value *&err) {
     return nullptr;
 }
 
+static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
+    bool is_class = isa<ClassValue>(value);
+    Value *type = is_class ? value : value->get_type();
+    if (!is_class && !dyn_cast<t_cpp::CppValue>(value)) {
+        err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CPP_MOSS_VALUE, type->get_name().c_str()));
+        return nullptr;
+    }
+    static const std::unordered_map<std::string, ffi_type*> type_map = {
+        {"cvoid",   &ffi_type_void},
+        {"cint",    &ffi_type_sint},
+        {"cunsigned_int", &ffi_type_uint},
+        {"cshort",  &ffi_type_sshort},
+        {"cunsigned_short", &ffi_type_ushort},
+        {"cchar",   &ffi_type_schar},
+        {"cunsigned_char", &ffi_type_uchar},
+        {"clong",   &ffi_type_slong},
+        {"cunsigned_long", &ffi_type_ulong},
+        {"cfloat",  &ffi_type_float},
+        {"cdouble", &ffi_type_double},
+        {"cvoid_star", &ffi_type_pointer}
+    };
+
+    auto it = type_map.find(type->get_name());
+    if (it != type_map.end()) {
+        return it->second;
+    } else {
+        if (is_class) {
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CPP_MOSS_VALUE, type->get_name().c_str()));
+        } else {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_KNOWN_TYPE_CONV_TO_C, type->get_name().c_str()));
+        }
+        return nullptr;
+    }
+}
+
+static Value *result_to_moss(FFIResult result, ffi_type *type, Value *&err) {
+    assert(type != &ffi_type_void && "invoked with void");
+    if (type == &ffi_type_sint)
+        return new IntValue(result.cint);
+    if (type == &ffi_type_uint)
+        return new IntValue(result.cunsigned_int);
+    if (type == &ffi_type_sshort)
+        return new IntValue(result.cshort);
+    if (type == &ffi_type_ushort)
+        return new IntValue(result.cunsigned_short);
+    if (type == &ffi_type_schar)
+        return new IntValue(result.cchar);
+    if (type == &ffi_type_uchar)
+        return new IntValue(result.cunsigned_char);
+    if (type == &ffi_type_slong)
+        return new IntValue(result.clong);
+    if (type == &ffi_type_ulong)
+        return new IntValue(result.cunsigned_long);
+    if (type == &ffi_type_float)
+        return new FloatValue(result.cfloat);
+    if (type == &ffi_type_double)
+        return new FloatValue(result.cdouble);
+    if (type == &ffi_type_pointer)
+        return new t_cpp::CVoidStarValue(result.cvoid_star);
+
+    err = mslib::create_not_implemented_error("Conversion for returned type is not yet implemented in cffi\n");
+    return nullptr;
+}
+
 Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err) {
     auto name_s = mslib::get_string(name);
     auto argst = mslib::get_list(arg_types);
@@ -104,10 +188,14 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     ffi_cif cif;
     std::vector<ffi_type *> args;
     for (auto a: argst) {
-        assert(false && "TODO");
+        auto convv = get_ffi_type(a, vm, err);
+        if (!convv)
+            return nullptr;
+        args.push_back(convv);
     }
-    // TODO: Convert
-    ffi_type *ffi_ret_type = &ffi_type_void;
+    ffi_type *ffi_ret_type = get_ffi_type(return_type, vm, err);
+    if (!ffi_ret_type)
+        return nullptr;
 
     if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, args.size(), ffi_ret_type, args.data())) {
         err = create_not_implemented_error("cffi.define failed, but exception is not implemented.\n");
@@ -117,10 +205,52 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     auto func_v = new t_cpp::CVoidStarValue(func);
     auto cif_v = new t_cpp::Ffi_cifValue(cif);
 
-    auto ffhandle = mslib::call_constructor(vm, cf, "FFHandle", {func_v, cif_v}, err);
+    auto ffhandle = mslib::call_constructor(vm, cf, "FFHandle", {func_v, cif_v, name, return_type, arg_types}, err);
     if (!ffhandle)
         return nullptr;
     
     ths->set_attr(name_s, ffhandle);
     return nullptr;
+}
+
+Value *cffi::call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err) {
+    auto ptr = mslib::get_attr(ths, "ptr", vm, err);
+    if (!ptr)
+        return nullptr;
+    auto ptrv = dyn_cast<t_cpp::CVoidStarValue>(ptr);
+    assert(ptrv && "not void*");
+
+    auto cif = mslib::get_attr(ths, "cif", vm, err);
+    if (!cif)
+        return nullptr;
+    auto cifv = dyn_cast<t_cpp::Ffi_cifValue>(cif);
+    assert(cifv && "not cif");
+
+    auto argsv = mslib::get_list(args);
+    // TODO: Typecheck arguments
+    std::vector<void *> values;
+    for (auto a: argsv) {
+        //auto acpp = dyn_cast<t_cpp::CppValue>(a);
+        //values.push_back(acpp->to_moss()->get_data_ptr());
+        assert(false && "TODO");
+    }
+    auto return_type = mslib::get_attr(ths, "return_type", vm, err);
+    if (!return_type)
+        return nullptr;
+
+    auto ffi_ret_t = get_ffi_type(return_type, vm, err);
+    if (!ffi_ret_t)
+        return nullptr;
+    bool void_fun = ffi_ret_t == &ffi_type_void;
+    FFIResult result;
+
+    // TODO: Maybe store cif in Ffi_cifValue as a pointer to not copy as much
+    auto cif_val = cifv->get_value();
+    ffi_call(&cif_val, FFI_FN(ptrv->get_value()), (void_fun ? nullptr : &result), values.data());
+    
+    if (void_fun)
+        return nullptr;
+    else {
+        return result_to_moss(result, ffi_ret_t, err);
+    }
 }

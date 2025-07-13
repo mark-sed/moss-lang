@@ -175,6 +175,8 @@ enum DiagID : unsigned {
     COMMA_FOR_MULTIVAR_EXPECTED, ///< When there is a sure multivar (...a), but no comma after it
     TOO_MANY_VALS_UNPACK,   ///< When multivar is missing a var to fully unpack
     TOO_FEW_VALS_UNPACK,    ///< When multivar has more vars to unpack than values
+    NO_KNOWN_TYPE_CONV_TO_C,///< When type cannot be converted to C equivalent in ffi
+    NOT_CPP_MOSS_VALUE,     ///< When t_cpp value was expected, but was other value
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -329,6 +331,8 @@ static const char * DIAG_MSGS[] = {
     "`...` multivar expects list of variables after the first one",
     "Too many values to unpack (expected %ld values)",
     "Not enough values to unpack (expected at least %ld values, but got %ld)",
+    "No known conversion for type '%s' in foreign function interface",
+    "Expected C++ compatible value (from cpp space), but got value of type '%s'",
 };
 
 /// \brief ID of diagnostic error

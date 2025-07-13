@@ -49,7 +49,8 @@ enum class TypeKind {
     ENUM_VALUE,
     SUPER_VALUE,
 
-    CPP_CVOID,
+    // Values after this has to be CPP values as dyn_cast relies on this.
+    CPP_CVOID, // This has to be the first cpp value
     CPP_CVOID_STAR,
     CPP_FSTREAM,
     CPP_FFI_CIF
@@ -1035,6 +1036,10 @@ bool isa(Value* t) {
     return t->get_kind() == T::ClassType;
 }
 
+namespace t_cpp {
+    class CppValue;
+}
+
 template<class T>
 T *dyn_cast(Value* t) {
     assert(t && "Passed nullptr to dyn_cast");
@@ -1042,6 +1047,11 @@ T *dyn_cast(Value* t) {
         // special case for StringValue when NoteValue (its child) is passed in
         if (!isa<StringValue>(t) && !isa<NoteValue>(t)) return nullptr;
         return dynamic_cast<StringValue*>(t);
+    } else if constexpr (std::is_same_v<T, t_cpp::CppValue>) {
+        // special case for StringValue when NoteValue (its child) is passed in
+        if (t->get_kind() >= TypeKind::CPP_CVOID)
+            return dynamic_cast<t_cpp::CppValue*>(t);
+        return nullptr;
     } else {
         if (!isa<T>(t)) return nullptr;
         return dynamic_cast<T *>(t);

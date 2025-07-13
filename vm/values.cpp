@@ -3,6 +3,7 @@
 #include "logging.hpp"
 #include "mslib.hpp"
 #include "gc.hpp"
+#include "values_cpp.hpp"
 #include <new>
 
 using namespace moss;

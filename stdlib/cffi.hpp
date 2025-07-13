@@ -29,6 +29,8 @@ Value *dlopen(Interpreter *vm, CallFrame *cf, Value *path, Value *&err);
 Value *dlclose(Interpreter *vm, Value *ths, Value *&err);
 Value *cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err);
 
+Value *call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err);
+
 }
 }
 }

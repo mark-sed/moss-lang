@@ -85,6 +85,26 @@ namespace t_cpp {
             return this;
         }
     };
+
+    class CLongValue : public CppValue {
+    private:
+        long value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CVOID_STAR;
+    
+        CLongValue(long value) : CppValue(ClassType, "long", BuiltIns::Cpp::CLong), value(value) {}
+        ~CLongValue() { }
+
+        long get_value() { return this->value; }
+
+        virtual Value *to_moss() override {
+            return new IntValue(value);
+        }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+    };
     
     /// C++'s std::fstream as a moss value
     class FStreamValue : public CppValue {

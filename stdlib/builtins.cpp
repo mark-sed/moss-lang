@@ -14,6 +14,7 @@ static void init_cpp_built_ins() {
     using namespace Cpp;
     CppSpace->set_attr("cvoid", CVoid);
     CppSpace->set_attr("cvoid_star", CVoidStar);
+    CppSpace->set_attr("clong", CLong);
     CppSpace->set_attr("fstream", FStream);
     CppSpace->set_attr("ffi_cif", Ffi_cif);
 }
@@ -124,6 +125,7 @@ Value *BuiltIns::SystemExit = new ClassValue("SystemExit");
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
 Value *BuiltIns::Cpp::CVoid = new ClassValue("cvoid");
 Value *BuiltIns::Cpp::CVoidStar = new ClassValue("cvoid_star");
+Value *BuiltIns::Cpp::CLong = new ClassValue("clong");
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 Value *BuiltIns::Cpp::Ffi_cif = new ClassValue("ffi_cif");
 

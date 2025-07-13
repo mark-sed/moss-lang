@@ -5,13 +5,16 @@ Module for calling C function from Moss.
 """
 
 class FFHandle {
-    fun FFHandle(ptr:cpp.cvoid_star, cif:cpp.ffi_cif) {
-        this.ptr = ptr;
+    fun FFHandle(ptr:cpp.cvoid_star, cif:cpp.ffi_cif, name:String, return_type, ... arg_types) {
+        this.ptr = ptr
         this.cif = cif
+        this.name = name
+        this.return_type = return_type
+        this.arg_types = arg_types
     }
 
-    //@internal
-    //fun call() {}
+    @internal
+    fun call(... args) {}
 }
 
 class CFFI {
@@ -20,7 +23,7 @@ class CFFI {
     }
 
     @internal
-    fun define(name:String, return_type, ... arg_types) {}
+    fun cfun(name:String, return_type, ... arg_types) {}
 
     @internal
     fun close() {}

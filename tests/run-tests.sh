@@ -1141,6 +1141,16 @@ function test_lib_subprocess_system_and_run {
     expect_out_eq "hi!\nno_cap\n" $1
 }
 
+function test_lib_clib {
+    expect_pass "stdlib_tests/cffi_tests/clib.ms ${TEST_DIR}/stdlib_tests/cffi_tests/clib.so" $1
+    expect_out_eq "<object of class CFFI>
+<C++ value of type void*>
+<object of class FFHandle>
+Hello from C!
+
+42\n" $1
+}
+
 
 function test_gc_local_vars {
     expect_pass_log "gc_tests/local_vars.ms" "--v5=gc.cpp::sweep" "--stress-test-gc" $1
@@ -1357,7 +1367,11 @@ function run_all_tests {
     run_test lib_attrs
     run_test lib_enumerate
 
+    # subprocess
     run_test lib_subprocess_system_and_run
+
+    # cffi
+    run_test lib_cffi_clib
 
     # gc tests
     run_test gc_local_vars

@@ -826,6 +826,15 @@ fun test_lib_subprocess_system_and_run(name) {
     ~expect_pass("stdlib_tests/subprocess_tests/system_and_run.ms", name, "hi!\nno_cap\n", "")
 }
 
+fun test_lib_cffi_clib(name) {
+    ~expect_pass(f"stdlib_tests/cffi_tests/clib.ms {::TEST_DIR}/stdlib_tests/cffi_tests/clib.so", name, """<object of class CFFI>
+<C++ value of type void*>
+<object of class FFHandle>
+Hello from C!
+
+42\n""", "")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -990,7 +999,11 @@ fun run_all_tests() {
     ~run_test("lib_attrs")
     ~run_test("lib_enumerate")
 
+    // subprocess
     ~run_test("lib_subprocess_system_and_run")
+
+    // cffi
+    ~run_test("lib_cffi_clib")
 
     // gc tests
     ~run_test("gc_local_vars")
