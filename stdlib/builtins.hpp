@@ -83,8 +83,11 @@ namespace BuiltIns {
     /// C++ values as moss values
     namespace Cpp {
         extern Value *CppSpace;
+
+        extern Value *CVoid;
+        extern Value *CVoidStar;
+
         extern Value *FStream;
-        extern Value *VoidStar;
         extern Value *Ffi_cif;
     }
 }

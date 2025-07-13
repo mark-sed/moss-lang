@@ -12,8 +12,9 @@ static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, 
 
 static void init_cpp_built_ins() {
     using namespace Cpp;
+    CppSpace->set_attr("cvoid", CVoid);
+    CppSpace->set_attr("cvoid_star", CVoidStar);
     CppSpace->set_attr("fstream", FStream);
-    CppSpace->set_attr("void_star", VoidStar);
     CppSpace->set_attr("ffi_cif", Ffi_cif);
 }
 
@@ -121,8 +122,9 @@ Value *BuiltIns::EOFError = new ClassValue("EOFError");
 Value *BuiltIns::SystemExit = new ClassValue("SystemExit");
 
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
+Value *BuiltIns::Cpp::CVoid = new ClassValue("cvoid");
+Value *BuiltIns::Cpp::CVoidStar = new ClassValue("cvoid_star");
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
-Value *BuiltIns::Cpp::VoidStar = new ClassValue("void_star");
 Value *BuiltIns::Cpp::Ffi_cif = new ClassValue("ffi_cif");
 
 Value *BuiltIns::Nil = new NilValue();

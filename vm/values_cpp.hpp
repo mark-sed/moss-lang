@@ -30,6 +30,11 @@ namespace t_cpp {
         }
 
         virtual inline bool is_hashable() override { return true; }
+
+        virtual Value *to_moss() {
+            assert(false && "Called to_moss on a type which does not have a conversion");
+            return BuiltIns::Nil;
+        }
     
         virtual opcode::StringConst as_string() const override {
             return "<C++ value of type " + name + ">";
@@ -38,6 +43,46 @@ namespace t_cpp {
         virtual std::ostream& debug(std::ostream& os) const override {
             os << type->get_name() << "(" << name << ")";
             return os;
+        }
+    };
+
+    class CVoidValue : public CppValue {
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CVOID;
+    
+        CVoidValue(void *value) : CppValue(ClassType, "void", BuiltIns::Cpp::CVoid) {}
+        ~CVoidValue() {
+            // This is a general pointer, which is not handled nor allocated
+            // by this object, so it cannot free it
+        }
+
+        virtual Value *to_moss() override {
+            // Void returns nil because this can be then used in return value
+            // and also there is no equivalent.
+            return BuiltIns::Nil;
+        }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+    };
+
+    class CVoidStarValue : public CppValue {
+    private:
+        void *value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CVOID_STAR;
+    
+        CVoidStarValue(void *value) : CppValue(ClassType, "void*", BuiltIns::Cpp::CVoidStar), value(value) {}
+        ~CVoidStarValue() {
+            // This is a general pointer, which is not handled nor allocated
+            // by this object, so it cannot free it
+        }
+
+        void *get_value() { return this->value; }
+    
+        virtual Value *clone() override {
+            return this;
         }
     };
     
@@ -62,33 +107,14 @@ namespace t_cpp {
         }
     };
 
-    class VoidStar : public CppValue {
-    private:
-        void *value;
-    public:
-        static const TypeKind ClassType = TypeKind::CPP_VOID_STAR;
-    
-        VoidStar(void *value) : CppValue(ClassType, "void*", BuiltIns::Cpp::VoidStar), value(value) {}
-        ~VoidStar() {
-            // This is a general pointer, which is not handled nor allocated
-            // by this object, so it cannot free it
-        }
-
-        void *get_value() { return this->value; }
-    
-        virtual Value *clone() override {
-            return this;
-        }
-    };
-
-    class CPP_Ffi_cif : public CppValue {
+    class Ffi_cifValue : public CppValue {
     private:
         ffi_cif value;
     public:
         static const TypeKind ClassType = TypeKind::CPP_FFI_CIF;
     
-        CPP_Ffi_cif(ffi_cif value) : CppValue(ClassType, "ffi_cif", BuiltIns::Cpp::Ffi_cif), value(value) {}
-        ~CPP_Ffi_cif() {
+        Ffi_cifValue(ffi_cif value) : CppValue(ClassType, "ffi_cif", BuiltIns::Cpp::Ffi_cif), value(value) {}
+        ~Ffi_cifValue() {
         }
 
         ffi_cif get_value() { return this->value; }

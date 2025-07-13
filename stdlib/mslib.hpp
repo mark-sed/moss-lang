@@ -38,6 +38,41 @@ Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
 Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err);
 Value *call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std::initializer_list<Value *> args, Value *&err);
 
+inline opcode::StringConst get_string(Value *v) {
+    assert(v && "Passed nullptr to extractor");
+    auto strv = dyn_cast<StringValue>(v);
+    assert(strv && "Value to extract string is not a StringValue");
+    return strv->get_value();
+} 
+
+inline opcode::IntConst get_int(Value *v) {
+    assert(v && "Passed nullptr to extractor");
+    auto vv = dyn_cast<IntValue>(v);
+    assert(vv && "Value to extract int is not a IntValue");
+    return vv->get_value();
+}
+
+inline opcode::FloatConst get_float(Value *v) {
+    assert(v && "Passed nullptr to extractor");
+    auto vv = dyn_cast<FloatValue>(v);
+    assert(vv && "Value to extract float is not a FloatValue");
+    return vv->get_value();
+}
+
+inline opcode::BoolConst get_bool(Value *v) {
+    assert(v && "Passed nullptr to extractor");
+    auto vv = dyn_cast<BoolValue>(v);
+    assert(vv && "Value to extract bool is not a BoolValue");
+    return vv->get_value();
+}
+
+inline std::vector<Value *> get_list(Value *v) {
+    assert(v && "Passed nullptr to extractor");
+    auto vv = dyn_cast<ListValue>(v);
+    assert(vv && "Value to extract list is not a ListValue");
+    return vv->get_vals();
+}
+
 /// \brief Executes a runtime function
 /// \param vm VM for accessing resources
 /// \param module_name Name of the module where the function resides
