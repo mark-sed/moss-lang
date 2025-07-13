@@ -73,8 +73,7 @@ dict2 = {:}
 for (k, v : dict1) {
     dict2[k] = v
 }
-// TODO uncomment once eq is added
-//assert(dict1 == dict2, "not equal dicts") 
+assert(dict1 == dict2, "not equal dicts") 
 
 for (a, ...b, c, d : [["a", 2, 3, 4, 5, "c", "d"], ["a", 2, 3, 4, 5, "c", "d"]]) {
     ~print(a, b, c, d)

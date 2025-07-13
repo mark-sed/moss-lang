@@ -584,7 +584,8 @@ ABC\n123\ncalled\ncaught\ncaught\nfoov3\naBC\nAbc\n4BC
 
 fun test_equalities(name) {
     ~expect_pass("equalities.ms", name, """true\nfalse\ntrue\nfalse\nfalse\ncaught\nfalse\ntrue\ncaught
-false\ntrue\ntrue\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\n""", "")
+false\ntrue\ntrue\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse
+true\nfalse\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\n""", "")
 }
 
 fun test_memberships(name) {

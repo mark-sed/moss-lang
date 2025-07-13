@@ -1777,6 +1777,31 @@ bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
             }
             return true;
         }
+        else if (DictValue *dv1 = dyn_cast<DictValue>(s1)) {
+            DictValue *dv2 = dyn_cast<DictValue>(s2);
+            if (dv1->get_vals().size() != dv2->get_vals().size())
+                return false;
+            auto vals1 = dv1->get_vals();
+            auto vals2 = dv2->get_vals();
+            for (auto [hsh, vect] : vals1) {
+                auto vect2_it = vals2.find(hsh);
+                if (vect2_it == vals2.end()) {
+                    return false;
+                }
+                for (auto [k, v] : vect) {
+                    bool matched = false;
+                    for (auto [k2, v2] : vect2_it->second) {
+                        if (eq(k, k2, vm) && eq(v, v2, vm)) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched)
+                        return false;
+                }
+            }
+            return true;
+        }
         else {
             return s1 == s2;
         }

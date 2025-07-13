@@ -755,7 +755,8 @@ ABC\n123\ncalled\ncaught\ncaught\nfoov3\naBC\nAbc\n4BC
 function test_equalities {
     expect_pass "equalities.ms" $1
     expect_out_eq "true\nfalse\ntrue\nfalse\nfalse\ncaught\nfalse\ntrue\ncaught
-false\ntrue\ntrue\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\n" $1
+false\ntrue\ntrue\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse
+true\nfalse\nfalse\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\n" $1
 }
 
 function test_memberships {
