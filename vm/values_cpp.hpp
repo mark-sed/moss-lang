@@ -60,6 +60,25 @@ namespace t_cpp {
             return new FStreamValue(fs);
         }
     };
+
+    class VoidStar : public CppValue {
+    private:
+        void *value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_VOID_STAR;
+    
+        VoidStar(void *value) : CppValue(ClassType, "void*", BuiltIns::Cpp::VoidStar), value(value) {}
+        ~VoidStar() {
+            // This is a general pointer, which is not handled nor allocated
+            // by this object, so it cannot free it
+        }
+
+        void *get_value() { return this->value; }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+    };
 }
 }
 

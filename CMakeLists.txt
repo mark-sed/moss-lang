@@ -47,6 +47,7 @@ set(SOURCES
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp
     stdlib/mslib_string.cpp
+    stdlib/cffi.cpp
     stdlib/subprocess.cpp
     interface/commons.cpp
     interface/clopts.cpp
@@ -94,11 +95,13 @@ endfunction()
 # Standard moss library modules
 # Any module added here has to be added to libms target bellow (as `build_name`)
 moss_compile(libms)
+moss_compile(cffi)
 moss_compile(subprocess)
 
 add_custom_target(
     libms
     DEPENDS build_libms
+    DEPENDS build_cffi
     DEPENDS build_subprocess
 )
 

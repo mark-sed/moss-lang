@@ -49,7 +49,8 @@ enum class TypeKind {
     ENUM_VALUE,
     SUPER_VALUE,
 
-    CPP_FSTREAM
+    CPP_FSTREAM,
+    CPP_VOID_STAR,
 };
 
 inline ustring TypeKind2String(TypeKind kind) {

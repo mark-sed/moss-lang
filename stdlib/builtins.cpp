@@ -13,6 +13,7 @@ static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, 
 static void init_cpp_built_ins() {
     using namespace Cpp;
     CppSpace->set_attr("fstream", FStream);
+    CppSpace->set_attr("void_star", VoidStar);
 }
 
 void BuiltIns::init_constant_variables(MemoryPool *gf) {
@@ -120,6 +121,7 @@ Value *BuiltIns::SystemExit = new ClassValue("SystemExit");
 
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
+Value *BuiltIns::Cpp::VoidStar = new ClassValue("void_star");
 
 Value *BuiltIns::Nil = new NilValue();
 Value *BuiltIns::True = new BoolValue(true);

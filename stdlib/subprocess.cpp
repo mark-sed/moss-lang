@@ -270,18 +270,5 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
         stderr_v = new StringValue("");
     }
 
-    auto funv = cf->get_function();
-    assert(funv);
-    auto fun = dyn_cast<FunValue>(funv);
-    auto subres_class_v = fun->get_vm()->load_name("SubprocessResult");
-    // TODO: Maybe also turn this into internal error? Or NameError?
-    assert(subres_class_v && "Could not load SubprocessResult");
-    auto subres_class = dyn_cast<ClassValue>(subres_class_v);
-    assert(subres_class && "Not a class");
-    diags::DiagID did = diags::DiagID::UNKNOWN;
-    auto constr = opcode::lookup_method(vm, subres_class, "SubprocessResult", {command, code_v, stdout_v, stderr_v}, did);
-    assert(constr && "No constructor for SubprocessResult");
-    auto subres = opcode::runtime_constructor_call(vm, constr, {command, code_v, stdout_v, stderr_v}, subres_class);
-    assert(subres && "sanity check");
-    return subres;
+    return mslib::call_constructor(vm, cf, "SubprocessResult", {command, code_v, stdout_v, stderr_v}, err);
 }
