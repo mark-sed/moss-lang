@@ -10,8 +10,15 @@ endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -DDEVELOPER")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBFFI REQUIRED libffi)
+
+if (MSVC)
+    # FIXME: Don't use hardcoded paths
+    set(LIBFFI_INCLUDE_DIRS "C:/dev/vcpkg/packages/libffi_x64-windows/include")
+    set(LIBFFI_LIBRARIES "C:/dev/vcpkg/packages/libffi_x64-windows/lib/ffi.lib")
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBFFI REQUIRED libffi)
+endif()
 
 if (MSVC)
     #add_compile_options(/W4 /WX)
@@ -131,7 +138,6 @@ add_custom_target(
     DEPENDS binmoss
 )
 
-
 # Include libffi headers
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBFFI_INCLUDE_DIRS})
 
@@ -180,6 +186,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # GTest include
     include(GoogleTest)
     gtest_discover_tests(testsmoss)
+    target_include_directories(testsmoss PRIVATE ${LIBFFI_INCLUDE_DIRS})
 
     # Docs build
     # docs target

@@ -68,7 +68,7 @@ static t_cpp::CVoidStarValue *get_handle(Value *obj, Interpreter *vm, Value *&er
 
 #ifdef __windows__
 static Value *windows_dlopen(Interpreter *vm, ustring path, Value *&err) {
-    assert(false && "TODO")
+    assert(false && "TODO");
     return nullptr;
 }
 #else
@@ -183,8 +183,14 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     if (!handle)
         return nullptr;
 
+#ifdef __windows__
+    void *func = nullptr;
+    err = create_not_implemented_error("cffi.define is not yet implemented on Windows.\n");
+    return nullptr;
+#else
     void *func = dlsym(handle->get_value(), name_s.c_str());
-    
+#endif
+
     ffi_cif cif;
     std::vector<ffi_type *> args;
     for (auto a: argst) {
