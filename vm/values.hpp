@@ -52,6 +52,8 @@ enum class TypeKind {
     // Values after this has to be CPP values as dyn_cast relies on this.
     CPP_CVOID, // This has to be the first cpp value
     CPP_CVOID_STAR,
+    CPP_CLONG,
+    CPP_CDOUBLE,
     CPP_FSTREAM,
     CPP_FFI_CIF
 };
@@ -77,6 +79,8 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::SUPER_VALUE: return "SUPER_VALUE";
         case TypeKind::CPP_CVOID: return "CPP_CVOID";
         case TypeKind::CPP_CVOID_STAR: return "CPP_CVOID_STAR";
+        case TypeKind::CPP_CLONG: return "CPP_CLONG";
+        case TypeKind::CPP_CDOUBLE: return "CPP_CDOUBLE";
         case TypeKind::CPP_FSTREAM: return "CPP_FSTREAM";
         case TypeKind::CPP_FFI_CIF: return "CPP_FFI_CIF";
     }
@@ -155,6 +159,10 @@ public:
         assert(false && "Missing hash implementation");
         return 0;
     }
+    virtual void *get_data_pointer() {
+        assert(false && "No override for raw data");
+        return nullptr;
+    }
 
     /// Adds an annotation to the value (if possible)
     void annotate(ustring name, Value *val);
@@ -231,6 +239,10 @@ public:
         return static_cast<opcode::FloatConst>(value);
     }
 
+    virtual void *get_data_pointer() override {
+        return &value;
+    }
+
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Int(" << value << ")";
         return os;
@@ -264,6 +276,10 @@ public:
         return std::to_string(value);
     }
 
+    virtual void *get_data_pointer() override {
+        return &value;
+    }
+
     virtual std::ostream& debug(std::ostream& os) const override {
         os << "Float(" << value << ")";
         return os;
@@ -292,6 +308,10 @@ public:
 
     virtual opcode::StringConst as_string() const override {
         return value ? "true" : "false";
+    }
+
+    virtual void *get_data_pointer() override {
+        return &value;
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
@@ -333,6 +353,11 @@ public:
     }
 
     virtual Value *next(Interpreter *vm) override;
+
+    virtual void *get_data_pointer() override {
+        static const char * cstr_value = value.c_str();
+        return &cstr_value;
+    }
 
     virtual opcode::StringConst dump() override {
         return "\"" + value + "\"";

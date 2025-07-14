@@ -1141,14 +1141,19 @@ function test_lib_subprocess_system_and_run {
     expect_out_eq "hi!\nno_cap\n" $1
 }
 
-function test_lib_clib {
+function test_lib_cffi_clib {
     expect_pass "stdlib_tests/cffi_tests/clib.ms ${TEST_DIR}/stdlib_tests/cffi_tests/clib.so" $1
     expect_out_eq "<object of class CFFI>
 <C++ value of type void*>
 <object of class FFHandle>
 Hello from C!
 
-42\n" $1
+42
+6.700000
+300.000000
+-3.800000
+2.000000
+done\n" $1
 }
 
 

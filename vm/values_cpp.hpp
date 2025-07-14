@@ -50,7 +50,7 @@ namespace t_cpp {
     public:
         static const TypeKind ClassType = TypeKind::CPP_CVOID;
     
-        CVoidValue(void *value) : CppValue(ClassType, "void", BuiltIns::Cpp::CVoid) {}
+        CVoidValue() : CppValue(ClassType, "void", BuiltIns::Cpp::CVoid) {}
         ~CVoidValue() {
             // This is a general pointer, which is not handled nor allocated
             // by this object, so it cannot free it
@@ -70,16 +70,25 @@ namespace t_cpp {
     class CVoidStarValue : public CppValue {
     private:
         void *value;
+        bool delete_data;
     public:
         static const TypeKind ClassType = TypeKind::CPP_CVOID_STAR;
     
-        CVoidStarValue(void *value) : CppValue(ClassType, "void*", BuiltIns::Cpp::CVoidStar), value(value) {}
+        CVoidStarValue(void *value, bool delete_data=false) : CppValue(ClassType, "void*", BuiltIns::Cpp::CVoidStar), value(value), delete_data(delete_data) {}
         ~CVoidStarValue() {
-            // This is a general pointer, which is not handled nor allocated
-            // by this object, so it cannot free it
+            // When delete_data was set then this value is the owner of the
+            // object and has to free it.
+            if (delete_data) {
+                // Deleting void * is not "safe"
+                delete value;
+            }
         }
 
         void *get_value() { return this->value; }
+
+        virtual void *get_data_pointer() override {
+            return &value;
+        }
     
         virtual Value *clone() override {
             return this;
@@ -90,7 +99,7 @@ namespace t_cpp {
     private:
         long value;
     public:
-        static const TypeKind ClassType = TypeKind::CPP_CVOID_STAR;
+        static const TypeKind ClassType = TypeKind::CPP_CLONG;
     
         CLongValue(long value) : CppValue(ClassType, "long", BuiltIns::Cpp::CLong), value(value) {}
         ~CLongValue() { }
@@ -99,6 +108,34 @@ namespace t_cpp {
 
         virtual Value *to_moss() override {
             return new IntValue(value);
+        }
+
+        virtual void *get_data_pointer() override {
+            return &value;
+        }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+    };
+
+    class CDoubleValue : public CppValue {
+    private:
+        double value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CDOUBLE;
+    
+        CDoubleValue(double value) : CppValue(ClassType, "double", BuiltIns::Cpp::CDouble), value(value) {}
+        ~CDoubleValue() { }
+
+        double get_value() { return this->value; }
+
+        virtual Value *to_moss() override {
+            return new FloatValue(value);
+        }
+
+        virtual void *get_data_pointer() override {
+            return &value;
         }
     
         virtual Value *clone() override {

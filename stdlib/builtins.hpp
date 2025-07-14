@@ -87,6 +87,7 @@ namespace BuiltIns {
         extern Value *CVoid;
         extern Value *CVoidStar;
         extern Value *CLong;
+        extern Value *CDouble;
 
         extern Value *FStream;
         extern Value *Ffi_cif;

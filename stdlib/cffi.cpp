@@ -195,18 +195,21 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
 #endif
 
     ffi_cif cif;
-    std::vector<ffi_type *> args;
+    std::vector<ffi_type *> *args = new std::vector<ffi_type *>();
+    // We need to store args to then be able to delete them.
+    // TODO: Create special value just for this to then not delete void *, but the actual type.
+    auto args_ptr = new t_cpp::CVoidStarValue(args, true);
     for (auto a: argst) {
         auto convv = get_ffi_type(a, vm, err);
         if (!convv)
             return nullptr;
-        args.push_back(convv);
+        args->push_back(convv);
     }
     ffi_type *ffi_ret_type = get_ffi_type(return_type, vm, err);
     if (!ffi_ret_type)
         return nullptr;
 
-    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, args.size(), ffi_ret_type, args.data())) {
+    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, args->size(), ffi_ret_type, args->data())) {
         err = create_not_implemented_error("cffi.define failed, but exception is not implemented.\n");
         return nullptr;
     }
@@ -214,7 +217,7 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     auto func_v = new t_cpp::CVoidStarValue(func);
     auto cif_v = new t_cpp::Ffi_cifValue(cif);
 
-    auto ffhandle = mslib::call_constructor(vm, cf, "FFHandle", {func_v, cif_v, name, return_type, arg_types}, err);
+    auto ffhandle = mslib::call_constructor(vm, cf, "FFHandle", {func_v, cif_v, name, return_type, arg_types, args_ptr}, err);
     if (!ffhandle)
         return nullptr;
     
@@ -239,9 +242,7 @@ Value *cffi::call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value
     // TODO: Typecheck arguments
     std::vector<void *> values;
     for (auto a: argsv) {
-        //auto acpp = dyn_cast<t_cpp::CppValue>(a);
-        //values.push_back(acpp->to_moss()->get_data_ptr());
-        assert(false && "TODO");
+        values.push_back(a->get_data_pointer());
     }
     auto return_type = mslib::get_attr(ths, "return_type", vm, err);
     if (!return_type)
