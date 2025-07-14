@@ -68,8 +68,12 @@ static t_cpp::CVoidStarValue *get_handle(Value *obj, Interpreter *vm, Value *&er
 
 #ifdef __windows__
 static Value *windows_dlopen(Interpreter *vm, ustring path, Value *&err) {
-    assert(false && "TODO");
-    return nullptr;
+    HMODULE handle = LoadLibrary(path.c_str());
+    if (!handle) {
+        err = create_not_implemented_error("cffi.dlopen failed, but exception is not implemented.\n");
+        return nullptr;
+    }
+    return new t_cpp::CVoidStarValue(handle);
 }
 #else
 static Value *posix_dlopen(Interpreter *vm, ustring path, Value *&err) {
@@ -88,8 +92,7 @@ Value *cffi::dlopen(Interpreter *vm, CallFrame *cf, Value *path, Value *&err) {
     assert(path_str && "non-string");
     Value *handle = nullptr;
 #ifdef __windows__
-    err = create_not_implemented_error("cffi.dlopen is not yet implemented for Windows systems.\n");
-    return nullptr;
+    handle = windows_dlopen(vm, path_str->get_value(), err);
 #else
     handle = posix_dlopen(vm, path_str->get_value(), err);
 #endif
