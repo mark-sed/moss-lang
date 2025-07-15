@@ -142,6 +142,31 @@ namespace t_cpp {
             return this;
         }
     };
+
+    // TODO: Maybe just having a pointer type is enough?
+    class CCharStarValue : public CppValue {
+    private:
+        char *value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CCHAR_STAR;
+    
+        CCharStarValue(char *value) : CppValue(ClassType, "char*", BuiltIns::Cpp::CDouble), value(value) {}
+        ~CCharStarValue() { }
+
+        char *get_value() { return this->value; }
+
+        virtual Value *to_moss() override {
+            return new StringValue(ustring(value));
+        }
+
+        virtual void *get_data_pointer() override {
+            return &value;
+        }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+    };
     
     /// C++'s std::fstream as a moss value
     class FStreamValue : public CppValue {

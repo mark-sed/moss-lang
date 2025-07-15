@@ -1153,6 +1153,10 @@ Hello from C!
 300.000000
 -3.800000
 2.000000
+6.000000
+45.000000
+Hello from moss to C!
+CLIB
 done\n" $1
 }
 

@@ -133,7 +133,8 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
         {"cunsigned_long", &ffi_type_ulong},
         {"cfloat",  &ffi_type_float},
         {"cdouble", &ffi_type_double},
-        {"cvoid_star", &ffi_type_pointer}
+        {"cvoid_star", &ffi_type_pointer},
+        {"cchar_star", &ffi_type_pointer}, // TODO: When the type has _star then return always this
     };
 
     auto it = type_map.find(type->get_name());
@@ -149,9 +150,9 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
     }
 }
 
-static Value *result_to_moss(FFIResult result, ffi_type *type, Value *&err) {
-    assert(type != &ffi_type_void && "invoked with void");
-    if (type == &ffi_type_sint)
+static Value *result_to_moss(FFIResult result, Value *type, Value *&err) {
+    assert(type != BuiltIns::Cpp::CVoid && "invoked with void");
+    /*if (type == &ffi_type_sint)
         return new IntValue(result.cint);
     if (type == &ffi_type_uint)
         return new IntValue(result.cunsigned_int);
@@ -162,16 +163,18 @@ static Value *result_to_moss(FFIResult result, ffi_type *type, Value *&err) {
     if (type == &ffi_type_schar)
         return new IntValue(result.cchar);
     if (type == &ffi_type_uchar)
-        return new IntValue(result.cunsigned_char);
-    if (type == &ffi_type_slong)
+        return new IntValue(result.cunsigned_char);*/
+    if (type == BuiltIns::Cpp::CLong)
         return new IntValue(result.clong);
-    if (type == &ffi_type_ulong)
+    /*if (type == &ffi_type_ulong)
         return new IntValue(result.cunsigned_long);
     if (type == &ffi_type_float)
-        return new FloatValue(result.cfloat);
-    if (type == &ffi_type_double)
+        return new FloatValue(result.cfloat);*/
+    if (type == BuiltIns::Cpp::CDouble)
         return new FloatValue(result.cdouble);
-    if (type == &ffi_type_pointer)
+    if (type == BuiltIns::Cpp::CCharStar)
+        return new StringValue(ustring(static_cast<char *>(result.cvoid_star)));
+    if (type == BuiltIns::Cpp::CVoidStar)
         return new t_cpp::CVoidStarValue(result.cvoid_star);
 
     err = mslib::create_not_implemented_error("Conversion for returned type is not yet implemented in cffi\n");
@@ -261,6 +264,6 @@ Value *cffi::call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value
     if (void_fun)
         return nullptr;
     else {
-        return result_to_moss(result, ffi_ret_t, err);
+        return result_to_moss(result, return_type, err);
     }
 }

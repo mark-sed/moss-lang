@@ -832,7 +832,16 @@ fun test_lib_cffi_clib(name) {
 <object of class FFHandle>
 Hello from C!
 
-42\n""", "")
+42
+6.700000
+300.000000
+-3.800000
+2.000000
+6.000000
+45.000000
+Hello from moss to C!
+CLIB
+done\n""", "")
 }
 
 fun test_gc_local_vars(name) {
