@@ -645,6 +645,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     assert(funV && "nullptr function passed in");
 
     ClassValue *constructor_of = nullptr;
+    Value *super_caller = nullptr;
     // Class constructor call
     if (isa<ClassValue>(funV) || isa<SuperValue>(funV)) {
         LOGMAX("Constructor call");
@@ -658,12 +659,15 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
         ClassValue *cls = dyn_cast<ClassValue>(funV);
         if (!cls) {
+            super_caller = vm->load_name("this");
+            assert(super_caller && "Super call, yet super caller is not set");
             // super() call, so extract the class based on the mro
             auto spr = dyn_cast<SuperValue>(funV);
             assert(spr && "some other value allowed?");
             auto inst_type = spr->get_instance()->get_type();
             auto inst_cls = dyn_cast<ClassValue>(inst_type);
             assert(inst_cls && "Object type is not a class");
+            op_assert(!inst_cls->get_all_supers().empty(), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SUPER, inst_cls->get_name().c_str())));
             // We need to go through mro and find the first parent with constructor
             for (auto parent: inst_cls->get_all_supers()) {
                 if (!parent->get_attrs())
@@ -750,10 +754,16 @@ void call(Interpreter *vm, Register dst, Value *funV) {
 
     // Set this object if constructor is being called
     if (constructor_of) {
-        auto obj = new ObjectValue(constructor_of);
+        Value *obj = nullptr;
+        if (super_caller) {
+            obj = super_caller;
+            LOGMAX("Super constructor detected, passing this: " << *obj);
+        } else {
+            obj = new ObjectValue(constructor_of);
+            LOGMAX("Constructor detected, creating object and passing in: " << *obj);
+        }
         cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
         cf->set_constructor_call(true);
-        LOGMAX("Constructor detected, creating object and passing in: " << *obj);
         LOGMAX(*cf);
     }
 

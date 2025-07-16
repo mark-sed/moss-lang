@@ -178,6 +178,7 @@ enum DiagID : unsigned {
     NO_KNOWN_TYPE_CONV_TO_C,///< When type cannot be converted to C equivalent in ffi
     NOT_CPP_MOSS_VALUE,     ///< When t_cpp value was expected, but was other value
     BAD_MULTI_REPLACE_ELEM, ///< When multi_replace does not get list of list of 2 values
+    NO_SUPER,               ///< Call to a super without a super
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -335,6 +336,7 @@ static const char * DIAG_MSGS[] = {
     "No known conversion for type '%s' in foreign function interface",
     "Expected C++ compatible value (from cpp space), but got value of type '%s'",
     "String.multi_replace expects as an argument a List of Lists of 2 Strings (e.g.: '[[\"a\", \"b\"], [\"c\", \"d\"]])",
+    "Class '%s' does not have a super class to call",
 };
 
 /// \brief ID of diagnostic error

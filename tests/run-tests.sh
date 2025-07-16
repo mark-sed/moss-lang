@@ -573,7 +573,8 @@ function test_lambdas {
 
 function test_supers {
     expect_pass "supers.ms" $1
-    expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\nA foo 42\nVAL B\ncaught\n" $1
+    expect_out_eq "B A\nA 2\nB\nD B\nC\nC\nA\nA foo 42\nVAL B\ncaught
+in parent\n1\ntext\n1\ntext\n" $1
 }
 
 function test_notes {

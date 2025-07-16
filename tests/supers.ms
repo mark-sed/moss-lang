@@ -111,7 +111,9 @@ space test5 {
     class C  {
         fun C() {
             ~print("C")
-            ~super()
+            try
+                ~super()
+            catch(e:TypeError) {}
         }
     }
 
@@ -179,3 +181,25 @@ space test7 {
 }
 
 try test7.c.incorrect(); catch(e:AttributeError) "caught\n"
+
+class ParentC {
+    fun ParentC(a, b) {
+        "in parent\n"
+        this.a = a
+        this.b = b
+    }
+}
+
+class SubC : ParentC {
+    fun SubC() {
+        ~super(1, "text\n")
+        this.a
+        "\n"
+        this.b
+    }
+}
+
+subc = SubC()
+subc.a
+"\n"
+subc.b
