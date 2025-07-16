@@ -8,6 +8,7 @@
 #include "mslib_string.hpp"
 #include "mslib_file.hpp"
 #include "subprocess.hpp"
+#include "sys.hpp"
 #include "cffi.hpp"
 #include <functional>
 #include <iostream>
@@ -743,6 +744,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
     };
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> subprocess_registry = subprocess::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> cffi_registry = cffi::get_registry();
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> sys_registry = sys::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> empty_registry{};
 
     // Based on module name return correct function registry
@@ -752,6 +754,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         return subprocess_registry;
     else if (module_name == "cffi")
         return cffi_registry;
+    else if (module_name == "sys")
+        return sys_registry;
     else {
         // We want to raise exception, not to assert, this will make it so
         // that the "internal" function will not be found.

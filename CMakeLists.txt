@@ -58,6 +58,7 @@ set(SOURCES
     stdlib/mslib_string.cpp
     stdlib/cffi.cpp
     stdlib/subprocess.cpp
+    stdlib/sys.cpp
     interface/commons.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp
@@ -106,12 +107,13 @@ endfunction()
 moss_compile(libms)
 moss_compile(cffi)
 moss_compile(subprocess)
+moss_compile(sys)
 
 add_custom_target(
     libms
     DEPENDS build_libms
     DEPENDS build_cffi
-    DEPENDS build_subprocess
+    DEPENDS build_sys
 )
 
 # Making moss a command
