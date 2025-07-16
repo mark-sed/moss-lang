@@ -211,7 +211,13 @@ int main(int argc, const char *argv[]) {
         // Output notes if generator is used
         if (Interpreter::is_generator(clopts::get_note_format()) && interpreter->is_main() && exit_code == 0) {
             assert(!Interpreter::running_generator);
-            opcode::output_generator_notes(interpreter);
+            try {
+                opcode::output_generator_notes(interpreter);
+            } catch (Value *v) {
+                interpreter->report_call_stack(errs);
+                errs << opcode::to_string(interpreter, v);
+                interpreter->set_exit_code(1);
+            } 
         }
 
         LOGMAX(*interpreter);

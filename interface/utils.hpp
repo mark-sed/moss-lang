@@ -85,6 +85,16 @@ inline ustring replace_n(ustring str, const ustring& target, const ustring& valu
     return str;
 }
 
+inline void replace_in_n(ustring &str, const ustring& target, const ustring& value, int count=-1) {
+    if (target.empty() || count == 0) return;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(target, start_pos)) != ustring::npos && count != 0) {
+        str.replace(start_pos, target.length(), value);
+        start_pos += value.length();
+        --count;
+    }
+}
+
 }
 
 #endif//_UTILS_HPP_

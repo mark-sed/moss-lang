@@ -101,7 +101,13 @@ int Repl::run() {
     // Output notes if generator is used
     if (Interpreter::is_generator(clopts::get_note_format()) && interpreter->is_main() && interpreter->get_exit_code() == 0) {
         assert(!Interpreter::running_generator);
-        opcode::output_generator_notes(interpreter);
+        try {
+            opcode::output_generator_notes(interpreter);
+        } catch (Value *v) {
+            interpreter->report_call_stack(errs);
+            errs << opcode::to_string(interpreter, v);
+            // We're exiting, no need for restore.
+        }
     }
 
     if (clopts::output) {

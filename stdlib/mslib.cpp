@@ -647,7 +647,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             if (args[1].value->get_type() == BuiltIns::String) {
+                assert(args.size() == 4);
                 return String::replace(vm, cf->get_arg("this"), cf->get_arg("target"), cf->get_arg("value"), cf->get_arg("count"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
+        {"multi_replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            if (args[1].value->get_type() == BuiltIns::String) {
+                assert(args.size() == 2);
+                return String::multi_replace(vm, cf->get_arg("this"), cf->get_arg("mapping"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;

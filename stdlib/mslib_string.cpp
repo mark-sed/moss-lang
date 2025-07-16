@@ -62,3 +62,32 @@ Value *String::replace(Interpreter *vm, Value *ths, Value *target, Value *value,
     assert(countv && "not int");
     return new StringValue(utils::replace_n(strv->get_value(), targv->get_value(), valuev->get_value(), countv->get_value()));
 }
+
+Value *String::multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value *&err) {
+    // TODO: Have empty string replace be in between letters:
+    // >>> "hello".replace("", "X")
+    // 'XhXeXlXlXoX'
+    auto strv = dyn_cast<StringValue>(ths);
+    assert(strv && "not string");
+    auto mapgsv = dyn_cast<ListValue>(mappings);
+    assert(mapgsv && "not string");
+    auto result = strv->get_value();
+    for (auto elem: mapgsv->get_vals()) {
+        auto elemv = dyn_cast<ListValue>(elem);
+        bool correct_elem = true;
+        if (!elemv)
+            correct_elem = false;
+        else if (elemv->get_vals().size() != 2)
+            correct_elem = false;
+        else if (!isa<StringValue>(elemv->get_vals()[0]) || !isa<StringValue>(elemv->get_vals()[1]))
+            correct_elem = false;
+        if (!correct_elem) {
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_MULTI_REPLACE_ELEM));
+            return nullptr;
+        }
+        auto target = dyn_cast<StringValue>(elemv->get_vals()[0]);
+        auto value = dyn_cast<StringValue>(elemv->get_vals()[1]);
+        utils::replace_in_n(result, target->get_value(), value->get_value());
+    }
+    return new StringValue(result);
+}

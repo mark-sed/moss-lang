@@ -28,6 +28,7 @@ Value *capitalize(Interpreter *vm, Value * ths, Value *&err);
 Value *upper(Interpreter *vm, Value * ths, Value *&err);
 Value *lower(Interpreter *vm, Value * ths, Value *&err);
 Value *replace(Interpreter *vm, Value *ths, Value *target, Value *value, Value *count, Value *&err);
+Value *multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value *&err);
 //Value *join(Interpreter *vm, Value * ths, Value *iterable, Value *&err);
 
 }

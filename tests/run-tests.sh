@@ -811,6 +811,23 @@ inf
     expect_file_eq $OUTP_STD "${TEST_DIR}warnings_expected.txt" $1
 }
 
+function test_implicit_formats {
+    expect_pass_log "implicit_formats.ms" "-f html" $1
+    expect_out_eq "<!DOCTYPE html>
+<html>
+<body>
+<p>Hello!<br></p>
+<p>1 &amp;lt; 2 &amp; 3 &gt; 2<br></p>
+<p># Md tags \`code1\` \</p>
+</body>
+</html>\n" $1
+
+    expect_pass_log "implicit_formats.ms" "-f md" $1
+#    expect_out_eq "Hello\\!
+#1 < 2 & 3 \\> 2
+#\\# Md tags \\\`code1\\\` \\" $1
+}
+
 function test_basic_import {
     expect_pass_compile "module_tests/greet_bc.ms" "module_tests/greet_compiled.msb" $1
     expect_pass "module_tests/module.ms" $1
@@ -1045,7 +1062,12 @@ h i !
 0q10\n0q52\n-0q10
 hello moss\nbonono\nxxx\nbba\nx11222111\ncdcdab\nhelloworld\nbrcdbr\nunchanged
 repeat\nhello\ncafe\nHello\n✅A✅\n❌ Value
-abc\na\n" $1
+abc\na
+abCDEFGHIaabC
+caught
+caught
+caught
+Hi\n" $1
 }
 
 function test_lib_random {
@@ -1347,6 +1369,7 @@ function run_all_tests {
     run_test static_methods
     run_test type_casting
     run_test warnings
+    run_test implicit_formats
 
     run_test fibonacci
     run_test factorial

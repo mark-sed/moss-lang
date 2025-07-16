@@ -613,6 +613,21 @@ fun test_type_casting(name) {
     ~expect_pass("type_casting.ms", name, """42\ntrue\n42\n42.000000\ncaught\ncaught\ncaught\n""", "")
 }
 
+fun test_implicit_formats(name) {
+    ~expect_pass("implicit_formats.ms", name, r"""<!DOCTYPE html>
+<html>
+<body>
+<p>Hello!<br></p>
+<p>1 &amp;lt; 2 &amp; 3 &gt; 2<br></p>
+<p># Md tags `code1` \</p>
+</body>
+</html>
+""", "", args="-f html")
+    ~expect_pass("implicit_formats.ms", name, r"""Hello\!
+1 < 2 & 3 \> 2
+\# Md tags \`code1\` \\""", "", args="-f md")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -755,7 +770,12 @@ h i !
 0q10\n0q52\n-0q10
 hello moss\nbonono\nxxx\nbba\nx11222111\ncdcdab\nhelloworld\nbrcdbr\nunchanged
 repeat\nhello\ncafe\nHello\n✅A✅\n❌ Value
-abc\na\n""", "")
+abc\na
+abCDEFGHIaabC
+caught
+caught
+caught
+Hi\n""", "")
 }
 
 fun test_lib_random(name) {
@@ -979,6 +999,7 @@ fun run_all_tests() {
     ~run_test("static_methods")
     ~run_test("type_casting")
     //~run_test("warnings")
+    ~run_test("implicit_formats")
 
     ~run_test("fibonacci")
     ~run_test("factorial")

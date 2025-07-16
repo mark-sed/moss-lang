@@ -55,6 +55,9 @@ class __String {
     @internal
     fun replace(target:String, value:String, count:Int=-1) {}
 
+    @internal
+    fun multi_replace(mapping:List) {}
+
     fun join(iterable) {
         // TODO: Internal candidate
         r = ""
@@ -500,6 +503,83 @@ space Math {
 
     @internal
     fun divmod(x:[Int,Float], y:[Int,Float]) {}
+}
+
+space Converters {
+d"""
+Space for converters for moss known formats.
+These converters should provide basic file generation.
+
+These can be easily overridden by custom converters in user scope.
+"""
+
+@converter("txt", "md")
+@converter("txt", "markdown")
+fun txt2textual(n) {
+    markdown_escapes = [
+        ["\\", "\\\\"],
+        ["`", "\\`"],
+        ["*", "\\*"],
+        ["_", "\\_"],
+        ["{", "\\{"],
+        ["}", "\\}"],
+        ["[", "\\["],
+        ["]", "\\]"],
+        ["(", "\\("],
+        [")", "\\)"],
+        ["#", "\\#"],
+        ["+", "\\+"],
+        ["-", "\\-"],
+        [".", "\\."],
+        ["!", "\\!"],
+        [">", "\\>"],
+        ["|", "\\|"],
+        ["~", "\\~"]
+    ]
+    return n.multi_replace(markdown_escapes)
+}
+
+@converter("txt", "html")
+@converter("txt", "html5")
+@converter("txt", "html4")
+fun txt2html(txt) {
+    // Not using &apos; to be compatible with HTML4
+    replace_mappings = [
+        ["<", "&lt;"],
+        ["&", "&amp;"],
+        [">", "&gt;"],
+        ["\"", "&quot;"],
+        ["'", "&#39"],
+        ["\n", "<br>"]
+    ]
+    return "<p>" ++ txt.multi_replace(replace_mappings) ++ "</p>\n"
+}
+
+}
+
+space Generators {
+d"""
+Space for generators for moss known formats.
+These generators should provide basic file generation.
+
+These can be easily overridden by custom generators in user scope.
+"""
+
+@generator("html")
+fun html_gen(txts) {
+    html"""\
+<!DOCTYPE html>
+<html>
+<body>
+"""
+    for (t: txts) {
+        t
+    }
+    html"""\
+</body>
+</html>
+"""
+}
 }
 
 /// Exceptions

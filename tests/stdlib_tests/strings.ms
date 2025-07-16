@@ -155,3 +155,22 @@ oct(-8)
 "\n"
 "abc".__next()
 "\n"
+
+"""ABCDEFGHIAabC
+""".multi_replace([["A", "a"], ["B", "b"]])
+try
+    "Hi".multi_replace([[]])
+catch(e:ValueError)
+    "caught\n"
+
+try
+    "Hi".multi_replace([["a", "b", "c"]])
+catch(e:ValueError)
+    "caught\n"
+
+try
+    "Hi".multi_replace([["a", "b"], 1])
+catch(e:ValueError)
+    "caught\n"
+
+"Hi\n".multi_replace([])
