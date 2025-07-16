@@ -174,3 +174,5 @@ catch(e:ValueError)
     "caught\n"
 
 "Hi\n".multi_replace([])
+
+"AaAcBBbAcaaaBaB\n".multi_replace([["b", "B"], ["B", "a"], ["a", "A"]])

@@ -1068,7 +1068,8 @@ abCDEFGHIaabC
 caught
 caught
 caught
-Hi\n" $1
+Hi
+AAAcAAAAcAAAAAA\n" $1
 }
 
 function test_lib_random {

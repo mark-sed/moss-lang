@@ -4,6 +4,8 @@ Testing script for Moss interpreter.
 Example run: moss run-tests.ms -moss build/moss -test-dir tests/
 """
 
+__VERSION = "0.1.0"
+
 import subprocess
 
 MOSS_PATH = "moss"
@@ -11,8 +13,8 @@ TEST_DIR = ""
 EXTRA_FLAGS = ""
 
 fun print_help() {
-    """Moss test suite
-Usage: moss run-tests.ms [-moss path_to_moss] [-test-dir path_to_test]
+    f"""Moss test suite (version {::__VERSION})
+Usage: moss run-tests.ms [-moss path_to_moss] [-test-dir path_to_test] [-extra-flags flags]
 """
 }
 
@@ -776,7 +778,8 @@ abCDEFGHIaabC
 caught
 caught
 caught
-Hi\n""", "")
+Hi
+AAAcAAAAcAAAAAA\n""", "")
 }
 
 fun test_lib_random(name) {

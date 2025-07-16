@@ -5,7 +5,7 @@ copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
            See accompanied LICENSE file.
 """
 
-__LIB_MS_VERSION = "0.0.3"
+__LIB_MS_VERSION = "0.0.4"
 
 @internal_bind("Int")
 class __Int {
@@ -35,7 +35,7 @@ class __String {
 
     @internal
     fun length() {
-        d"Returns amount of characters in this string"
+        d"Returns amount of characters in this string."
     }
 
     @internal
@@ -300,20 +300,20 @@ fun callable(obj) {}
 @internal
 fun lshift(a:Int, count:Int) {
     d"""
-    Left shift
-    @param a Int value
-    @param count Amount to shift by
-    @return First argument shifted left by the amount in the second argument
+    Left shift.
+    @param a Int value.
+    @param count Amount to shift by.
+    @return First argument shifted left by the amount in the second argument.
     """
 }
 
 @internal
 fun rshift(a:Int, count:Int) {
     d"""
-    Right shift
-    @param a Int value
-    @param count Amount to shift by
-    @return First argument shifted right by the amount in the second argument
+    Right shift.
+    @param a Int value.
+    @param count Amount to shift by.
+    @return First argument shifted right by the amount in the second argument.
     """
 }
 
@@ -454,37 +454,59 @@ fun rand_float(min:[Float,Int]=0.0, max:[Float,Int]=1.0) {}
 fun sleep(seconds:[Float,Int]) {}
 
 space Math {
-    /// π (Ludolph's number)
+    d"""
+    Space for Mathematical resources and functions.
+    """
+
+    /// π (Ludolph's number).
     pi = 3.141592653589793115997963468544185161590576171875
 
-    /// e (Euler's number)
+    /// e (Euler's number).
     e = 2.718281828459045090795598298427648842334747314453125
 
-    /// τ (2*pi)
+    /// τ (2*pi).
     tau = 6.28318530717958623199592693708837032318115234375
 
-    /// φ (Golden ratio = (1 + 5^0.5)/2)
+    /// φ (Golden ratio = (1 + 5^0.5)/2).
     phi = 1.6180339887498949025257388711906969547271728515625
 
-    /// Euler–Mascheroni constant
+    /// Euler–Mascheroni constant.
     euler_gamma = 0.57721566490153286554942724251304753124713897705078125
 
     @internal
-    fun sin(x:[Int,Float]) {}
+    fun sin(x:[Int,Float]) {
+        d"""
+        Sine.
+        @param x Numeric value.
+        @return Sine of x in radians.
+        """
+    }
 
     @internal
-    fun tan(x:[Int,Float]) {}
+    fun tan(x:[Int,Float]) {
+        d"""
+        Tangent.
+        @param x Numeric value.
+        @return Tangent of x in radians.
+        """
+    }
 
     @internal
-    fun cos(x:[Int,Float]) {}
+    fun cos(x:[Int,Float]) {
+        d"""
+        Cosine.
+        @param x Numeric value.
+        @return Cosine of x in radians.
+        """
+    }
 
     fun sqrt(x) {
-        //d"""
-        //Square root function
-        //Is equal to x^0.5
-        //@param x Value to be calculated the square root of
-        //@return Square root of passed in argument
-        //"""
+        d"""
+        Square root function.
+        Is equal to x^0.5.
+        @param x Value to be calculated the square root of.
+        @return Square root of passed in argument.
+        """
         return x^0.5;
     }
 
