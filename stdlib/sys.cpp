@@ -17,28 +17,31 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
 }
 
 Value *sys::platform(Interpreter *vm, CallFrame *cf, Value *&err) {
-    auto funv = cf->get_function();
-    assert(funv);
-    auto fun = dyn_cast<FunValue>(funv);
-    auto platform_enumv = fun->get_vm()->load_name("Platform");
-    assert(platform_enumv && "Module does not contain Platform enum");
-    auto platform_enum = dyn_cast<EnumTypeValue>(platform_enumv);
-    assert(platform_enum && "Platform is not an enumtype");
-#ifdef __windows__
-    ustring curr_platform = "Windows";
-#elif defined(__APPLE__) // This will be true for any apple OS
-    ustring curr_platform = "Darwin";
-#elif defined(__linux__)
-    ustring curr_platform = "Linux";
-#else
-    #warning "Compiling platform lib on unknown OS!"
-    ustring curr_platform = "Unknown";
-#endif
-    for (auto ev : platform_enum->get_values()) {
-        if (ev->get_name() == curr_platform) {
-            return ev;
+    static bool initialized(false);
+    static Value *result = nullptr;
+
+    if (!initialized) {
+        auto platform_enum = mslib::get_enum("Platform", cf, err);
+        if (!platform_enum)
+            return nullptr;
+    #ifdef __windows__
+        ustring curr_platform = "Windows";
+    #elif defined(__APPLE__) // This will be true for any apple OS
+        ustring curr_platform = "Darwin";
+    #elif defined(__linux__)
+        ustring curr_platform = "Linux";
+    #else
+        #warning "Compiling platform lib on unknown OS!"
+        ustring curr_platform = "Unknown";
+    #endif
+        for (auto ev : platform_enum->get_values()) {
+            if (ev->get_name() == curr_platform) {
+                result = ev;
+                initialized = true;
+                break;
+            }
         }
     }
-    assert(false && "No platform was matched");
-    return nullptr;
+    assert(result && "No platform was matched");
+    return result;
 }

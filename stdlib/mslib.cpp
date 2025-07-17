@@ -33,6 +33,30 @@ Value *mslib::get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
     return v;
 }
 
+EnumTypeValue *mslib::get_enum(ustring name, Interpreter *vm, Value *&err) {
+    auto enumv = vm->load_name(name);
+    if (!enumv) {
+        err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
+        return nullptr;
+    }
+    auto enumtype = dyn_cast<EnumTypeValue>(enumv);
+    if (!enumtype) {
+        err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Type", enumtype->get_type()->get_name().c_str()));
+        return nullptr;
+    }
+    return enumtype;
+}
+
+EnumTypeValue *mslib::get_enum(ustring name, CallFrame *cf, Value *&err) {
+    auto funv = cf->get_function();
+    assert(funv && "no function in cf");
+    auto fun = dyn_cast<FunValue>(funv);
+    assert(fun && "Function in cf is not a function?");
+    auto vm = fun->get_vm();
+    assert(vm && "vm in function not set?");
+    return get_enum(name, vm, err);
+}
+
 Value *vardump(Interpreter *vm, Value *v) {
     (void)vm;
     std::stringstream ss;

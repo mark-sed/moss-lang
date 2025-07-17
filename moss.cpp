@@ -217,7 +217,7 @@ int main(int argc, const char *argv[]) {
                 interpreter->report_call_stack(errs);
                 errs << opcode::to_string(interpreter, v);
                 interpreter->set_exit_code(1);
-            } 
+            }
         }
 
         LOGMAX(*interpreter);

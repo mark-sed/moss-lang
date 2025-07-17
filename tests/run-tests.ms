@@ -875,7 +875,7 @@ done\n""", "")
 }
 
 fun test_lib_sys_platform(name) {
-    ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\n", "")
+    ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
 
 fun test_gc_local_vars(name) {

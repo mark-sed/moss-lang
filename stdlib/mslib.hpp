@@ -34,6 +34,8 @@ public:
 };
 
 Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
+EnumTypeValue *get_enum(ustring name, Interpreter *vm, Value *&err);
+EnumTypeValue *get_enum(ustring name, CallFrame *cf, Value *&err);
 
 Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err);
 Value *call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std::initializer_list<Value *> args, Value *&err);
