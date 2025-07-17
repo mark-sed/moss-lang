@@ -25,7 +25,7 @@ namespace sys {
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
-Value *platform(Interpreter *vm, Value *&err);
+Value *platform(Interpreter *vm, CallFrame *cf, Value *&err);
 
 }
 }

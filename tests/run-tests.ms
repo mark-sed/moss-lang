@@ -7,10 +7,12 @@ Example run: moss run-tests.ms -moss build/moss -test-dir tests/
 __VERSION = "0.1.0"
 
 import subprocess
+import sys
 
 MOSS_PATH = "moss"
 TEST_DIR = ""
 EXTRA_FLAGS = ""
+PLATFORM = sys.platform()
 
 fun print_help() {
     f"""Moss test suite (version {::__VERSION})
@@ -56,7 +58,7 @@ fun fail(name:String, msg:String) {
 fun run(test:String, name:String, args:String="", use_repl:Bool=false) {
     path = ::TEST_DIR++test
     // For Windows replace slashes
-    if (::TEST_DIR.length() > 0 && ::TEST_DIR[-1] == "\\")
+    if (::PLATFORM == sys.Platform.Windows)
         path = path.replace("/", "\\")
     if (not use_repl)
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
@@ -71,8 +73,10 @@ fun expect_pass(test:String,
                 use_repl:Bool=false) {
     result = run(test, name, args, use_repl)
     // Normalize \r\n on windows to \n
-    result.stdout = result.stdout.replace("\r", "")
-    result.stderr = result.stderr.replace("\r", "")
+    if (::PLATFORM == sys.Platform.Windows) {
+        result.stdout = result.stdout.replace("\r", "")
+        result.stderr = result.stderr.replace("\r", "")
+    }
     msg = "Program failed."
     failed = false
     if (result.return_code != 0) {
@@ -111,8 +115,10 @@ fun expect_fail(test:String,
                 args:String="") {
     result = run(test, name, args)
     // Normalize \r\n on windows to \n
-    result.stdout = result.stdout.replace("\r", "")
-    result.stderr = result.stderr.replace("\r", "")
+    if (::PLATFORM == sys.Platform.Windows) {
+        result.stdout = result.stdout.replace("\r", "")
+        result.stderr = result.stderr.replace("\r", "")
+    }
     msg = "Program was supposed to fail, but passed."
     failed = false
     if (result.return_code == 0) {
@@ -868,6 +874,10 @@ CLIB
 done\n""", "")
 }
 
+fun test_lib_sys_platform(name) {
+    ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\n", "")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1038,6 +1048,9 @@ fun run_all_tests() {
 
     // cffi
     ~run_test("lib_cffi_clib")
+
+    // sys
+    ~run_test("lib_sys_platform")
 
     // gc tests
     ~run_test("gc_local_vars")
