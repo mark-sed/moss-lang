@@ -108,12 +108,15 @@ moss_compile(libms)
 moss_compile(cffi)
 moss_compile(subprocess)
 moss_compile(sys)
+moss_compile(md_parser)
 
 add_custom_target(
     libms
     DEPENDS build_libms
     DEPENDS build_cffi
+    DEPENDS build_subprocess
     DEPENDS build_sys
+    DEPENDS build_md_parser
 )
 
 # Making moss a command
