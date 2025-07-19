@@ -105,22 +105,26 @@ class MDList : MDToken {
         ~super(values, MDToken.TokenType.LIST)
         this.ordered = ordered
         this.bullet = bullet
+        assert(not ordered || type(bullet) == Int, "Ordered list but bullet is not a number (" ++ bullet ++ ")")
     }
 
     fun indented(level:Int=0) {
-        // TODO: Handle ordered
         t = ""
         for (v: this.value) {
             if (type(v) == ::MDList) {
                 t ++= v.indented(level+1)
             } else {
-                t ++= ("  " * level) ++ this.bullet ++ " " ++ v ++ "\n"
+                t ++= ("  " * level) ++ this.bullet ++ (this.ordered ? ". " : " ") ++ v ++ "\n"
+                if (this.ordered)
+                    this.bullet += 1
             }
         }
         return t
     }
 
     fun __String() {
+        if (this.ordered)
+            this.i = this.bullet
         return this.indented()
     }
 }
@@ -208,6 +212,7 @@ class MDParser {
 
     fun paragraph() {
         if (this.i < this.text.length()) {
+            // TODO: Remove possible spaces from ends of paragraphs.
             return MDParagraph(textual())
         }
         return MDParagraph([])
@@ -266,6 +271,24 @@ class MDParser {
         return MDBlockQuotes(textual(), level)
     }
 
+    @staticmethod
+    fun get_ol_number(text, i) {
+        val = ""
+        ok = true
+        for (j, c : Enumerate(text[i..text.length()], i)) {
+            if (ord(c) >= 48 && ord(c) <= 57) {
+                val ++= c
+            } else if (c == ".") {
+                if (j+1 >= text.length() || text[j+1] != " ")
+                    return nil
+                break
+            } else {
+                return nil
+            }
+        }
+        return Int(val)
+    }
+
     fun listing(bullet, ordered:Bool) {
         result = MDList([], ordered, bullet)
         stack = [result]
@@ -277,9 +300,17 @@ class MDParser {
             while (check_adv(" ")) {
                 indent += 1
             }
-            if (this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) {
-                curr_bullet = this.text[this.i]
-                this.i += 2
+            num = nil
+            if (ordered)
+                num = this.get_ol_number(this.text, this.i)
+            if ((not ordered && this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) || (ordered && num != nil)) {
+                if (ordered) {
+                    curr_bullet = num
+                    this.i += String(num).length() + 2
+                } else {
+                    curr_bullet = this.text[this.i]
+                    this.i += 2
+                }
                 level = indent
 
                 while (level < indent_level[-1]) {
@@ -293,14 +324,18 @@ class MDParser {
                     ~stack.append(new_list)
                     ~indent_level.append(level)
                     ~bullet_types.append(curr_bullet)
-                } else if (curr_bullet != bullet_types[-1] && level == 0) {
+                } else if (not ordered && curr_bullet != bullet_types[-1] && level == 0) {
                     this.i -= 2
                     break
                 }
                 ~stack[-1].value.append(paragraph())
-            }
-            if (check_adv("\n"))
+            } else if (check_adv("\n"))
                 break
+            else {
+                new_p = paragraph()
+                new_p.value = [MDText(" ")] + new_p.value
+                ~stack[-1].value[-1].value.append(new_p)
+            }
         }
 
         return result
@@ -317,6 +352,7 @@ class MDParser {
 
         while (this.i < this.text.length()) {
             c = this.text[this.i]
+            ol_num = this.get_ol_number(this.text, this.i)
             if (check("#")) {
                 ~tokens.append(heading())
             } else if (check(">")) {
@@ -331,6 +367,8 @@ class MDParser {
             } else if (this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) {
                 bullet = this.text[this.i]
                 ~tokens.append(listing(bullet, false))
+            } else if (ol_num != nil) {
+                ~tokens.append(listing(ol_num, true))
             } else {
                 p = paragraph()
                 // Join multiple paragraphs into one
