@@ -9,9 +9,7 @@ class MDToken {
         HEADING
         PARAGRAPH
         BLOCK_QUOTES
-        U_LIST
-        O_LIST
-        TASK_LIST
+        LIST
         CODE_BLOCK
         HLINE
         TABLE
@@ -101,6 +99,32 @@ class MDBlockQuotes : MDToken {
     }
 }
 
+class MDList : MDToken {
+    // TODO: Handle task list
+    fun MDList(values, ordered:Bool, bullet:[String,Int]) {
+        ~super(values, MDToken.TokenType.LIST)
+        this.ordered = ordered
+        this.bullet = bullet
+    }
+
+    fun indented(level:Int=0) {
+        // TODO: Handle ordered
+        t = ""
+        for (v: this.value) {
+            if (type(v) == ::MDList) {
+                t ++= v.indented(level+1)
+            } else {
+                t ++= ("  " * level) ++ this.bullet ++ " " ++ v ++ "\n"
+            }
+        }
+        return t
+    }
+
+    fun __String() {
+        return this.indented()
+    }
+}
+
 class MDParser {
 
     fun MDParser(text:String) {
@@ -133,7 +157,7 @@ class MDParser {
         }
     }
 
-    fun text() {
+    fun textual() {
         fun add_text() {
             if (elem.length() == 0)
                 return
@@ -144,7 +168,8 @@ class MDParser {
         toks = []
         escape = false
         while (this.i < this.text.length()) {
-            if (escape && this.text[this.i] in "`*_[]()#+-.!>\\") {
+            c = this.text[this.i]
+            if (escape && c in "`*_[]()#+-.!>\\") {
                 ~elem.append(this.text[this.i])
                 this.i += 1
                 escape = false
@@ -182,8 +207,8 @@ class MDParser {
     }
 
     fun paragraph() {
-        while (this.i < this.text.length()) {
-            return MDParagraph(text())
+        if (this.i < this.text.length()) {
+            return MDParagraph(textual())
         }
         return MDParagraph([])
     }
@@ -199,7 +224,7 @@ class MDParser {
             return paragraph()
         }
         assert(level > 0, "Heading level is 0")
-        return MDHeading(text(), level)
+        return MDHeading(textual(), level)
     }
 
     fun code_block() {
@@ -238,7 +263,47 @@ class MDParser {
         while (check_adv(" ") || check_adv("\t")) {
             // Skip spaces
         }
-        return MDBlockQuotes(text(), level)
+        return MDBlockQuotes(textual(), level)
+    }
+
+    fun listing(bullet, ordered:Bool) {
+        result = MDList([], ordered, bullet)
+        stack = [result]
+        indent_level = [0]
+        bullet_types = [bullet]
+
+        while (this.i < this.text.length()) {
+            indent = 0
+            while (check_adv(" ")) {
+                indent += 1
+            }
+            if (this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) {
+                curr_bullet = this.text[this.i]
+                this.i += 2
+                level = indent
+
+                while (level < indent_level[-1]) {
+                    ~stack.pop()
+                    ~indent_level.pop()
+                    ~bullet_types.pop()
+                }
+                if (level > indent_level[-1]) {
+                    new_list = MDList([], ordered, curr_bullet)
+                    ~stack[-1].value.append(new_list)
+                    ~stack.append(new_list)
+                    ~indent_level.append(level)
+                    ~bullet_types.append(curr_bullet)
+                } else if (curr_bullet != bullet_types[-1] && level == 0) {
+                    this.i -= 2
+                    break
+                }
+                ~stack[-1].value.append(paragraph())
+            }
+            if (check_adv("\n"))
+                break
+        }
+
+        return result
     }
 
     fun parse() {
@@ -256,13 +321,16 @@ class MDParser {
                 ~tokens.append(heading())
             } else if (check(">")) {
                 ~tokens.append(block_quotes())
-            } else if (this.text[this.i..this.i+3] == "```") {
+            } else if (this.text[this.i..this.i+3] == "```") { // TODO: Add code block indented with tab or 4 spaces
                 ~tokens.append(code_block())
             } else if (check("\n")) {
                 ~tokens.append(MDParagraph([]))
                 while(check_adv("\n")) {
                     // skip new lines
                 }
+            } else if (this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) {
+                bullet = this.text[this.i]
+                ~tokens.append(listing(bullet, false))
             } else {
                 p = paragraph()
                 // Join multiple paragraphs into one
@@ -277,8 +345,7 @@ class MDParser {
     }
 }
 
-/*
-f = open(args[0], "r")
+/*f = open(args[0], "r")
 lines = f.readlines()
 
 parser = MDParser("\n".join(lines))
