@@ -27,25 +27,32 @@ class MDToken {
 
 class MDText : MDToken {
 
-    // TODO: Add strikethrough (if enabled)
     // TODO: Add links (with title support)
     // TODO: Add images (with title)
     // TODO: Autolink
-    fun MDText(text:String, italic:Bool=false, bold:Bool=false, code:Bool=false) { 
+    // TODO: Reference-style link
+    fun MDText(text:String, 
+               italic:Bool=false,
+               bold:Bool=false,
+               code:Bool=false,
+               strikethrough:Bool=false) { 
         ~super(text, MDToken.TokenType.TEXT)
         this.italic = italic
         this.bold = bold
         this.code = code
+        this.strikethrough = strikethrough
     }
 
     fun __String() {
         text = this.value
+        if (this.code)
+            text = "`" ++ text ++ "`"
         if (this.italic)
             text = "_" ++ text ++ "_"
         if (this.bold)
             text = "**" ++ text ++ "**"
-        if (this.code)
-            text = "`" ++ text ++ "`"
+        if (this.strikethrough)
+            text = "~~" ++ text ++ "~~"
         return text
     }
 }
@@ -131,9 +138,14 @@ class MDList : MDToken {
 
 class MDParser {
 
-    fun MDParser(text:String) {
+    fun MDParser(text:String, allow_strikethrough:Bool=true) {
         this.text = text
         this.i = 0
+        this.allow_strikethrough = allow_strikethrough
+        if (this.allow_strikethrough)
+            this.ESCAPE_LIST = "`*_[]()#+-.!>\\~"
+        else
+            this.ESCAPE_LIST = "`*_[]()#+-.!>\\"
     }
 
     fun check_adv(v:String) {
@@ -156,7 +168,7 @@ class MDParser {
     }
 
     fun compact_spaces() {
-        while((check(" ") || check("\t")) && (this.text[this.i+1] == " " || this.text[this.i+1] == "\t")) {
+        while((this.i+1 < this.text.length()) && (check(" ") || check("\t")) && (this.text[this.i+1] == " " || this.text[this.i+1] == "\t")) {
             this.i += 1
         }
     }
@@ -165,7 +177,7 @@ class MDParser {
         fun add_text() {
             if (elem.length() == 0)
                 return
-            ~$toks.append(MDText("".join($elem), italic=this.italic, bold=this.bold, code=this.code))
+            ~$toks.append(MDText("".join($elem), italic=this.italic, bold=this.bold, code=this.code, strikethrough=this.strikethrough))
             $elem = []
         }
         elem = []
@@ -173,14 +185,14 @@ class MDParser {
         escape = false
         while (this.i < this.text.length()) {
             c = this.text[this.i]
-            if (escape && c in "`*_[]()#+-.!>\\") {
+            if (escape && c in this.ESCAPE_LIST) {
                 ~elem.append(this.text[this.i])
                 this.i += 1
                 escape = false
             } else if (check_adv("`")) {
                 ~add_text()
                 this.code = not this.code
-            } else if (check_adv("_")) { // TODO: Handle also *, but has to match
+            } else if (not this.code && check_adv("_")) { // TODO: Handle also *, but has to match
                 if (check_adv("_")) {
                     if (check_adv("_")) {
                         ~add_text()
@@ -193,6 +205,13 @@ class MDParser {
                 } else {
                     ~add_text()
                     this.italic = not this.italic
+                }
+            } else if (this.allow_strikethrough && check_adv("~")) {
+                if (check_adv("~")) {
+                    ~add_text()
+                    this.strikethrough = not this.strikethrough
+                } else {
+                    ~elem.append("~")
                 }
             } else if (check_adv("\\")) {
                 escape = true
@@ -218,6 +237,11 @@ class MDParser {
         return MDParagraph([])
     }
 
+    // TODO: Support underlined heading (https://daringfireball.net/projects/markdown/basics)
+    //     Title
+    //     =====
+    // TODO: Remove possible # from the end of heading (allowed)
+    //     ### This is an H3 ######
     fun heading() {
         level = 0;
         while (check_adv("#")) {
@@ -232,24 +256,36 @@ class MDParser {
         return MDHeading(textual(), level)
     }
 
-    fun code_block() {
-        assert(this.text[this.i..this.i+3] == "```", "Called code_block without ```")
-        this.i += 3;
+    fun code_block(tabbed:Bool=false) {
+        if (not tabbed) {
+            assert(this.text[this.i..this.i+3] == "```", "Called code_block without ```")
+            this.i += 3;
+        }
         elem = []
         format = []
         format_parsed = false
         // Parse until new line or ``` to get the format
         while (this.i < this.text.length()) {
             c = this.text[this.i]
-            if (not format_parsed && check_adv("\n")) {
+            if (not tabbed && not format_parsed && check_adv("\n")) {
                 format_parsed = true
-            } else if (this.text[this.i..this.i+3] == "```") {
+            } else if (not tabbed && this.text[this.i..this.i+3] == "```") {
                 this.i += 3
                 // Skip possible new line
                 ~check_adv("\n")
                 break
+            } else if (tabbed && check_adv("\n")) {
+                space_am = 0
+                while (check_adv(" ") && space_am < 4) {
+                    space_am += 1
+                }
+                if (space_am == 4 || check_adv("\t")) {
+                    ~elem.append("\n")
+                } else {
+                    break
+                }
             } else {
-                if (not format_parsed) {
+                if (not tabbed && not format_parsed) {
                     ~format.append(c)
                 } else {
                     ~elem.append(c)
@@ -260,6 +296,7 @@ class MDParser {
         return MDCodeBlock("".join(elem), "".join(format))
     }
 
+    // Allow for codeblocks and headings in block quotes
     fun block_quotes() {
         level = 0;
         while (check_adv(">")) {
@@ -349,6 +386,7 @@ class MDParser {
         this.bold = false
         this.italic = false
         this.code = false
+        this.strikethrough = false
 
         while (this.i < this.text.length()) {
             c = this.text[this.i]
@@ -359,6 +397,20 @@ class MDParser {
                 ~tokens.append(block_quotes())
             } else if (this.text[this.i..this.i+3] == "```") { // TODO: Add code block indented with tab or 4 spaces
                 ~tokens.append(code_block())
+            } else if (check(" ") || check("\t")) {
+                if (check_adv("\t")) {
+                    ~tokens.append(code_block(true))
+                } else {
+                    space_am = 0
+                    while (check_adv(" ") && space_am < 4) {
+                        space_am += 1
+                    }
+                    // If at least 4 spaces, then code, otherwise just keep them
+                    // removed.
+                    if (space_am == 4) {
+                        ~tokens.append(code_block(true))
+                    }
+                }
             } else if (check("\n")) {
                 ~tokens.append(MDParagraph([]))
                 while(check_adv("\n")) {
