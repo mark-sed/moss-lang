@@ -1069,7 +1069,11 @@ fun run_all_tests() {
     ~run_test("lib_subprocess_system_and_run")
 
     // cffi
-    ~run_test("lib_cffi_clib")
+    if (PLATFORM != sys.Platform.Windows) {
+        ~run_test("lib_cffi_clib")
+    } else {
+        ~print("[NOTE] Skipping cffi tests (not yet implemented on Windows).")
+    }
 
     // sys
     ~run_test("lib_sys_platform")
