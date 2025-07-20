@@ -67,8 +67,8 @@ fun run(test:String, name:String, args:String="", use_repl:Bool=false) {
 
 fun expect_pass(test:String,
                 name:String,
-                expected_out:String=nil,
-                expected_err:String=nil,
+                expected_out:[String,File]=nil,
+                expected_err:[String,File]=nil,
                 args:String="",
                 use_repl:Bool=false) {
     result = run(test, name, args, use_repl)
@@ -82,6 +82,14 @@ fun expect_pass(test:String,
     if (result.return_code != 0) {
         msg ++= " Return code differs."
         failed = true
+    }
+    if (type(expected_out) == File) {
+        lines = expected_out.readlines()
+        expected_out = "\n".join(lines)
+    }
+    if (type(expected_err) == File) {
+        lines = expected_err.readlines()
+        expected_err = "\n".join(lines)
     }
     if (expected_out != nil) {
         if (result.stdout != expected_out) {
@@ -110,8 +118,8 @@ fun expect_pass(test:String,
 
 fun expect_fail(test:String,
                 name:String,
-                expected_out:String=nil,
-                expected_err:String=nil,
+                expected_out:[String,File]=nil,
+                expected_err:[String,File]=nil,
                 args:String="") {
     result = run(test, name, args)
     // Normalize \r\n on windows to \n
@@ -124,6 +132,14 @@ fun expect_fail(test:String,
     if (result.return_code == 0) {
         msg ++= " Return code differs."
         failed = true
+    }
+    if (type(expected_out) == File) {
+        lines = expected_out.readlines()
+        expected_out = "\n".join(lines)
+    }
+    if (type(expected_err) == File) {
+        lines = expected_err.readlines()
+        expected_err = "\n".join(lines)
     }
     if (expected_out != nil) {
         if (result.stdout != expected_out) {
@@ -878,6 +894,12 @@ fun test_lib_sys_platform(name) {
     ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
 
+fun test_lib_md_parser_markdown_parsing(name) {
+    exp_out = open(f"{::TEST_DIR}/stdlib_tests/md_parser_tests/markdown_parsing_expected_out.txt", "r")
+    ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms {::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md", name, exp_out, "")
+    ~exp_out.close()
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1051,6 +1073,9 @@ fun run_all_tests() {
 
     // sys
     ~run_test("lib_sys_platform")
+
+    // md_parser
+    ~run_test("lib_md_parser_markdown_parsing")
 
     // gc tests
     ~run_test("gc_local_vars")

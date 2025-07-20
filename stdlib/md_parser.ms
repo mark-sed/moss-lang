@@ -6,6 +6,7 @@ class MDToken {
 
     enum TokenType {
         TEXT
+        LINK
         HEADING
         PARAGRAPH
         BLOCK_QUOTES
@@ -27,8 +28,6 @@ class MDToken {
 
 class MDText : MDToken {
 
-    // TODO: Add links (with title support)
-    // TODO: Add images (with title)
     // TODO: Autolink
     // TODO: Reference-style link
     fun MDText(text:String, 
@@ -44,6 +43,7 @@ class MDText : MDToken {
     }
 
     fun __String() {
+        // TODO: Escape values that need escaping
         text = this.value
         if (this.code)
             text = "`" ++ text ++ "`"
@@ -54,6 +54,20 @@ class MDText : MDToken {
         if (this.strikethrough)
             text = "~~" ++ text ++ "~~"
         return text
+    }
+}
+
+class MDLink : MDToken {
+    fun MDLink(text, url, title:String, image:Bool) {
+        ~super(url, MDToken.TokenType.LINK)
+        this.text = text
+        this.url = url
+        this.title = title
+        this.image = image
+    }
+
+    fun __String() {
+        return (this.image ? "![" : "[") ++ ("".join([String(x) : x = this.text])) ++ "](" ++ ("".join([String(x) : x = this.url])) ++ " \"" ++ this.title ++ "\")"
     }
 }
 
@@ -173,11 +187,56 @@ class MDParser {
         }
     }
 
-    fun textual() {
+    fun skip_ws() {
+        while (check_adv(" ") || check_adv("\t")) {
+            // Skip spaces
+        }
+    }
+
+    fun link() {
+        image = check_adv("!")
+        assert(this.text[this.i] == "[", "Called link parsing on non-link text -- does not start with [")
+        this.i += 1
+        text = textual("]")
+        this.i+=1
+        if (not check_adv("(")) {
+            if (image)
+                text = [MDText("!")] + text
+            text = [MDText("[")] + text + [MDText("]")]
+            return text
+        }
+        url = textual(")\"")
+        title = []
+        if (check_adv("\"")) {
+            while (this.i < this.text.length() && not check_adv("\"")) {
+                if (check_adv("\\")) {
+                    // Possible escape of "
+                    if (check_adv("\"")) {
+                        ~title.append("\"")
+                    } else {
+                        ~title.append("\\")
+                    }
+                } else {
+                    ~title.append(this.text[this.i])
+                    this.i += 1
+                }
+            }
+        }
+        ~skip_ws()
+        if (check_adv(")")) // Last enclosing of link
+            return [MDLink(text, url, "".join(title), image)]
+        // Something else than ), so returning as a text
+        if (image)
+            text = [MDText("!")] + text
+        text = [MDText("[")] + text + [MDText("]")]
+        assert(false)
+    }
+
+    fun textual(end_on="") {
         fun add_text() {
             if (elem.length() == 0)
                 return
-            ~$toks.append(MDText("".join($elem), italic=this.italic, bold=this.bold, code=this.code, strikethrough=this.strikethrough))
+            ~$toks.append(MDText("".join($elem), italic=this.italic or this.italic_star, bold=this.bold or this.bold_star, code=this.code, strikethrough=this.strikethrough))
             $elem = []
         }
         elem = []
@@ -192,7 +251,7 @@ class MDParser {
             } else if (check_adv("`")) {
                 ~add_text()
                 this.code = not this.code
-            } else if (not this.code && check_adv("_")) { // TODO: Handle also *, but has to match
+            } else if (not this.code && check_adv("_")) {
                 if (check_adv("_")) {
                     if (check_adv("_")) {
                         ~add_text()
@@ -206,6 +265,20 @@ class MDParser {
                     ~add_text()
                     this.italic = not this.italic
                 }
+            } else if (not this.code && check_adv("*")) {
+                if (check_adv("*")) {
+                    if (check_adv("*")) {
+                        ~add_text()
+                        this.bold_star = not this.bold_star
+                        this.italic_star = not this.italic_star
+                    } else {
+                        ~add_text()
+                        this.bold_star = not this.bold_star
+                    }
+                } else {
+                    ~add_text()
+                    this.italic_star = not this.italic_star
+                }
             } else if (this.allow_strikethrough && check_adv("~")) {
                 if (check_adv("~")) {
                     ~add_text()
@@ -213,9 +286,16 @@ class MDParser {
                 } else {
                     ~elem.append("~")
                 }
+            } else if (check("[") || this.text[this.i..this.i+2] == "![") {
+                ~add_text()
+                toks += link()
             } else if (check_adv("\\")) {
                 escape = true
             } else if (check_adv("\n")) {
+                if (elem.length() > 0 && elem[-1] == " ")
+                    ~elem.pop()
+                break
+            } else if (c in end_on) {
                 break
             } else {
                 if (escape)
@@ -231,7 +311,6 @@ class MDParser {
 
     fun paragraph() {
         if (this.i < this.text.length()) {
-            // TODO: Remove possible spaces from ends of paragraphs.
             return MDParagraph(textual())
         }
         return MDParagraph([])
@@ -240,8 +319,6 @@ class MDParser {
     // TODO: Support underlined heading (https://daringfireball.net/projects/markdown/basics)
     //     Title
     //     =====
-    // TODO: Remove possible # from the end of heading (allowed)
-    //     ### This is an H3 ######
     fun heading() {
         level = 0;
         while (check_adv("#")) {
@@ -253,7 +330,19 @@ class MDParser {
             return paragraph()
         }
         assert(level > 0, "Heading level is 0")
-        return MDHeading(textual(), level)
+        txt = textual()
+        // Remove possible # at the end
+        last_text = txt[-1]
+        for (i: last_text.value.length()-1..0) {
+            if (last_text.value[i] != "#") {
+                break
+            }
+            // TODO: Leave # if it was escaped
+        }
+        if (i < last_text.value.length()) {
+            last_text.value = last_text.value[0..i+1]
+        }
+        return MDHeading(txt, level)
     }
 
     fun code_block(tabbed:Bool=false) {
@@ -302,9 +391,7 @@ class MDParser {
         while (check_adv(">")) {
             level += 1
         }
-        while (check_adv(" ") || check_adv("\t")) {
-            // Skip spaces
-        }
+        ~skip_ws()
         return MDBlockQuotes(textual(), level)
     }
 
@@ -384,7 +471,9 @@ class MDParser {
         elem = []
         
         this.bold = false
+        this.bold_star = false
         this.italic = false
+        this.italic_star = false
         this.code = false
         this.strikethrough = false
 
@@ -435,19 +524,3 @@ class MDParser {
     }
 }
 
-/*f = open(args[0], "r")
-lines = f.readlines()
-
-parser = MDParser("\n".join(lines))
-parsed = parser.parse()
-
-for (p: parsed) {
-    p
-    "\n"
-}
-
-for (p: parsed) {
-    p.type ++": " ++ p.value
-    "\n"
-}
-*/
