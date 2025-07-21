@@ -40,16 +40,19 @@ fun local_space() {
     fun inner() {
         space MySpace {
             VAL1 = "inner local val1\n"
+            VAL2 = "new val\n"
         }
         import ::MySpace.VAL1 as val1
         val1
         import ::$MySpace.VAL1 as non_loc_val1
-        non_loc_val1
+        non_loc_val1 // non-local gets extended by local
         import ::(::MySpace.VAL1) as glob_val1_2
         glob_val1_2
     }
 
     ~inner()
+    import ::(MySpace.VAL2)
+    VAL2
 }
 
 ~local_space()

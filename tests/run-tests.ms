@@ -552,9 +552,20 @@ fun test_import_calls(name) {
 mod1 ran!\nanon_space_value\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n""", "")
 }
 
+fun test_modules_and_spaces(name) {
+    ~expect_pass("module_tests/space_user.ms", name, """spaced_module FooSpace\nspace_user FooSpace
+sm val1\nsm val2\n""", "")
+}
+
 fun test_space_imports(name) {
     ~expect_pass("space_imports.ms", name, """caught\n1-msf\ncaught\nval1\n2-msf\nval1\n3-msf\nlocal val1
-val1\ninner local val1\nlocal val1\nval1\n""", "")
+val1\ninner local val1\ninner local val1\nval1\nnew val\n""", "")
+}
+
+fun test_space_extending(name) {
+    ~expect_pass("space_extending.ms", name, """global\noverwritten value\noverwritten value\nnew fun
+local only value\noverwritten value\noverwritten value\nnew fun\noutter fun\noverwritten value
+true\ninner fun\noverwritten value\ntrue\ninner fun\noverwritten value\nnew fun\n""", "")
 }
 
 fun test_closures(name) {
@@ -1020,7 +1031,9 @@ fun run_all_tests() {
 
     //~run_test("basic_import")
     ~run_test("import_calls")
+    ~run_test("modules_and_spaces")
     ~run_test("space_imports")
+    ~run_test("space_extending")
     ~run_test("closures")
     ~run_test("implicit_calls")
     //~run_test("exceptions_catch")

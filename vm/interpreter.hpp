@@ -259,6 +259,9 @@ public:
     /// \param fun_owner If set then the function owner of the frame is set,
     ///                  this is needed for accessing function closures
     void push_frame(FunValue *fun_owner=nullptr);
+    /// Pushes passed in frame as a value frame and creates a new one for
+    /// const frame.
+    void push_frame(MemoryPool *pool);
     /// Pops a frame (memory pool) from a frame stack
     void pop_frame();
     /// \return Top frame, meaning the current local frame or global if no local is inserted

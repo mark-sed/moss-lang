@@ -361,6 +361,12 @@ void Interpreter::push_frame(FunValue *fun_owner) {
         
 }
 
+void Interpreter::push_frame(MemoryPool *pool) {
+    LOGMAX("Passed in frame pushed");
+    this->frames.push_back(pool);
+    this->const_pools.push_back(new MemoryPool(true));
+}
+
 void Interpreter::pop_frame() {
     LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
