@@ -79,11 +79,23 @@ __not_bold__
 
 _s_
 
-[text](link.com  "*title\y*")sf
+[text](link.com "*title\y*")sf
 
-[txt] (no_link.com)_
+[txt] (nolink.com)
 
-![_image heh_](_sdf.png _ "title "title"")
+![image heh](sdf.png "title "title"")
+
+![image heh](sdf.png
+
+[text in brackets]
+
+[text](then parenth
+
+[text](url "but no end
+
+[text](url "even title, but no parenth"
+
+text
 
 PARAGRAPH: [TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT]
 HEADING: [TEXT, TEXT]
@@ -139,7 +151,19 @@ PARAGRAPH: [TEXT]
 PARAGRAPH: []
 PARAGRAPH: [LINK, TEXT]
 PARAGRAPH: []
-PARAGRAPH: [TEXT, TEXT, TEXT, TEXT, TEXT]
+PARAGRAPH: [TEXT, TEXT, TEXT, TEXT]
 PARAGRAPH: []
 PARAGRAPH: [LINK]
+PARAGRAPH: []
+PARAGRAPH: [TEXT, TEXT, TEXT, TEXT]
+PARAGRAPH: []
+PARAGRAPH: [TEXT, TEXT, TEXT]
+PARAGRAPH: []
+PARAGRAPH: [TEXT, TEXT, TEXT]
+PARAGRAPH: []
+PARAGRAPH: [TEXT, TEXT, TEXT, TEXT]
+PARAGRAPH: []
+PARAGRAPH: [TEXT, TEXT, TEXT, TEXT]
+PARAGRAPH: []
+PARAGRAPH: [TEXT]
 

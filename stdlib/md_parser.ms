@@ -21,6 +21,10 @@ class MDToken {
         this.type = type
     }
 
+    fun to_txt() {
+        return this.value
+    }
+
     fun __String() {
         return String(this.value)
     }
@@ -42,6 +46,10 @@ class MDText : MDToken {
         this.strikethrough = strikethrough
     }
 
+    fun to_txt() {
+        return this.value
+    }
+
     fun __String() {
         // TODO: Escape values that need escaping
         text = this.value
@@ -58,7 +66,7 @@ class MDText : MDToken {
 }
 
 class MDLink : MDToken {
-    fun MDLink(text, url, title:String, image:Bool) {
+    fun MDLink(text, url:String, title:String, image:Bool) {
         ~super(url, MDToken.TokenType.LINK)
         this.text = text
         this.url = url
@@ -67,7 +75,7 @@ class MDLink : MDToken {
     }
 
     fun __String() {
-        return (this.image ? "![" : "[") ++ ("".join([String(x) : x = this.text])) ++ "](" ++ ("".join([String(x) : x = this.url])) ++ " \"" ++ this.title ++ "\")"
+        return (this.image ? "![" : "[") ++ ("".join([String(x) : x = this.text])) ++ "](" ++ this.url ++ "\"" ++ this.title ++ "\")"
     }
 }
 
@@ -194,21 +202,37 @@ class MDParser {
     }
 
     fun link() {
+        fun cancel(image:Bool, text=nil, url=nil, title=nil) {
+            result = image ? [MDText("!")] : []
+            if (text != nil)
+                result += [MDText("[")] + text
+            if (url != nil)
+                result += [MDText("]("++"".join(url))]
+            if (title != nil)
+                result += [MDText("\""++"".join(title))]
+            return result
+        }
         image = check_adv("!")
         assert(this.text[this.i] == "[", "Called link parsing on non-link text -- does not start with [")
         this.i += 1
         text = textual("]")
-        this.i+=1
-        if (not check_adv("(")) {
-            if (image)
-                text = [MDText("!")] + text
-            text = [MDText("[")] + text + [MDText("]")]
-            return text
+        if (not check_adv("]")) {
+            return cancel(image, text)
         }
-        url = textual(")\"")
+        if (not check_adv("(")) {
+            return cancel(image, text+[MDText("]")])
+        }
+        url = []
+        while (this.i < this.text.length() && not this.text[this.i] in "\")\n") {
+            ~url.append(this.text[this.i])
+            this.i += 1
+        }
+        if (check("\n")) {
+            return cancel(image, text, url)
+        }
         title = []
         if (check_adv("\"")) {
-            while (this.i < this.text.length() && not check_adv("\"")) {
+            while (this.i < this.text.length() && not check("\"") && not check("\n")) {
                 if (check_adv("\\")) {
                     // Possible escape of "
                     if (check_adv("\"")) {
@@ -222,14 +246,14 @@ class MDParser {
                 }
             }
         }
+        if (not check_adv("\"")) {
+            return cancel(image, text, url, title)
+        }
         ~skip_ws()
         if (check_adv(")")) // Last enclosing of link
-            return [MDLink(text, url, "".join(title), image)]
+            return [MDLink(text, "".join(url), "".join(title), image)]
         // Something else than ), so returning as a text
-        if (image)
-            text = [MDText("!")] + text
-        text = [MDText("[")] + text + [MDText("]")]
-        assert(false)
+        return cancel(image, text, url, title+["\""])
     }
 
     fun textual(end_on="") {

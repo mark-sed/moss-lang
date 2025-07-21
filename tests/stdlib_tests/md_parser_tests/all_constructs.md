@@ -91,6 +91,18 @@ __not_bold__
 
 [text](link.com "*title\y*")sf
 
-[txt] (no_link.com)
+[txt] (nolink.com)
 
 ![image heh](sdf.png "title \"title\"")
+
+![image heh](sdf.png
+
+[text in brackets]
+
+[text](then parenth
+
+[text](url "but no end
+
+[text](url "even title, but no parenth"
+
+text
