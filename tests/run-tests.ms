@@ -238,6 +238,9 @@ fun test_try_catch(name) {
 Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
 foo_int is not internal\n54a\ninner\ninner\noutter\ninner\ninner\noutter\n55\nend\n55
 55\nend\n55\nend\nend\n55\nmodule end\n""", "")
+
+    ~expect_fail(r"""try { raise 42; } catch (e) { raise e; }""", "", /*rx_err="42"*/ args="-e")
+
 }
 
 fun test_classes(name) {

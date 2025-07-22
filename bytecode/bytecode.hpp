@@ -44,7 +44,7 @@ public:
     bool empty() { return code.empty(); }
 
 #ifndef NDEBUG
-    void push_comment(ustring comm) { comments[code.size()-1] = comm; }
+    void push_comment(ustring comm) { comments[code.size()] = comm; }
 #endif
 
     /// How many opcodes are in this bytecode program

@@ -276,8 +276,8 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->type);
             write_address(o->addr);
         }
-        else if (isa<opcode::PopCatch>(op_gen)){
-            // nothing to do
+        else if (auto o = dyn_cast<opcode::PopCatch>(op_gen)){
+            write_int(o->amount);
         }
         else if (auto o = dyn_cast<opcode::ListPush>(op_gen)){
             write_register(o->dst);

@@ -1903,19 +1903,22 @@ public:
 
 class PopCatch : public OpCode {
 public:
+    IntConst amount;
+
     static const OpCodes ClassType = OpCodes::POP_CATCH;
 
-    PopCatch() : OpCode(ClassType, "POP_CATCH") {}
+    PopCatch(IntConst amount) : OpCode(ClassType, "POP_CATCH"), amount(amount) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem;
+        os << mnem << " " << amount;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<PopCatch>(other);
-        return casted != nullptr;
+        if (!casted) return false;
+        return amount == casted->amount;
     }
 };
 

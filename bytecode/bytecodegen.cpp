@@ -1776,6 +1776,8 @@ void BytecodeGen::emit(ir::Try *tcf) {
             }
         }
         
+        // Generating pop_catch
+        append(new opcode::PopCatch(catch_am));
         emit(ctch->get_body());
 
         auto j = new opcode::Jmp(0);
@@ -1784,20 +1786,17 @@ void BytecodeGen::emit(ir::Try *tcf) {
         ++i;
     }
 
+    // If try succeeds it needs to jump after catches (which might be finally)
+    try_jmp->addr = get_curr_address() + 1;
+    append(new opcode::PopCatch(catch_am));
+    // catches need to jump after pops as they already popped the catches
     for (auto j: jmps) {
         j->addr = get_curr_address() + 1;
     }
-    // If try succeeds it needs to jump after catches (which might be finally)
-    try_jmp->addr = get_curr_address() + 1;
 
     // Finally generation
     if (auto fnl = tcf->get_finally()) {
         emit(fnl->get_body());
-    }
-
-    // Generating pop_catch
-    for (unsigned i = 0; i < catch_am; ++i) {
-        append(new opcode::PopCatch());
     }
 }
 

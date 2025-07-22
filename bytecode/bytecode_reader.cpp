@@ -683,7 +683,8 @@ Bytecode *BytecodeReader::read() {
                 bc->push_back(new CatchTyped(name, type, addr));
             } break;
             case opcode::OpCodes::POP_CATCH: {
-                bc->push_back(new PopCatch());
+                auto val = read_const_int();
+                bc->push_back(new PopCatch(val));
             } break;
             case opcode::OpCodes::LIST_PUSH: {
                 auto reg1 = read_register();

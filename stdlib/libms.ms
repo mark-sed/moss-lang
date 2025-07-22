@@ -444,6 +444,19 @@ fun open(path:String, mode:String="r") {
     return f
 }
 
+fun with_open(path:String, func, mode:String="r") {
+    class DummyType {}
+    file = open(path, mode)
+    try {
+        result = func(file)
+    } catch(v) {
+        raise v
+    } finally {
+        ~file.close()
+        return result
+    }
+}
+
 @internal
 fun rand_int(min:Int, max:Int) {}
 

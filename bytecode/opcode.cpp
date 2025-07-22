@@ -2537,7 +2537,7 @@ void CatchTyped::exec(Interpreter *vm) {
 }
 
 void PopCatch::exec(Interpreter *vm) {
-    vm->pop_catch();
+    vm->pop_catch(amount);
 }
 
 void ListPush::exec(Interpreter *vm) {

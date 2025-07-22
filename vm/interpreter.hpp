@@ -327,9 +327,9 @@ public:
         this->catches.push_back(ec);
     }
     /// Removes value from top of the stack
-    void pop_catch() {
-        assert(!this->catches.empty() && "Popping empty catch stack");
-        this->catches.pop_back();
+    void pop_catch(opcode::IntConst amount) {
+        assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack");
+        this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
     }
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
 
