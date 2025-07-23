@@ -899,8 +899,9 @@ IR *Parser::declaration() {
         decl = expr;
     }
 
-    if (!decl && !outter_annots.empty())
-        parser_error(create_diag(diags::DANGLING_ANNOTATION));
+    if (!decl && !outter_annots.empty()) {
+        parser_error(create_diag(diags::DANGLING_ANNOTATION, outter_annots.back()->get_src_info()));
+    }
 
     if (!decl && was_inner_anot) {
         return nullptr;

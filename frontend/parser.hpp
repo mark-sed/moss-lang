@@ -153,6 +153,11 @@ private:
     inline diags::Diagnostic create_diag(diags::DiagID id, Args ... args) {
         return diags::Diagnostic(this->src_file, tokens[curr_token]->get_src_info(), scanner, id, args ...);
     }
+
+    template<typename ... Args>
+    inline diags::Diagnostic create_diag(diags::DiagID id, SourceInfo src_info, Args ... args) {
+        return diags::Diagnostic(this->src_file, src_info, scanner, id, args ...);
+    }
 public:
     template<typename ... Args>
     inline diags::Diagnostic create_diag(SourceInfo src_info, diags::DiagID id, Args ... args) {
