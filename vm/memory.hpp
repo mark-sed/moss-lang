@@ -23,6 +23,10 @@ namespace moss {
 class Value;
 class FunValue;
 
+namespace opcode {
+    class Finally;
+}
+
 /// \brief Virtual memory representation
 /// It holds pool of values with reference counting for their garbage collection
 /// and it also holds symbol table which has the variable names and corresponding
@@ -33,6 +37,8 @@ private:
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
+    std::vector<opcode::Finally *> finally_stack;
+
     bool holds_consts;
     bool global;
     bool marked;
@@ -118,6 +124,12 @@ public:
 
     void set_marked(bool m) { this->marked = m; }
     bool is_marked() { return this->marked; }
+
+    void push_finally(opcode::Finally *addr);
+
+    void pop_finally();
+
+    std::vector<opcode::Finally *> &get_finally_stack();
 
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;

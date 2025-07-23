@@ -373,7 +373,7 @@ function test_try_catch {
     expect_out_eq "Success\nfinally end\nCaught NameError: Unkown name!\nfinally end
 Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
 foo_int is not internal\n54a\ninner\ninner\noutter\ninner\ninner\noutter\n55\nend\n55
-55\nend\n55\nend\nend\n55\nmodule end\n" $1
+55\nend\n55\nend\nend\n55\nmodule end\n3\n" $1
 }
 
 function test_classes {
@@ -967,7 +967,7 @@ List(1) [
 Class MyClass : Int, Float {
   \"MyClass\": Fun(MyClass(n:[Int, Float]) @104),
   \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n() @114)
+  \"get_n\": Fun(get_n() @113)
 }\n' $1
 }
 

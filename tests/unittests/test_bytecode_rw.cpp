@@ -177,6 +177,9 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Catch("e", 204));
     bc->push_back(new opcode::CatchTyped("e", 5, 206));
     bc->push_back(new opcode::PopCatch(1));
+    bc->push_back(new opcode::Finally(12, 8));
+    bc->push_back(new opcode::PopFinally());
+    bc->push_back(new opcode::FinallyReturn(8));
 
     bc->push_back(new opcode::ListPush(7, 5));
     bc->push_back(new opcode::ListPushConst(7, 6));

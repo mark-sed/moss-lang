@@ -930,6 +930,12 @@ void PopCallFrame::exec(Interpreter *vm) {
 }
 
 void Return::exec(Interpreter *vm) {
+    // If there is a finally then we need to execute it first
+    if (vm->has_finally()) {
+        vm->call_finally();
+        return;
+    }
+
     auto cf = vm->get_call_frame();
     auto return_reg = cf->get_return_reg();
     auto caller_addr = cf->get_caller_addr();
@@ -972,6 +978,12 @@ void Return::exec(Interpreter *vm) {
 }
 
 void ReturnConst::exec(Interpreter *vm) {
+    // If there is a finally then we need to execute it first
+    if (vm->has_finally()) {
+        vm->call_finally();
+        return;
+    }
+
     auto cf = vm->get_call_frame();
     auto return_reg = cf->get_return_reg();
     auto caller_addr = cf->get_caller_addr();
@@ -1227,7 +1239,10 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
         BytecodeReader bcreader(*ibf);
         bc = bcreader.read();
         // TODO: Allow for incorrect read, but raise an exception
-        LOGMAX("Read bytecode: \n" << *bc);
+#ifndef NDEBUG
+        if (name != "libms")
+            LOGMAX("Read bytecode: \n" << *bc);
+#endif
     } else {
         auto module_file = new SourceFile(path, SourceFile::SourceType::FILE);
         input_file = module_file;
@@ -2538,6 +2553,23 @@ void CatchTyped::exec(Interpreter *vm) {
 
 void PopCatch::exec(Interpreter *vm) {
     vm->pop_catch(amount);
+}
+
+void Finally::exec(Interpreter *vm) {
+    vm->push_finally(this);
+}
+
+void PopFinally::exec(Interpreter *vm) {
+    vm->pop_finally();
+}
+
+void FinallyReturn::exec(Interpreter *vm) {
+    auto addrv = vm->load_const(caller);
+    auto addr = dyn_cast<IntValue>(addrv);
+    if (addr && addr->get_value() > 0) {
+        // Set bci only when addr was set (not nil)
+        vm->set_bci(addr->get_value());
+    }
 }
 
 void ListPush::exec(Interpreter *vm) {

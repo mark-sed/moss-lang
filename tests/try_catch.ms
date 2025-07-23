@@ -165,3 +165,19 @@ foorec(4, 3)
 "\n"
 
 "module end\n"
+
+fun raiser() {
+    raise 3
+}
+
+fun fooboo() {
+    name_foo_name = "foo function"
+    try {
+        raiser()
+    } catch (v:Int) {
+        return v
+    }
+}
+
+fooboo()
+"\n"

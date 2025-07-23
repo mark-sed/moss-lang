@@ -35,6 +35,10 @@ namespace gcs {
     class TracingGC;
 }
 
+namespace opcode {
+    class Finally;
+}
+
 using T_Converters = std::map<std::pair<ustring, ustring>, FunValue *>;
 using T_Generators = std::map<ustring, FunValue *>;
 
@@ -160,7 +164,13 @@ struct ExceptionCatch {
         : type(type), name(name), addr(addr), cf_position(cf_position),
           frame_position(frame_position) {
     }
+
+    std::ostream& debug(std::ostream& os) const;
 };
+
+inline std::ostream& operator<< (std::ostream& os, ExceptionCatch &ec) {
+    return ec.debug(os);
+}
 
 /// \brief Interpreter for moss bytecode
 /// Interpreter holds memory pools (stack frames) and runs bytecode provided
@@ -332,6 +342,14 @@ public:
         this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
     }
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
+
+    void push_finally(opcode::Finally *fnl);
+
+    void pop_finally();
+
+    bool has_finally();
+    void call_finally();
+    bool is_try_in_catch();
 
     /// Adds a new converter from to type into the list of converters
     static void add_converter(ustring from, ustring to, FunValue *fun);

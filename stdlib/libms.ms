@@ -445,15 +445,13 @@ fun open(path:String, mode:String="r") {
 }
 
 fun with_open(path:String, func, mode:String="r") {
-    class DummyType {}
     file = open(path, mode)
     try {
-        result = func(file)
+        return func(file)
     } catch(v) {
         raise v
     } finally {
         ~file.close()
-        return result
     }
 }
 

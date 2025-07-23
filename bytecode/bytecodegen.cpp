@@ -1656,8 +1656,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     emit(fun->get_body());
     // TODO: Generate return in function IR body if needed, not here
     append(new StoreNilConst(next_creg()));
-    append(new StoreConst(next_reg(), val_last_creg()));
-    append(new opcode::Return(val_last_reg()));
+    append(new opcode::ReturnConst(val_last_creg()));
     fn_end_jmp->addr = get_curr_address() + 1;
 
     this->curr_reg = pre_function_reg;
@@ -1756,6 +1755,13 @@ void BytecodeGen::emit(ir::Try *tcf) {
         }
     }
 
+    // Finally and its register -- it needs to be called even when it was
+    // not defined by the user because catches need to be popped
+    Register finally_register = next_creg();
+    append(new opcode::StoreNilConst(finally_register));
+    opcode::Finally *fnl_op =  new opcode::Finally(0, finally_register);
+    append(fnl_op);
+
     // Try body
     emit(tcf->get_body());
     auto try_jmp = new opcode::Jmp(0);
@@ -1778,6 +1784,8 @@ void BytecodeGen::emit(ir::Try *tcf) {
         
         // Generating pop_catch
         append(new opcode::PopCatch(catch_am));
+        // Set finally caller register to a -1 to convey it being in catch
+        append(new opcode::StoreIntConst(finally_register, -1));
         emit(ctch->get_body());
 
         auto j = new opcode::Jmp(0);
@@ -1788,16 +1796,22 @@ void BytecodeGen::emit(ir::Try *tcf) {
 
     // If try succeeds it needs to jump after catches (which might be finally)
     try_jmp->addr = get_curr_address() + 1;
+    // NOTE: This pop catch needs to be right before fnl_op->addr so that
+    //       try knows where to jump (it subtracts 1 if in try body).
     append(new opcode::PopCatch(catch_am));
     // catches need to jump after pops as they already popped the catches
     for (auto j: jmps) {
         j->addr = get_curr_address() + 1;
     }
+    // Finnally opcode need to be updated
+    fnl_op->addr = get_curr_address() + 1;
 
     // Finally generation
+    append(new opcode::PopFinally());
     if (auto fnl = tcf->get_finally()) {
         emit(fnl->get_body());
     }
+    append(new opcode::FinallyReturn(finally_register));
 }
 
 void BytecodeGen::emit(ir::Assert *asr) {

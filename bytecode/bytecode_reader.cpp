@@ -686,6 +686,18 @@ Bytecode *BytecodeReader::read() {
                 auto val = read_const_int();
                 bc->push_back(new PopCatch(val));
             } break;
+            case opcode::OpCodes::FINALLY: {
+                auto addr = read_address();
+                auto reg = read_register();
+                bc->push_back(new Finally(addr, reg));
+            } break;
+            case opcode::OpCodes::POP_FINALLY: {
+                bc->push_back(new PopFinally());
+            } break;
+            case opcode::OpCodes::FINALLY_RETURN: {
+                auto reg = read_register();
+                bc->push_back(new FinallyReturn(reg));
+            } break;
             case opcode::OpCodes::LIST_PUSH: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
@@ -803,6 +815,5 @@ Bytecode *BytecodeReader::read() {
         }
     } while(!this->stream->eof());
 
-    LOG1("Bytecode read and converted:\n" << *bc);
     return bc;
 }

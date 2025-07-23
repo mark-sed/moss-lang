@@ -250,6 +250,15 @@ std::ostream& CallFrame::debug(std::ostream& os) const {
     return os;
 }
 
+std::ostream& ExceptionCatch::debug(std::ostream& os) const {
+    os << "ExceptionCatch:\n";
+    os << "\ttype: " << (type ? type->get_name() : "*") << "\n"
+       << "\tname: " << name << "\n"
+       << "\taddr: " << addr << "\n"
+       << "\tname: " << name << "\n";
+    return os;
+}
+
 std::ostream& Interpreter::report_call_stack(std::ostream& os) {
     // TODO: Color output
     os << "Stacktrace:\n";
@@ -430,23 +439,73 @@ ModuleValue *Interpreter::top_currently_imported_module() {
 }
 #endif
 
+void Interpreter::push_finally(opcode::Finally *fnl) {
+    this->get_top_frame()->push_finally(fnl);
+}
+
+void Interpreter::pop_finally() {
+    this->get_top_frame()->pop_finally();
+}
+
+bool Interpreter::has_finally() {
+    return !this->get_top_frame()->get_finally_stack().empty();
+}
+
+void Interpreter::call_finally() {
+    assert(has_finally() && "Getting finally address from empty stack");
+    auto fnl = get_top_frame()->get_finally_stack().back();
+    int addr_offset = 0;
+    if (is_try_in_catch())
+        addr_offset = -1;
+    store_const(fnl->caller, new IntValue(get_bci()));
+    // Subtract 1 instruction if this was called from try body, because
+    // pop_catch is at this address.
+    set_bci(fnl->addr + addr_offset);
+}
+
+bool Interpreter::is_try_in_catch() {
+    assert(has_finally() && "Getting finally address from empty stack");
+    auto fnl = get_top_frame()->get_finally_stack().back();
+    auto val = load_const(fnl->caller);
+    return isa<NilValue>(val);
+}
+
 void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
+    LOGMAX("Exception catch found:\n" << ec);
     set_bci(ec.addr);
 
+    int pop_amount = 0;
     // Restoring frames
     for (auto riter = frames.rbegin(); riter != frames.rend(); ++riter) {
         if (*riter == ec.frame_position) {
             break;
         }
+        // TODO: if has_finally then run that finally
+        //if (has_finally()) {
+        //    auto fnl = get_top_frame()->get_finally_stack().back();
+        //    // TODO: We have to somehow return to this state! and continue
+        //    // unrolling frames
+        //    //store_const(fnl->caller, new IntValue(get_bci()));
+        //    set_bci(fnl->addr);
+        //}
+        ++pop_amount;
+    }
+
+    for (int i = 0; i < pop_amount; ++i) {
         pop_frame();
     }
 
+    pop_amount = 0;
     // Restoring call frames
     for (auto riter = call_frames.rbegin(); riter != call_frames.rend(); ++riter) {
         if (*riter == ec.cf_position) {
             break;
         }
-        drop_call_frame();
+        ++pop_amount;
+    }
+
+    for (int i = 0; i < pop_amount; ++i) {
+        pop_call_frame();
     }
 
     // Setting exception value

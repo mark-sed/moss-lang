@@ -173,7 +173,10 @@ enum OpCodes : opcode_t {
     RAISE, //         %src
     CATCH,       //   "exc_name", addr
     CATCH_TYPED, //   "exc_name", "type", addr
-    POP_CATCH,   //
+    POP_CATCH,   //   amount
+    FINALLY,     //   addr, #reg
+    POP_FINALLY, //
+    FINALLY_RETURN, // #reg
 
     LIST_PUSH, //         %dst, %val
     LIST_PUSH_CONST, //   %dst, #val
@@ -1919,6 +1922,66 @@ public:
         auto casted = dyn_cast<PopCatch>(other);
         if (!casted) return false;
         return amount == casted->amount;
+    }
+};
+
+class Finally : public OpCode {
+public:
+    Address addr;
+    Register caller;
+
+    static const OpCodes ClassType = OpCodes::FINALLY;
+
+    Finally(Address addr, Register caller) : OpCode(ClassType, "FINALLY"), addr(addr), caller(caller) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << " " << addr << ", #" << caller;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<Finally>(other);
+        if (!casted) return false;
+        return addr == casted->addr && caller == casted->caller;
+    }
+};
+
+class PopFinally : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::POP_FINALLY;
+
+    PopFinally() : OpCode(ClassType, "POP_FINALLY") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<PopFinally>(other);
+    }
+};
+
+class FinallyReturn : public OpCode {
+public:
+    Register caller;
+
+    static const OpCodes ClassType = OpCodes::FINALLY_RETURN;
+
+    FinallyReturn(Register caller) : OpCode(ClassType, "FINALLY_RETURN"), caller(caller) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << ", #" << caller;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<FinallyReturn>(other);
+        if (!casted) return false;
+        return caller == casted->caller;
     }
 };
 

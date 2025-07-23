@@ -237,10 +237,19 @@ fun test_try_catch(name) {
     ~expect_pass("try_catch.ms", name, """Success\nfinally end\nCaught NameError: Unkown name!\nfinally end
 Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
 foo_int is not internal\n54a\ninner\ninner\noutter\ninner\ninner\noutter\n55\nend\n55
-55\nend\n55\nend\nend\n55\nmodule end\n""", "")
+55\nend\n55\nend\nend\n55\nmodule end\n3\n""", "")
 
     ~expect_fail(r"""try { raise 42; } catch (e) { raise e; }""", "", /*rx_err="42"*/ args="-e")
+}
 
+fun test_finally(name) {
+    ~expect_pass("finally.ms", name, """Caught\nRan finally\n1\nCaught\nRan finally\n42\nRan finally\nhi
+Ran finally\n8\nin try\nin finally\nStart\nCLOSING\nhi\n\nStart\ncaught\nCLOSING\nnil
+Running division\n2\nRunning division\ninf\nin try\ncaught: 42\nran finally
+caught: 3\ncaught: true\ncaught: -1\nfinally 3 done\nfinally 2 done\nfinally 1 done\n""", "")
+
+    ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", "", /*rx_err="4"*/ args="-e")
+    ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", "", /*rx_err="4"*/ args="-e")
 }
 
 fun test_classes(name) {
@@ -727,7 +736,7 @@ List(1) [
 Class MyClass : Int, Float {
   \"MyClass\": Fun(MyClass(n:[Int, Float]) @104),
   \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n() @114)
+  \"get_n\": Fun(get_n() @113)
 }\n""", "")
 }
 
@@ -1003,6 +1012,7 @@ fun run_all_tests() {
     ~run_test("switches")
     ~run_test("fors")
     ~run_test("try_catch")
+    ~run_test("finally")
     ~run_test("classes")
     ~run_test("attributes")
     ~run_test("subscript_set")

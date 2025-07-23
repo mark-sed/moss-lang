@@ -47,7 +47,6 @@ f4 = open(".created_file_2.txt", "w")
 ~f4.write(LoremIpsum(2))
 ~f4.close()
 
-f5 = open(".created_file_2.txt", "r")
-for (l: f5.readlines())
+f5 = with_open(".created_file_2.txt", fun(f)=f.readlines(),"r")
+for (l: f5)
     l ++ "\n"
-~f5.close()
