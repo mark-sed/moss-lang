@@ -197,6 +197,9 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::JMP: {
                 bc->push_back(new Jmp(read_address()));
             } break;
+            case opcode::OpCodes::BREAK_TO: {
+                bc->push_back(new BreakTo(read_address()));
+            } break;
             case opcode::OpCodes::JMP_IF_TRUE: {
                 auto reg = read_register();
                 auto addr = read_address();
@@ -808,6 +811,12 @@ Bytecode *BytecodeReader::read() {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
                 bc->push_back(new Iter(reg1, reg2));
+            } break;
+            case opcode::OpCodes::LOOP_BEGIN: {
+                bc->push_back(new LoopBegin());
+            } break;
+            case opcode::OpCodes::LOOP_END: {
+                bc->push_back(new LoopEnd());
             } break;
             default: 
                 std::string msg = "unknown opcode in bytecode reader: "+std::to_string(opcode);

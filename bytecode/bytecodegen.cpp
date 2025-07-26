@@ -1463,19 +1463,20 @@ void BytecodeGen::emit(ir::Switch *swch) {
 void BytecodeGen::update_jmps(Address start, Address end, Address brk, Address cont) {
     // Go through and update all break and continue jumps
     for (auto bci = start; bci < end; bci++) {
-        if (auto j = dyn_cast<Jmp>(code->get_code()[bci])) {
-            if (j->state == Jmp::JMPState::NOT_SET_BREAK) {
+        if (auto j = dyn_cast<BreakTo>(code->get_code()[bci])) {
+            if (j->state == BreakTo::BreakState::NOT_SET_BREAK) {
                 j->addr = brk;
-                j->state = Jmp::JMPState::SET;
-            } else if (j->state == Jmp::JMPState::NOT_SET_CONTINUE) {
+                j->state = BreakTo::BreakState::SET;
+            } else if (j->state == BreakTo::BreakState::NOT_SET_CONTINUE) {
                 j->addr = cont;
-                j->state = Jmp::JMPState::SET;
+                j->state = BreakTo::BreakState::SET;
             }
         }
     }
 }
 
 void BytecodeGen::emit(ir::While *whstmt) {
+    append(new opcode::LoopBegin());
     auto pre_while_bc = get_curr_address() + 1;
     auto cond = emit(whstmt->get_cond(), true);
     auto jmp_end = new JmpIfFalse(free_reg(cond), 0);
@@ -1484,15 +1485,18 @@ void BytecodeGen::emit(ir::While *whstmt) {
     update_jmps(pre_while_bc, get_curr_address()+1, get_curr_address()+2, pre_while_bc);
     append(new Jmp(pre_while_bc));
     jmp_end->addr = get_curr_address() + 1;
+    append(new opcode::LoopEnd());
 }
 
 void BytecodeGen::emit(ir::DoWhile *whstmt) {
+    append(new opcode::LoopBegin());
     auto pre_while_bc = get_curr_address() + 1;
     emit(whstmt->get_body());
     auto cond_bc = get_curr_address() + 1;
     auto cond = emit(whstmt->get_cond(), true);
     append(new JmpIfTrue(free_reg(cond), pre_while_bc));
     update_jmps(pre_while_bc, get_curr_address(), get_curr_address() + 1, cond_bc);
+    append(new opcode::LoopEnd());
 }
 
 void BytecodeGen::emit(ir::ForLoop *forlp) {
@@ -1523,6 +1527,7 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     }
     auto collection = emit(forlp->get_collection(), true);
     auto new_iter = next_reg();
+    append(new opcode::LoopBegin());
     append(new opcode::Iter(new_iter, free_reg(collection)));
     auto pre_for_bc = get_curr_address() + 1;
     if (!mva) {
@@ -1542,6 +1547,7 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
         append(new Jmp(pre_for_bc));
         for_op->addr = get_curr_address() + 1;
     }
+    append(new opcode::LoopEnd());
 }
 
 void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
@@ -1830,12 +1836,12 @@ void BytecodeGen::emit(ir::Assert *asr) {
 
 void BytecodeGen::emit(ir::Break *br) {
     (void)br;
-    append(new opcode::Jmp(0, opcode::Jmp::JMPState::NOT_SET_BREAK));
+    append(new opcode::BreakTo(0, opcode::BreakTo::BreakState::NOT_SET_BREAK));
 }
 
 void BytecodeGen::emit(ir::Continue *ct) {
     (void)ct;
-    append(new opcode::Jmp(0, opcode::Jmp::JMPState::NOT_SET_CONTINUE));
+    append(new opcode::BreakTo(0, opcode::BreakTo::BreakState::NOT_SET_CONTINUE));
 }
 
 void BytecodeGen::emit(ir::Annotation *annt) {

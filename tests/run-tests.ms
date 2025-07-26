@@ -246,10 +246,31 @@ fun test_finally(name) {
     ~expect_pass("finally.ms", name, """Caught\nRan finally\n1\nCaught\nRan finally\n42\nRan finally\nhi
 Ran finally\n8\nin try\nin finally\nStart\nCLOSING\nhi\n\nStart\ncaught\nCLOSING\nnil
 Running division\n2\nRunning division\ninf\nin try\ncaught: 42\nran finally
-caught: 3\ncaught: true\ncaught: -1\nfinally 3 done\nfinally 2 done\nfinally 1 done\n""", "")
+caught: 3\ncaught: true\ncaught: -1\nfinally 3 done\nfinally 2 done\nfinally 1 done
+finally 1\nfinally 2\n2\n""", "")
 
     ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", "", /*rx_err="4"*/ args="-e")
     ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", "", /*rx_err="4"*/ args="-e")
+}
+
+fun test_cycles_and_exceptions(name) {
+    ~expect_pass("cycles_and_exceptions.ms", name, """Exception: Got 0
+Checked value: 0\n1 is odd\nChecked value: 1\nChecked value: 2\n3 is odd\nChecked value: 3\nChecked value: 4\n5 is odd\nChecked value: 5\nChecked value: 6\n7 is odd\nChecked value: 7\nChecked value: 8\n9 is odd\nChecked value: 9\nChecked value: 10\nValue is too big to check!\nChecked value: 11
+2\nfinally 1\nLOOPED\nfinally 2\nDONE!
+try: 0
+finally after continue: 0
+try: 1
+finally after continue: 1
+try: 2
+finally after continue: 2
+try: 0
+finally after break: 0
+catch 0
+finally after catch+break: 0
+inner finally: 0\nouter finally: 0\ninner finally: 1\nouter finally: 1\ninner finally: 2\nouter finally: 2
+1\nloop finally inner\nloop finally outter\n2\nloop finally inner\nloop finally outter\n3\nloop finally inner\nloop finally outter\ndone looping\nfinally inner\nfinally global
+1\nloop finally inner\nloop finally outter\n2\nloop finally inner\nloop finally outter\n3\nloop finally inner\nloop finally outter\ndone looping\nfinally inner\nfinally global
+1\nloop finally inner\nloop finally outter\n2\nloop finally inner\nloop finally outter\n3\nloop finally inner\nloop finally outter\ndone looping\nfinally inner\nfinally global\n""", "")
 }
 
 fun test_classes(name) {
@@ -1013,6 +1034,7 @@ fun run_all_tests() {
     ~run_test("fors")
     ~run_test("try_catch")
     ~run_test("finally")
+    ~run_test("cycles_and_exceptions")
     ~run_test("classes")
     ~run_test("attributes")
     ~run_test("subscript_set")

@@ -75,6 +75,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::StoreNilConst(7));
 
     bc->push_back(new opcode::Jmp(5));
+    bc->push_back(new opcode::BreakTo(5));
     bc->push_back(new opcode::JmpIfTrue(2, -7));
     bc->push_back(new opcode::JmpIfFalse(3, -12));
     bc->push_back(new opcode::Call(11, 7));
@@ -205,6 +206,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::For(10, 11, 55));
     bc->push_back(new opcode::ForMulti(10, 11, 55, 66));
     bc->push_back(new opcode::Iter(11, 14));
+    bc->push_back(new opcode::LoopBegin());
+    bc->push_back(new opcode::LoopEnd());
 
 #ifdef __linux__
     auto file_path = "/tmp/mosstest_all.msb";

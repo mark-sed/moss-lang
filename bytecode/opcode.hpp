@@ -73,6 +73,7 @@ enum OpCodes : opcode_t {
     STORE_NIL_CONST, //   #dst
 
     JMP, //               addr
+    BREAK_TO,   //        addr // This is the same as JMP, but denotes continue or break
     JMP_IF_TRUE, //       %src, addr
     JMP_IF_FALSE, //      %src, addr
     CALL, //              %dst, fun
@@ -199,6 +200,8 @@ enum OpCodes : opcode_t {
     FOR, //       %i, %iterator, addr
     FOR_MULTI, // %vars, %iterator, addr, #index
     ITER, // %iterator, %collection
+    LOOP_BEGIN, //
+    LOOP_END, //
 
     OPCODES_AMOUNT
 };
@@ -758,15 +761,9 @@ public:
 class Jmp : public OpCode {
 public:
     Address addr;
-    enum class JMPState {
-        SET,
-        NOT_SET_BREAK,
-        NOT_SET_CONTINUE
-    } state;
-
     static const OpCodes ClassType = OpCodes::JMP;
 
-    Jmp(Address addr, JMPState state=JMPState::SET) : OpCode(ClassType, "JMP"), addr(addr), state(state) {}
+    Jmp(Address addr) : OpCode(ClassType, "JMP"), addr(addr) {}
     
     void exec(Interpreter *vm) override;
     
@@ -776,6 +773,32 @@ public:
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Jmp>(other);
+        if (!casted) return false;
+        return casted->addr == addr;
+    }
+};
+
+class BreakTo : public OpCode {
+public:
+    Address addr;
+    enum class BreakState {
+        SET,
+        NOT_SET_BREAK,
+        NOT_SET_CONTINUE
+    } state;
+
+    static const OpCodes ClassType = OpCodes::BREAK_TO;
+
+    BreakTo(Address addr, BreakState state=BreakState::SET) : OpCode(ClassType, "BREAK_TO"), addr(addr), state(state) {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  " << addr;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<BreakTo>(other);
         if (!casted) return false;
         return casted->addr == addr;
     }
@@ -2416,6 +2439,40 @@ public:
         auto casted = dyn_cast<Iter>(other);
         if (!casted) return false;
         return casted->collection == collection && casted->iterator == iterator;
+    }
+};
+
+class LoopBegin : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::LOOP_BEGIN;
+
+    LoopBegin() : OpCode(ClassType, "LOOP_BEGIN") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<LoopBegin>(other);
+    }
+};
+
+class LoopEnd : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::LOOP_END;
+
+    LoopEnd() : OpCode(ClassType, "LOOP_END") {}
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<LoopEnd>(other);
     }
 };
 

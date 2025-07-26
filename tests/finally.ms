@@ -113,3 +113,23 @@ try {
     }
     "finally 1 done\n"
 }
+
+fun foo34() {
+    try {
+        try 
+            return 2
+        catch (e)
+            "sf\n"
+        finally {
+            "finally 1\n"
+        }
+    } catch (f) {
+        "caught??\n"
+    } finally {
+        "finally 2\n"
+    }
+    "DONE!\n"
+}
+
+foo34()
+"\n"

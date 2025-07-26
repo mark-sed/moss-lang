@@ -447,6 +447,14 @@ void Interpreter::pop_finally() {
     this->get_top_frame()->pop_finally();
 }
 
+void Interpreter::push_finally_stack() {
+    this->get_top_frame()->push_finally_stack();
+}
+
+void Interpreter::pop_finally_stack() {
+    this->get_top_frame()->pop_finally_stack();
+}
+
 bool Interpreter::has_finally() {
     return !this->get_top_frame()->get_finally_stack().empty();
 }
@@ -480,19 +488,17 @@ void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
         if (*riter == ec.frame_position) {
             break;
         }
-        // TODO: if has_finally then run that finally
-        //if (has_finally()) {
-        //    auto fnl = get_top_frame()->get_finally_stack().back();
-        //    // TODO: We have to somehow return to this state! and continue
-        //    // unrolling frames
-        //    //store_const(fnl->caller, new IntValue(get_bci()));
-        //    set_bci(fnl->addr);
-        //}
         ++pop_amount;
     }
 
     for (int i = 0; i < pop_amount; ++i) {
         pop_frame();
+    }
+
+    // Restoring finally stack
+    auto tf = get_top_frame();
+    for (size_t i = 0; i < tf->get_finally_stack_size() - ec.finally_stack_size; ++i) {
+        tf->pop_finally_stack();
     }
 
     pop_amount = 0;

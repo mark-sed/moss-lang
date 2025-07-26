@@ -20,6 +20,7 @@
 #include "gc.hpp"
 #include "values.hpp"
 #include <cstdint>
+#include <optional>
 #include <list>
 
 namespace moss {
@@ -155,17 +156,26 @@ struct ExceptionCatch {
 
     CallFrame *cf_position;
     MemoryPool *frame_position;
+    size_t finally_stack_size;
 
     ExceptionCatch(Value *type,
                    ustring name,
                    opcode::Address addr,
                    CallFrame *cf_position,
-                   MemoryPool *frame_position)
+                   MemoryPool *frame_position,
+                   size_t finally_stack_size)
         : type(type), name(name), addr(addr), cf_position(cf_position),
-          frame_position(frame_position) {
+          frame_position(frame_position), finally_stack_size(finally_stack_size) {
     }
 
     std::ostream& debug(std::ostream& os) const;
+
+    bool operator==(const ExceptionCatch &other) const {
+        return type == other.type && name == other.name && addr == other.addr &&
+               cf_position == other.cf_position && 
+               frame_position == other.frame_position &&
+               finally_stack_size == other.finally_stack_size;
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, ExceptionCatch &ec) {
@@ -344,8 +354,9 @@ public:
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
 
     void push_finally(opcode::Finally *fnl);
-
     void pop_finally();
+    void push_finally_stack();
+    void pop_finally_stack();
 
     bool has_finally();
     void call_finally();

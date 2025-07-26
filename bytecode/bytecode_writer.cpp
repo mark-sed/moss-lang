@@ -141,6 +141,9 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::Jmp>(op_gen)){
             write_address(o->addr);
         }
+        else if (auto o = dyn_cast<opcode::BreakTo>(op_gen)){
+            write_address(o->addr);
+        }
         else if (auto o = dyn_cast<opcode::JmpIfTrue>(op_gen)){
             write_register(o->src);
             write_address(o->addr);
@@ -382,6 +385,12 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::Iter>(op_gen)){
             write_register(o->iterator);
             write_register(o->collection);
+        }
+        else if (isa<opcode::LoopBegin>(op_gen)){
+            // Nothing to do.
+        }
+        else if (isa<opcode::LoopEnd>(op_gen)){
+            // Nothing to do.
         }
         else {
             std::string msg = "unknown opcode in bytecode writer: "+std::to_string(opc);

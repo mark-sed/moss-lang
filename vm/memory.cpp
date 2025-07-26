@@ -108,15 +108,31 @@ bool MemoryPool::overwrite(ustring name, Value *v, Interpreter *vm) {
 }
 
 void MemoryPool::push_finally(opcode::Finally *addr) {
-    this->finally_stack.push_back(addr);
+    this->finally_stack.back().push_back(addr);
 }
 
 void MemoryPool::pop_finally() {
     assert(!this->finally_stack.empty() && "Trying to pop empty finally stack");
+    assert(!this->finally_stack.back().empty() && "Trying to pop empty stack in finally stack");
+    this->finally_stack.back().pop_back();
+}
+
+std::vector<opcode::Finally *> &MemoryPool::get_finally_stack() {
+    return this->finally_stack.back();
+}
+
+void MemoryPool::push_finally_stack() {
+    this->finally_stack.push_back({});
+}
+
+void MemoryPool::pop_finally_stack() {
+    assert(!this->finally_stack.empty() && "Trying to pop stack from empty finally stack");
     this->finally_stack.pop_back();
 }
 
-std::vector<opcode::Finally *> &MemoryPool::get_finally_stack() { return this->finally_stack; }
+size_t MemoryPool::get_finally_stack_size() {
+    return this->finally_stack.size();
+}
 
 void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
     bool first = true;

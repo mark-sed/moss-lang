@@ -85,6 +85,7 @@ xxh - STORE_BOOL_CONST  #dst, bool
 xxh - STORE_STR_CONST   #dst, "string"
 
 xxh - JMP               addr
+xxh - BREAK_TO
 xxh - JMP_IF_TRUE       %src, addr
 xxh - JMP_IF_FALSE      %src, addr
 xxh - CALL              %dst, %src
@@ -209,6 +210,8 @@ xxh - SWITCH        %listvals, %listaddr, addr_def
 xxh - FOR           %i, %iterator, addr
 xxh - FOR_MULTI     %vars, %iterator, addr, #unpack
 xxh - ITER          %iterator, %collection
+xxh - LOOP_BEGIN
+xxh - LOOP_END
 ```
 
 ## Examples

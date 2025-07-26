@@ -37,7 +37,7 @@ private:
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
-    std::vector<opcode::Finally *> finally_stack;
+    std::vector<std::vector<opcode::Finally *>> finally_stack;
 
     bool holds_consts;
     bool global;
@@ -57,6 +57,7 @@ public:
         else {
             pool = std::vector<Value *>(BC_RESERVED_REGS+256, nullptr);
         }
+        this->finally_stack.push_back({});
 #ifndef NDEBUG
         ++allocated;
 #endif
@@ -126,10 +127,12 @@ public:
     bool is_marked() { return this->marked; }
 
     void push_finally(opcode::Finally *addr);
-
     void pop_finally();
+    void push_finally_stack();
+    void pop_finally_stack();
 
     std::vector<opcode::Finally *> &get_finally_stack();
+    size_t get_finally_stack_size();
 
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;

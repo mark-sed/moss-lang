@@ -414,7 +414,16 @@ void StoreNilConst::exec(Interpreter *vm) {
 }
 
 void Jmp::exec(Interpreter *vm) {
-    assert(state == JMPState::SET && "Break/continue jmp was not setup or break/continue is outside of loop");
+    vm->set_bci(this->addr);
+}
+
+void BreakTo::exec(Interpreter *vm) {
+    assert(state == BreakState::SET && "Break/continue jmp was not setup or break/continue is outside of loop");
+    // If there is a finally then we need to execute it first
+    if (vm->has_finally()) {
+        vm->call_finally();
+        return;
+    }
     vm->set_bci(this->addr);
 }
 
@@ -2538,7 +2547,8 @@ static void catch_op(Interpreter *vm, Value *type, ustring name, Address addr) {
     if (vm->has_call_frame()) {
         cf = vm->get_call_frame();
     }
-    vm->push_catch(ExceptionCatch(type, name, addr, cf, vm->get_top_frame()));
+    auto frm = vm->get_top_frame();
+    vm->push_catch(ExceptionCatch(type, name, addr, cf, frm, frm->get_finally_stack_size()));
 }
 
 void Catch::exec(Interpreter *vm) {
@@ -2867,6 +2877,14 @@ void Iter::exec(Interpreter *vm) {
         auto new_iter = coll->iter(vm);
         vm->store(iterator, new_iter);
     }
+}
+
+void LoopBegin::exec(Interpreter *vm) {
+    vm->push_finally_stack();
+}
+
+void LoopEnd::exec(Interpreter *vm) {
+    vm->pop_finally_stack();
 }
 
 #undef op_assert
