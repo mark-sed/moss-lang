@@ -46,6 +46,12 @@ this is not in quote
 10001. Tenthou1
   1. One
 
+1. One
+2. Two
+  * Non numbered
+  * Another non numbered
+3. Three
+
 ```
 codebloc
 next line
@@ -124,6 +130,7 @@ PARAGRAPH: []
 LIST: [PARAGRAPH, PARAGRAPH, LIST, PARAGRAPH]
 LIST: [PARAGRAPH, PARAGRAPH]
 LIST: [PARAGRAPH, PARAGRAPH, LIST]
+LIST: [PARAGRAPH, PARAGRAPH, LIST, PARAGRAPH]
 CODE_BLOCK
 PARAGRAPH: []
 PARAGRAPH: [TEXT]

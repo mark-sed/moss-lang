@@ -944,6 +944,32 @@ fun test_lib_md_parser_markdown_parsing(name) {
     ~exp_out.close()
 }
 
+fun test_lib_md_parser_to_txt(name) {
+    ~expect_pass(f"stdlib_tests/md_parser_tests/to_txt.ms", name, """Title
+Some text after title with bold. link.com is a link.
+
+* Table value 1
+  * Inner value 2
+* Table value 2
+
+1. Numbered list value
+2. Numbered value list 2
+  * Inner non numbered value
+  * An another one
+3. Last numbered value
+
+Quote
+And inner quote
+
+Here is a code block:
+
+for (l: parsed) {
+    l.to_txt()
+}
+
+The END.\n""", "")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1128,6 +1154,7 @@ fun run_all_tests() {
 
     // md_parser
     ~run_test("lib_md_parser_markdown_parsing")
+    ~run_test("lib_md_parser_to_txt")
 
     // gc tests
     ~run_test("gc_local_vars")

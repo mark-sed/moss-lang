@@ -57,6 +57,12 @@ still in the same table
 10001. Tenthou1
        1. One
 
+1. One
+2. Two
+   * Non numbered
+   * Another non numbered
+3. Three
+
     codebloc
     next line
        this also

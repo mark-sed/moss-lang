@@ -74,6 +74,10 @@ class MDLink : MDToken {
         this.image = image
     }
 
+    fun to_txt() {
+        return this.url
+    }
+
     fun __String() {
         return (this.image ? "![" : "[") ++ ("".join([String(x) : x = this.text])) ++ "](" ++ this.url ++ "\"" ++ this.title ++ "\")"
     }
@@ -86,8 +90,12 @@ class MDHeading : MDToken {
         this.level = level
     }
 
+    fun to_txt() {
+        return "".join([x.to_txt() : x = this.value])
+    }
+
     fun __String() {
-        return ("#" * this.level) ++ ("".join([String(x) : x = this.value]))
+        return ("#" * this.level) ++ " " ++ ("".join([String(x) : x = this.value]))
     }
 }
 
@@ -96,12 +104,12 @@ class MDParagraph : MDToken {
         ~super(value, MDToken.TokenType.PARAGRAPH)
     }
 
+    fun to_txt() {
+        return "".join([x.to_txt() : x = this.value])
+    }
+
     fun __String() {
-        t = []
-        for (e: this.value) {
-            ~t.append(String(e))
-        }
-        return "".join(t)
+        return "".join([String(x) : x = this.value])
     }
 }
 
@@ -109,6 +117,10 @@ class MDCodeBlock : MDToken {
     fun MDCodeBlock(value, format:String) {
         ~super(value, MDToken.TokenType.CODE_BLOCK)
         this.format = format
+    }
+
+    fun to_txt() {
+        return "\n"++this.value
     }
 
     fun __String() {
@@ -121,6 +133,10 @@ class MDBlockQuotes : MDToken {
     fun MDBlockQuotes(value, level) {
         ~super(value, MDToken.TokenType.BLOCK_QUOTES)
         this.level = level
+    }
+
+    fun to_txt() {
+        return "".join([x.to_txt() : x = this.value])
     }
 
     fun __String() {
@@ -137,24 +153,27 @@ class MDList : MDToken {
         assert(not ordered || type(bullet) == Int, "Ordered list but bullet is not a number (" ++ bullet ++ ")")
     }
 
-    fun indented(level:Int=0) {
+    fun indented(bullet, level:Int=0) {
         t = ""
         for (v: this.value) {
             if (type(v) == ::MDList) {
-                t ++= v.indented(level+1)
+                t ++= v.indented(v.bullet, level+1)
             } else {
-                t ++= ("  " * level) ++ this.bullet ++ (this.ordered ? ". " : " ") ++ v ++ "\n"
+                t ++= ("  " * level) ++ bullet ++ (this.ordered ? ". " : " ") ++ v ++ "\n"
                 if (this.ordered)
-                    this.bullet += 1
+                    bullet += 1
             }
         }
         return t
     }
 
+    fun to_txt() {
+        // TODO: Maybe force only 1 bullet type (-)?
+        return this.indented(this.bullet)
+    }
+
     fun __String() {
-        if (this.ordered)
-            this.i = this.bullet
-        return this.indented()
+        return this.indented(this.bullet)
     }
 }
 
@@ -229,6 +248,9 @@ class MDParser {
         }
         if (check("\n")) {
             return cancel(image, text, url)
+        }
+        if (check_adv(")")) {
+            return [MDLink(text, "".join(url), "", image)]
         }
         title = []
         if (check_adv("\"")) {
@@ -349,10 +371,11 @@ class MDParser {
             level += 1
         }
         // # without space after it is a normal text
-        if (not check(" ") && not check("\t")) {
+        if (not check_adv(" ") && not check_adv("\t")) {
             this.i -= level
             return paragraph()
         }
+        ~skip_ws();
         assert(level > 0, "Heading level is 0")
         txt = textual()
         // Remove possible # at the end
@@ -448,9 +471,11 @@ class MDParser {
             while (check_adv(" ")) {
                 indent += 1
             }
-            num = nil
-            if (ordered)
-                num = this.get_ol_number(this.text, this.i)
+            num = this.get_ol_number(this.text, this.i)
+            if (num != nil)
+                ordered = true
+            else
+                ordered = false
             if ((not ordered && this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) || (ordered && num != nil)) {
                 if (ordered) {
                     curr_bullet = num
@@ -548,3 +573,7 @@ class MDParser {
     }
 }
 
+fun parse_md(text:String, allow_strikethrough:Bool=true) {
+    parser = MDParser(text, allow_strikethrough)
+    return parser.parse()
+}
