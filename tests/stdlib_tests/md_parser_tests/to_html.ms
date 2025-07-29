@@ -2,7 +2,7 @@ import md_parser.*
 
 txt = """\
 # Title
-Some text after title **with bold**.
+Some text after title **with bold** & some bad values \"<>\".
 [also a link](link.com) is a _link_.
 
 * Table value 1
@@ -30,5 +30,5 @@ The END.
 parsed = parse_md(txt)
 
 for (l: parsed) {
-    l.to_txt()++"\n"
+    l.to_html()++"\n"
 }

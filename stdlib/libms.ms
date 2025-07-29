@@ -578,14 +578,24 @@ fun txt2textual(n) {
 fun txt2html(txt) {
     // Not using &apos; to be compatible with HTML4
     replace_mappings = [
-        ["<", "&lt;"],
         ["&", "&amp;"],
+        ["<", "&lt;"],
         [">", "&gt;"],
         ["\"", "&quot;"],
         ["'", "&#39"],
         ["\n", "<br>"]
     ]
     return "<p>" ++ txt.multi_replace(replace_mappings) ++ "</p>\n"
+}
+
+@converter("md", "html")
+@converter("md", "html5")
+@converter("md", "html4")
+fun md2html(txt) {
+    import md_parser
+    parsed = md_parser.parse_md(txt)
+    converted = [l.to_html() : l = parsed]
+    return "\n".join([String(x) : x = converted])
 }
 
 }

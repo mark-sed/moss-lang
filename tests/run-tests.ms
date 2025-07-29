@@ -687,7 +687,7 @@ fun test_implicit_formats(name) {
 <html>
 <body>
 <p>Hello!<br></p>
-<p>1 &amp;lt; 2 &amp; 3 &gt; 2<br></p>
+<p>1 &lt; 2 &amp; 3 &gt; 2<br></p>
 <p># Md tags `code1` \</p>
 </body>
 </html>
@@ -695,6 +695,39 @@ fun test_implicit_formats(name) {
     ~expect_pass("implicit_formats.ms", name, r"""Hello\!
 1 < 2 & 3 \> 2
 \# Md tags \`code1\` \\""", "", args="-f md")
+
+    ~expect_pass("example_markdown.ms", name, r"""<!DOCTYPE html>
+<html>
+<body>
+<h1>Title</h1>
+<p>Some text after title <b>with bold</b> &amp; some bad values \&quot;\&lt;&gt;\&quot;. <a href="link.com" title="">also a link</a> is a <i>link</i>.</p>
+<p></p>
+<ul><li><p>Table value 1</p></li><ul><li><p>Inner value 2</p></li></ul><li><p>Table value 2</p></li></ul>
+<ol start="1"><li><p>Numbered list value</p></li><li><p>Numbered value list 2</p></li><ul><li><p>Inner non numbered value</p></li><li><p>An another one</p></li></ul><li><p>Last numbered value</p></li></ol>
+<blockquote>Quote</blockquote>
+<blockquote>And inner quote</blockquote>
+<p></p>
+<p><i>Here</i> is <del>a</del> <code>code</code> block:</p>
+<pre><code class="languagecpp">for (l: parsed) {
+    l.to_txt()
+}
+</code></pre>
+<p></p>
+<h2>Title 2 </h2>
+<p></p>
+<p><img src="https://example.com/cat.jpg " title="Cute cat" alt="A cat"></p>
+<p></p>
+<p>This is <i>italic</i> text, and this is <b>bold</b> text.</p>
+<p></p>
+<p>You can also <i>underline</i> (using HTML: <code>&lt;u&gt;text&lt;/u&gt;</code>).</p>
+<p></p>
+<p>This is <b>bold and </b><b><i>nested italic</i></b> text.</p>
+<p></p>
+<p>This is <code>inline code</code>.</p>
+<p></p>
+<p>The END.</p></body>
+</html>
+""", "", args="-f html")
 }
 
 fun test_fibonacci(name) {
@@ -970,6 +1003,23 @@ for (l: parsed) {
 The END.\n""", "")
 }
 
+fun test_lib_md_parser_to_html(name) {
+    ~expect_pass(f"stdlib_tests/md_parser_tests/to_html.ms", name, """<h1>Title</h1>
+<p>Some text after title <b>with bold</b> &amp; some bad values &quot;&lt;&gt;&quot;. <a href="link.com" title="">also a link</a> is a <i>link</i>.</p>
+<p></p>
+<ul><li><p>Table value 1</p></li><ul><li><p>Inner value 2</p></li></ul><li><p>Table value 2</p></li></ul>
+<ol start="1"><li><p>Numbered list value</p></li><li><p>Numbered value list 2</p></li><ul><li><p>Inner non numbered value</p></li><li><p>An another one</p></li></ul><li><p>Last numbered value</p></li></ol>
+<blockquote>Quote</blockquote>
+<blockquote>And inner quote</blockquote>
+<p></p>
+<p><i>Here</i> is <del>a</del> <code>code</code> block:</p>
+<pre><code class="languagecpp">for (l: parsed) {
+    l.to_txt()
+}
+</code></pre>
+<p>The END.</p>\n""", "")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1155,6 +1205,7 @@ fun run_all_tests() {
     // md_parser
     ~run_test("lib_md_parser_markdown_parsing")
     ~run_test("lib_md_parser_to_txt")
+    ~run_test("lib_md_parser_to_html")
 
     // gc tests
     ~run_test("gc_local_vars")

@@ -818,7 +818,7 @@ function test_implicit_formats {
 <html>
 <body>
 <p>Hello!<br></p>
-<p>1 &amp;lt; 2 &amp; 3 &gt; 2<br></p>
+<p>1 &lt; 2 &amp; 3 &gt; 2<br></p>
 <p># Md tags \`code1\` \</p>
 </body>
 </html>\n" $1

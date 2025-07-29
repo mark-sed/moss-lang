@@ -2,6 +2,8 @@ d"""
 Module for parsing markdown for conversions to other formats.
 """
 
+import html_parser
+
 class MDToken {
 
     enum TokenType {
@@ -22,6 +24,11 @@ class MDToken {
     }
 
     fun to_txt() {
+        return this.value
+    }
+
+    fun to_html() {
+        assert(false, "Called to_html to pure MDToken")
         return this.value
     }
 
@@ -48,6 +55,10 @@ class MDText : MDToken {
 
     fun to_txt() {
         return this.value
+    }
+
+    fun to_html() {
+        return html_parser.HTMLText(this.value, this.italic, this.bold, this.code, this.strikethrough)
     }
 
     fun __String() {
@@ -78,6 +89,12 @@ class MDLink : MDToken {
         return this.url
     }
 
+    fun to_html() {
+        if (this.image)
+            return html_parser.HTMLImage([x.to_html() : x = this.text], this.url, this.title)
+        return html_parser.HTMLLink([x.to_html() : x = this.text], this.url, this.title)
+    }
+
     fun __String() {
         return (this.image ? "![" : "[") ++ ("".join([String(x) : x = this.text])) ++ "](" ++ this.url ++ "\"" ++ this.title ++ "\")"
     }
@@ -94,6 +111,10 @@ class MDHeading : MDToken {
         return "".join([x.to_txt() : x = this.value])
     }
 
+    fun to_html() {
+        return html_parser.HTMLHeading([x.to_html() : x = this.value], this.level)
+    }
+
     fun __String() {
         return ("#" * this.level) ++ " " ++ ("".join([String(x) : x = this.value]))
     }
@@ -106,6 +127,10 @@ class MDParagraph : MDToken {
 
     fun to_txt() {
         return "".join([x.to_txt() : x = this.value])
+    }
+
+    fun to_html() {
+        return html_parser.HTMLParagraph([x.to_html() : x = this.value])
     }
 
     fun __String() {
@@ -123,6 +148,10 @@ class MDCodeBlock : MDToken {
         return "\n"++this.value
     }
 
+    fun to_html() {
+        return html_parser.HTMLCodeBlock(this.value, this.format)
+    }
+
     fun __String() {
         return f"""```{this.format}
 {this.value}```"""
@@ -137,6 +166,10 @@ class MDBlockQuotes : MDToken {
 
     fun to_txt() {
         return "".join([x.to_txt() : x = this.value])
+    }
+
+    fun to_html() {
+        return html_parser.HTMLBlockQuotes([x.to_html() : x = this.value], this.level)
     }
 
     fun __String() {
@@ -170,6 +203,13 @@ class MDList : MDToken {
     fun to_txt() {
         // TODO: Maybe force only 1 bullet type (-)?
         return this.indented(this.bullet)
+    }
+
+    fun to_html() {
+        if (this.ordered)
+            return html_parser.HTMLList([x.to_html() : x = this.value], this.ordered, this.bullet)
+        else
+            return html_parser.HTMLList([x.to_html() : x = this.value], this.ordered)
     }
 
     fun __String() {
