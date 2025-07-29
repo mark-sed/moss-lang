@@ -1074,16 +1074,14 @@ T *dyn_cast(Value* t) {
         // special case for StringValue when NoteValue (its child) is passed in
         if (!isa<StringValue>(t) && !isa<NoteValue>(t)) return nullptr;
         return dynamic_cast<StringValue*>(t);
-    } else if constexpr (std::is_same_v<T, t_cpp::CppValue>) {
-        // special case for StringValue when NoteValue (its child) is passed in
-        if (t->get_kind() >= TypeKind::CPP_CVOID)
-            return dynamic_cast<t_cpp::CppValue*>(t);
-        return nullptr;
     } else {
         if (!isa<T>(t)) return nullptr;
         return dynamic_cast<T *>(t);
     }
 }
+
+template<>
+t_cpp::CppValue *dyn_cast(Value* t);
 
 }
 
