@@ -87,10 +87,13 @@ fun expect_pass(test:String,
     if (type(expected_out) == File) {
         lines = expected_out.readlines()
         expected_out = "\n".join(lines)
+        // FIXME: this is an ugly fix
+        expected_out++="\n"
     }
     if (type(expected_err) == File) {
         lines = expected_err.readlines()
         expected_err = "\n".join(lines)
+        expected_out++="\n"
     }
     if (expected_out != nil) {
         if (result.stdout != expected_out) {
@@ -137,10 +140,12 @@ fun expect_fail(test:String,
     if (type(expected_out) == File) {
         lines = expected_out.readlines()
         expected_out = "\n".join(lines)
+        expected_out++="\n"
     }
     if (type(expected_err) == File) {
         lines = expected_err.readlines()
         expected_err = "\n".join(lines)
+        expected_out++="\n"
     }
     if (expected_out != nil) {
         if (result.stdout != expected_out) {
@@ -675,6 +680,12 @@ end\\
 """, "")
 }
 
+fun test_enable_code_output(name) {
+    exp_out = open(f"{::TEST_DIR}/enable_code_output_expected.md", "r")
+    ~expect_pass(f"enable_code_output.ms", name, exp_out, "", args="-f md")
+    ~exp_out.close()
+}
+
 fun test_static_methods(name) {
     ~expect_pass("static_methods.ms", name, """caught\nid, 6\ncaught\n""", "")
 }
@@ -1164,7 +1175,7 @@ fun run_all_tests() {
     ~run_test("equalities")
     ~run_test("memberships")
     ~run_test("escaping")
-    //~run_test("enable_code_output")
+    ~run_test("enable_code_output")
     ~run_test("static_methods")
     ~run_test("type_casting")
     //~run_test("warnings")

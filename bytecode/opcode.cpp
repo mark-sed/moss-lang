@@ -1457,14 +1457,15 @@ void Output::exec(Interpreter *vm) {
     
     // notebook output
     if (vm->is_enable_code_output() && val_format == "txt") {
-        // TODO: Maybe output always as md?
         if (target_format == "md") {
             ov = "_[Output]:_\n```\n" + ov;
             if (ov.back() != '\n')
                 ov += "\n";
             ov += "```\n";
         } else if (target_format == "html") {
-            ov = "<p><i>[Output]:</i></p><pre><code>" + ov + "</code></pre>";
+            if (ov.back() == '\n')
+                ov.pop_back();
+            ov = "<pre><code class=\"moss-output\">" + ov + "</code></pre>";
         }
     }
     

@@ -21,6 +21,7 @@ T_Converters Interpreter::converters{};
 T_Generators Interpreter::generators{};
 std::vector<Value *> Interpreter::generator_notes{};
 bool Interpreter::running_generator = false;
+bool Interpreter::enable_code_output = false;
 
 void Interpreter::add_converter(ustring from, ustring to, FunValue *fun) {
     LOGMAX("Adding a converter " << from << " to " << to << " on " << fun->get_name());
@@ -103,7 +104,7 @@ FunValue * Interpreter::get_generator(ustring format) {
 }
 
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
-        : code(code), src_file(src_file), enable_code_output(false), bci(0),
+        : code(code), src_file(src_file), bci(0),
           exit_code(0), bci_modified(false), stop(false), main(main) {
     if (main && !gc) {
         gc = new gcs::TracingGC(this);

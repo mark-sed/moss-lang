@@ -203,8 +203,7 @@ private:
     static T_Converters converters; ///< Mapping of formats and their converters
     static T_Generators generators; ///< Mapping of formats and their generators
     static std::vector<Value *> generator_notes; ///< List of notes to be passed to a generator
-    // TODO: Should this be static?
-    bool enable_code_output; ///< When enabled then output will be enclosed as the output of code notes
+    static bool enable_code_output; ///< When enabled then output will be enclosed as the output of code notes
     
     opcode::Address bci; ///< Current bytecode index
     
@@ -374,8 +373,8 @@ public:
     /// Pushes a new note for a generator
     static void add_generator_note(Value *note) { Interpreter::generator_notes.push_back(note); }
     static std::vector<Value *> get_generator_notes() { return Interpreter::generator_notes; }
-    void set_enable_code_output(bool s) { this->enable_code_output = s; }
-    bool is_enable_code_output() { return this->enable_code_output; }
+    static void set_enable_code_output(bool s) { enable_code_output = s; }
+    static bool is_enable_code_output() { return enable_code_output; }
 
     //void push_exception(Value *v) { exception_stack.push_back(v); }
     //void pop_exception() { exception_stack.pop_back(); }
