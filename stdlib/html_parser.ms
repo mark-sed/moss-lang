@@ -117,7 +117,7 @@ class HTMLCodeBlock : HTMLToken {
     }
 
     fun __String() {
-        return "<pre><code" ++ (this.format.length() > 0 ? " class=\"language"++this.format++"\"" : "") ++ ">" ++ this.value ++ "</code></pre>"
+        return "<pre><code" ++ (this.format.length() > 0 ? " class=\"language-"++this.format++"\"" : "") ++ ">" ++ this.value ++ "</code></pre>"
     }
 }
 

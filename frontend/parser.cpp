@@ -57,7 +57,7 @@ void Parser::check_code_output(Module *m, ir::IR *decl) {
         auto annt = dyn_cast<ir::Annotation>(decl);
         if (!annt || annt->get_name() != "enable_code_output") {
             std::stringstream code_str;
-            code_str << "```\n";
+            code_str << "```moss\n";
             auto src_i = decl->get_src_info();
             for (unsigned l = src_i.get_lines().first; l <= src_i.get_lines().second; ++l) {
                 code_str << scanner->get_src_text()[l] << "\n";

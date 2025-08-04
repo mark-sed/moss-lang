@@ -1,6 +1,8 @@
 #include "builtins.hpp"
 #include "values.hpp"
 #include "commons.hpp"
+#include "mslib.hpp"
+#include "interpreter.hpp"
 
 using namespace moss;
 using namespace BuiltIns;
@@ -21,7 +23,7 @@ static void init_cpp_built_ins() {
     CppSpace->set_attr("ffi_cif", Ffi_cif);
 }
 
-void BuiltIns::init_constant_variables(MemoryPool *gf) {
+void BuiltIns::init_constant_variables(MemoryPool *gf, Interpreter *vm) {
     // args
     auto pr_args = clopts::get_program_args();
     std::vector<Value *> largs;
@@ -30,6 +32,20 @@ void BuiltIns::init_constant_variables(MemoryPool *gf) {
     }
     store_glob_val(gf->get_free_reg(), "args", new ListValue(largs), gf);
     // end args
+
+    // Generators.html.STYLE_PATH
+#ifdef __linux__
+    ustring style_path = "/lib/moss/mossy.css";
+#elif defined(__windows__)
+    ustring style_path = moss::get_local_app_data_path()+"/moss/mossy.css";
+#endif
+    Value *err = nullptr;
+    auto generators_space = mslib::get_space("Generators", vm, err);
+    assert(!err && "Generators not in libms?");
+    auto html_space = generators_space->get_attr("HTML", vm);
+    assert(html_space && "html space not in Generators?");
+    html_space->set_attr("STYLE_PATH", new StringValue(style_path));
+    // End STYLE_PATH
 }
 
 void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
@@ -77,8 +93,6 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "cpp", BuiltIns::Cpp::CppSpace, gf);
     
     init_cpp_built_ins();
-    
-    //init_constant_variables(gf, reg);
 }
 
 Value *BuiltIns::Type = new ClassValue("Type");

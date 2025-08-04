@@ -52,7 +52,7 @@ std::ostream *BytecodeFile::create_out_stream() {
 #include <windows.h>
 #include <shlobj.h>
 
-ustring getLocalAppDataPath() {
+ustring moss::get_local_app_data_path() {
     char path[MAX_PATH];
     SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path);  // For %LOCALAPPDATA% (Roaming)
     return ustring(path);
@@ -68,7 +68,7 @@ std::optional<ustring> moss::get_file_path(ustring file) {
         return (std::filesystem::path("/lib/moss") / filep).string();
     }
 #elif defined(__windows__)
-    static std::filesystem::path LIB_PATH = std::filesystem::path(getLocalAppDataPath()+"/moss");
+    static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");
     if (std::filesystem::exists(LIB_PATH / filep)) {
         return (LIB_PATH / filep).string();
     }

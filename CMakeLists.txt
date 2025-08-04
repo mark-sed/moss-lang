@@ -86,6 +86,23 @@ add_executable(
     ${SOURCES}
 )
 
+# Function to copy file from stdlib into lib directory
+function(copy_lib_file filename)
+  set(OUTPUT_FILE ${LIBMS_PATH}/${filename})
+
+  add_custom_command(
+    OUTPUT ${OUTPUT_FILE}
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/${filename}
+            ${LIBMS_PATH}/${filename}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/${filename}
+    COMMENT "Copying ${filename} to ${LIBMS_PATH}"
+    VERBATIM
+  )
+
+  add_custom_target(copy_${filename} ALL DEPENDS ${OUTPUT_FILE})
+endfunction()
+
 # Function to compile moss module into msb
 function(moss_compile NAME)
     set(INPUT_MS "${CMAKE_CURRENT_SOURCE_DIR}/stdlib/${NAME}.ms")
@@ -102,14 +119,16 @@ function(moss_compile NAME)
     add_custom_target(build_${NAME} ALL DEPENDS ${OUTPUT_MSB})
 endfunction()
 
-# Standard moss library modules
-# Any module added here has to be added to libms target bellow (as `build_name`)
+# Standard moss library modules and files.
+# Any module/file added here has to be added to libms target bellow (as `build_name`/`copy_name`).
 moss_compile(libms)
 moss_compile(cffi)
 moss_compile(subprocess)
 moss_compile(sys)
 moss_compile(md_parser)
 moss_compile(html_parser)
+
+copy_lib_file("mossy.css")
 
 add_custom_target(
     libms
@@ -119,6 +138,7 @@ add_custom_target(
     DEPENDS build_sys
     DEPENDS build_md_parser
     DEPENDS build_html_parser
+    DEPENDS copy_mossy.css
 )
 
 # Making moss a command

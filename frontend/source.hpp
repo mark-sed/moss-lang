@@ -143,6 +143,10 @@ public:
 
 std::optional<ustring> get_file_path(ustring file);
 
+#ifdef __windows__
+ustring get_local_app_data_path();
+#endif
+
 }
 
 #endif//_SOURCE_HPP_

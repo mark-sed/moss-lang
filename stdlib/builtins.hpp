@@ -18,6 +18,7 @@ namespace moss {
 
 class Value;
 class MemoryPool;
+class Interpreter;
 
 /// This namespace contains values (pointers) for all the built-in types
 /// \note: When adding a new value also add it to init_built_ins
@@ -28,7 +29,7 @@ namespace BuiltIns {
     /// Without calling this all the values will be GCed
     void init_built_ins(MemoryPool *gf, opcode::Register &reg);
 
-    void init_constant_variables(MemoryPool *gf);
+    void init_constant_variables(MemoryPool *gf, Interpreter *vm);
 
     /// \return interned int or nullptr if it is not interned
     Value *get_interned_int(opcode::IntConst v);

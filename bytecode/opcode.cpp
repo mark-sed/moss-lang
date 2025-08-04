@@ -1456,8 +1456,16 @@ void Output::exec(Interpreter *vm) {
     auto ov = to_string(vm, v);
     
     // notebook output
-    if (vm->is_enable_code_output() && target_format == "md" && val_format == "txt") {
-        ov = "_[Output]:_\n```\n" + ov + "```\n";
+    if (vm->is_enable_code_output() && val_format == "txt") {
+        // TODO: Maybe output always as md?
+        if (target_format == "md") {
+            ov = "_[Output]:_\n```\n" + ov;
+            if (ov.back() != '\n')
+                ov += "\n";
+            ov += "```\n";
+        } else if (target_format == "html") {
+            ov = "<p><i>[Output]:</i></p><pre><code>" + ov + "</code></pre>";
+        }
     }
     
     clopts::get_note_stream() << ov;

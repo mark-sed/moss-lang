@@ -41,7 +41,7 @@ EnumTypeValue *mslib::get_enum(ustring name, Interpreter *vm, Value *&err) {
     }
     auto enumtype = dyn_cast<EnumTypeValue>(enumv);
     if (!enumtype) {
-        err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Type", enumtype->get_type()->get_name().c_str()));
+        err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Type", enumv->get_type()->get_name().c_str()));
         return nullptr;
     }
     return enumtype;
@@ -55,6 +55,20 @@ EnumTypeValue *mslib::get_enum(ustring name, CallFrame *cf, Value *&err) {
     auto vm = fun->get_vm();
     assert(vm && "vm in function not set?");
     return get_enum(name, vm, err);
+}
+
+SpaceValue *mslib::get_space(ustring name, Interpreter *vm, Value *&err) {
+    auto spacev = vm->load_name(name);
+    if (!spacev) {
+        err = create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
+        return nullptr;
+    }
+    auto spacetype = dyn_cast<SpaceValue>(spacev);
+    if (!spacetype) {
+        err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Space", spacev->get_type()->get_name().c_str()));
+        return nullptr;
+    }
+    return spacetype;
 }
 
 Value *vardump(Interpreter *vm, Value *v) {
