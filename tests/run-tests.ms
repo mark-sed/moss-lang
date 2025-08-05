@@ -57,11 +57,13 @@ fun fail(name:String, msg:String) {
     ~print(f"FAIL: {name}: {msg}")
 }
 
-fun run(test:String, name:String, args:String="", use_repl:Bool=false) {
+fun run(test:String, name:String, args:String="", use_repl:Bool=false, exec:Bool=false) {
     path = ::TEST_DIR++test
     // For Windows replace slashes
     if (::PLATFORM == sys.Platform.Windows)
         path = path.replace("/", "\\")
+    if (exec)
+        return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} -e '{test}'")
     if (not use_repl)
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
     return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} --use-repl-mode < {path}")
@@ -72,8 +74,9 @@ fun expect_pass(test:String,
                 expected_out:[String,File]=nil,
                 expected_err:[String,File]=nil,
                 args:String="",
-                use_repl:Bool=false) {
-    result = run(test, name, args, use_repl)
+                use_repl:Bool=false,
+                exec:Bool=false) {
+    result = run(test, name, args, use_repl, exec)
     // Normalize \r\n on windows to \n
     if (::PLATFORM == sys.Platform.Windows) {
         result.stdout = result.stdout.replace("\r", "")
@@ -125,18 +128,26 @@ fun expect_fail(test:String,
                 name:String,
                 expected_out:[String,File]=nil,
                 expected_err:[String,File]=nil,
-                args:String="") {
-    result = run(test, name, args)
+                args:String="",
+                retcode_expected:Int=nil,
+                exec:Bool=false) {
+    result = run(test, name, args, false, exec)
     // Normalize \r\n on windows to \n
     if (::PLATFORM == sys.Platform.Windows) {
         result.stdout = result.stdout.replace("\r", "")
         result.stderr = result.stderr.replace("\r", "")
     }
-    msg = "Program was supposed to fail, but passed."
+    msg = "Expected fail did not meet expectations."
     failed = false
     if (result.return_code == 0) {
-        msg ++= " Return code differs."
+        msg ++= " Program was supposed to fail, but passed."
         failed = true
+    }
+    if (retcode_expected != nil) {
+        if (result.return_code != retcode_expected) {
+            msg ++= f" Return code ({result.return_code}) differs from expected ({retcode_expected})."
+            failed = true;
+        }
     }
     if (type(expected_out) == File) {
         lines = expected_out.readlines()
@@ -246,7 +257,7 @@ Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
 foo_int is not internal\n54a\ninner\ninner\noutter\ninner\ninner\noutter\n55\nend\n55
 55\nend\n55\nend\nend\n55\nmodule end\n3\n""", "")
 
-    ~expect_fail(r"""try { raise 42; } catch (e) { raise e; }""", "", /*rx_err="42"*/ args="-e")
+    ~expect_fail(r"""try { raise 42; } catch (e) { raise e; }""", name, "", /*rx_err="42"*/ exec=true)
 }
 
 fun test_finally(name) {
@@ -256,8 +267,8 @@ Running division\n2\nRunning division\ninf\nin try\ncaught: 42\nran finally
 caught: 3\ncaught: true\ncaught: -1\nfinally 3 done\nfinally 2 done\nfinally 1 done
 finally 1\nfinally 2\n2\n""", "")
 
-    ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", "", /*rx_err="4"*/ args="-e")
-    ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", "", /*rx_err="4"*/ args="-e")
+    ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", name, "", /*rx_err="4"*/ exec=true)
+    ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", name, "", /*rx_err="4"*/ exec=true)
 }
 
 fun test_cycles_and_exceptions(name) {
@@ -315,13 +326,13 @@ fun test_inheritance(name) {
 <object of class C>\nA\n<object of class D>\nb_call\na_call\na_call\nB\nb_call\n""", "")
 }
 
-//fun test_operator_funs(name) {
-//    ~expect_pass("operator_funs.ms", name, """1111 == 1111 == 1111\nfalse == false\ntrue == true\n1000 == 1000
-//990 == 990\ntrue == true\nfalse == false\n1005\n1020\n1001
-//false\ntrue\ntrue\ntrue\nfalse\ntrue\n0\n1010\n1010\n1023
-//0\n-1011\n-1011\n1001\n1100\n10\naH
-//caught\ncaught\n""", "")
-//}
+fun test_operator_funs(name) {
+    ~expect_pass("operator_funs.ms", name, """1111 == 1111 == 1111\nfalse == false\ntrue == true\n1000 == 1000
+990 == 990\ntrue == true\nfalse == false\n1005\n1020\n1001
+false\ntrue\ntrue\ntrue\nfalse\ntrue\n0\n1010\n1010\n1023
+0\n-1011\n-1011\n1001\n1100\n10\naH
+caught\ncaught\n""", "")
+}
 
 fun test_lists(name) {
     ~expect_pass("lists.ms", name, """[1, 2, 3, false, \"pět\"]\n[[123], 4, [123]]
@@ -529,15 +540,15 @@ true
 > 🐉中ñ
 """, "")
 
-    ~expect_fail(r""" "\xA" """, "", /*rx_err="Short hexadecimal"*/ args="-e")
-    ~expect_fail(r""" "\Q01" """, "", /*rx_err="Short octal"*/ args="-e")
-    ~expect_fail(r""" "\uA32" """, "", /*rx_err="Short 16-bit unicode"*/ args="-e")
-    ~expect_fail(r""" "\UA32845" """, "", /*rx_err="Short 32-bit unicode"*/ args="-e")
+    ~expect_fail(r""" "\xA" """, name, "", /*rx_err="Short hexadecimal"*/ exec=true)
+    ~expect_fail(r""" "\Q01" """, name, "", /*rx_err="Short octal"*/ exec=true)
+    ~expect_fail(r""" "\uA32" """, name, "", /*rx_err="Short 16-bit unicode"*/ exec=true)
+    ~expect_fail(r""" "\UA32845" """, name, "", /*rx_err="Short 32-bit unicode"*/ exec=true)
 
-    ~expect_fail(r""" "\xAG" """, "", /*rx_err="Incorrect hexadecimal"*/ args="-e")
-    ~expect_fail(r""" "\q080" """, "", /*rx_err="Incorrect octal"*/ args="-e")
-    ~expect_fail(r""" "\u08Y3" """, "", /*rx_err="Incorrect 16-bit unicode"*/ args="-e")
-    ~expect_fail(r""" "\U081336AZ" """, "", /*rx_err="Incorrect 32-bit unicode"*/ args="-e")
+    ~expect_fail(r""" "\xAG" """, name, "", /*rx_err="Incorrect hexadecimal"*/ exec=true)
+    ~expect_fail(r""" "\q080" """, name, "", /*rx_err="Incorrect octal"*/ exec=true)
+    ~expect_fail(r""" "\u08Y3" """, name, "", /*rx_err="Incorrect 16-bit unicode"*/ exec=true)
+    ~expect_fail(r""" "\U081336AZ" """, name, "", /*rx_err="Incorrect 32-bit unicode"*/ exec=true)
 }
 
 fun test_fstrings(name) {
@@ -616,6 +627,14 @@ fun test_closures(name) {
 fun test_implicit_calls(name) {
     ~expect_pass("implicit_calls.ms", name, """hello is my string\nbye is my string\n42\n<object of class MyNumber>
 AAA - [1, 2, 3]\n""", "")
+}
+
+fun test_exceptions_catch(name) {
+    ~expect_pass("exceptions_catch.ms", name, """NameError: a\nNameError: foo()\nModule not found
+Assertion error\nType error\nAttribute error\nName error
+Division by zero error\nFloat division by zero error\nDBZ\nFDBZ
+Attribute error\nAttribute error\n""", "")
+    ~expect_fail("some_name", name, "", /*rx_err="Name 'some_name' is not defined"*/ exec=true, retcode_expected=1)
 }
 
 fun test_runtime_errors(name) {
@@ -782,6 +801,19 @@ fun test_lib_constants(name) {
     ~expect_pass("stdlib_tests/constants.ms", name)
 }
 
+fun test_lib_exit(name) {
+    ~expect_pass("stdlib_tests/exit.ms", name, "caught 42\nhi\n")
+    ~expect_fail("exit(\"bye\")", name, "", "bye", exec=true, retcode_expected=1)
+    ~expect_fail("exit(42)", name, "", "", exec=true, retcode_expected=42)
+    ~expect_fail("""
+fun exit(a, b) {
+    a ++ "\\n"
+    exit(b)
+}
+exit("la fin", 2)""", name, "la fin\n", "", exec=true, retcode_expected=2)
+    ~expect_fail("module_tests/exit_external.ms", name, "started\n", "", retcode_expected=5)
+}
+
 fun test_lib_vardump(name) {
     // Note: This test is sensitive to bytecodegen changes because it uses
     // hardcoded addresses
@@ -862,6 +894,11 @@ Caught: FileNotFoundError: \n""", "")
 fun test_lib_ranges(name) {
     ~expect_pass("stdlib_tests/ranges.ms", name, """1\n3\n5\n100\n99\n98\n-2\n3\n8\n0\n1\n2
 0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n""", "")
+}
+
+fun test_lib_input(name) {
+    ~expect_pass(f"stdlib_tests/input.ms < {::TEST_DIR}/stdlib_tests/input.ms", name, "> // input function test\n// this file is also read\n5//\n", "")
+    ~expect_pass(f"stdlib_tests/input_eof.ms < {::TEST_DIR}/empty.ms", name, "caught eof\n", "")
 }
 
 fun test_lib_lists(name) {
@@ -1146,7 +1183,7 @@ fun run_all_tests() {
     ~run_test("attributes")
     ~run_test("subscript_set")
     ~run_test("inheritance")
-    //~run_test("operator_funs")
+    ~run_test("operator_funs")
     ~run_test("lists")
     ~run_test("list_comprehension")
     ~run_test("dicts")
@@ -1178,7 +1215,7 @@ fun run_all_tests() {
     ~run_test("space_extending")
     ~run_test("closures")
     ~run_test("implicit_calls")
-    //~run_test("exceptions_catch")
+    ~run_test("exceptions_catch")
     ~run_test("runtime_errors")
     ~run_test("range_precedence")
     ~run_test("short_circuit_eval")
@@ -1201,13 +1238,13 @@ fun run_all_tests() {
     // stdlib tests
     ~run_test("lib_moss_module")
     ~run_test("lib_constants")
-    //~run_test("lib_exit")
+    ~run_test("lib_exit")
     ~run_test("lib_vardump")
     ~run_test("lib_print")
     ~run_test("lib_type_constructors")
     ~run_test("lib_builtin_exceptions")
     ~run_test("lib_ranges")
-    //~run_test("lib_input")
+    ~run_test("lib_input")
     ~run_test("lib_lists")
     ~run_test("lib_strings")
     ~run_test("lib_random")
