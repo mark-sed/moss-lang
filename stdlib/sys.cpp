@@ -1,4 +1,5 @@
 #include "sys.hpp"
+#include "moss.hpp"
 
 using namespace moss;
 using namespace mslib;
@@ -14,6 +15,34 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
         }},
     };
     return registry;
+}
+
+void sys::init_constants(Interpreter *vm) {
+    auto gf = vm->get_global_frame();
+    Value *err = nullptr;
+
+    // sys.version:String
+    auto version_reg = mslib::get_constant_register(vm, "version");
+    ustring version = MOSS_VERSION;
+#ifndef NDEBUG
+    version += " (DEBUG build)";
+#endif
+    gf->store(version_reg, new StringValue(version));
+    // sys.version
+
+    // sys.version_info
+    auto version_info_space = mslib::get_space("version_info", vm, err);
+    if (err)
+        opcode::raise(err);
+    version_info_space->set_attr("major", new IntValue(MOSS_VERSION_MAJOR));
+    version_info_space->set_attr("minor", new IntValue(MOSS_VERSION_MINOR));
+    version_info_space->set_attr("patch", new IntValue(MOSS_VERSION_PATCH));
+#ifndef NDEBUG
+    version_info_space->set_attr("build_type", new StringValue("debug"));
+#elif
+    version_info_space->set_attr("build_type", new StringValue("release"));
+#endif
+    // sys.version_info
 }
 
 Value *sys::platform(Interpreter *vm, CallFrame *cf, Value *&err) {

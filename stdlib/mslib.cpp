@@ -71,6 +71,14 @@ SpaceValue *mslib::get_space(ustring name, Interpreter *vm, Value *&err) {
     return spacetype;
 }
 
+opcode::Register mslib::get_constant_register(Interpreter *vm, ustring name) {
+    auto reg = vm->get_global_frame()->get_name_register(name);
+    if (!reg)
+        opcode::raise(mslib::create_name_error(
+            diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str())));
+    return *reg;
+}
+
 Value *vardump(Interpreter *vm, Value *v) {
     (void)vm;
     std::stringstream ss;
@@ -825,4 +833,9 @@ void mslib::dispatch(Interpreter *vm, ustring module_name, ustring name, Value *
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);
     vm->set_bci(caller_addr);
+}
+
+void mslib::call_const_initializer(ustring module_name, Interpreter *vm) {
+    if (module_name == "sys")
+        sys::init_constants(vm);
 }

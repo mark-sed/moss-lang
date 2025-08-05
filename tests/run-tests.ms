@@ -991,6 +991,10 @@ fun test_lib_sys_platform(name) {
     ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
 
+fun test_lib_sys_interpreter_info(name) {
+    ~expect_pass(f"stdlib_tests/sys_tests/interpreter_info.ms", name, "", "")
+}
+
 fun test_lib_md_parser_markdown_parsing(name) {
     exp_out = open(f"{::TEST_DIR}/stdlib_tests/md_parser_tests/markdown_parsing_expected_out.txt", "r")
     ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms {::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md", name, exp_out, "")
@@ -1221,6 +1225,7 @@ fun run_all_tests() {
 
     // sys
     ~run_test("lib_sys_platform")
+    ~run_test("lib_sys_interpreter_info")
 
     // md_parser
     ~run_test("lib_md_parser_markdown_parsing")

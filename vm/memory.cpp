@@ -72,6 +72,14 @@ Value *MemoryPool::load_name(ustring name, Interpreter *vm, Value **owner) {
     return nullptr;
 }
 
+std::optional<opcode::Register> MemoryPool::get_name_register(ustring name) {
+    auto index = this->sym_table.find(name);
+    if (index != this->sym_table.end()) {
+        return index->second;
+    }
+    return std::nullopt;
+}
+
 bool MemoryPool::overwrite(ustring name, Value *v, Interpreter *vm) {
     LOGMAX("Overwriting value " << name);
     auto index = this->sym_table.find(name);

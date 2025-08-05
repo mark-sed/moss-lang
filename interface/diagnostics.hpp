@@ -158,6 +158,7 @@ enum DiagID : unsigned {
     EOF_INPUT,              ///< Reached EOF
     ENABLE_CODE_OUT_ARG_SET,///< When someone sets arguments for enable code output annotation
     DISABLE_CODE_OUT_ARG_SET,///< Same as above but disabled
+    INTERNAL_MODULE_ARG_SET, ///< Same as above but for internal_module annotation
     UNKNOWN_MODULE_ANNOTATION, ///< Annotation name that is not known
     NO_TYPE_CONV_F_DEFINED, ///< When class does not have __Int
     TYPE_CANNOT_BE_CONV,    ///< Passed non convertable value
@@ -316,6 +317,7 @@ static const char * DIAG_MSGS[] = {
     "End of input",
     "Annotation 'enable_code_output' does not take any arguments",
     "Annotation 'disable_code_output' does not take any arguments",
+    "Annotation 'internal_module' does not take any arguments",
     "Unknown module annotation name '%s'",
     "Object of type '%s' cannot be converted to %s — %s method has to be defined",
     "Type '%s' cannot be converted to %s",

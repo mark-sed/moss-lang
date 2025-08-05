@@ -1362,7 +1362,7 @@ void Annotate::exec(Interpreter *vm) {
     } else {
         d->annotate(name, v);
     }
-    // TODO: Generalize the extraction
+
     if (name == "internal_bind") {
         LOGMAX("Internal binding");
         auto bind_name = dyn_cast<StringValue>(v);
@@ -1405,6 +1405,9 @@ void AnnotateMod::exec(Interpreter *vm) {
     } else if (name == "disable_code_output") {
         op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::DISABLE_CODE_OUT_ARG_SET)));
         vm->set_enable_code_output(false);
+    } else if (name == "internal_module") {
+        op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::DISABLE_CODE_OUT_ARG_SET)));
+        mslib::call_const_initializer(vm->get_src_file()->get_module_name(), vm);
     } else {
         raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::UNKNOWN_MODULE_ANNOTATION, name.c_str())));
     }

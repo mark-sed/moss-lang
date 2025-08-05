@@ -33,10 +33,14 @@ public:
     static const std::unordered_map<std::string, mslib_dispatcher>& get_registry(ustring module_name);
 };
 
+void call_const_initializer(ustring module_name, Interpreter *vm);
+
 Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
 EnumTypeValue *get_enum(ustring name, Interpreter *vm, Value *&err);
 EnumTypeValue *get_enum(ustring name, CallFrame *cf, Value *&err);
 SpaceValue *get_space(ustring name, Interpreter *vm, Value *&err);
+
+opcode::Register get_constant_register(Interpreter *vm, ustring name);
 
 Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err);
 Value *call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std::initializer_list<Value *> args, Value *&err);

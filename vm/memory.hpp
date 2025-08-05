@@ -17,6 +17,7 @@
 #include <map>
 #include <cstdint>
 #include <iostream>
+#include <optional>
 
 namespace moss {
 
@@ -95,6 +96,8 @@ public:
     /// \param owner Returns value which owns this value if the value is in a
     ///              closure.
     Value *load_name(ustring name, Interpreter *vm, Value **owner=nullptr);
+
+    std::optional<opcode::Register> get_name_register(ustring name);
 
     bool overwrite(ustring name, Value *v, Interpreter *vm);
 
