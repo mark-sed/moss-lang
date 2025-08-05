@@ -1,3 +1,5 @@
+Generators.HTML.FOOTER = ""
+
 md"""\
 # Title
 Some text after title **with bold** & some bad values \"<>\".

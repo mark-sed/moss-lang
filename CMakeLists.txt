@@ -59,6 +59,7 @@ set(SOURCES
     stdlib/cffi.cpp
     stdlib/subprocess.cpp
     stdlib/sys.cpp
+    stdlib/time.cpp
     interface/commons.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp
@@ -125,6 +126,7 @@ moss_compile(libms)
 moss_compile(cffi)
 moss_compile(subprocess)
 moss_compile(sys)
+moss_compile(time)
 moss_compile(md_parser)
 moss_compile(html_parser)
 
@@ -136,6 +138,7 @@ add_custom_target(
     DEPENDS build_cffi
     DEPENDS build_subprocess
     DEPENDS build_sys
+    DEPENDS build_time
     DEPENDS build_md_parser
     DEPENDS build_html_parser
     DEPENDS copy_mossy.css

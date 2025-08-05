@@ -3,9 +3,7 @@
 /// \author Marek Sedlacek
 /// \copyright Copyright 2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
-/// 
-/// \brief Moss File standard library methods
-/// 
+///
 /// This contains internal implementations of sys.ms module
 /// 
 
@@ -32,6 +30,5 @@ Value *platform(Interpreter *vm, CallFrame *cf, Value *&err);
 }
 }
 }
-
 
 #endif//_SYS_HPP_

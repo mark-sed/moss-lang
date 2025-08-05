@@ -180,6 +180,7 @@ enum DiagID : unsigned {
     NOT_CPP_MOSS_VALUE,     ///< When t_cpp value was expected, but was other value
     BAD_MULTI_REPLACE_ELEM, ///< When multi_replace does not get list of list of 2 values
     NO_SUPER,               ///< Call to a super without a super
+    TIME_TIMESTAMP_OOR,     ///< When timestamp value is oor
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -339,6 +340,7 @@ static const char * DIAG_MSGS[] = {
     "Expected C++ compatible value (from cpp space), but got value of type '%s'",
     "String.multi_replace expects as an argument a List of Lists of 2 Strings (e.g.: '[[\"a\", \"b\"], [\"c\", \"d\"]])",
     "Class '%s' does not have a super class to call",
+    "Timestamp is too small or too large",
 };
 
 /// \brief ID of diagnostic error
