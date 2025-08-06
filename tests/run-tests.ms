@@ -15,6 +15,18 @@ TEST_DIR = ""
 EXTRA_FLAGS = ""
 PLATFORM = sys.platform()
 
+if (PLATFORM == sys.Platform.Linux) {
+    C_OFF="\q033[0m"
+    C_RED="\q033[0;31m"
+    C_GREEN="\q033[0;32m"
+    C_GRAY="\q033[1;30m"
+} else {
+    C_OFF=""
+    C_RED=""
+    C_GREEN=""
+    C_GRAY=""
+}
+
 fun print_help() {
     f"""Moss test suite (version {::__VERSION})
 Usage: moss run-tests.ms [-moss path_to_moss] [-test-dir path_to_test] [-extra-flags flags]
@@ -54,7 +66,23 @@ fun parse_args(args) {
 fun fail(name:String, msg:String) {
     if (not name in FAILED_TESTS)
         ~::FAILED_TESTS.append(name)
-    ~print(f"FAIL: {name}: {msg}")
+    ~print(f"{C_RED}FAIL{C_OFF}: {name}: {msg}")
+}
+
+fun rm(path:String, relative_path:Bool=true) {
+    // TODO: Replace with built in rm once added
+    if (relative_path)
+        full_path = ::TEST_DIR++path
+    else
+        full_path = path
+    // For Windows replace slashes
+    if (::PLATFORM == sys.Platform.Windows)
+        full_path = full_path.replace("/", "\\")
+
+    if (::PLATFORM == sys.Platform.Windows)
+        ~subprocess.system(f"del /f /q {full_path} 2>nul")
+    else
+        ~subprocess.system(f"rm -f {full_path}")
 }
 
 fun run(test:String, name:String, args:String="", use_repl:Bool=false, exec:Bool=false) {
@@ -64,9 +92,45 @@ fun run(test:String, name:String, args:String="", use_repl:Bool=false, exec:Bool
         path = path.replace("/", "\\")
     if (exec)
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} -e '{test}'")
-    if (not use_repl)
-        return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
-    return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} --use-repl-mode < {path}")
+    if (use_repl)
+        return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} --use-repl-mode < {path}")
+    return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
+}
+
+fun compile(test:String,
+            output_msb:String,
+            name:String,
+            args:String="",
+            compile_only:Bool=true) {
+    path = ::TEST_DIR++test
+    // For Windows replace slashes
+    if (::PLATFORM == sys.Platform.Windows)
+        path = path.replace("/", "\\")
+    com_onl = compile_only ? "--compile-only" : ""
+    return subprocess.run(f"{::MOSS_PATH} -o {::TEST_DIR++output_msb} {com_onl} {args} {::EXTRA_FLAGS} {path}")
+}
+
+fun expect_str_eq_file(txt:String, file:String, name:String) {
+    ftxt = with_open(f"{::TEST_DIR}{file}", fun(f)="\n".join(f.readlines()))
+    if (txt != ftxt) {
+        ~fail(name, "File comparison failed")
+        ~print(f"String:\n--------\n{txt}")
+        ~print(f"File:\n--------\n{ftxt}")
+        return false
+    }
+    return true
+}
+
+fun expect_file_eq(file1:String, file2:String, name:String) {
+    f1txt = with_open(f"{::TEST_DIR}{file1}", fun(f)="\n".join(f.readlines()))
+    f2txt = with_open(f"{::TEST_DIR}{file2}", fun(f)="\n".join(f.readlines()))
+    if (f1txt != f2txt) {
+        ~fail(name, "File comparison failed")
+        ~print(f"File 1:\n--------\n{f1txt}")
+        ~print(f"File 2:\n--------\n{f2txt}")
+        return false
+    }
+    return true
 }
 
 fun expect_pass(test:String,
@@ -75,8 +139,15 @@ fun expect_pass(test:String,
                 expected_err:[String,File]=nil,
                 args:String="",
                 use_repl:Bool=false,
-                exec:Bool=false) {
-    result = run(test, name, args, use_repl, exec)
+                exec:Bool=false,
+                compile_and_run:Bool=false,
+                compile_only:Bool=false,
+                output_msb:[String,NilType]=nil) {
+    if (compile_and_run or compile_only) {
+        assert(output_msb != nil, "Did not set output msb file for compile")
+        result = compile(test, output_msb, name, args, compile_only)
+    } else
+        result = run(test, name, args, use_repl, exec)
     // Normalize \r\n on windows to \n
     if (::PLATFORM == sys.Platform.Windows) {
         result.stdout = result.stdout.replace("\r", "")
@@ -130,8 +201,15 @@ fun expect_fail(test:String,
                 expected_err:[String,File]=nil,
                 args:String="",
                 retcode_expected:Int=nil,
-                exec:Bool=false) {
-    result = run(test, name, args, false, exec)
+                exec:Bool=false,
+                compile_and_run:Bool=false,
+                compile_only:Bool=false,
+                output_msb:[String,NilType]=nil) {
+    if (compile_and_run or compile_only) {
+        assert(output_msb != nil, "Did not set output msb file for compile")
+        result = compile(test, output_msb, name, args, compile_only)
+    } else
+        result = run(test, name, args, false, exec)
     // Normalize \r\n on windows to \n
     if (::PLATFORM == sys.Platform.Windows) {
         result.stdout = result.stdout.replace("\r", "")
@@ -191,6 +269,53 @@ space Tests {
 
 fun test_empty(name) {
     ~expect_pass("empty.ms", name, "", "")
+}
+
+fun test_bc_read_write(name) {
+    // Run and generate bc_read_write.msb
+    ~expect_pass("bc_rw_output.ms", name, "Hello, World!\n", "", compile_and_run=true, output_msb="bc_read_write")
+    // Run compile code
+    ~expect_pass("bc_read_write.msb", name, "Hello, World!\n")
+
+    // Cannot output bc for input bc
+    ~expect_fail("bc_read_write.msb", name, "", 
+        "moss: fatal error (Argument): Trying to dump bytecode for bytecode input.\n",
+        compile_only=true, output_msb="test.msb", args="--use-color=0")
+
+    // Check header
+    ~expect_pass("bc_read_write.msb", name, args="--print-bc-header", /*, rx_out="Bytecode header:\n  id:        0xff00002a\n  checksum:  0x0\n  version:   \(0x[0-9A-Za-z]*\) [0-9]+\.[0-9]+\.[0-9]+\n  timestamp: \([0-9]+\) .*\n"*/)
+
+    // Textual output
+    ~expect_pass("bc_rw_output.ms", name, "Hello, World!\n", "", compile_and_run=true, output_msb="bc_read_write.txt", args="-S")
+    ~expect_file_eq("bc_read_write_expected.txt", "bc_read_write.txt", name)
+
+    ~rm("bc_read_write.msb")
+    ~rm("bc_read_write.txt")
+}
+
+fun test_note_options(name) {
+    // Normal run
+    ~expect_pass("simple_notes.ms", name, "Start\n# Title1\nParagraph1\n\n# Title2\nParagraph2\nEnd\n", "")
+
+    // Quiet run wihtout notes
+    ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args="-q")
+    ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args="--disable-notes")
+
+    // -O option
+    OUTF="._note_opts_out.ms"
+    ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args=f"-O {::TEST_DIR}{OUTF}")
+    ~expect_str_eq_file("# Title1\nParagraph1\n\n# Title2\nParagraph2", OUTF, name)
+    ~rm(OUTF)
+
+    // -O and -p
+    ~expect_pass("simple_notes.ms", name, "Start\n# Title1\nParagraph1\n\n# Title2\nParagraph2\nEnd\n", "", args=f"-O {::TEST_DIR}{OUTF} -p")
+    ~expect_str_eq_file("# Title1\nParagraph1\n\n# Title2\nParagraph2", OUTF, name)
+    ~rm(OUTF)
+
+    // Invalid combination
+    ~expect_fail("simple_notes.ms", name, "", /*rx_err="Invalid combination of arguments",*/ args=f"-q -O {::TEST_DIR}{OUTF}")
+    ~expect_fail("simple_notes.ms", name, "", /*rx_err="Invalid combination of arguments",*/ args=f"-q -p")
+    ~rm(OUTF)
 }
 
 fun test_output(name) {
@@ -446,6 +571,10 @@ fun test_compound_assignment(name) {
 [1.000000, 5, 10]\n[1.000000, 5, 0]\n""", "")
 }
 
+fun test_calls(name) {
+    ~expect_pass("calls.ms", name/*, rx_out="called.*.*\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\nhi\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\n"*/)
+}
+
 fun test_continues_and_breaks(name) {
     ~expect_pass("continues_and_breaks.ms", name, """hi\n13579\n13579
 d1 d3 c1d1 d3 c2d1 d3 c3d1 d3 c4d1 d3 c5d1 d3 c6d1 d3 c7d1 d3 c8d1 d3 c9
@@ -598,6 +727,26 @@ a [2, 3, 4, 5] c d
 caught\n""", "")
 }
 
+fun test_basic_import(name) {
+    if (expect_pass("module_tests/greet_bc.ms", name, compile_only=true, output_msb="module_tests/greet_compiled.msb")) {
+        ~expect_pass("module_tests/module.ms", name, """module.ms started
+Hello, from greet.ms
+Back in module
+Hi, from msb greet
+<module greet>
+<module greet_compiled>
+Hello, from greet.ms
+greet's name: greet.ms (greet.ms)
+Hello, from greet.ms
+greet.ms
+Ending module.ms\n""")
+    }
+    // Check that import spill stays in its scope
+    ~expect_fail("module_tests/local_import.ms", name, "Hello, from greet.ms\ngreet.ms\n"/*, rx_err="'NAME' is not defined"*/)
+    
+    ~rm("module_tests/greet_compiled.msb")
+}
+
 fun test_import_calls(name) {
     ~expect_pass("module_tests/square.ms", name, """mod1 ran!\nanon_space_value\nsquare\nmod2fun\ngot result\n25\n9\n100\n49
 mod1 ran!\nanon_space_value\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n""", "")
@@ -712,6 +861,50 @@ fun test_static_methods(name) {
 
 fun test_type_casting(name) {
     ~expect_pass("type_casting.ms", name, """42\ntrue\n42\n42.000000\ncaught\ncaught\ncaught\n""", "")
+}
+
+fun test_warnings(name) {
+    out_expr = """start
+-9223372036854775807
+9223372036854775807
+inf
+-0.000000
+-inf\n"""
+    // No -W means -W ignore
+    ~expect_pass("warnings.ms", name, out_expr, "")
+    ~expect_pass("warnings.ms", name, out_expr, "", args="-Wi")
+
+    // -W error has to fail
+    ~expect_fail("warnings.ms", name, args="-W error")
+
+    // -W all outputs errors to stderr and continues
+    ~expect_pass("warnings.ms", name, out_expr, """\
+warning: tests/warnings.ms:4:29:
+      | Value '9223372036854775808' cannot fit into Int. [WDx1]
+      | 
+    4 | incor = -9223372036854775808 
+      |                                    ^
+warning: tests/warnings.ms:5:29:
+      | Value '9223372036854775808' cannot fit into Int. [WDx1]
+      | 
+    5 | incor2 = 9223372036854775808 
+      |                                    ^
+warning: tests/warnings.ms:11:15:
+      | Value '1e500' is too big or too close to 0 to fit into Float. [WDx2]
+      | 
+   11 | fincor = 1e500 
+      |                      ^
+warning: tests/warnings.ms:14:20:
+      | Value '2.5e-500' is too big or too close to 0 to fit into Float. [WDx2]
+      | 
+   14 | fincor2 = -2.5e-500 
+      |                           ^
+warning: tests/warnings.ms:17:7:
+      | Value '1e500' is too big or too close to 0 to fit into Float. [WDx2]
+      | 
+   17 | -1e500 
+      |              ^
+""", args="-W all")
 }
 
 fun test_implicit_formats(name) {
@@ -956,6 +1149,21 @@ fun test_lib_math(name) {
 [2, 1]\n[59, 22]\ncaught\n2.000000\n0.800000\n[0.000000, 2.300000]\n""", "")
 }
 
+fun test_lib_file(name) {
+    DATA_FILE=".data_file_read.txt"
+    ~with_open(DATA_FILE, fun(f) = f.write("Czechia\nSlovakia\n\nFrance\nEngland\nGermany\nItaly"), "w")
+
+    ~expect_pass("stdlib_tests/file.ms", name, """caught\ncaught\n<C++ value of type std::fstream>
+[\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]
+written line
+Lorem Ipsum
+Lorem Ipsum\n""", "")
+
+    ~rm(DATA_FILE, false)
+    ~rm(".created_file_t.txt1", false)
+    ~rm(".created_file_2.txt", false)
+}
+
 fun test_lib_args(name) {
     ~expect_pass("stdlib_tests/args.ms 1 2", name, "[\"1\", \"2\"]", "")
     ~expect_pass("stdlib_tests/args.ms", name, "[]", "")
@@ -1153,9 +1361,9 @@ fun run_test(name) {
     ~print(f"[{::INDEX}/{::TEST_AMOUNT}] {name}: Running")
     ~test_fun(name)
     if (failed_amount == ::FAILED_TESTS.length())
-        ~print(f"[{::INDEX}/{::TEST_AMOUNT}] {name}: OK")
+        ~print(f"[{::INDEX}/{::TEST_AMOUNT}] {name}: {C_GREEN}OK{C_OFF}")
     else
-        ~print(f"[{::INDEX}/{::TEST_AMOUNT}] {name}: FAILED")
+        ~print(f"[{::INDEX}/{::TEST_AMOUNT}] {name}: {C_RED}FAILED{C_OFF}")
 }
 
 FAILED_TESTS = []
@@ -1165,8 +1373,8 @@ INDEX = 0
 
 fun run_all_tests() {
     ~run_test("empty")
-    //~run_test("bc_read_write")
-    //~run_test("note_options")
+    ~run_test("bc_read_write")
+    ~run_test("note_options")
 
     ~run_test("output")
     ~run_test("expressions")
@@ -1193,7 +1401,7 @@ fun run_all_tests() {
     ~run_test("indexing")
     ~run_test("range_expr")
     ~run_test("compound_assignment")
-    //~run_test("calls")
+    ~run_test("calls")
     ~run_test("continues_and_breaks")
     ~run_test("scopes")
     ~run_test("lambdas")
@@ -1208,7 +1416,7 @@ fun run_all_tests() {
     ~run_test("multivar")
     ~run_test("function_overwriting")
 
-    //~run_test("basic_import")
+    ~run_test("basic_import")
     ~run_test("import_calls")
     ~run_test("modules_and_spaces")
     ~run_test("space_imports")
@@ -1226,7 +1434,7 @@ fun run_all_tests() {
     ~run_test("enable_code_output")
     ~run_test("static_methods")
     ~run_test("type_casting")
-    //~run_test("warnings")
+    ~run_test("warnings")
     ~run_test("implicit_formats")
 
     ~run_test("fibonacci")
@@ -1249,7 +1457,7 @@ fun run_all_tests() {
     ~run_test("lib_strings")
     ~run_test("lib_random")
     ~run_test("lib_math")
-    //~run_test("lib_file")
+    ~run_test("lib_file")
     ~run_test("lib_args")
     ~run_test("lib_types")
     ~run_test("lib_complex")
@@ -1290,7 +1498,17 @@ fun run_all_tests() {
 }
 
 if (EXTRA_FLAGS != "")
-    ~print(f"Running all tests with \"{EXTRA_FLAGS}\"")
+    ~print(f"{C_GRAY}Running all tests with \"{EXTRA_FLAGS}\"{C_OFF}")
+// Add / or \ to ::TEST_DIR path
+if (::TEST_DIR.length() != 0) {
+    if(PLATFORM == sys.Platform.Windows && ::TEST_DIR[-1] != "\\") {
+        ::TEST_DIR ++= "\\"
+    } else if (::TEST_DIR[-1] != "/") {
+        ::TEST_DIR ++= "/"
+    }
+} else {
+    ::TEST_DIR="./"
+}
 start_time = time.time()
 ~run_all_tests()
 end_time = time.time()
@@ -1299,12 +1517,12 @@ elapsed_time = String(round(end_time - start_time, 1))
 elapsed_time = elapsed_time[0..elapsed_time.length()-5]
 
 if (FAILED_TESTS.length() != 0) {
-    ~print(f"FAILED: {FAILED_TESTS.length()} test(s) did not pass")
+    ~print(f"{C_RED}FAILED{C_OFF}: {FAILED_TESTS.length()} test(s) did not pass")
     ~print("Failed tests:")
     for (t: FAILED_TESTS) {
         ~print("\t"++t)
     }
 } else {
     // TODO: Add time measurement
-    ~print(f"SUCCESS: {::INDEX} tests passed (after {elapsed_time} s)")
+    ~print(f"{C_GREEN}SUCCESS{C_OFF}: {::INDEX} tests passed (after {elapsed_time} s)")
 }

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# WARNING: This is an old and deprecated testing script, which is not
+# updated, it does not contain new tests nor updated outputs for older tests.
+# Use run-tests.ms.
+
 # Script for running moss tests and checking the results
 # example run: bash tests/run-tests.sh -moss build/moss -test-dir tests/
 
@@ -43,6 +47,8 @@ C_OFF='\033[0m'
 C_RED='\033[0;31m'
 C_GREEN='\033[0;32m'
 C_GRAY='\033[1;30m'
+
+printf "${C_RED}WARNING: This is an old and deprecated testing script, use run-tests.ms${C_OFF}\n"
 
 function failed {
     FAILED_TESTS+=" $1"
@@ -805,11 +811,11 @@ inf
     expect_fail_log "warnings.ms" "-W error" "error:" $1
 
     # -W all outputs errors to stderr and continues
-    expect_pass_log "warnings.ms" "-W all" $1
-    # pass_log will concat the streams, but beware that the highlights will be
-    # offset and so for a new version it is better to copy $OUTP_STD or
-    # just create single tests for this one warning
-    expect_file_eq $OUTP_STD "${TEST_DIR}warnings_expected.txt" $1
+    #expect_pass_log "warnings.ms" "-W all" $1
+    ## pass_log will concat the streams, but beware that the highlights will be
+    ## offset and so for a new version it is better to copy $OUTP_STD or
+    ## just create single tests for this one warning
+    #expect_file_eq $OUTP_STD "${TEST_DIR}warnings_expected.txt" $1
 }
 
 function test_basic_import {
@@ -1426,3 +1432,5 @@ else
     runtime=$((end_time-start_time))
     printf "${C_GREEN}SUCCESS${C_OFF}: $INDEX tests passed (after $runtime s)\n"
 fi
+
+printf "${C_RED}WARNING: This is an old and deprecated testing script, use run-tests.ms${C_OFF}\n"

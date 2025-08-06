@@ -184,7 +184,7 @@ int main(int argc, const char *argv[]) {
 
     int exit_code = 0;
     // Interpretation
-    if (!clopts::output_only) {
+    if (!clopts::compile_only) {
         Interpreter *interpreter = new Interpreter(bc, input_file, true);
 
         try {

@@ -61,9 +61,9 @@ int Repl::run() {
         }
 
 #ifndef NDEBUG
-        if (!clopts::parse_only && !clopts::output_only) {
+        if (!clopts::parse_only && !clopts::compile_only) {
 #else
-        if (!clopts::output_only) {
+        if (!clopts::compile_only) {
 #endif
             //LOGMAX(*bc);
             try {

@@ -51,10 +51,7 @@ elif [ "${TARGET}" = "tests" ]; then
     # Run tests
     echo "Running unit tests"
     sudo -u $SUDO_USER ./$BUILD_DIR/testsmoss || exit 1
-    # TODO: Remove sh tests run once all tests are ported to moss tests
-    echo "Running sh moss tests"
-    sudo -u $SUDO_USER bash tests/run-tests.sh -test-dir tests/ || exit 1
-    echo "Running ms moss tests"
+    echo "Running moss tests"
     sudo -u $SUDO_USER moss tests/run-tests.ms -test-dir tests/ || exit 1
 elif [ "${TARGET}" = "all" ]; then
     sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1

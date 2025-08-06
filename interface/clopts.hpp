@@ -30,7 +30,7 @@ inline args::ValueFlag<std::string> warning(interpreter_group, "[all, error, ign
 inline args::Group bc_group(arg_parser, "Moss bytecode options:");
 inline args::ValueFlag<std::string> output(bc_group, "<msb file name>", "Outputs moss bytecode for input program", {'o', "output-msb"});
 inline args::Flag dump_text_bc(bc_group, "S", "Outputs bytecode in textual form", {'S', "textual-msb"});
-inline args::Flag output_only(bc_group, "output-only", "Outputs bytecode and does not interpret it", {"output-only"});
+inline args::Flag compile_only(bc_group, "compile-only", "Outputs bytecode and does not interpret it", {"compile-only"});
 inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
 
 inline args::Flag input_bc(bc_group, "bytecode", "Treats input file as bytecode file", {"bytecode"});
