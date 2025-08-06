@@ -1,5 +1,13 @@
 #include "sys.hpp"
 #include "moss.hpp"
+#include <cstdlib>
+#include <utility>
+
+#if defined(__windows__)
+    #include <windows.h>
+#else
+    extern char **environ; // POSIX global
+#endif
 
 using namespace moss;
 using namespace mslib;
@@ -13,9 +21,52 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
             assert(args.size() == 0);
             return sys::platform(vm, cf, err);
         }},
+        {"getenv", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1 || args.size() == 2);
+            return sys::getenv(vm, cf->get_arg("name"), cf->get_arg("def_val"), err);
+        }},
     };
     return registry;
 }
+
+// Useful later for list of all
+/*std::vector<std::pair<ustring, ustring>> get_all_env_vars() {
+    std::vector<std::pair<ustring, ustring>> vars;
+#if defined(__windows__)
+    // Windows: use Unicode-safe version
+    LPWCH envBlock = GetEnvironmentStringsW();
+    if (!envBlock) return vars;
+
+    LPWCH var = envBlock;
+    while (*var) {
+        std::wstring wvar(var);
+        size_t eqPos = wvar.find(L'=');
+        if (eqPos != std::wstring::npos) {
+            ustring key(wvar.begin(), wvar.begin() + eqPos);
+            ustring value(wvar.begin() + eqPos + 1, wvar.end());
+            vars.emplace_back(key, value);
+        }
+        var += wcslen(var) + 1;
+    }
+
+    FreeEnvironmentStringsW(envBlock);
+#else
+    // POSIX: iterate over environ
+    for (char **env = ::environ; *env != nullptr; ++env) {
+        ustring entry(*env);
+        size_t eqPos = entry.find('=');
+        if (eqPos != ustring::npos) {
+            vars.emplace_back(entry.substr(0, eqPos), entry.substr(eqPos + 1));
+        }
+    }
+#endif
+    return vars;
+}*/
+
+
+
 
 void sys::init_constants(Interpreter *vm) {
     auto gf = vm->get_global_frame();
@@ -39,7 +90,7 @@ void sys::init_constants(Interpreter *vm) {
     version_info_space->set_attr("patch", new IntValue(MOSS_VERSION_PATCH));
 #ifndef NDEBUG
     version_info_space->set_attr("build_type", new StringValue("debug"));
-#elif
+#else
     version_info_space->set_attr("build_type", new StringValue("release"));
 #endif
     // sys.version_info
@@ -73,4 +124,18 @@ Value *sys::platform(Interpreter *vm, CallFrame *cf, Value *&err) {
     }
     assert(result && "No platform was matched");
     return result;
+}
+
+Value *sys::getenv(Interpreter *vm, Value *name, Value *def_val, Value *&err) {
+    assert(isa<StringValue>(name) && "Name is not string");
+    const char* value = std::getenv(name->as_string().c_str());
+
+    if (!value) {
+        if (def_val)
+            return def_val;
+        err = mslib::create_key_error(diags::Diagnostic(*vm->get_src_file(), diags::KEY_NOT_FOUND, name->as_string().c_str()));
+        return nullptr;
+    }
+
+    return new StringValue(ustring(value));
 }

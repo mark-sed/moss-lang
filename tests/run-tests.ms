@@ -1241,6 +1241,10 @@ fun test_lib_sys_interpreter_info(name) {
     ~expect_pass(f"stdlib_tests/sys_tests/interpreter_info.ms", name, "", "")
 }
 
+fun test_lib_sys_environment(name) {
+    ~expect_pass(f"stdlib_tests/sys_tests/environment.ms", name, "caught\ndoes not exist\n", "")
+}
+
 fun test_lib_time_clock_time(name) {
     ~expect_pass(f"stdlib_tests/time_tests/clock_time.ms", name, """time.StructTime(tm_year=2025, tm_mon=8, tm_mday=5, tm_hour=16, tm_min=55, tm_sec=36, tm_wday=1, tm_yday=217, tm_isdst=1, tm_zone="", tm_gmtoff=nil)
 2025-8-5_17:26:15\ntrue\ntrue
@@ -1478,6 +1482,7 @@ fun run_all_tests() {
     // sys
     ~run_test("lib_sys_platform")
     ~run_test("lib_sys_interpreter_info")
+    ~run_test("lib_sys_environment")
 
     // time
     ~run_test("lib_time_clock_time")

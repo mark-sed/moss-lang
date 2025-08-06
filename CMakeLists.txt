@@ -111,7 +111,7 @@ function(moss_compile NAME)
 
     add_custom_command(
         OUTPUT ${OUTPUT_MSB}
-        COMMAND ${PROJECT_NAME} -W all --output-only -o ${OUTPUT_MSB} ${INPUT_MS}
+        COMMAND ${PROJECT_NAME} -W all --compile-only -o ${OUTPUT_MSB} ${INPUT_MS}
         DEPENDS ${INPUT_MS}
         COMMENT "Building ${NAME}"
         VERBATIM

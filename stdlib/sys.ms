@@ -24,6 +24,11 @@ enum Platform {
 @internal
 fun platform() {}
 
+@internal
+fun getenv(name:String) {}
+@internal
+fun getenv(name:String, def_val) {}
+
 // This annotation has to be last so that
 // it can access values defined above.
 @!internal_module
