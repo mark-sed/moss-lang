@@ -312,7 +312,7 @@ Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base, Value *&err) {
         assert(base_int && "TODO: Raise type exception as base is not int");
         char *pend;
         errno = 0;
-        auto vi = std::strtol(sv->get_value().c_str(), &pend, base_int->get_value());
+        auto vi = std::strtoll(sv->get_value().c_str(), &pend, base_int->get_value());
         if (*pend != '\0')
             assert(false && "TODO: Raise error value is not int");
         if (errno != 0) {

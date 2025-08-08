@@ -674,7 +674,7 @@ Token *Scanner::next_token() {
             }
             case EOF: return tokenize(c, TokenType::END_OF_FILE);
             // Error cases with notes
-            case '\'': return err_tokenize(c, "Strings can be in single quotes (\"text\") or triple quotes (\"\"\"test\"\"\")", error::msgs::UNKNOWN_SYMBOL, ustring(1, c).c_str());
+            case '\'': return err_tokenize(c, "Strings can be in single quotes (\"text\") or triple quotes (\"\"\"text\"\"\")", error::msgs::UNKNOWN_SYMBOL, ustring(1, c).c_str());
         }
 
         // Unknown token

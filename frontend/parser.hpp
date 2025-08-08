@@ -166,7 +166,9 @@ public:
 
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
                                lower_range_prec(false), reading_by_lines(false),
-                               multi_line_parsing(0), enable_code_output(false) {}
+                               multi_line_parsing(0), enable_code_output(false) {
+        static_assert(sizeof(long long) * CHAR_BIT >= 64, "long long on this platform is less than 64bit, parsing will be incorrect");                            
+    }
     ~Parser() {
         delete scanner;
         for (auto *t: tokens)

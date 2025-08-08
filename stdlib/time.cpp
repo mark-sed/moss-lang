@@ -1,5 +1,6 @@
 #include "time.hpp"
 #include "moss.hpp"
+#include "builtins.hpp"
 #include <chrono>
 #include <ctime>
 
@@ -60,8 +61,14 @@ Value *time::localtime(Interpreter *vm, CallFrame *cf, Value *secs, Value *&err)
     auto tm_wday = new IntValue(local->tm_wday);
     auto tm_yday = new IntValue(local->tm_yday);
     auto tm_isdst = new IntValue(local->tm_isdst);
+    // tm_zone and tm_gmtoff is only on posix
+#ifdef __linux__ // Add also mac
     auto tm_zone = new StringValue(local->tm_zone);
     auto tm_gmtoff = new IntValue(local->tm_gmtoff);
+#else
+    auto tm_zone = new StringValue("");
+    auto tm_gmtoff = BuiltIns::Nil;
+#endif
 
     auto timestru = mslib::call_constructor(vm, cf, "StructTime", {tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst, tm_zone, tm_gmtoff}, err);
     // If err then timestru is nullptr anyway and err is set
@@ -115,6 +122,8 @@ Value *time::strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, V
         temp_time.tm_wday = get_time_int_att("tm_wday");
         temp_time.tm_yday = get_time_int_att("tm_yday");
         temp_time.tm_isdst = get_time_int_att("tm_isdst");
+        // tm_zone and tm_gmtoff is only on posix
+#ifdef __linux__ // Add also mac
         // Following value might be nil
         Value *tm_gmtoff_v = mslib::get_attr(t, "tm_gmtoff", vm, err);
         if (tm_gmtoff_v && !isa<NilValue>(tm_gmtoff_v))
@@ -134,6 +143,7 @@ Value *time::strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, V
         // tm_zone might be empty string
         if (tm_zone_str->get_value().length() > 0)
             temp_time.tm_zone = tm_zone_str->get_value().c_str();
+#endif
     }
     
     auto format_str = dyn_cast<StringValue>(format);

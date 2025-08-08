@@ -37,7 +37,7 @@ void BuiltIns::init_constant_variables(MemoryPool *gf, Interpreter *vm) {
 #ifdef __linux__
     ustring style_path = "/lib/moss/mossy.css";
 #elif defined(__windows__)
-    ustring style_path = moss::get_local_app_data_path()+"/moss/mossy.css";
+    ustring style_path = moss::get_local_app_data_path()+"\\moss\\mossy.css";
 #endif
     Value *err = nullptr;
     auto generators_space = mslib::get_space("Generators", vm, err);

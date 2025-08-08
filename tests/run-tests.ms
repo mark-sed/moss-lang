@@ -88,10 +88,19 @@ fun rm(path:String, relative_path:Bool=true) {
 fun run(test:String, name:String, args:String="", use_repl:Bool=false, exec:Bool=false) {
     path = ::TEST_DIR++test
     // For Windows replace slashes
-    if (::PLATFORM == sys.Platform.Windows)
+    if (::PLATFORM == sys.Platform.Windows) {
         path = path.replace("/", "\\")
-    if (exec)
+    }
+    if (exec) {
+        if (::PLATFORM == sys.Platform.Windows) {
+            // On Windows we cannot use ' for -e so all " have to be escaped
+            test = test.replace("\"", "\\\"")
+            // New lines are also an issue so replace them with ;
+            test = test.replace("\n", ";")
+            return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} -e \"{test}\"")
+        }
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} -e '{test}'")
+    }
     if (use_repl)
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} --use-repl-mode < {path}")
     return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
@@ -911,7 +920,7 @@ fun test_implicit_formats(name) {
     ~expect_pass("implicit_formats.ms", name, r"""<!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="/lib/moss/mossy.css">
+    <link rel="stylesheet" href="">
 </head>
 <body>
 <p>Hello!<br></p>
@@ -928,7 +937,7 @@ fun test_implicit_formats(name) {
     ~expect_pass("example_markdown.ms", name, r"""<!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="/lib/moss/mossy.css">
+    <link rel="stylesheet" href="">
 </head>
 <body>
 <h1>Title</h1>

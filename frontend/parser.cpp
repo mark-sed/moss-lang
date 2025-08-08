@@ -1598,15 +1598,15 @@ Expression *Parser::constant() {
         // correct conversion, but we need to check for under/overflow
         char *end;
         errno = 0;
-        opcode::IntConst ival = std::strtol(val->get_value().c_str(), &end, 10);
+        opcode::IntConst ival = std::strtoll(val->get_value().c_str(), &end, 10);
         if (errno == ERANGE) {
             error::warning(diags::Diagnostic(true, this->src_file, curr_src_info(), scanner, diags::WarningID::INT_CANNOT_FIT, val->get_value().c_str()));
             // We set the long to max value as in C++ it is UB
             ival = std::numeric_limits<opcode::IntConst>::max();
             errno = 0;
         }
-        //assert(*end == '\0' && "std::strtol fail");
-        return new IntLiteral(atol(val->get_value().c_str()), curr_src_info());
+        //assert(*end == '\0' && "std::strtoll fail");
+        return new IntLiteral(ival, curr_src_info());
     }
     else if (check(TokenType::FLOAT)) {
         auto val = advance();
@@ -1857,7 +1857,7 @@ ustring Parser::unescapeString(ustring str) {
                     auto v = str.substr(i+1, 2);
                     char *end;
                     errno = 0;
-                    auto ival = std::strtol(v.c_str(), &end, 16);
+                    auto ival = std::strtoll(v.c_str(), &end, 16);
                     parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_HEX_ESC_SEQ, v.c_str()));
                     res << static_cast<char>(ival);
                     i+=2;
@@ -1869,7 +1869,7 @@ ustring Parser::unescapeString(ustring str) {
                     auto v = str.substr(i+1, 3);
                     char *end;
                     errno = 0;
-                    auto ival = std::strtol(v.c_str(), &end, 8);
+                    auto ival = std::strtoll(v.c_str(), &end, 8);
                     parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_OCT_ESC_SEQ, v.c_str()));
                     res << static_cast<char>(ival);
                     i+=3;
@@ -1880,7 +1880,7 @@ ustring Parser::unescapeString(ustring str) {
                     auto v = str.substr(i+1, 4);
                     char *end;
                     errno = 0;
-                    auto ival = std::strtol(v.c_str(), &end, 16);
+                    auto ival = std::strtoll(v.c_str(), &end, 16);
                     parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_UNICODE16_ESC_SEQ, v.c_str()));
                     res << unicode2UTF8(static_cast<char16_t>(ival));
                     i+=4;
@@ -1891,7 +1891,7 @@ ustring Parser::unescapeString(ustring str) {
                     auto v = str.substr(i+1, 8);
                     char *end;
                     errno = 0;
-                    auto ival = std::strtol(v.c_str(), &end, 16);
+                    auto ival = std::strtoll(v.c_str(), &end, 16);
                     parser_assert(*end == '\0' && errno == 0, create_diag(diags::INCORRECT_UNICODE32_ESC_SEQ, v.c_str()));
                     res << unicode2UTF8(static_cast<char32_t>(ival));
                     i+=8;

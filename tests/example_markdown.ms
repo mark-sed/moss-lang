@@ -1,4 +1,5 @@
 Generators.HTML.FOOTER = ""
+Generators.HTML.STYLE_PATH = ""
 
 md"""\
 # Title
