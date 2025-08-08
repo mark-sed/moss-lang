@@ -200,6 +200,7 @@ inline std::ostream& operator<< (std::ostream& os, const TokenType tt) {
         case TokenType::FOR: os << "FOR"; break;
         case TokenType::SWITCH: os << "SWITCH"; break;
         case TokenType::CASE: os << "CASE"; break;
+        case TokenType::DEFAULT: os << "DEFAULT"; break;
         case TokenType::TRY: os << "TRY"; break;
         case TokenType::CATCH: os << "CATCH"; break;
         case TokenType::FINALLY: os << "FINALLY"; break;

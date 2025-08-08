@@ -887,6 +887,7 @@ inf
     ~expect_fail("warnings.ms", name, args="-W error")
 
     // -W all outputs errors to stderr and continues
+    // FIXME: This test relies on the path "tests/warnings", which is bad and does not work on Windows
     ~expect_pass("warnings.ms", name, out_expr, """\
 warning: tests/warnings.ms:4:29:
       | Value '9223372036854775808' cannot fit into Int. [WDx1]

@@ -78,7 +78,9 @@ IR *Parser::parse() {
     LOG2("Running scanner");
     Token *t = nullptr;
     do {
+        LOGMAX("YEP");
         t = scanner->next_token();
+        LOGMAX("GOT" << *t);
         tokens.push_back(t);
     } while(t->get_type() != TokenType::END_OF_FILE);
     LOG2("Finished scanning");
