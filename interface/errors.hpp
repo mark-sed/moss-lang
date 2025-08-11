@@ -70,13 +70,17 @@ namespace error {
         extern const char *WHITE;
         extern const char *RESET;
 
+        inline bool is_colored() {
+            return is_stderr_atty() && clopts::use_color();
+        }
+
         /// Returns passes in color in case the output is not redirected.
         /// If output is redirected then this returns empty string ("")
         /// \param color Colors to sanitize
         /// \return color if output if not redirected otherwise empty string 
         inline const char *colorize(const char * color) {
             // Check if stderr is redirected
-            if(!is_stderr_atty() || !clopts::use_color()) {
+            if(!is_colored()) {
                 return "";
             }
             return color;
@@ -86,7 +90,7 @@ namespace error {
         /// \return colors::RESET if output is not redirected otherwise empty string 
         inline const char *reset() {
             // Check if stderr is redirected
-            if(!is_stderr_atty() || !clopts::use_color()) {
+            if(!is_colored()) {
                 return "";
             }
             return colors::RESET;

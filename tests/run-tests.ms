@@ -889,31 +889,31 @@ inf
     // -W all outputs errors to stderr and continues
     // FIXME: This test relies on the path "tests/warnings", which is bad and does not work on Windows
     ~expect_pass("warnings.ms", name, out_expr, """\
-warning: tests/warnings.ms:4:29:
+warning: tests/warnings.ms:4:10:
       | Value '9223372036854775808' cannot fit into Int. [WDx1]
       | 
     4 | incor = -9223372036854775808 
-      |                                    ^
-warning: tests/warnings.ms:5:29:
+      |          ^^^^^^^^^^^^^^^^^^^
+warning: tests/warnings.ms:5:10:
       | Value '9223372036854775808' cannot fit into Int. [WDx1]
       | 
     5 | incor2 = 9223372036854775808 
-      |                                    ^
-warning: tests/warnings.ms:11:15:
+      |          ^^^^^^^^^^^^^^^^^^^
+warning: tests/warnings.ms:11:10:
       | Value '1e500' is too big or too close to 0 to fit into Float. [WDx2]
       | 
    11 | fincor = 1e500 
-      |                      ^
-warning: tests/warnings.ms:14:20:
+      |          ^^^^^
+warning: tests/warnings.ms:14:12:
       | Value '2.5e-500' is too big or too close to 0 to fit into Float. [WDx2]
       | 
    14 | fincor2 = -2.5e-500 
-      |                           ^
-warning: tests/warnings.ms:17:7:
+      |            ^^^^^^^^
+warning: tests/warnings.ms:17:2:
       | Value '1e500' is too big or too close to 0 to fit into Float. [WDx2]
       | 
    17 | -1e500 
-      |              ^
+      |  ^^^^^
 """, args="-W all")
 }
 

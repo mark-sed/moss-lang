@@ -134,14 +134,17 @@ ustring error::format_error(diags::Diagnostic msg, bool warning_as_error) {
             col_start -= start;
         }
 
-        assert(col_end <= curr_line.size() && "Highlight reset is out of bounds");
-        curr_line.insert(col_end, error::colors::colorize(error::colors::RESET));
-        assert(col_start <= curr_line.size() && "Highlight is out of bounds");
-        curr_line.insert(col_start, error::colors::colorize(error::colors::RED));
+        if (colors::is_colored()) {
+            assert(col_end <= curr_line.size() && "Highlight reset is out of bounds");
+            curr_line.insert(col_end, error::colors::colorize(error::colors::RESET));
+            assert(col_start <= curr_line.size() && "Highlight is out of bounds");
+            curr_line.insert(col_start, error::colors::colorize(error::colors::RED));
+        }
 
         ss << bar << std::endl << std::setfill(' ') << std::setw(sizeof(bar)-3) << info.get_lines().first+1 << " | " << curr_line << std::endl;
         ustring underline = ustring(col_end - col_start, '^');
-        ss << bar << std::setfill(' ') << std::setw(col_start + sizeof(bar) - 1) << error::colors::colorize(error::colors::RED) << underline << error::colors::reset() << std::endl;
+        ss << bar << std::setfill(' ') << std::setw(col_start + sizeof(bar) - 1 - (colors::is_colored() ? 0 : 7))
+           << error::colors::colorize(error::colors::RED) << underline << error::colors::reset() << std::endl;
     }
 
     return ss.str();

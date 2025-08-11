@@ -912,7 +912,7 @@ IR *Parser::declaration() {
     // Every declaration has to end with nl or semicolon or eof
     if(!no_end_needed && !match(TokenType::END_NL) && !match(TokenType::END) && !check(TokenType::END_OF_FILE)) {
         // Dangling ')'
-        if (match(TokenType::RIGHT_PAREN)) {
+        if (check(TokenType::RIGHT_PAREN)) {
             parser_error(create_diag(diags::UNMATCHED_RIGHT_PAREN));
         }
         else {
@@ -1602,7 +1602,7 @@ Expression *Parser::constant() {
         errno = 0;
         opcode::IntConst ival = std::strtoll(val->get_value().c_str(), &end, 10);
         if (errno == ERANGE) {
-            error::warning(diags::Diagnostic(true, this->src_file, curr_src_info(), scanner, diags::WarningID::INT_CANNOT_FIT, val->get_value().c_str()));
+            error::warning(diags::Diagnostic(true, this->src_file, val->get_src_info(), scanner, diags::WarningID::INT_CANNOT_FIT, val->get_value().c_str()));
             // We set the long to max value as in C++ it is UB
             ival = std::numeric_limits<opcode::IntConst>::max();
             errno = 0;
@@ -1619,7 +1619,7 @@ Expression *Parser::constant() {
             assert(false && "std::stod failed");
 #endif
         } catch (const std::out_of_range& e) {
-            error::warning(diags::Diagnostic(true, this->src_file, curr_src_info(), scanner, diags::WarningID::FLOAT_CANNOT_FIT, val->get_value().c_str()));
+            error::warning(diags::Diagnostic(true, this->src_file, val->get_src_info(), scanner, diags::WarningID::FLOAT_CANNOT_FIT, val->get_value().c_str()));
             // Handle overflow/underflow
             auto str = val->get_value();
             std::size_t e_pos = str.find_first_of("eE");
