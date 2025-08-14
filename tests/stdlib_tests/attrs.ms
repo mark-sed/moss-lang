@@ -35,6 +35,12 @@ class SomeClas {}
 tv = TheirValue()
 mv = MyValue(42)
 
+// Anonymous lambda should not be listed and neither anonymous space
+fun(a, b)=a*b
+space {
+    
+}
+
 attrs(mv)
 "\n"
 attrs(MyValue)

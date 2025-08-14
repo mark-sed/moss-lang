@@ -21,6 +21,7 @@
 #include <thread>
 #include <bitset>
 #include <climits>
+#include <regex>
 
 using namespace moss;
 using namespace mslib;
@@ -201,6 +202,8 @@ Value *callable(Interpreter *vm, Value *obj) {
 }
 
 Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
+    // Regex to match anonymous lambda names and anonymous space names
+    static const std::regex ANON_VALUES(R"(^\d+(?:l|s)$)");
     (void)err;
     MemoryPool *frame = nullptr;
     ListValue *ats = new ListValue();
@@ -212,7 +215,8 @@ Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
     if (!frame)
         return ats;
     for (auto name: frame->get_sym_table_keys()) {
-        ats->push(new StringValue(name));
+        if (!std::regex_match(name, ANON_VALUES))
+            ats->push(new StringValue(name));
     }
     return ats;
 }
