@@ -48,7 +48,7 @@ class Foo1 {
     }
 
     fun Foo1() {
-        goo() ++ "\n"
+        this.goo() ++ "\n"
     }
 }
 

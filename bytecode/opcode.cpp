@@ -69,6 +69,7 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 /// \param constr_class If set them this is taken as constructor call and object is pushed
 /// \return Value returned by the function
 Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
+    assert(funV && "runtime call to nullptr");
     LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
 #ifndef NDEBUG
     auto pre_call_cf_size = vm->get_call_frame_size();
@@ -146,7 +147,7 @@ Value *opcode::runtime_constructor_call(Interpreter *vm, FunValue *funV, std::in
 
 opcode::IntConst opcode::hash_obj(ObjectValue *obj, Interpreter *vm) {
     diags::DiagID did = diags::DiagID::UNKNOWN;
-    auto hashf = opcode::lookup_method(vm, obj, "__hash", {}, did);
+    auto hashf = opcode::lookup_method(vm, obj, "__hash", {obj}, did);
     if (!hashf) {
         if (did == diags::DiagID::UNKNOWN) {
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_HASH_DEFINED, obj->get_type()->get_name().c_str())));
@@ -170,22 +171,13 @@ opcode::IntConst opcode::hash_obj(ObjectValue *obj, Interpreter *vm) {
 opcode::StringConst opcode::to_string(Interpreter *vm, Value *v) {
     if (auto ov = dyn_cast<ObjectValue>(v)) {
         auto string_attr = ov->get_attr(known_names::TO_STRING_METHOD, vm);
-        FunValue *string_fun = nullptr;
-        if (string_attr && isa<FunValue>(string_attr))
-            string_fun = dyn_cast<FunValue>(string_attr);
-        else if (string_attr && isa<FunValueList>(string_attr)) {
-            auto string_funs = dyn_cast<FunValueList>(string_attr);
-            for (auto f : string_funs->get_funs()) {
-                if (f->get_args().size() == 0) {
-                    string_fun = f;
-                    break;
-                }
-            }
-        }
-        if (string_fun) {
+        if (string_attr && (isa<FunValue>(string_attr) || isa<FunValueList>(string_attr))) {
             // We need to have a runtime call to the function that executes
             // right now
-            auto r_val = runtime_method_call(vm, string_fun, {v});
+            Value *err = nullptr;
+            auto r_val = mslib::call_type_converter(vm, v, "String", known_names::TO_STRING_METHOD, err);
+            if (err)
+                return v->as_string();
             assert(r_val && "Runtime call did not return any value");
             return r_val->as_string();
         }
@@ -330,7 +322,7 @@ void StoreNonLoc::exec(Interpreter *vm) {
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
     if (auto objval = dyn_cast<ObjectValue>(obj)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *setf = opcode::lookup_method(vm, objval, "__setitem", {key, src}, did);
+        FunValue *setf = opcode::lookup_method(vm, objval, "__setitem", {key, src, obj}, did);
         if (setf) {
             runtime_method_call(vm, setf, {key, src, objval});
         } else {
@@ -497,8 +489,8 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
         }
         else {
             // We remove "this" argument for mathching and then append it back
-            call_args.assign(og_call_args.begin(), og_call_args.end()-1);
-            ths = &(og_call_args.back());
+            call_args.assign(og_call_args.begin(), og_call_args.end());
+            //ths = &(og_call_args.back());
             LOGMAX("This argument passed in");
         }
     }
@@ -590,6 +582,7 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
                     return diags::ARG_MISMATCH;
                 arg.dst = i;
                 arg.name = fa->name;
+                LOGMAX("Assigned argument " << arg.name);
             }
         }
     }
@@ -774,6 +767,12 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
         cf->set_constructor_call(true);
         LOGMAX(*cf);
+    } else if (!cf->get_args().empty() && cf->get_args().back().name == "this" && isa<SuperValue>(cf->get_args().back().value)) {
+        LOGMAX("Super value used as this, passing in 'this' from current frame");
+        auto ths_super = vm->load_name("this");
+        assert(ths_super && "Calling method of super, but this is not present");
+        cf->get_args().back().value = ths_super;
+        LOGMAX("This for super call set to: " << *ths_super);
     }
 
     if (fun->has_annotation(annots::INTERNAL)) {
@@ -1058,7 +1057,7 @@ void PushUnpacked::exec(Interpreter *vm) {
     assert(v && "Const does not exist??");
     if (auto vobj = dyn_cast<ObjectValue>(v)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *iterf = lookup_method(vm, vobj, "__iter", {}, did);
+        FunValue *iterf = lookup_method(vm, vobj, "__iter", {vobj}, did);
         Value *iterator = vobj;
         if (iterf) {
             // When iter is found then call it and use the return value otherwise use the object itself
@@ -1066,7 +1065,7 @@ void PushUnpacked::exec(Interpreter *vm) {
         }
         if (isa<ObjectValue>(iterator)) {
             did = diags::DiagID::UNKNOWN;
-            FunValue *nextf = lookup_method(vm, iterator, "__next", {}, did);
+            FunValue *nextf = lookup_method(vm, iterator, "__next", {iterator}, did);
             if (nextf) {
                 while (true) {
                     try {
@@ -1860,7 +1859,7 @@ bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
     }
     else if (ObjectValue *ob1 = dyn_cast<ObjectValue>(s1)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        auto op_fun = lookup_method(vm, ob1, "==", {s2}, did);
+        auto op_fun = lookup_method(vm, ob1, "==", {s2, ob1}, did);
         if (!op_fun) {
             if (did == diags::DiagID::UNKNOWN) {
                 raise(mslib::create_type_error(
@@ -2745,29 +2744,14 @@ void Switch::exec(Interpreter *vm) {
             auto objv = dyn_cast<ObjectValue>(lvals[i]);
             auto eq_op = objv->get_attr("==", vm);
             if (eq_op && (isa<FunValue>(eq_op) || isa<FunValueList>(eq_op))) {
-                FunValue *funv = dyn_cast<FunValue>(eq_op);
+                diags::DiagID did = diags::DiagID::UNKNOWN;
+                FunValue *funv = lookup_method(vm, lvals[i], "==", {cv, lvals[i]}, did);
                 if (!funv) {
-                    auto eqlist = dyn_cast<FunValueList>(eq_op);
-                    for (auto f : eqlist->get_funs()) {
-                        if (f->get_args().size() == 1) {
-                            if (f->get_args()[0]->types.size() == 0) {
-                                funv = f;
-                                break;
-                            } else {
-                                for (auto t: f->get_args()[0]->types) {
-                                    if (t == cv->get_type()) {
-                                        funv = f;
-                                        break;
-                                    }
-                                }
-                                if (funv)
-                                    break;
-                            }
-                        }
-                    }
+                    res = new BoolValue(eq(lvals[i], cv, vm)); 
+                } else {
+                    res = runtime_method_call(vm, funv, {cv, lvals[i]});
+                    assert(res && "runtime call did not return");
                 }
-                res = runtime_method_call(vm, funv, {cv, lvals[i]});
-                assert(res && "runtime call did not return");
             } else {
                 res = new BoolValue(eq(lvals[i], cv, vm));
             }
@@ -2807,7 +2791,7 @@ static void unpack_val(Interpreter *vm, Value *v, Register index, IntValue *unpa
 static void op_for(Interpreter *vm, Value *coll, Register index, Address addr, bool multi=false, IntValue *unpack=nullptr) {
     if (isa<ObjectValue>(coll)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *nextf = opcode::lookup_method(vm, coll, "__next", {}, did);
+        FunValue *nextf = opcode::lookup_method(vm, coll, "__next", {coll}, did);
         if (nextf) {
             try {
                 auto v = runtime_method_call(vm, nextf, {coll});
@@ -2873,7 +2857,7 @@ void Iter::exec(Interpreter *vm) {
     if (isa<ObjectValue>(coll)) {
         // Call __iter only if it exists otherwise use this object
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *iterf = lookup_method(vm, coll, "__iter", {}, did);
+        FunValue *iterf = lookup_method(vm, coll, "__iter", {coll}, did);
         if (iterf) {
             LOGMAX("Calling object iterator");
             auto new_iter = runtime_method_call(vm, iterf, {coll});

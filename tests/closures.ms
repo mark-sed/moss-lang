@@ -15,7 +15,7 @@ class OutterClass {
 
     class InnerClass {
         fun InnerClass() {
-            "Created Inner + " ++ NAME ++ delimiter()
+            "Created Inner + " ++ NAME ++ OutterClass.delimiter(this)
         }
     }
 
@@ -24,7 +24,7 @@ class OutterClass {
     }
 
     fun get_inner() {
-        NAME ++ delimiter()
+        NAME ++ this.delimiter()
         return this.InnerClass()
     }
 }

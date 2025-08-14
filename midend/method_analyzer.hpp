@@ -24,7 +24,7 @@ class MethodAnalyzer : public IRVisitor {
 private:
     bool in_constructor;
 
-    void check_constructor(class Function &method, ustring class_name);
+    void check_constructor(class Function &method, class Class &cls);
 public:
     MethodAnalyzer(Parser &parser) : IRVisitor(parser) {}
     

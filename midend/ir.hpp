@@ -276,6 +276,10 @@ public:
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
+    /// Returns an internal bind value (of the annotation) or nullptr if not
+    /// annotated this way.
+    class StringLiteral *get_internal_bind();
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "class " << name;
         bool first = true;
@@ -387,10 +391,12 @@ public:
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
 
+    bool is_staticmethod();
+
     virtual std::ostream& debug(std::ostream& os) const override;
 };
 
-inline ustring encode_fun_args(std::vector<Argument *> args) {
+inline ustring encode_fun_args(std::vector<Argument *> args, bool is_method) {
     ustring txt = "";
     bool first = true;
     for (auto a: args) {
@@ -401,6 +407,12 @@ inline ustring encode_fun_args(std::vector<Argument *> args) {
         else {
             txt += ","+a->get_name();
         }
+    }
+    if (is_method) {
+        if (!first)
+            txt += ",this";
+        else
+            txt += "this";
     }
     return txt;
 }
@@ -1205,6 +1217,7 @@ public:
 
     void set_method(bool c) { this->info.method = c; }
     bool is_method() { return this->info.method; }
+    bool is_staticmethod();
 
     std::vector<Argument *> get_args() { return this->info.args; }
     Expression *get_body() { return this->body; }

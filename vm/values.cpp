@@ -21,10 +21,7 @@ size_t Value::next_gc = 1024 * 1024;
 std::list<Value *> Value::all_values{};
 
 bool moss::has_methods(Value *v) {
-    assert(v->get_kind() != TypeKind::DICT && "TODO: Add dict to this function");
-    return isa<ObjectValue>(v) || isa<ClassValue>(v) || isa<IntValue>(v) 
-        || isa<FloatValue>(v) || isa<BoolValue>(v) || isa<NilValue>(v)
-        || isa<StringValue>(v) || isa<ListValue>(v);
+    return !isa<ClassValue>(v) && !isa<SpaceValue>(v) && !isa<ModuleValue>(v) && !isa<EnumTypeValue>(v);
 }
 
 opcode::IntConst moss::hash(Value *v, Interpreter *vm) {
@@ -159,7 +156,7 @@ FunValue::~FunValue() {
 
 Value *ObjectValue::iter(Interpreter *vm) {
     diags::DiagID did = diags::DiagID::UNKNOWN;
-    FunValue *iterf = opcode::lookup_method(vm, this, "__iter", {}, did);
+    FunValue *iterf = opcode::lookup_method(vm, this, "__iter", {this}, did);
     Value *iterator = this;
     if (iterf) {
         // When iter is found then call it and use the return value otherwise use the object itself
@@ -175,7 +172,7 @@ Value *ObjectValue::iter(Interpreter *vm) {
 Value *ObjectValue::next(Interpreter *vm) {
     diags::DiagID did = diags::DiagID::UNKNOWN;
     // We use this as the iterator as next should be called on the iterator returned from iter
-    FunValue *nextf = opcode::lookup_method(vm, this, "__next", {}, did);
+    FunValue *nextf = opcode::lookup_method(vm, this, "__next", {this}, did);
     Value *retv = nullptr;
     if (nextf) {
         retv = opcode::runtime_method_call(vm, nextf, {this});

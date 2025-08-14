@@ -1048,7 +1048,7 @@ List(1) [
 Class MyClass : Int, Float {
   \"MyClass\": Fun(MyClass(n:[Int, Float]) @104),
   \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n() @113)
+  \"get_n\": Fun(get_n(this) @113)
 }\n""", "")
 }
 

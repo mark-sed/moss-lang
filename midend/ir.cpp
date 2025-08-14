@@ -79,6 +79,35 @@ std::ostream& Function::debug(std::ostream& os) const {
     return os;
 }
 
+StringLiteral *Class::get_internal_bind() {
+    for (auto a: annotations) {
+        if (a->get_name() == "internal_bind") {
+            auto v = dyn_cast<ir::StringLiteral>(a->get_value());
+            if (v)
+                return v;
+        }
+    }
+    return nullptr;
+}
+
+bool Function::is_staticmethod() {
+    for (auto a: annotations) {
+        if (a->get_name() == "staticmethod" && isa<NilLiteral>(a->get_value())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Lambda::is_staticmethod() {
+    for (auto a: annotations) {
+        if (a->get_name() == "staticmethod" && isa<NilLiteral>(a->get_value())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Function::accept(IRVisitor& visitor) {
     visitor.visit(*this);
 }

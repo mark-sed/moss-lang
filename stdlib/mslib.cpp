@@ -257,7 +257,7 @@ Value *mslib::call_type_converter(Interpreter *vm, Value *v, const char *tname, 
     
     Value *rval = nullptr;
     diags::DiagID did = diags::DiagID::UNKNOWN;
-    auto int_f = opcode::lookup_method(vm, v, fname, {}, did);
+    auto int_f = opcode::lookup_method(vm, v, fname, {v}, did);
     if (int_f) {
         rval = opcode::runtime_method_call(vm, int_f, {v});
     } else {
@@ -447,7 +447,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"append", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
-            if (args[1].value->get_type() == BuiltIns::List) {
+            if (cf->get_arg("this")->get_type() == BuiltIns::List) {
                 return List::append(vm, cf->get_arg("this"), cf->get_arg("v"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
@@ -583,7 +583,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         /*{"join", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
-            if (args[1].value->get_type() == BuiltIns::String) {
+            if (cf->get_arg("this")->get_type() == BuiltIns::String) {
                 return String::join(vm, cf->get_arg("this"), cf->get_arg("iterable"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
@@ -591,7 +591,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
         }},*/
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            auto arg = cf->get_args()[0].value;
+            auto arg = cf->get_arg("this");
             if (auto lv = dyn_cast<ListValue>(arg)) {
                 return new IntValue(lv->get_vals().size());
             } else if (auto stv = dyn_cast<StringValue>(arg)) {
@@ -670,7 +670,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"pop", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
-            if (args[1].value->get_type() == BuiltIns::List) {
+            if (cf->get_arg("this")->get_type() == BuiltIns::List) {
                 return List::pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
@@ -698,7 +698,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
-            if (args[1].value->get_type() == BuiltIns::String) {
+            if (cf->get_arg("this")->get_type() == BuiltIns::String) {
                 assert(args.size() == 4);
                 return String::replace(vm, cf->get_arg("this"), cf->get_arg("target"), cf->get_arg("value"), cf->get_arg("count"), err);
             } else {
@@ -708,7 +708,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"multi_replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
-            if (args[1].value->get_type() == BuiltIns::String) {
+            if (cf->get_arg("this")->get_type() == BuiltIns::String) {
                 assert(args.size() == 2);
                 return String::multi_replace(vm, cf->get_arg("this"), cf->get_arg("mapping"), err);
             } else {

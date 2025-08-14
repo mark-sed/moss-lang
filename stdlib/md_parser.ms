@@ -249,13 +249,13 @@ class MDParser {
     }
 
     fun compact_spaces() {
-        while((this.i+1 < this.text.length()) && (check(" ") || check("\t")) && (this.text[this.i+1] == " " || this.text[this.i+1] == "\t")) {
+        while((this.i+1 < this.text.length()) && (this.check(" ") || this.check("\t")) && (this.text[this.i+1] == " " || this.text[this.i+1] == "\t")) {
             this.i += 1
         }
     }
 
     fun skip_ws() {
-        while (check_adv(" ") || check_adv("\t")) {
+        while (this.check_adv(" ") || this.check_adv("\t")) {
             // Skip spaces
         }
     }
@@ -271,14 +271,14 @@ class MDParser {
                 result += [MDText("\""++"".join(title))]
             return result
         }
-        image = check_adv("!")
+        image = this.check_adv("!")
         assert(this.text[this.i] == "[", "Called link parsing on non-link text -- does not start with [")
         this.i += 1
-        text = textual("]")
-        if (not check_adv("]")) {
+        text = this.textual("]")
+        if (not this.check_adv("]")) {
             return cancel(image, text)
         }
-        if (not check_adv("(")) {
+        if (not this.check_adv("(")) {
             return cancel(image, text+[MDText("]")])
         }
         url = []
@@ -286,18 +286,18 @@ class MDParser {
             ~url.append(this.text[this.i])
             this.i += 1
         }
-        if (check("\n")) {
+        if (this.check("\n")) {
             return cancel(image, text, url)
         }
-        if (check_adv(")")) {
+        if (this.check_adv(")")) {
             return [MDLink(text, "".join(url), "", image)]
         }
         title = []
-        if (check_adv("\"")) {
-            while (this.i < this.text.length() && not check("\"") && not check("\n")) {
-                if (check_adv("\\")) {
+        if (this.check_adv("\"")) {
+            while (this.i < this.text.length() && not this.check("\"") && not this.check("\n")) {
+                if (this.check_adv("\\")) {
                     // Possible escape of "
-                    if (check_adv("\"")) {
+                    if (this.check_adv("\"")) {
                         ~title.append("\"")
                     } else {
                         ~title.append("\\")
@@ -308,11 +308,11 @@ class MDParser {
                 }
             }
         }
-        if (not check_adv("\"")) {
+        if (not this.check_adv("\"")) {
             return cancel(image, text, url, title)
         }
-        ~skip_ws()
-        if (check_adv(")")) // Last enclosing of link
+        ~this.skip_ws()
+        if (this.check_adv(")")) // Last enclosing of link
             return [MDLink(text, "".join(url), "".join(title), image)]
         // Something else than ), so returning as a text
         return cancel(image, text, url, title+["\""])
@@ -334,12 +334,12 @@ class MDParser {
                 ~elem.append(this.text[this.i])
                 this.i += 1
                 escape = false
-            } else if (check_adv("`")) {
+            } else if (this.check_adv("`")) {
                 ~add_text()
                 this.code = not this.code
-            } else if (not this.code && check_adv("_")) {
-                if (check_adv("_")) {
-                    if (check_adv("_")) {
+            } else if (not this.code && this.check_adv("_")) {
+                if (this.check_adv("_")) {
+                    if (this.check_adv("_")) {
                         ~add_text()
                         this.bold = not this.bold
                         this.italic = not this.italic
@@ -351,9 +351,9 @@ class MDParser {
                     ~add_text()
                     this.italic = not this.italic
                 }
-            } else if (not this.code && check_adv("*")) {
-                if (check_adv("*")) {
-                    if (check_adv("*")) {
+            } else if (not this.code && this.check_adv("*")) {
+                if (this.check_adv("*")) {
+                    if (this.check_adv("*")) {
                         ~add_text()
                         this.bold_star = not this.bold_star
                         this.italic_star = not this.italic_star
@@ -365,19 +365,19 @@ class MDParser {
                     ~add_text()
                     this.italic_star = not this.italic_star
                 }
-            } else if (this.allow_strikethrough && check_adv("~")) {
-                if (check_adv("~")) {
+            } else if (this.allow_strikethrough && this.check_adv("~")) {
+                if (this.check_adv("~")) {
                     ~add_text()
                     this.strikethrough = not this.strikethrough
                 } else {
                     ~elem.append("~")
                 }
-            } else if (check("[") || this.text[this.i..this.i+2] == "![") {
+            } else if (this.check("[") || this.text[this.i..this.i+2] == "![") {
                 ~add_text()
-                toks += link()
-            } else if (check_adv("\\")) {
+                toks += this.link()
+            } else if (this.check_adv("\\")) {
                 escape = true
-            } else if (check_adv("\n")) {
+            } else if (this.check_adv("\n")) {
                 if (elem.length() > 0 && elem[-1] == " ")
                     ~elem.pop()
                 break
@@ -387,7 +387,7 @@ class MDParser {
                 if (escape)
                     ~elem.append("\\")
                 ~elem.append(this.text[this.i])
-                ~compact_spaces()
+                ~this.compact_spaces()
                 this.i += 1
             }
         }
@@ -397,7 +397,7 @@ class MDParser {
 
     fun paragraph() {
         if (this.i < this.text.length()) {
-            return MDParagraph(textual())
+            return MDParagraph(this.textual())
         }
         return MDParagraph([])
     }
@@ -407,17 +407,17 @@ class MDParser {
     //     =====
     fun heading() {
         level = 0;
-        while (check_adv("#")) {
+        while (this.check_adv("#")) {
             level += 1
         }
         // # without space after it is a normal text
-        if (not check_adv(" ") && not check_adv("\t")) {
+        if (not this.check_adv(" ") && not this.check_adv("\t")) {
             this.i -= level
-            return paragraph()
+            return this.paragraph()
         }
-        ~skip_ws();
+        ~this.skip_ws();
         assert(level > 0, "Heading level is 0")
-        txt = textual()
+        txt = this.textual()
         // Remove possible # at the end
         last_text = txt[-1]
         for (i: last_text.value.length()-1..0) {
@@ -443,19 +443,19 @@ class MDParser {
         // Parse until new line or ``` to get the format
         while (this.i < this.text.length()) {
             c = this.text[this.i]
-            if (not tabbed && not format_parsed && check_adv("\n")) {
+            if (not tabbed && not format_parsed && this.check_adv("\n")) {
                 format_parsed = true
             } else if (not tabbed && this.text[this.i..this.i+3] == "```") {
                 this.i += 3
                 // Skip possible new line
-                ~check_adv("\n")
+                ~this.check_adv("\n")
                 break
-            } else if (tabbed && check_adv("\n")) {
+            } else if (tabbed && this.check_adv("\n")) {
                 space_am = 0
-                while (check_adv(" ") && space_am < 4) {
+                while (this.check_adv(" ") && space_am < 4) {
                     space_am += 1
                 }
-                if (space_am == 4 || check_adv("\t")) {
+                if (space_am == 4 || this.check_adv("\t")) {
                     ~elem.append("\n")
                 } else {
                     break
@@ -475,14 +475,14 @@ class MDParser {
     // Allow for codeblocks and headings in block quotes
     fun block_quotes() {
         level = 0;
-        while (check_adv(">")) {
+        while (this.check_adv(">")) {
             level += 1
         }
-        ~skip_ws()
-        return MDBlockQuotes(textual(), level)
+        ~this.skip_ws()
+        return MDBlockQuotes(this.textual(), level)
     }
 
-    @staticmethod
+    //@staticmethod
     fun get_ol_number(text, i) {
         val = ""
         ok = true
@@ -508,7 +508,7 @@ class MDParser {
 
         while (this.i < this.text.length()) {
             indent = 0
-            while (check_adv(" ")) {
+            while (this.check_adv(" ")) {
                 indent += 1
             }
             num = this.get_ol_number(this.text, this.i)
@@ -541,11 +541,11 @@ class MDParser {
                     this.i -= 2
                     break
                 }
-                ~stack[-1].value.append(paragraph())
-            } else if (check_adv("\n"))
+                ~stack[-1].value.append(this.paragraph())
+            } else if (this.check_adv("\n"))
                 break
             else {
-                new_p = paragraph()
+                new_p = this.paragraph()
                 new_p.value = [MDText(" ")] + new_p.value
                 ~stack[-1].value[-1].value.append(new_p)
             }
@@ -569,38 +569,38 @@ class MDParser {
         while (this.i < this.text.length()) {
             c = this.text[this.i]
             ol_num = this.get_ol_number(this.text, this.i)
-            if (check("#")) {
-                ~tokens.append(heading())
-            } else if (check(">")) {
-                ~tokens.append(block_quotes())
+            if (this.check("#")) {
+                ~tokens.append(this.heading())
+            } else if (this.check(">")) {
+                ~tokens.append(this.block_quotes())
             } else if (this.text[this.i..this.i+3] == "```") { // TODO: Add code block indented with tab or 4 spaces
-                ~tokens.append(code_block())
-            } else if (check(" ") || check("\t")) {
-                if (check_adv("\t")) {
-                    ~tokens.append(code_block(true))
+                ~tokens.append(this.code_block())
+            } else if (this.check(" ") || this.check("\t")) {
+                if (this.check_adv("\t")) {
+                    ~tokens.append(this.code_block(true))
                 } else {
                     space_am = 0
-                    while (check_adv(" ") && space_am < 4) {
+                    while (this.check_adv(" ") && space_am < 4) {
                         space_am += 1
                     }
                     // If at least 4 spaces, then code, otherwise just keep them
                     // removed.
                     if (space_am == 4) {
-                        ~tokens.append(code_block(true))
+                        ~tokens.append(this.code_block(true))
                     }
                 }
-            } else if (check("\n")) {
+            } else if (this.check("\n")) {
                 ~tokens.append(MDParagraph([]))
-                while(check_adv("\n")) {
+                while(this.check_adv("\n")) {
                     // skip new lines
                 }
             } else if (this.text[this.i..this.i+2] in ["+ ", "- ", "* "]) {
                 bullet = this.text[this.i]
-                ~tokens.append(listing(bullet, false))
+                ~tokens.append(this.listing(bullet, false))
             } else if (ol_num != nil) {
-                ~tokens.append(listing(ol_num, true))
+                ~tokens.append(this.listing(ol_num, true))
             } else {
-                p = paragraph()
+                p = this.paragraph()
                 // Join multiple paragraphs into one
                 if (tokens.length() > 0 && (tokens[-1].type == MDToken.TokenType.PARAGRAPH || tokens[-1].type == MDToken.TokenType.BLOCK_QUOTES) && tokens[-1].value != []) {
                     tokens[-1].value += [MDText(" ")] + p.value

@@ -1290,7 +1290,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
     }
     else if (auto lmb = dyn_cast<ir::Lambda>(expr)) {
         auto fun_reg = next_reg();
-        auto arg_names = ir::encode_fun_args(lmb->get_args());
+        auto arg_names = ir::encode_fun_args(lmb->get_args(), (lmb->is_method() && !lmb->is_staticmethod()));
         // Store the name without arguments
         append(new CreateFun(fun_reg, lmb->get_name(), arg_names));
         comment("lambda fun "+lmb->get_name()+"(" + arg_names + ") declaration");
@@ -1610,7 +1610,7 @@ void BytecodeGen::emit(ir::Module *mod) {
 
 void BytecodeGen::emit(ir::Function *fun) {
     auto fun_reg = next_reg();
-    auto arg_names = ir::encode_fun_args(fun->get_args());
+    auto arg_names = ir::encode_fun_args(fun->get_args(), (fun->is_method() && !fun->is_constructor() && !fun->is_staticmethod()));
     // Store the name without arguments
     append(new CreateFun(fun_reg, fun->get_name(), arg_names));
     comment("fun "+fun->get_name()+"(" + arg_names + ") declaration");

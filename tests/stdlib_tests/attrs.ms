@@ -99,15 +99,15 @@ catch(a:AttributeError)
 scf.new_attr
 ", "
 
-fun new_fun() {
-    return this.name
+space new_space {
+    name = scf.name
 }
-~setattr(scf, "new_fun", new_fun)
-scf.new_fun()
+~setattr(scf, "new_space", new_space)
+scf.new_space.name
 ", "
-~setattr(SomeClassFoo, "new_fun", new_fun)
+~setattr(SomeClassFoo, "new_space", new_space)
 new_scf = SomeClassFoo()
-new_scf.new_fun()
+new_scf.new_space.name
 ", "
 
 some_int = 42
@@ -117,14 +117,14 @@ try
 catch(a:AttributeError)
     "caught\n"
 
-~delattr(scf, "new_fun")
+~delattr(scf, "new_space")
 try
-    scf.new_fun()
+    scf.new_space.name
 catch(a:AttributeError)
     "caught, "
-~delattr(SomeClassFoo, "new_fun")
+~delattr(SomeClassFoo, "new_space")
 try
-    SomeClassFoo().new_fun()
+    SomeClassFoo().new_space.name
 catch(a:AttributeError)
     "caught, "
 
