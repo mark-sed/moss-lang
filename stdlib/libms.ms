@@ -128,6 +128,11 @@ class __Dict {
 
     @internal
     fun clear() {}
+
+    @internal
+    fun pop(key) {} //TBD
+    @internal
+    fun pop(key, def_val) {} //TBD
 }
 
 @internal_bind("Range")

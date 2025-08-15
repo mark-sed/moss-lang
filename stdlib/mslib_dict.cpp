@@ -29,3 +29,11 @@ Value *Dict::Dict(Interpreter *vm, Value *ths, Value *iterable, Value *&err) {
     }
     return dv;
 }
+
+Value *Dict::pop(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err) {
+    auto dv = dyn_cast<DictValue>(ths);
+    assert(dv && "Dict not passed in");
+    // TODO: find, remove and return or return def_val or raise keyerror when nullptr
+    err = create_not_implemented_error("Dict.pop is not yet implemented.\n");
+    return nullptr;
+}

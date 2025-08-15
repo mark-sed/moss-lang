@@ -692,6 +692,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto args = cf->get_args();
             if (cf->get_arg("this")->get_type() == BuiltIns::List) {
                 return List::pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
+            } else if (cf->get_arg("this")->get_type() == BuiltIns::Dict) {
+                return Dict::pop(vm, cf->get_arg("this"), cf->get_arg("key"), cf->get_arg("def_val"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
