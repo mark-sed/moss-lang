@@ -52,10 +52,11 @@ set(SOURCES
     midend/ir_pipeline.cpp
     midend/ir_visitor.cpp
     midend/method_analyzer.cpp
-    stdlib/mslib.cpp
+    stdlib/mslib_dict.cpp
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp
     stdlib/mslib_string.cpp
+    stdlib/mslib.cpp
     stdlib/cffi.cpp
     stdlib/subprocess.cpp
     stdlib/sys.cpp

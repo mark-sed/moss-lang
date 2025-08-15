@@ -119,3 +119,27 @@ List(NextClass(-8))
 
 e1 = Exception("Some exception")
 e1 ++ "\n"
+
+Dict()
+"\n"
+Dict([["A", 1], ["B", 2], ["C", 3]])
+"\n"
+Dict([])
+"\n"
+try {
+    Dict([1,2,3])
+} catch (e:TypeError) {
+    "caught\n"
+}
+
+try {
+    Dict(1)
+} catch (e:TypeError) {
+    "caught\n"
+}
+
+try {
+    Dict([[1,2],[3,4,5]])
+} catch (e:TypeError) {
+    "caught\n"
+}

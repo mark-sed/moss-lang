@@ -1065,7 +1065,8 @@ nil
 []\n[1, 2, 3]\n[true, nil, 2, 4]\n["H", "e", "l", "l", "o"]
 [5, 6, 7, 8]\n[5, 6, 7, 8]\n[]
 [0, 1, 2, 3, 4, 5]\n[0, 1, 2, 3, 4, 5]\n[]
-Exception: Some exception\n""", "")
+Exception: Some exception
+{:}\n{"C": 3, "B": 2, "A": 1}\n{:}\ncaught\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_builtin_exceptions(name) {

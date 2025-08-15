@@ -7,6 +7,7 @@
 #include "mslib_list.hpp"
 #include "mslib_string.hpp"
 #include "mslib_file.hpp"
+#include "mslib_dict.hpp"
 #include "subprocess.hpp"
 #include "sys.hpp"
 #include "cffi.hpp"
@@ -524,6 +525,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
             return BuiltIns::Nil;
+        }},
+        {"Dict", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value *{
+            if (cf->get_args().size() == 1)
+                return new DictValue();
+            assert(cf->get_args().size() == 2);
+            return Dict::Dict(vm, cf->get_arg("this"), cf->get_arg("iterable"), err);
         }},
         {"divmod", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             auto args = cf->get_args();

@@ -181,6 +181,8 @@ enum DiagID : unsigned {
     BAD_MULTI_REPLACE_ELEM, ///< When multi_replace does not get list of list of 2 values
     NO_SUPER,               ///< Call to a super without a super
     TIME_TIMESTAMP_OOR,     ///< When timestamp value is oor
+    DICT_UNEXPECTED_TYPE,   ///< Dict iterable must return List
+    DICT_BAD_ITER_SIZE,     ///< Size of elements in Dict constructor has to be 2
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -341,6 +343,8 @@ static const char * DIAG_MSGS[] = {
     "String.multi_replace expects as an argument a List of Lists of 2 Strings (e.g.: '[[\"a\", \"b\"], [\"c\", \"d\"]])",
     "Class '%s' does not have a super class to call",
     "Timestamp is too small or too large",
+    "Dict constructor expects iterable of List values, but got '%s'",
+    "Dict constructor iterable must contain Lists of size 2, got size %ld",
 };
 
 /// \brief ID of diagnostic error
