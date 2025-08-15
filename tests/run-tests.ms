@@ -1112,7 +1112,11 @@ fun test_lib_lists(name) {
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]
 [4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]
-[1, 2, 3]\n1\n""", "")
+[1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]\n""", "")
+}
+
+fun test_lib_dicts(name) {
+    ~expect_pass("stdlib_tests/dicts.ms", name, """{"C": 3, "B": 2, "A": 1}\n{:}\n{:}\n{:}\n""", "")
 }
 
 fun test_lib_strings(name) {
@@ -1471,6 +1475,7 @@ fun run_all_tests() {
     ~run_test("lib_ranges")
     ~run_test("lib_input")
     ~run_test("lib_lists")
+    ~run_test("lib_dicts")
     ~run_test("lib_strings")
     ~run_test("lib_random")
     ~run_test("lib_math")

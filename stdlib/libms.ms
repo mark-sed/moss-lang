@@ -114,6 +114,9 @@ class __List {
 
     @internal
     fun __next() {}
+
+    @internal
+    fun clear() {}
 }
 
 @internal_bind("Dict")
@@ -122,6 +125,9 @@ class __Dict {
     fun Dict() {}
     @internal
     fun Dict(iterable) {}
+
+    @internal
+    fun clear() {}
 }
 
 @internal_bind("Range")

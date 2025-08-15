@@ -419,6 +419,9 @@ public:
     void push(Value *v) { vals.push_back(v); }
     size_t size() { return vals.size(); }
     void remove(long i) { vals.erase(vals.begin() + i); }
+    void clear() {
+        vals.clear();
+    }
 
     virtual opcode::StringConst as_string() const override {
         if (vals.empty()) return "[]";
@@ -495,6 +498,9 @@ public:
 
     void push(Value *k, Value *v, Interpreter *vm);
     size_t size() { return vals.size(); }
+    void clear() {
+        vals.clear();
+    }
 
     virtual opcode::StringConst as_string() const override {
         if (vals.empty()) return "{:}";

@@ -500,6 +500,19 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             return new StringValue(ustring(1, ii->get_value()));
         }},
+        {"clear", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto arg = cf->get_arg("this");
+            if (auto lv = dyn_cast<ListValue>(arg)) {
+                lv->clear();
+                return nullptr;
+            } else if (auto dv = dyn_cast<DictValue>(arg)) {
+                dv->clear();
+                return nullptr;
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"close", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
