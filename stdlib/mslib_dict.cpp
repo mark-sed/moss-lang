@@ -30,10 +30,54 @@ Value *Dict::Dict(Interpreter *vm, Value *ths, Value *iterable, Value *&err) {
     return dv;
 }
 
+Value *Dict::get(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err) {
+    auto dt = dyn_cast<DictValue>(ths);
+    assert(dt && "Non-dict passed in");
+    auto vals = dt->get_vals();
+    auto res = def_val;
+    auto dit = vals.find(hash(key, vm));
+    if (dit != vals.end()) {
+        for (std::pair<Value *, Value *> p: dit->second) {
+            if (opcode::eq(p.first, key, vm)) {
+                res = p.second;
+                break;
+            }
+        }
+    }
+    return res;
+}
+
 Value *Dict::pop(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err) {
     auto dv = dyn_cast<DictValue>(ths);
     assert(dv && "Dict not passed in");
-    // TODO: find, remove and return or return def_val or raise keyerror when nullptr
-    err = create_not_implemented_error("Dict.pop is not yet implemented.\n");
+    opcode::IntConst hsh = 0;
+    try {
+        hsh = moss::hash(key, vm);
+    } catch (Value *v) {
+        err = v;
+        return nullptr;
+    }
+    auto found = dv->get_vals().find(hsh);
+    if (found != dv->get_vals().end()) {
+        auto vals = found->second;
+        for (size_t vindex = 0; vindex < vals.size(); ++vindex) {
+            try {
+                if (opcode::eq(vals[vindex].first, key, vm)) {
+                    vals.erase(vals.begin() + vindex);
+                    if (vals.empty()) {
+                        dv->get_vals().erase(found);
+                    }
+                    return vals[vindex].second;
+                }
+            } catch (Value *verr) {
+                err = verr;
+                return nullptr;
+            }
+        }
+    }
+    if (def_val) {
+        return def_val;
+    }
+    err = mslib::create_key_error(diags::Diagnostic(*vm->get_src_file(), diags::KEY_NOT_FOUND, key->as_string().c_str()));
     return nullptr;
 }

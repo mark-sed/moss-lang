@@ -494,7 +494,7 @@ public:
     virtual inline bool is_hashable() override { return false; }
     virtual inline bool is_iterable() override { return true; }
 
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> get_vals() { return this->vals; }
+    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> &get_vals() { return this->vals; }
 
     void push(Value *k, Value *v, Interpreter *vm);
     size_t size() { return vals.size(); }

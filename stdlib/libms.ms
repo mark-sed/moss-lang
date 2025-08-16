@@ -38,6 +38,8 @@ class __String {
         d"Returns amount of characters in this string."
     }
 
+    fun empty() = this.length() == 0
+
     @internal
     fun strip() {}
 
@@ -101,6 +103,8 @@ class __List {
     @internal
     fun length() {}
 
+    fun empty() = this.length() == 0
+
     @internal
     fun append(... v) {}
 
@@ -130,9 +134,16 @@ class __Dict {
     fun clear() {}
 
     @internal
-    fun pop(key) {} //TBD
+    fun get(key, def_val=nil) {}
+
     @internal
-    fun pop(key, def_val) {} //TBD
+    fun pop(key) {}
+    @internal
+    fun pop(key, def_val) {}
+
+    fun remove(key) {
+        ~this.pop(key)
+    }
 }
 
 @internal_bind("Range")

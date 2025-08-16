@@ -555,6 +555,16 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 2);
             return Float(vm, cf->get_arg("this"), cf->get_arg("v"), err);
         }},
+        {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
+            auto arg = cf->get_arg("this");
+            if (isa<DictValue>(arg)) {
+                assert(cf->get_args().size() == 3);
+                return Dict::get(vm, arg, cf->get_arg("key"), cf->get_arg("def_val"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"getattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;
             assert(cf->get_args().size() == 2);

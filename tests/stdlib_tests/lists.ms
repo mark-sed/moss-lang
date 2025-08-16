@@ -67,3 +67,15 @@ ls2 = []
 ~ls2.clear()
 ls2
 "\n"
+
+[1,2,3].empty()
+"\n"
+[].empty()
+"\n"
+ls4 = [[[]]]
+ls4.empty()
+"\n"
+ls4[0].empty()
+"\n"
+ls4[0][0].empty()
+"\n"

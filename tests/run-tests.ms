@@ -1112,11 +1112,16 @@ fun test_lib_lists(name) {
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]
 [4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]
-[1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]\n""", "")
+[1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]
+false\ntrue\nfalse\nfalse\ntrue\n""", "")
 }
 
 fun test_lib_dicts(name) {
-    ~expect_pass("stdlib_tests/dicts.ms", name, """{"C": 3, "B": 2, "A": 1}\n{:}\n{:}\n{:}\n""", "")
+    ~expect_pass("stdlib_tests/dicts.ms", name, """{"C": 3, "B": 2, "A": 1}\n{:}\n{:}\n{:}
+{"b": 2, "c": 3, "a": 1}\n2\n{"c": 3, "a": 1}\n1\n{"c": 3}\n3\n{:}\ncaught\nnil
+1\n{"hello": [1, 2, 3], "dct": {:}}\n{:}\n{"hello": [1, 2, 3]}
+{1: true, 2: false}\n{:}
+true\nnil\nnot in\n1\ncaught\n1\ncaught\n""", "")
 }
 
 fun test_lib_strings(name) {
