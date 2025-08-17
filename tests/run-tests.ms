@@ -1107,13 +1107,20 @@ fun test_lib_input(name) {
     ~expect_pass(f"stdlib_tests/input_eof.ms < {::TEST_DIR}/empty.ms", name, "caught eof\n", "")
 }
 
+fun test_lib_copy(name) {
+    ~expect_pass("stdlib_tests/copy.ms", name, """{"a": 1}\n{"a": 2}\n{1: 2, 2: {"a": "changed"}}\n{1: nil, 2: {"a": "changed"}}
+[1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]
+5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [false, 2, 3]\n-1, [false, 2, 3]\n""", "")
+}
+
 fun test_lib_lists(name) {
     ~expect_pass("stdlib_tests/lists.ms", name, """2\n0\n8\ncaught
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]
 [4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]
 [1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]
-false\ntrue\nfalse\nfalse\ntrue\n""", "")
+false\ntrue\nfalse\nfalse\ntrue
+[1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]\n""", "")
 }
 
 fun test_lib_dicts(name) {
@@ -1121,7 +1128,9 @@ fun test_lib_dicts(name) {
 {"b": 2, "c": 3, "a": 1}\n2\n{"c": 3, "a": 1}\n1\n{"c": 3}\n3\n{:}\ncaught\nnil
 1\n{"hello": [1, 2, 3], "dct": {:}}\n{:}\n{"hello": [1, 2, 3]}
 {1: true, 2: false}\n{:}
-true\nnil\nnot in\n1\ncaught\n1\ncaught\n""", "")
+true\nnil\nnot in\n1\ncaught\n1\ncaught
+4\nfalse\ntrue\n0\n3
+{"a": 1}\n{"a": 2}\n{1: 2, 2: {"a": "changed"}}\n{1: nil, 2: {"a": "changed"}}\n""", "")
 }
 
 fun test_lib_strings(name) {
@@ -1479,6 +1488,7 @@ fun run_all_tests() {
     ~run_test("lib_builtin_exceptions")
     ~run_test("lib_ranges")
     ~run_test("lib_input")
+    ~run_test("lib_copy")
     ~run_test("lib_lists")
     ~run_test("lib_dicts")
     ~run_test("lib_strings")

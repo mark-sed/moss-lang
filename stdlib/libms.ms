@@ -5,7 +5,7 @@ copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
            See accompanied LICENSE file.
 """
 
-__LIB_MS_VERSION = "0.0.4"
+__LIB_MS_VERSION = "0.0.5"
 
 @internal_bind("Int")
 class __Int {
@@ -108,6 +108,8 @@ class __List {
     @internal
     fun append(... v) {}
 
+    fun copy() = ::copy(this)
+
     @internal
     fun pop(index:Int=-1) {}
 
@@ -132,6 +134,13 @@ class __Dict {
 
     @internal
     fun clear() {}
+
+    fun copy() = ::copy(this)
+
+    @internal
+    fun length() {}
+
+    fun empty() = this.length() == 0
 
     @internal
     fun get(key, def_val=nil) {}
@@ -297,6 +306,9 @@ fun exit(code=0) {
 
 @internal
 fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {}
+
+@internal
+fun copy(obj) {}
 
 @internal
 fun hash(obj) {}

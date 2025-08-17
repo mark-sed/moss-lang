@@ -78,3 +78,33 @@ try
     Dict.get("a", nil, 24)
 catch (e:ValueError)
     "caught\n"
+
+dc6 = {1:1, 2:2, 3:3, 4:4}
+dc6.length()
+"\n"
+dc6.empty()
+"\n"
+{:}.empty()
+"\n"
+{:}.length()
+"\n"
+dc7 = {1: [1,2,3], nil: {"a": 1, "v": 2}, 3: "fsd"}
+dc7.length()
+"\n"
+
+dc8 = {"a": 1}
+dc9 = dc8.copy()
+dc9["a"] = 2
+dc8
+"\n"
+dc9
+"\n"
+assert(id(dc8) != id(dc9), "ids are the same after copy")
+d10 = {1: 2, 2: {"a": 4}}
+d11 = d10.copy()
+d11[1] = nil
+d11[2]["a"] = "changed"
+d10
+"\n"
+d11
+"\n"

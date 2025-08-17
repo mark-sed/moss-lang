@@ -79,3 +79,18 @@ ls4[0].empty()
 "\n"
 ls4[0][0].empty()
 "\n"
+
+ls5 = [1,2,3,4,5]
+ls6 = ls5.copy()
+~ls6.append(6)
+ls5
+"\n"
+ls6
+"\n"
+ls7 = [[1,2,3]]
+ls8 = ls7.copy()
+ls8[0][0] = 5
+ls7
+"\n"
+ls8
+"\n"

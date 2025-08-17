@@ -519,6 +519,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args[0].value->get_type() == BuiltIns::File);
             return MSFile::close(vm, args[0].value, err);
         }},
+        {"copy", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
+            auto arg = cf->get_arg("obj");
+            assert(arg && "mssing arg?");
+            return arg->clone();
+        }},
         {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::cos(cf->get_args()[0].value->as_float()));
         }},
@@ -626,6 +631,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return new IntValue(lv->get_vals().size());
             } else if (auto stv = dyn_cast<StringValue>(arg)) {
                 return new IntValue(stv->get_value().length());
+            } else if (auto dv = dyn_cast<DictValue>(arg)) {
+                return new IntValue(dv->size());
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;

@@ -497,7 +497,13 @@ public:
     std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> &get_vals() { return this->vals; }
 
     void push(Value *k, Value *v, Interpreter *vm);
-    size_t size() { return vals.size(); }
+    size_t size() {
+        size_t s = 0;
+        for (auto [k, v]: vals) {
+            s += v.size();
+        }
+        return s;
+    }
     void clear() {
         vals.clear();
     }
