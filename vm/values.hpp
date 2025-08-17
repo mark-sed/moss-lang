@@ -223,7 +223,8 @@ public:
     IntValue(opcode::IntConst value);
 
     virtual Value *clone() override {
-        return new IntValue(this->value);
+        // Int is immutable (and also interned) and there is no need to copy it.
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -261,7 +262,7 @@ public:
     FloatValue(opcode::FloatConst value);
     
     virtual Value *clone() override {
-        return new FloatValue(this->value);
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -298,7 +299,7 @@ public:
     BoolValue(opcode::BoolConst value);
     
     virtual Value *clone() override {
-        return new BoolValue(this->value);
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -333,7 +334,8 @@ public:
     StringValue(opcode::StringConst value);
 
     virtual Value *clone() override {
-        return new StringValue(this->value);
+        // String is also immutable and so return it without copying;
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -379,7 +381,7 @@ public:
     NilValue() : Value(ClassType, "Nil", BuiltIns::NilType) {}
 
     virtual Value *clone() override {
-        return new NilValue();
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -579,10 +581,11 @@ public:
     ~ClassValue() {}
 
     virtual Value *clone() override {
-        auto cpy = new ClassValue(this->name, this->supers);
+        /*auto cpy = new ClassValue(this->name, this->supers);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
-        return cpy;
+        return cpy;*/
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -659,10 +662,11 @@ public:
     ~SpaceValue() {}
 
     virtual Value *clone() override {
-        auto cpy = new SpaceValue(this->name, owner_vm, anonymous);
+        /*auto cpy = new SpaceValue(this->name, owner_vm, anonymous);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
-        return cpy;
+        return cpy;*/
+        return this;
     }
     
     Interpreter *get_owner_vm() { return this->owner_vm; }
@@ -694,10 +698,11 @@ public:
     ~ModuleValue();
 
     virtual Value *clone() override {
-        auto cpy = new ModuleValue(this->name, this->vm);
+        /*auto cpy = new ModuleValue(this->name, this->vm);
         cpy->set_attrs(this->attrs);
         cpy->annotations = this->annotations;
-        return cpy;
+        return cpy;*/
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -724,7 +729,8 @@ public:
     NoteValue(opcode::StringConst format, StringValue *value);
 
     virtual Value *clone() override {
-        return new NoteValue(this->format, dyn_cast<StringValue>(this));
+        // Note is immutable just like string.
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -789,7 +795,7 @@ public:
     ~FunValue();
 
     virtual Value *clone() override {
-        return new FunValue(this->name, this->args, this->vm, this->body_addr);
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -915,7 +921,7 @@ public:
     FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs) {}
     
     virtual Value *clone() override {
-        return new FunValueList(this->funs);
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -988,7 +994,7 @@ public:
         : Value(ClassType, name, BuiltIns::Type), vals(vals) {}
 
     virtual Value *clone() override {
-        return new EnumTypeValue(this->name, this->vals);
+        return this;
     }
 
     virtual inline bool is_hashable() override { return true; }

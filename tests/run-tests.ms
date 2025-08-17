@@ -1110,7 +1110,8 @@ fun test_lib_input(name) {
 fun test_lib_copy(name) {
     ~expect_pass("stdlib_tests/copy.ms", name, """{"a": 1}\n{"a": 2}\n{1: 2, 2: {"a": "changed"}}\n{1: nil, 2: {"a": "changed"}}
 [1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]
-5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [false, 2, 3]\n-1, [false, 2, 3]\n""", "")
+5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [1, 2, 3]\n-1, [1, 2, 3]\n5, [false, 2, 3]\n-1, [false, 2, 3]
+copy of A\ncopy of A\ncaught\nchanged\nchanged\n""", "")
 }
 
 fun test_lib_lists(name) {
