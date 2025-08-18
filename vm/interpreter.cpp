@@ -241,6 +241,7 @@ std::ostream& CallFrame::debug(std::ostream& os) const {
         << "\tcaller_addr: " << caller_addr << "\n"
         << "\textern_module_call: " << extern_module_call << "\n"
         << "\truntime_call: " << runtime_call << "\n"
+        << "\tconstructor call: " << constructor_call << "\n"
         << "\targs:\n";
     unsigned index = 0;
     for(auto a: args) {
@@ -393,7 +394,14 @@ void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
     push_frame(fun);
     call_frames.push_back(cf);
     set_bci(fun->get_body_addr());
-    run();
+    try {
+        run();
+    } catch (Value *e) {
+        LOGMAX("Exception in cross_module_call, pop_frame and rethrow");
+        // No return encountered so pop frame
+        pop_frame();
+        throw e;
+    }
 }
 
 void Interpreter::runtime_call(FunValue *fun) {
@@ -409,6 +417,7 @@ void Interpreter::runtime_call(FunValue *fun) {
     try {
         run();
     } catch (Value *e) {
+        LOGMAX("Exception in runtime_call, restore vm info and pop_frame and rethrow");
         this->bci = pre_call_bci;
         this->bci_modified = pre_bci_modified;
         this->stop = pre_stop;
@@ -554,8 +563,10 @@ void Interpreter::run() {
                 }
             }
             // Rethrow exception to be handled by next interpreter or unhandled
-            if (!handled)
+            if (!handled) {
+                LOGMAX("Rethrowing exception, no catch caught it");
                 throw v;
+            }
         }
         if (stop || global_controls::exit_called) {
             stop = false;

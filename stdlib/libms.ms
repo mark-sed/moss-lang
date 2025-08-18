@@ -391,6 +391,13 @@ fun any(iterable) {
     return false
 }
 
+fun length(iterable) {
+    l = 0
+    for (_: iterable)
+        l += 1
+    return l
+}
+
 enum ValType {
     MISSING,
     NONE

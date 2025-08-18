@@ -2789,47 +2789,19 @@ static void unpack_val(Interpreter *vm, Value *v, Register index, IntValue *unpa
 }
 
 static void op_for(Interpreter *vm, Value *coll, Register index, Address addr, bool multi=false, IntValue *unpack=nullptr) {
-    if (isa<ObjectValue>(coll)) {
-        diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *nextf = opcode::lookup_method(vm, coll, "__next", {coll}, did);
-        if (nextf) {
-            try {
-                auto v = runtime_method_call(vm, nextf, {coll});
-                assert(v && "sanity check");
-                if (!multi) {
-                    vm->store(index, v);
-                } else {
-                    unpack_val(vm, v, index, unpack);
-                }
-            } catch (Value *v) {
-                if (v->get_type() == BuiltIns::StopIteration) {
-                    vm->set_bci(addr);
-                }
-                else
-                    throw v;
-            }
+    try {
+        auto v = coll->next(vm);
+        assert(v && "sanity check");
+        if (!multi) {
+            vm->store(index, v);
         } else {
-            if (did == diags::DiagID::UNKNOWN)
-                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, coll->get_type()->get_name().c_str())));
-            else
-                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__next", diags::DIAG_MSGS[did])));
+            unpack_val(vm, v, index, unpack);
         }
-    } else {
-        try {
-            auto v = coll->next(vm);
-            assert(v && "sanity check");
-            if (!multi) {
-                vm->store(index, v);
-            } else {
-                unpack_val(vm, v, index, unpack);
-            }
-        } catch (Value *v) {
-            if (v->get_type() == BuiltIns::StopIteration) {
-                // We are still in __next and need to pop it
-                vm->set_bci(addr);
-            } else
-                throw v;
-        }
+    } catch (Value *v) {
+        if (v->get_type() == BuiltIns::StopIteration) {
+            vm->set_bci(addr);
+        } else
+            throw v;
     }
 }
 

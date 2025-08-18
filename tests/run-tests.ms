@@ -1241,6 +1241,10 @@ fun test_lib_enumerate(name) {
 [100, 9][101, 8][102, 7][103, 6][104, 5]\n""", "")
 }
 
+fun test_lib_iterable_funs(name) {
+    ~expect_pass("stdlib_tests/iterable_funs.ms", name, """3\n0\ncaught\n5\n5\n0\n""", "")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -1502,6 +1506,7 @@ fun run_all_tests() {
     ~run_test("lib_filters")
     ~run_test("lib_attrs")
     ~run_test("lib_enumerate")
+    ~run_test("lib_iterable_funs")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")
