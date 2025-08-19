@@ -594,7 +594,8 @@ fun test_scopes(name) {
     ~expect_pass("scopes.ms", name, """5\n6\n2\n2\nhi\ncaught\ncaught\n2\n3
 -1\n12\n5\ncaught\nchanged\nalso\n4\n-5\ncaught\n3\n1
 2\nhi there
--400\nhi\nhi there\n2\n""", "")
+-400\nhi\nhi there\n2
+011\n""", "")
 }
 
 fun test_lambdas(name) {
@@ -1010,7 +1011,7 @@ fun test_lib_exit(name) {
     ~expect_fail("""
 fun exit(a, b) {
     a ++ "\\n"
-    exit(b)
+    ::exit(b)
 }
 exit("la fin", 2)""", name, "la fin\n", "", exec=true, retcode_expected=2)
     ~expect_fail("module_tests/exit_external.ms", name, "started\n", "", retcode_expected=5)

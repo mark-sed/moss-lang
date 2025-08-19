@@ -68,6 +68,9 @@ Value *MemoryPool::load_name(ustring name, Interpreter *vm, Value **owner) {
                 return val;
             }
         }
+
+        if (pool_fun_owner->get_name() == name)
+            return pool_fun_owner;
     }
     return nullptr;
 }

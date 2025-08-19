@@ -170,3 +170,16 @@ fun compound_glob() {
 a
 b
 "\n"
+
+fun foo_2_over(i) {
+    i
+    if (i == 0)
+        return foo_2_over(1)
+    return i
+}
+
+
+f = foo_2_over
+foo_2_over = 40
+f(0)
+"\n"
