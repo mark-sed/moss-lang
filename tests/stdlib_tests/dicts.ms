@@ -1,6 +1,43 @@
+fun order(d) {
+    vals = []
+    for (k, v: d) {
+        ~vals.append([k, v])
+    }
+    n = vals.length()
+    for (i: 0..n) {
+        min_idx = i
+        for (j: i + 1.. n) {
+            if (String(vals[j][0]) < String(vals[min_idx][0])) {
+                min_idx = j
+            }
+        }
+        v = vals[i]
+        vals[i] = vals[min_idx]
+        vals[min_idx] = v
+    }
+    "{"
+    if (vals.empty())
+        ":"
+    first = true;
+    for (k, v: vals) {
+        if (not first)
+            ", "
+        first = false
+        if (type(k) == String)
+            "\""++k++"\""
+        else
+            k
+        ": "
+        if (type(v) == String)
+            "\""++v++"\""
+        else
+            v
+    }
+    "}\n"
+}
+
 dc1 = Dict([["A", 1], ["B", 2], ["C", 3]])
-dc1
-"\n"
+~order(dc1)
 ~dc1.clear()
 dc1
 "\n"
@@ -14,20 +51,16 @@ dc3
 "\n"
 
 dc1 = {"a": 1, "b": 2, "c": 3}
-dc1
-"\n"
+~order(dc1)
 dc1.pop("b")
 "\n"
-dc1
-"\n"
+~order(dc1)
 dc1.pop("a")
 "\n"
-dc1
-"\n"
+~order(dc1)
 dc1.pop("c")
 "\n"
-dc1
-"\n"
+~order(dc1)
 try
     dc1.pop("a")
 catch (e:KeyError)
@@ -38,12 +71,10 @@ dc1.pop("a", nil)
 dc2 = {"hello": [1,2,3], "dct": {"a": 1}}
 dc2["dct"].pop("a")
 "\n"
-dc2
-"\n"
+assert(dc2 == {"hello": [1, 2, 3], "dct": {:}})
 dc2.pop("dct")
 "\n"
-dc2
-"\n"
+~order(dc2)
 
 dc4 = {1: true, 2: false, 3: {"a": nil}}
 ~dc4.remove(3)
@@ -51,12 +82,11 @@ dc4
 "\n"
 ~dc4.remove(1)
 ~dc4.remove(2)
-dc4
-"\n"
-//try {
-//    dc4.remove(1)
-//} catch (e:KeyError)
-//    "caught\n"
+~order(dc4)
+try {
+    dc4.remove(1)
+} catch (e:KeyError)
+    "caught\n"
 
 dc5 = {1: true, 2: false, 3: {"a": nil}}
 dc5.get(1)
@@ -104,7 +134,9 @@ d10 = {1: 2, 2: {"a": 4}}
 d11 = d10.copy()
 d11[1] = nil
 d11[2]["a"] = "changed"
-d10
+d10[1]
 "\n"
-d11
+d11[1]
 "\n"
+~order(d10[2])
+~order(d11[2])

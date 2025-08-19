@@ -434,7 +434,7 @@ foo1\nfoo1
 
 fun test_attributes(name) {
     ~expect_pass("attributes.ms", name, """constructed\n56\n56\n56\n<object of class Foo>
-<object of class B>\n91\n91\n91 != 65\n-1 == -1
+<object of class B>\n91\n91\n1\n1 != 65\n-1 == -1
 4\n5\n4\nnil\n5\n4\nnil\ntrue\n""", "")
 }
 
@@ -477,28 +477,25 @@ fun test_lists(name) {
 
 fun test_dicts(name) {
     // FIXME: The dict order is not stable, needs to be fixed or the test to sort the results
-    ~expect_pass("dicts.ms", name/*, """{:}
-{3: \"3\", 10: \"10\"}
-{nil: \"nil\", false: \"false\", 0: \"0\", true: \"true\", \"0_true\": \"0_true\"}
+    ~expect_pass("dicts.ms", name, """{:}
+{10: "10", 3: "3"}
+{0: "0", "0_true": "0_true", false: "false", nil: "nil", true: "true"}
 {1: 1, 2: 2, 2.000000: 2.000000}
-caught
-caught
-{1: \"one\", 2: \"two\", 3: \"three\"}
-{\"b\": 2, \"c\": 3, \"a\": 1}
-{nil: \"n1\", false: \"f2\"}
-{\"key\": 2.500000, 1: \"int\", <class Int>: [1, 2]}
+caught\ncaught
+{1: "one", 2: "two", 3: "three"}
+{"a": 1, "b": 2, "c": 3}
+{false: "f2", nil: "n1"}
+{1: "int", <class Int>: [1, 2], "key": 2.500000}
 {1: [1, 2, 3], 2: [4, 5, 6]}
-{false: \"no\", true: \"yes\"}
-{2.718000: \"e\", 3.140000: \"pi\"}
-{\"key\": 42, nil: \"nothing\"}
-{\"outer\": {\"inner\": \"value\"}}
-{\"empty_dict\": {:}, \"empty_list\": [], \"empty_str\": \"\"}
-{<object of class CustomObject>: \"custom1\", <object of class CustomObject>: \"custom2\"}
-{<object of class CustomObject>: \"custom1_obj3\", <object of class CustomObject>: \"custom2\"}
-caught
-caught\ncaught\n3\na\nint\ncst_cls3
-{\"a\": 42}\n{\"a\": 68}\n{true: true, 1: true, \"a\": 68}
-true: true, 1: true, a: 68\n[\"b\", 2]\n[\"a\", 1]\n""", ""*/)
+{false: "no", true: "yes"}
+{2.718000: "e", 3.140000: "pi"}
+{"key": 42, nil: "nothing"}
+{"outer": {"inner": "value"}}
+{"empty_dict": {:}, "empty_list": [], "empty_str": ""}
+{CustomObject: 1: "custom1", CustomObject: 2: "custom2"}
+{CustomObject: 1: "custom1_obj3", CustomObject: 2: "custom2"}
+caught\ncaught\ncaught\n3\na\nint\ncst_cls3
+{"a": 42}\n{"a": 68}\n{1: true, "a": 68, true: true}\n""", "")
 }
 
 fun test_list_comprehension(name) {
@@ -1066,7 +1063,7 @@ nil
 [5, 6, 7, 8]\n[5, 6, 7, 8]\n[]
 [0, 1, 2, 3, 4, 5]\n[0, 1, 2, 3, 4, 5]\n[]
 Exception: Some exception
-{:}\n{"C": 3, "B": 2, "A": 1}\n{:}\ncaught\ncaught\ncaught\n""", "")
+caught\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_builtin_exceptions(name) {
@@ -1125,13 +1122,10 @@ false\ntrue\nfalse\nfalse\ntrue
 }
 
 fun test_lib_dicts(name) {
-    ~expect_pass("stdlib_tests/dicts.ms", name, """{"C": 3, "B": 2, "A": 1}\n{:}\n{:}\n{:}
-{"b": 2, "c": 3, "a": 1}\n2\n{"c": 3, "a": 1}\n1\n{"c": 3}\n3\n{:}\ncaught\nnil
-1\n{"hello": [1, 2, 3], "dct": {:}}\n{:}\n{"hello": [1, 2, 3]}
-{1: true, 2: false}\n{:}
-true\nnil\nnot in\n1\ncaught\n1\ncaught
-4\nfalse\ntrue\n0\n3
-{"a": 1}\n{"a": 2}\n{1: 2, 2: {"a": "changed"}}\n{1: nil, 2: {"a": "changed"}}\n""", "")
+    ~expect_pass("stdlib_tests/dicts.ms", name, """{"A": 1, "B": 2, "C": 3}\n{:}\n{:}\n{:}\n{"a": 1, "b": 2, "c": 3}
+2\n{"a": 1, "c": 3}\n1\n{"c": 3}\n3\n{:}\ncaught\nnil\n1\n{:}\n{"hello": [1, 2, 3]}\n{1: true, 2: false}\n{:}
+caught\ntrue\nnil\nnot in\n1\ncaught\n1\ncaught\n4\nfalse\ntrue\n0\n3
+{"a": 1}\n{"a": 2}\n2\nnil\n{"a": "changed"}\n{"a": "changed"}\n""", "")
 }
 
 fun test_lib_strings(name) {

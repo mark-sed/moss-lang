@@ -120,12 +120,9 @@ List(NextClass(-8))
 e1 = Exception("Some exception")
 e1 ++ "\n"
 
-Dict()
-"\n"
-Dict([["A", 1], ["B", 2], ["C", 3]])
-"\n"
-Dict([])
-"\n"
+assert(Dict() == {:})
+assert(Dict([["A", 1], ["B", 2], ["C", 3]]) == {"A": 1, "B": 2, "C": 3})
+assert(Dict([]) == {:}) 
 try {
     Dict([1,2,3])
 } catch (e:TypeError) {

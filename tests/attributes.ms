@@ -46,9 +46,9 @@ a.b
 a.b.id++"\n"
 a.get_b().id
 "\n"
-//a.b.id = 1 // TODO when assignment is done
-//a.b.get_id()
-//"\n"
+a.b.id = 1 // TODO when assignment is done
+a.b.get_id()
+"\n"
 
 b2 = B(65)
 B.get_id(b)

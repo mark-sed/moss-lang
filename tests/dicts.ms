@@ -1,12 +1,46 @@
-{:}
-"\n"
-{10: "0xA", 3: "3", 10 : "10"}
-"\n"
-{true: "true", false: "false", nil: "nil", 0: "0", "0_true": "0_true"}
-"\n"
+fun order(d) {
+    vals = []
+    for (k, v: d) {
+        ~vals.append([k, v])
+    }
+    n = vals.length()
+    for (i: 0..n) {
+        min_idx = i
+        for (j: i + 1.. n) {
+            if (String(vals[j][0]) < String(vals[min_idx][0])) {
+                min_idx = j
+            }
+        }
+        v = vals[i]
+        vals[i] = vals[min_idx]
+        vals[min_idx] = v
+    }
+    "{"
+    if (vals.empty())
+        ":"
+    first = true;
+    for (k, v: vals) {
+        if (not first)
+            ", "
+        first = false
+        if (type(k) == String)
+            "\""++k++"\""
+        else
+            k
+        ": "
+        if (type(v) == String)
+            "\""++v++"\""
+        else
+            v
+    }
+    "}\n"
+}
+
+~order({:})
+~order({10: "0xA", 3: "3", 10 : "10"})
+~order({true: "true", false: "false", nil: "nil", 0: "0", "0_true": "0_true"})
 d1 = {1: 1, 2: 2, 2.0: 2.0}
-d1
-"\n"
+~order(d1)
 
 try {
     {1: 2, [1,2]: 3}
@@ -20,41 +54,41 @@ try {
 
 // Dictionary with integer keys and string values
 d = {1: "one", 2: "two", 3: "three"}
-d++"\n"
+~order(d)
 
 // Dictionary with string keys and integer values
 d = {"a": 1, "b": 2, "c": 3}
-d++"\n"
+~order(d)
 
 // Dictionary with mixed keys and string values
 d = {nil: "n1", false: "f2"}
-d++"\n"
+~order(d)
 d = {1: "int", "key": 2.5, Int: [1, 2]}
-d++"\n"
+~order(d)
 
 // Dictionary with list values
 d = {1: [1, 2, 3], 2: [4, 5, 6]}
-d++"\n"
+~order(d)
 
 // Dictionary with boolean keys and values
 d = {true: "yes", false: "no"}
-d++"\n"
+~order(d)
 
 // Dictionary with float keys and string values
 d = {3.14: "pi", 2.718: "e"}
-d++"\n"
+~order(d)
 
 // Dictionary with nil as a key and integer value
 d = {nil: "nothing", "key": 42}
-d++"\n"
+~order(d)
 
 // Dictionary with nested dictionaries (dictionaries as values)
 d = {"outer": {"inner": "value"}}
-d++"\n"
+~order(d)
 
 // Dictionary with empty values (empty strings, lists, dictionaries)
 d = {"empty_str": "", "empty_list": [], "empty_dict": {:}}
-d++"\n"
+~order(d)
 
 // Dictionary with custom objects as keys (as long as they are hashable)
 class CustomObject {
@@ -72,10 +106,10 @@ obj2 = CustomObject(2)
 obj3 = CustomObject(1)
 
 d = {obj1: "custom1", obj2: "custom2"}
-d++"\n"
+~order(d)
 
 d = {obj1: "custom1", obj2: "custom2", obj3: "custom1_obj3"}
-d++"\n"
+~order(d)
 
 class C{}
 try {
@@ -118,30 +152,18 @@ dct[CstCls(3)]
 
 a = {:}
 a["a"] = 42
-a
-"\n"
+~order(a)
 a["a"] = 68
-a
-"\n"
+~order(a)
 
 a[true] = true
 a[1] = true
-a
-"\n"
-
-first = true
-for (kv: a) {
-    if (not first)
-        ", "
-    kv[0] ++ ": " ++ kv[1]
-    first = false
-}
-"\n"
+~order(a)
 
 for (kv: {:}) {
     kv
 }
 
 for (kv: {"a": 1, "b": 2}) {
-    kv ++ "\n"
+    assert(kv == ["a", 1] || kv == ["b", 2])
 }
