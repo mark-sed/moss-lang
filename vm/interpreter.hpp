@@ -275,9 +275,10 @@ public:
     bool store_non_local(ustring name, Value *v);
 
     /// Pushes a new frame (memory pool) into a frame stack
-    /// \param fun_owner If set then the function owner of the frame is set,
-    ///                  this is needed for accessing function closures
-    void push_frame(FunValue *fun_owner=nullptr);
+    /// \param owner If set then the owner of the frame is set,
+    ///              this is needed for accessing function closures and the
+    ///              owner itself from within.
+    void push_frame(Value *owner=nullptr);
     /// Pushes passed in frame as a value frame and creates a new one for
     /// const frame.
     void push_frame(MemoryPool *pool);

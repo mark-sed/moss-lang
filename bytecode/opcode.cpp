@@ -648,8 +648,13 @@ void call(Interpreter *vm, Register dst, Value *funV) {
 
     ClassValue *constructor_of = nullptr;
     Value *super_caller = nullptr;
+    auto as_fun = dyn_cast<FunValue>(funV);
+    bool constr_call = isa<ClassValue>(funV) || isa<SuperValue>(funV);
+    if (as_fun)
+        // Just asign as if this is true then the above cannot be
+        constr_call = as_fun->is_constructor();
     // Class constructor call
-    if (isa<ClassValue>(funV) || isa<SuperValue>(funV)) {
+    if (constr_call) {
         LOGMAX("Constructor call");
         // Check if this is set and if so remove it (e.g `mod1.MyClass()`)
         if (!cf->get_args().empty() && cf->get_args().back().name == "this") {
@@ -660,12 +665,10 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             cf->get_args().pop_back();
         }
         ClassValue *cls = dyn_cast<ClassValue>(funV);
-        if (!cls) {
+        if (auto spr = dyn_cast<SuperValue>(funV)) {
             super_caller = vm->load_name("this");
             assert(super_caller && "Super call, yet super caller is not set");
             // super() call, so extract the class based on the mro
-            auto spr = dyn_cast<SuperValue>(funV);
-            assert(spr && "some other value allowed?");
             auto inst_type = spr->get_instance()->get_type();
             auto inst_cls = dyn_cast<ClassValue>(inst_type);
             assert(inst_cls && "Object type is not a class");
@@ -687,6 +690,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 return;
             }
             LOGMAX("Super call to: " << *cls);
+        } else if (as_fun) {
+            cls = as_fun->get_constructee();
         }
         assert(cls && "sanity check");
         constructor_of = cls;
@@ -1117,6 +1122,14 @@ void PushUnpacked::exec(Interpreter *vm) {
 
 void CreateFun::exec(Interpreter *vm) {
     FunValue *funval = new FunValue(name, arg_names, vm);
+    // Check if this is in class frame and if the names match, set this as constructor
+    Value *pown = vm->get_top_frame()->get_pool_owner();
+    if (pown && isa<ClassValue>(pown)) {
+        if (name == pown->get_name()) {
+            LOGMAX("Setting function " << name << " as constructor");
+            funval->set_constructee(dyn_cast<ClassValue>(pown));
+        }
+    }
     for (auto riter = vm->get_frames().rbegin(); riter != vm->get_frames().rend(); ++riter) {
         // Push all latest local frames as closures of current function
         if ((*riter)->is_global())
@@ -1318,7 +1331,7 @@ void BuildClass::exec(Interpreter *vm) {
     vm->store(dst, cls);
     vm->store_name(dst, name);
     vm->clear_parent_list();
-    vm->push_frame();
+    vm->push_frame(cls);
     cls->set_attrs(vm->get_top_frame());
 }
 

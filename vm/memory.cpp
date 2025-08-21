@@ -59,18 +59,19 @@ Value *MemoryPool::load_name(ustring name, Interpreter *vm, Value **owner) {
         }
     }
     // Look for name in closures
-    if (pool_fun_owner) {
+    if (pool_owner) {
         // Frames are pushed into closures from the back to front so no need for
         // reverse iteration
-        for(auto f: pool_fun_owner->get_closures()) {
-            auto val = f->load_name(name, vm, owner);
-            if (val) {
-                return val;
+        if (auto pool_fun_owner = dyn_cast<FunValue>(pool_owner)) {
+            for(auto f: pool_fun_owner->get_closures()) {
+                auto val = f->load_name(name, vm, owner);
+                if (val) {
+                    return val;
+                }
             }
+            if (pool_owner->get_name() == name)
+                return pool_owner;
         }
-
-        if (pool_fun_owner->get_name() == name)
-            return pool_fun_owner;
     }
     return nullptr;
 }
@@ -107,11 +108,13 @@ bool MemoryPool::overwrite(ustring name, Value *v, Interpreter *vm) {
         }
     }
     // Look for name in closures
-    if (pool_fun_owner) {
-        for(auto f: pool_fun_owner->get_closures()) {
-            auto val = f->overwrite(name, v, vm);
-            if (val) {
-                return true;
+    if (pool_owner) {
+        if (auto pool_fun_owner = dyn_cast<FunValue>(pool_owner)) {
+            for(auto f: pool_fun_owner->get_closures()) {
+                auto val = f->overwrite(name, v, vm);
+                if (val) {
+                    return true;
+                }
             }
         }
     }

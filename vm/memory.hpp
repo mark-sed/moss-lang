@@ -34,7 +34,7 @@ namespace opcode {
 /// index into the pool. 
 class MemoryPool {
 private:
-    FunValue *pool_fun_owner; ///< This value is set to the owner of this pool if it is a function
+    Value *pool_owner; ///< This value is set to the owner of this pool if it is a function
     std::vector<Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
@@ -47,7 +47,7 @@ public:
 #ifndef NDEBUG
     static long allocated;
 #endif
-    MemoryPool(bool holds_consts=false, bool global=false) : pool_fun_owner(nullptr), holds_consts(holds_consts), global(global), marked(false) {
+    MemoryPool(bool holds_consts=false, bool global=false) : pool_owner(nullptr), holds_consts(holds_consts), global(global), marked(false) {
         if (!global && !holds_consts) {
             // TODO: Fine tune these values
             pool = std::vector<Value *>(128, nullptr);
@@ -124,7 +124,8 @@ public:
     bool is_empty_sym_table() { return this->sym_table.empty(); }
 
     /// Sets owner of this pool to a function if this is a closure frame
-    void set_pool_fun_owner(FunValue *f) { this->pool_fun_owner = f; }
+    void set_pool_owner(Value *f) { this->pool_owner = f; }
+    Value *get_pool_owner() { return this->pool_owner; }
 
     void set_marked(bool m) { this->marked = m; }
     bool is_marked() { return this->marked; }

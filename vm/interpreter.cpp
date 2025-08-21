@@ -362,13 +362,13 @@ void Interpreter::push_spilled_value(Value *v) {
     get_top_frame()->push_spilled_value(v);
 }
 
-void Interpreter::push_frame(FunValue *fun_owner) {
+void Interpreter::push_frame(Value *fun_owner) {
     LOGMAX("Frame pushed");
     auto lf = new MemoryPool();
     this->frames.push_back(lf);
     this->const_pools.push_back(new MemoryPool(true));
     if (fun_owner)
-        lf->set_pool_fun_owner(fun_owner);
+        lf->set_pool_owner(fun_owner);
         
 }
 

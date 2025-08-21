@@ -774,12 +774,13 @@ private:
     std::list<MemoryPool *> closures;
     Interpreter *vm;
     opcode::Address body_addr;
+    ClassValue *constructee;
 public:
     static const TypeKind ClassType = TypeKind::FUN;
 
     FunValue(opcode::StringConst name, opcode::StringConst arg_names, Interpreter *vm) 
             : Value(ClassType, name, BuiltIns::Function), 
-              args(), closures(), vm(vm), body_addr(0) {
+              args(), closures(), vm(vm), body_addr(0), constructee(nullptr) {
         auto names = utils::split_csv(arg_names, ',');
         for (auto n: names) {
             args.push_back(new FunValueArg(n, std::vector<Value *>{}));
@@ -790,7 +791,8 @@ public:
              std::vector<FunValueArg *> args,
              Interpreter *vm,
              opcode::Address body_addr) 
-            : Value(ClassType, name, BuiltIns::Function), args(args), vm(vm), body_addr(body_addr) {}
+            : Value(ClassType, name, BuiltIns::Function), args(args), vm(vm),
+              body_addr(body_addr), constructee(nullptr) {}
 
     ~FunValue();
 
@@ -821,6 +823,10 @@ public:
     void set_body_addr(opcode::Address body_addr) {
         this->body_addr = body_addr;
     }
+
+    void set_constructee(ClassValue *c) { this->constructee = c; }
+    ClassValue *get_constructee() { return this->constructee; }
+    bool is_constructor() { return this->constructee != nullptr; }
 
     void push_closure(MemoryPool *p) {
         closures.push_back(p);

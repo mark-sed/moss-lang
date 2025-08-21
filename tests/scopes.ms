@@ -183,3 +183,27 @@ f = foo_2_over
 foo_2_over = 40
 f(0)
 "\n"
+
+class A {
+    fun A(x) {
+        this.x = x
+    }
+
+    fun clone() {
+        return A(this.x)
+    }
+
+    fun __String() {
+        return this.x
+    }
+}
+
+a = A(5)
+a2 = a.clone()
+a
+"\n"
+a2
+"\n"
+constr = A.A
+constr(10)
+"\n"

@@ -595,7 +595,7 @@ fun test_scopes(name) {
 -1\n12\n5\ncaught\nchanged\nalso\n4\n-5\ncaught\n3\n1
 2\nhi there
 -400\nhi\nhi there\n2
-011\n""", "")
+011\n5\n5\n10\n""", "")
 }
 
 fun test_lambdas(name) {
