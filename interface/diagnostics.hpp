@@ -183,6 +183,7 @@ enum DiagID : unsigned {
     TIME_TIMESTAMP_OOR,     ///< When timestamp value is oor
     DICT_UNEXPECTED_TYPE,   ///< Dict iterable must return List
     DICT_BAD_ITER_SIZE,     ///< Size of elements in Dict constructor has to be 2
+    PARENT_CONFLICT,        ///< When extending multiple built-in classes
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -345,6 +346,7 @@ static const char * DIAG_MSGS[] = {
     "Timestamp is too small or too large",
     "Dict constructor expects iterable of List values, but got '%s'",
     "Dict constructor iterable must contain Lists of size 2, got size %ld",
+    "Cannot extend multiple built-in classes (extending %s and %s)",
 };
 
 /// \brief ID of diagnostic error

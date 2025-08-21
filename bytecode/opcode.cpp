@@ -1128,6 +1128,19 @@ void CreateFun::exec(Interpreter *vm) {
         if (name == pown->get_name()) {
             LOGMAX("Setting function " << name << " as constructor");
             funval->set_constructee(dyn_cast<ClassValue>(pown));
+        } else if (pown->has_annotation("internal_bind")) {
+            // This might be a constructor of internal_bind class where the names don't match
+            auto annt = pown->get_annotation("internal_bind");
+            if (auto ann_v = dyn_cast<StringValue>(annt)) {
+                if (ann_v->get_value() == name) {
+                    LOGMAX("Setting function " << name << " as constructor (matched on internal_bind name)");
+                    // This value will change in class bind once internal_bind is executed. But this needs to be 
+                    // denoted as a constructor
+                    funval->set_constructee(dyn_cast<ClassValue>(pown));
+                }
+            } else {
+                assert(false && "internal_bind annotation without string value");
+            }
         }
     }
     for (auto riter = vm->get_frames().rbegin(); riter != vm->get_frames().rend(); ++riter) {
@@ -1318,11 +1331,23 @@ void ImportAll::exec(Interpreter *vm) {
     vm->push_spilled_value(mod);
 }
 
+// These are the built in classes where layout would clash
+static bool is_built_in_class(ClassValue *c) {
+    return c == BuiltIns::Int || c == BuiltIns::Float || c == BuiltIns::Bool || c == BuiltIns::String ||
+        c == BuiltIns::Note || c == BuiltIns::NilType || c == BuiltIns::List || c == BuiltIns::Dict;
+}
+
 void PushParent::exec(Interpreter *vm) {
     auto v = vm->load(parent);
     assert(v && "Non existent class");
     auto cv = dyn_cast<ClassValue>(v);
     assert(cv && "Pushed parent is not a class");
+    if (is_built_in_class(cv)) {
+        for (auto p: vm->get_parent_list()) {
+            op_assert(!is_built_in_class(p), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(),
+                diags::PARENT_CONFLICT, p->get_name().c_str(), cv->get_name().c_str())));
+        }
+    }
     vm->push_parent(cv);
 }
 

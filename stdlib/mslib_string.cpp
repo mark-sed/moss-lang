@@ -6,8 +6,7 @@
 using namespace moss;
 using namespace mslib;
 
-Value *String::String_constructor(Interpreter *vm, Value *ths, Value *v, Value *&err) {
-    (void)ths;
+Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {
     (void)err;
     if (isa<ObjectValue>(v)) {
         Value *trash_err = nullptr;

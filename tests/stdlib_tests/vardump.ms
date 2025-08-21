@@ -26,7 +26,10 @@ enum EmptyEnum {}
 
 vardump(EmptyEnum)
 
-class MyClass : Int, Float {
+class A {}
+class B {}
+
+class MyClass : A, B {
 
     NAME = "myclass"
 

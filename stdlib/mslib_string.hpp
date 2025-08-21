@@ -23,7 +23,7 @@ namespace mslib {
 /// Moss String function space
 namespace String {
 
-Value *String_constructor(Interpreter *vm, Value *ths, Value *v, Value *&err);
+Value *String_constructor(Interpreter *vm, Value *v, Value *&err);
 Value *capitalize(Interpreter *vm, Value * ths, Value *&err);
 Value *upper(Interpreter *vm, Value * ths, Value *&err);
 Value *lower(Interpreter *vm, Value * ths, Value *&err);

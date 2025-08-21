@@ -430,6 +430,7 @@ fun test_classes(name) {
 Vilda\nmeow\n<object of class Animal>
 foo1\nfoo1
 10\n56\n61\n42\n""", "")
+    ~expect_fail("class MyIntString : Int, File, String {}", name, "", exec=true)
 }
 
 fun test_attributes(name) {
@@ -1043,10 +1044,10 @@ List(1) [
     }
   ]
 ]\nEnum {}
-Class MyClass : Int, Float {
-  \"MyClass\": Fun(MyClass(n:[Int, Float]) @104),
+Class MyClass : A, B {
+  \"MyClass\": Fun(MyClass(n:[Int, Float]) @110),
   \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n(this) @113)
+  \"get_n\": Fun(get_n(this) @119)
 }\n""", "")
 }
 

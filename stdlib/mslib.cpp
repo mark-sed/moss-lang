@@ -516,7 +516,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"close", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            assert(args[0].value->get_type() == BuiltIns::File);
+            assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
             return MSFile::close(vm, args[0].value, err);
         }},
         {"copy", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
@@ -629,7 +629,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto arg = cf->get_arg("this");
             if (auto lv = dyn_cast<ListValue>(arg)) {
                 return new IntValue(lv->get_vals().size());
-            } else if (auto stv = dyn_cast<StringValue>(arg)) {
+            } else if (auto stv = dyn_cast<StringValue>(arg)) { // opcode::is_type_eq_or_subtype(arg->get_type(), BuiltIns::String)
                 return new IntValue(stv->get_value().length());
             } else if (auto dv = dyn_cast<DictValue>(arg)) {
                 return new IntValue(dv->size());
@@ -689,7 +689,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"open", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            assert(args[0].value->get_type() == BuiltIns::File);
+            assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
             return MSFile::open(vm, args[0].value, err);
         }},
         {"ord", [](Interpreter* vm, CallFrame* cf, Value*& err) {
@@ -732,7 +732,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"readlines", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            assert(args[0].value->get_type() == BuiltIns::File);
+            assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
             return MSFile::readlines(vm, args[0].value, err);
         }},
         {"replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
@@ -798,7 +798,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             (void)vm;
             assert(cf->get_args().size() == 2);
-            return String::String_constructor(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+            return String::String_constructor(vm, cf->get_arg("v"), err);
         }},
         {"strip", [](Interpreter*, CallFrame* cf, Value*&) {
             auto strv = dyn_cast<StringValue>(cf->get_args()[0].value)->get_value();
