@@ -611,7 +611,8 @@ public:
     }
     
     bool has_parent(ClassValue *c) {
-        return std::find(supers.begin(), supers.end(), c) != supers.end();
+        auto all = get_all_supers();
+        return std::find(all.begin(), all.end(), c) != all.end();
     }
 
     std::list<ClassValue *> get_all_supers();

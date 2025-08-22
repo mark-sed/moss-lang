@@ -420,9 +420,8 @@ Value *Bool(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     return new BoolValue(true);
 }
 
-Value *Note(Interpreter *vm, Value *ths, Value *format, Value *value) {
+Value *Note(Interpreter *vm, Value *format, Value *value) {
     (void)vm;
-    (void)ths;
     auto str_val = dyn_cast<StringValue>(value);
     assert(str_val && "Note did not take string value");
     return new NoteValue(format->as_string(), str_val);
@@ -722,10 +721,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"NilType", [](Interpreter*, CallFrame*, Value*&) {
             return new NilValue();
         }},
-        {"Note", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+        {"Note", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             assert(cf->get_args().size() == 3);
-            return Note(vm, cf->get_arg("this"), cf->get_arg("format"), cf->get_arg("value"));
+            auto ths = cf->get_arg("this");
+            auto nn = Note(vm, cf->get_arg("format"), cf->get_arg("value"));
+            if (ths->get_type() == BuiltIns::Note) {
+                return nn;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Note)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, nn);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
         }},
         {"oct", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;

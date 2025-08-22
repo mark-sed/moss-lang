@@ -1165,6 +1165,10 @@ fun test_lib_extending_string(name) {
 caught\ngfedcba\nAbcdefg\nABCDEFG\nabcdefg\n-bcdefg\n---defg\n1[MS],2[MS],3\nabcdefg\n123\n""", "")
 }
 
+fun test_lib_extending_note(name) {
+    ~expect_pass("stdlib_tests/extending_note.ms", name, """<class MyNote>\nhello\n5\nHELLO\n""", "")
+}
+
 fun test_lib_random(name) {
     ~expect_pass("stdlib_tests/random.ms", name, "", "")
 }
@@ -1499,6 +1503,7 @@ fun run_all_tests() {
     ~run_test("lib_dicts")
     ~run_test("lib_strings")
     ~run_test("lib_extending_string")
+    ~run_test("lib_extending_note")
     ~run_test("lib_random")
     ~run_test("lib_math")
     ~run_test("lib_file")
