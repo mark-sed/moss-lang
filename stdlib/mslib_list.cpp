@@ -42,8 +42,7 @@ Value *List::pop(Interpreter *vm, Value *ths, Value *index, Value *&err) {
     return removed;
 }
 
-Value *List::List(Interpreter *vm, Value *ths, Value *iterable, Value *&err) {
-    (void)ths;
+Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
     auto iterator = iterable->iter(vm);
     ListValue *lv = new ListValue();
     try {

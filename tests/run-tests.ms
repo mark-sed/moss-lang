@@ -1177,6 +1177,16 @@ fun test_lib_extending_int_float_bool(name) {
 <class MyBool>\ntrue\n""", "")
 }
 
+fun test_lib_extending_list(name) {
+    ~expect_pass("stdlib_tests/extending_list.ms", name, """<class MyList>\n[1, 2, 3, 4]\n1234\n4\nfalse
+ML:[1, 2, 3, 4, 0, 1]\n3\n1\nML:[1, 2, 4, 0]\nML:[]\n""", "")
+}
+
+fun test_lib_extending_dict(name) {
+    ~expect_pass("stdlib_tests/extending_dict.ms", name, """<class MyDict>\n[D]:{"b": 2, "c": 3, "a": 1}\n[D]:{:}\n1
+[D]:{"b": 2, "c": 3}\n2\nfalse\nnope\n[D]:{"b": 2}\n[D]:{:}\n""", "")
+}
+
 fun test_lib_random(name) {
     ~expect_pass("stdlib_tests/random.ms", name, "", "")
 }
@@ -1513,6 +1523,8 @@ fun run_all_tests() {
     ~run_test("lib_extending_string")
     ~run_test("lib_extending_note")
     ~run_test("lib_extending_int_float_bool")
+    ~run_test("lib_extending_list")
+    ~run_test("lib_extending_dict")
     ~run_test("lib_random")
     ~run_test("lib_math")
     ~run_test("lib_file")

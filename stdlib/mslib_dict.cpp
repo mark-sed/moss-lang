@@ -3,8 +3,7 @@
 using namespace moss;
 using namespace mslib;
 
-Value *Dict::Dict(Interpreter *vm, Value *ths, Value *iterable, Value *&err) {
-    (void)ths;
+Value *Dict::Dict(Interpreter *vm, Value *iterable, Value *&err) {
     auto iterator = iterable->iter(vm);
     DictValue *dv = new DictValue();
     try {

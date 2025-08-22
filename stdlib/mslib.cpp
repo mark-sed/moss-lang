@@ -478,8 +478,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"append", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
-            if (cf->get_arg("this")->get_type() == BuiltIns::List) {
-                return List::append(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+            auto ths = cf->get_arg("this");
+            if (auto lv = get_subtype_value<ListValue>(ths, BuiltIns::List, vm, err)) {
+                return List::append(vm, lv, cf->get_arg("v"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
@@ -548,10 +549,10 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"clear", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
-            if (auto lv = dyn_cast<ListValue>(arg)) {
+            if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
                 lv->clear();
                 return nullptr;
-            } else if (auto dv = dyn_cast<DictValue>(arg)) {
+            } else if (auto dv = get_subtype_value<DictValue>(arg, BuiltIns::Dict, vm, err)) {
                 dv->clear();
                 return nullptr;
             } else {
@@ -591,10 +592,22 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return BuiltIns::Nil;
         }},
         {"Dict", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value *{
-            if (cf->get_args().size() == 1)
-                return new DictValue();
-            assert(cf->get_args().size() == 2);
-            return Dict::Dict(vm, cf->get_arg("this"), cf->get_arg("iterable"), err);
+            assert(cf->get_args().size() == 2 || cf->get_args().size() == 1);
+            auto ths = cf->get_arg("this");
+            Value *dv = nullptr;
+            if (cf->get_args().size() == 2)
+                dv = Dict::Dict(vm, cf->get_arg("iterable"), err);
+            else
+                dv = new DictValue();
+            if (ths->get_type() == BuiltIns::Dict) {
+                return dv;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Dict)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, dv);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
         }},
         {"divmod", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             auto args = cf->get_args();
@@ -682,22 +695,13 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
         }},
-        /*{"join", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            auto args = cf->get_args();
-            if (cf->get_arg("this")->get_type() == BuiltIns::String) {
-                return String::join(vm, cf->get_arg("this"), cf->get_arg("iterable"), err);
-            } else {
-                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
-                return nullptr;
-            }
-        }},*/
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
-            if (auto lv = dyn_cast<ListValue>(arg)) {
+            if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
                 return new IntValue(lv->get_vals().size());
             } else if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
                 return new IntValue(stv->get_value().length());
-            } else if (auto dv = dyn_cast<DictValue>(arg)) {
+            } else if (auto dv = get_subtype_value<DictValue>(arg, BuiltIns::Dict, vm, err)) {
                 return new IntValue(dv->size());
             } else {
                 if (!err)
@@ -709,7 +713,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             if (cf->get_args().size() == 1)
                 return new ListValue();
             assert(cf->get_args().size() == 2);
-            return List::List(vm, cf->get_arg("this"), cf->get_arg("iterable"), err);
+            auto ths = cf->get_arg("this");
+            auto lv = List::List(vm, cf->get_arg("iterable"), err);
+            if (ths->get_type() == BuiltIns::List) {
+                return lv;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::List)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, lv);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
         }},
         {"log", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)vm;
@@ -790,10 +804,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"pop", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
-            if (cf->get_arg("this")->get_type() == BuiltIns::List) {
-                return List::pop(vm, cf->get_arg("this"), cf->get_arg("index"), err);
-            } else if (cf->get_arg("this")->get_type() == BuiltIns::Dict) {
-                return Dict::pop(vm, cf->get_arg("this"), cf->get_arg("key"), cf->get_arg("def_val"), err);
+            auto ths = cf->get_arg("this");
+            if (auto lv = get_subtype_value<ListValue>(ths, BuiltIns::List, vm, err)) {
+                return List::pop(vm, lv, cf->get_arg("index"), err);
+            } else if (auto dv = get_subtype_value<DictValue>(ths, BuiltIns::Dict, vm, err)) {
+                return Dict::pop(vm, dv, cf->get_arg("key"), cf->get_arg("def_val"), err);
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;

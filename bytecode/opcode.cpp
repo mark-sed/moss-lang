@@ -2815,7 +2815,7 @@ void Switch::exec(Interpreter *vm) {
 static void unpack_val(Interpreter *vm, Value *v, Register index, IntValue *unpack) {
     // ths is ignored so lets not create extra value
     Value *err = nullptr;
-    auto lv = mslib::List::List(vm, nullptr, v, err);
+    auto lv = mslib::List::List(vm, v, err);
     if (err != nullptr) {
         raise(err);
     }
