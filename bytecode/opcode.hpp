@@ -35,14 +35,6 @@ bool isa(opcode::OpCode* o);
 template<class T>
 T *dyn_cast(opcode::OpCode* o);
 
-namespace annots {
-    inline constexpr char INTERNAL[] = "internal";
-};
-
-namespace known_names {
-    inline constexpr char TO_STRING_METHOD[] = "__String";
-}
-
 namespace opcode {
 
 /// Opcode names and their corresponding number

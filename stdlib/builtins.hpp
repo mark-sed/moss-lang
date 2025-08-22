@@ -20,6 +20,15 @@ class Value;
 class MemoryPool;
 class Interpreter;
 
+namespace annots {
+    inline constexpr char INTERNAL[] = "internal";
+};
+
+namespace known_names {
+    inline constexpr char TO_STRING_METHOD[] = "__String";
+    inline constexpr char BUILT_IN_EXT_VALUE[] = "__value";
+}
+
 /// This namespace contains values (pointers) for all the built-in types
 /// \note: When adding a new value also add it to init_built_ins
 ///        and instantiate it in builtins.cpp

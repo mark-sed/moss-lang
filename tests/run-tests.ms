@@ -1160,6 +1160,11 @@ Hi
 AAAcAAAAcAAAAAA\n""", "")
 }
 
+fun test_lib_extending_string(name) {
+    ~expect_pass("stdlib_tests/extending_string.ms", name, """<class MyString>\n5\nhello\ncaught\ncaught\nfalse\na
+caught\ngfedcba\nAbcdefg\nABCDEFG\nabcdefg\n-bcdefg\n---defg\n1[MS],2[MS],3\nabcdefg\n123\n""", "")
+}
+
 fun test_lib_random(name) {
     ~expect_pass("stdlib_tests/random.ms", name, "", "")
 }
@@ -1493,6 +1498,7 @@ fun run_all_tests() {
     ~run_test("lib_lists")
     ~run_test("lib_dicts")
     ~run_test("lib_strings")
+    ~run_test("lib_extending_string")
     ~run_test("lib_random")
     ~run_test("lib_math")
     ~run_test("lib_file")

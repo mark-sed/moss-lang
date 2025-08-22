@@ -184,6 +184,7 @@ enum DiagID : unsigned {
     DICT_UNEXPECTED_TYPE,   ///< Dict iterable must return List
     DICT_BAD_ITER_SIZE,     ///< Size of elements in Dict constructor has to be 2
     PARENT_CONFLICT,        ///< When extending multiple built-in classes
+    UNEXPECTED_TYPE_FOR_ATTR,///< When the type of attribue is not what was expected
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -347,6 +348,7 @@ static const char * DIAG_MSGS[] = {
     "Dict constructor expects iterable of List values, but got '%s'",
     "Dict constructor iterable must contain Lists of size 2, got size %ld",
     "Cannot extend multiple built-in classes (extending %s and %s)",
+    "Attribute '%s' has expected type of '%s', but got '%s'",
 };
 
 /// \brief ID of diagnostic error
