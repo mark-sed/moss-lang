@@ -1,7 +1,7 @@
 ///
 /// \file bytecode.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief VM bytecode
@@ -37,6 +37,7 @@ public:
 
     std::ostream& debug(std::ostream& os);
 
+    /// Pushes a new opcode into the bytecode list.
     void push_back(opcode::OpCode *op) {
         code.push_back(op);
     }
@@ -44,6 +45,8 @@ public:
     bool empty() { return code.empty(); }
 
 #ifndef NDEBUG
+    /// Adds a new comment at the current bytecode index.
+    /// These comments are visible when outputting BC with --annotate-bc
     void push_comment(ustring comm) { comments[code.size()] = comm; }
 #endif
 
@@ -55,7 +58,7 @@ public:
         return code[addr];
     }
 
-    std::vector<opcode::OpCode *> get_code() { return this->code; }
+    std::vector<opcode::OpCode *> &get_code() { return this->code; }
 
     void set_header(bc_header::BytecodeHeader *header) {
         this->header = header;

@@ -40,12 +40,12 @@ const char *error::get_code_name(error::ErrorCode code){
         "Runtime",
         "Internal",
         "File access",
-        "Unimplemented",
         "Bytecode",
         "Argument",
         "Unknown"
     };
     constexpr int names_size = sizeof(NAMES)/sizeof(char *);
+    static_assert(names_size == error::ErrorCode::UNKNOWN+1 && "Missing error code name");
     if(static_cast<int>(code) < names_size){
         return NAMES[static_cast<int>(code)];
     }

@@ -73,7 +73,7 @@ void sys::init_constants(Interpreter *vm) {
     Value *err = nullptr;
 
     // sys.version:String
-    auto version_reg = mslib::get_constant_register(vm, "version");
+    auto version_reg = mslib::get_global_register_of(vm, "version");
     ustring version = MOSS_VERSION;
 #ifndef NDEBUG
     version += " (DEBUG build)";

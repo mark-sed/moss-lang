@@ -40,7 +40,10 @@ namespace opcode {
     class Finally;
 }
 
+// TODO: change to unordered_map
+/// Map for formats (from format -> to format) and the function doing this conversion.
 using T_Converters = std::map<std::pair<ustring, ustring>, FunValue *>;
+/// Map for generators for given format and the function doing this conversion.
 using T_Generators = std::map<ustring, FunValue *>;
 
 /// Structure that holds information about argument in a function call
@@ -190,7 +193,7 @@ private:
     Bytecode *code;
     File *src_file;
     
-    std::list<MemoryPool *> const_pools;
+    std::list<MemoryPool *> const_pools; ///< Constant's frame stack
     std::list<MemoryPool *> frames;      ///< Frame stack
 
     std::list<CallFrame *> call_frames;  ///< Call frame stack
@@ -199,7 +202,6 @@ private:
     std::list<ExceptionCatch> catches;   ///< List of current catches
 
     static gcs::TracingGC *gc;  ///< Garbage collector for this VM
-    // TODO: change to unordered_map
     static T_Converters converters; ///< Mapping of formats and their converters
     static T_Generators generators; ///< Mapping of formats and their generators
     static std::vector<Value *> generator_notes; ///< List of notes to be passed to a generator
@@ -338,66 +340,77 @@ public:
     void pop_currently_imported_module();
 #ifndef NDEBUG
     /// Returns current last module in the list of currently imported modules.
-    /// This method is for debugging
+    /// This method is for debugging.
     ModuleValue *top_currently_imported_module();
 #endif
 
-    /// Pushes a new catch exception block into the catch stack
+    /// \brief Pushes a new catch exception block into the catch stack.
     void push_catch(ExceptionCatch ec) {
         this->catches.push_back(ec);
     }
-    /// Removes value from top of the stack
+    /// \brief Removes value from top of the stack.
     void pop_catch(opcode::IntConst amount) {
         assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack");
         this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
     }
+    /// \returns catch stack.
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
 
+    /// \brief Pushes a new finally into finally stack.
     void push_finally(opcode::Finally *fnl);
+    /// \brief Removes the top finally from the finally stack.
     void pop_finally();
+    /// \brief Pushes a new stack to finally frame of stacks.
     void push_finally_stack();
+    /// \brief Pops the top stack of finallies from the frame of stacks.
     void pop_finally_stack();
 
+    /// \returns true if there is any finally in the stack.
     bool has_finally();
+    /// \brief Initializes needed flags and jumps to top of the finally stack finally block.
     void call_finally();
+    /// \returns true if we are currently executing inside of a catch.
     bool is_try_in_catch();
 
-    /// Adds a new converter from to type into the list of converters
+    /// \brief Adds a new converter from to type into the list of converters.
     static void add_converter(ustring from, ustring to, FunValue *fun);
+    /// \returns a converter for from fromat -> to format.
     static std::vector<FunValue *> get_converter(ustring from, ustring to);
+    /// \returns a converter for given fromat key (from -> to).
     static std::vector<FunValue *> get_converter(std::pair<ustring, ustring> key);
-    /// Adds a new generator to the list of all generators
+    /// Adds a new generator to the list of all generators.
     static void add_generator(ustring format, FunValue *fun);
+    /// \returns generator for format.
     static FunValue *get_generator(ustring format);
-    /// \return true if there exists generator for given format (even if there is also a convertor)
+    /// \return true if there exists generator for given format (even if there is also a convertor).
     static bool is_generator(ustring format);
-    /// Pushes a new note for a generator
+    /// Pushes a new note for a generator.
     static void add_generator_note(Value *note) { Interpreter::generator_notes.push_back(note); }
-    static std::vector<Value *> get_generator_notes() { return Interpreter::generator_notes; }
-    static void set_enable_code_output(bool s) { enable_code_output = s; }
-    static bool is_enable_code_output() { return enable_code_output; }
 
-    //void push_exception(Value *v) { exception_stack.push_back(v); }
-    //void pop_exception() { exception_stack.pop_back(); }
-    //Value *top_exception() { return exception_stack.back(); }
-    //bool has_exception() { return !exception_stack.empty(); }
-    //std::list<Value *> &get_exceptions() { return exception_stack; }
+    /// \returns generator notes.
+    static std::vector<Value *> get_generator_notes() { return Interpreter::generator_notes; }
+    /// Sets enable code output flag for outputting executed code.
+    static void set_enable_code_output(bool s) { enable_code_output = s; }
+    /// \returns if enable_code_output is set.
+    static bool is_enable_code_output() { return enable_code_output; }
 
     //void collect_garbage();
 
-    /// \return true if the current VM is vm of the main module
+    /// \return true if the current VM is vm of the main module.
     bool is_main() { return this->main; }
 
-    /// \return Interpreter exit code
+    /// \return Interpreter exit code.
     int get_exit_code() { return exit_code; }
 
+    /// \brief Sets exit code of interpreter.
     void set_exit_code(int c) { this->exit_code = c; }
 
-    /// When set to true, interpreter will halt on the next instruction
+    /// \brief When set to true, interpreter will halt on the next instruction.
     void set_stop(bool s) {
         LOGMAX("Stop was set for interpreter: " << src_file->get_name());
         this->stop = s;
     }
+    /// \returns true if interpreter is set to stop.
     bool is_stop() { return this->stop; }
 
     /// \return Current bytecode index
@@ -408,22 +421,22 @@ public:
         this->bci_modified = true; 
     }
 
-    /// Handler for an exception
+    /// \brief Handler for an exception
     void handle_exception(ExceptionCatch ec, Value *v);
 
-    /// Restores frames to a global frame state
+    /// \brief Restores frames to a global frame state
     void restore_to_global_frame();
 
-    /// Returns number of the first free possible register in a frame
+    /// \returns number of the first free possible register in a frame
     opcode::Register get_free_reg(MemoryPool *fr);
 
-    /// Returns number of instructions in the bytecode this interprets
+    /// \returns number of instructions in the bytecode this interprets
     size_t get_code_size();
 
-    /// Returns interpreted bytecode
+    /// \returns interpreted bytecode
     Bytecode *get_code() { return this->code; }
 
-    /// Returns source file this interprets
+    /// \returns source file this interprets
     File *get_src_file() { return this->src_file; }
     
     std::ostream& debug(std::ostream& os) const;

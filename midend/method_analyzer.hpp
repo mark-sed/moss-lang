@@ -4,7 +4,7 @@
 /// \copyright Copyright 2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
-/// \brief Analysis of methods
+/// \brief Analysis of methods.
 /// 
 
 #ifndef _METHOD_ANALYZER_HPP_
@@ -17,12 +17,12 @@
 namespace moss {
 namespace ir {
 
-/// Does analysis of methods
-/// - Marks class methods
-/// - Checks returns in constructors
+/// Does analysis of methods.
+/// - Marks class methods and constructors.
+/// - Checks returns in constructors.
 class MethodAnalyzer : public IRVisitor {
 private:
-    bool in_constructor;
+    bool in_constructor; /// Denotes if visit is currently in a constructor.
 
     void check_constructor(class Function &method, class Class &cls);
 public:

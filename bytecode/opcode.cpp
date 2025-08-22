@@ -147,13 +147,13 @@ Value *opcode::runtime_constructor_call(Interpreter *vm, FunValue *funV, std::in
 
 opcode::IntConst opcode::hash_obj(ObjectValue *obj, Interpreter *vm) {
     diags::DiagID did = diags::DiagID::UNKNOWN;
-    auto hashf = opcode::lookup_method(vm, obj, "__hash", {obj}, did);
+    auto hashf = opcode::lookup_method(vm, obj, known_names::HASH_METHOD, {obj}, did);
     if (!hashf) {
         if (did == diags::DiagID::UNKNOWN) {
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_HASH_DEFINED, obj->get_type()->get_name().c_str())));
         } else {
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
-                "__hash", diags::DIAG_MSGS[did])));
+                known_names::HASH_METHOD, diags::DIAG_MSGS[did])));
         }
     }
     else {
@@ -322,14 +322,14 @@ void StoreNonLoc::exec(Interpreter *vm) {
 static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
     if (auto objval = dyn_cast<ObjectValue>(obj)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *setf = opcode::lookup_method(vm, objval, "__setitem", {key, src, obj}, did);
+        FunValue *setf = opcode::lookup_method(vm, objval, known_names::SUBSC_OPERATOR, {key, src, obj}, did);
         if (setf) {
             runtime_method_call(vm, setf, {key, src, objval});
         } else {
             if (did == diags::DiagID::UNKNOWN) {
                 raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SETITEM_DEFINED, objval->get_type()->get_name().c_str())));
             } else {
-                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__setitem", diags::DIAG_MSGS[did])));
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, known_names::SUBSC_OPERATOR, diags::DIAG_MSGS[did])));
             }
         }
     } else {
@@ -1062,7 +1062,7 @@ void PushUnpacked::exec(Interpreter *vm) {
     assert(v && "Const does not exist??");
     if (auto vobj = dyn_cast<ObjectValue>(v)) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *iterf = lookup_method(vm, vobj, "__iter", {vobj}, did);
+        FunValue *iterf = lookup_method(vm, vobj, known_names::OBJECT_ITERATOR, {vobj}, did);
         Value *iterator = vobj;
         if (iterf) {
             // When iter is found then call it and use the return value otherwise use the object itself
@@ -1070,7 +1070,7 @@ void PushUnpacked::exec(Interpreter *vm) {
         }
         if (isa<ObjectValue>(iterator)) {
             did = diags::DiagID::UNKNOWN;
-            FunValue *nextf = lookup_method(vm, iterator, "__next", {iterator}, did);
+            FunValue *nextf = lookup_method(vm, iterator, known_names::ITERATOR_NEXT, {iterator}, did);
             if (nextf) {
                 while (true) {
                     try {
@@ -1089,7 +1089,7 @@ void PushUnpacked::exec(Interpreter *vm) {
                 if (did == diags::DiagID::UNKNOWN)
                     raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, vobj->get_type()->get_name().c_str())));
                 else
-                    raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__next", diags::DIAG_MSGS[did])));
+                    raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, known_names::ITERATOR_NEXT, diags::DIAG_MSGS[did])));
             }
             return;
         } else {
@@ -1128,9 +1128,9 @@ void CreateFun::exec(Interpreter *vm) {
         if (name == pown->get_name()) {
             LOGMAX("Setting function " << name << " as constructor");
             funval->set_constructee(dyn_cast<ClassValue>(pown));
-        } else if (pown->has_annotation("internal_bind")) {
+        } else if (pown->has_annotation(annots::INTERNAL_BIND)) {
             // This might be a constructor of internal_bind class where the names don't match
-            auto annt = pown->get_annotation("internal_bind");
+            auto annt = pown->get_annotation(annots::INTERNAL_BIND);
             if (auto ann_v = dyn_cast<StringValue>(annt)) {
                 if (ann_v->get_value() == name) {
                     LOGMAX("Setting function " << name << " as constructor (matched on internal_bind name)");
@@ -1401,12 +1401,12 @@ void Annotate::exec(Interpreter *vm) {
         d->annotate(name, v);
     }
 
-    if (name == "internal_bind") {
+    if (name == annots::INTERNAL_BIND) {
         LOGMAX("Internal binding");
         auto bind_name = dyn_cast<StringValue>(v);
         op_assert(bind_name, mslib::create_type_error(
             diags::Diagnostic(*vm->get_src_file(), diags::MISSING_ANNOT_TYPE_ARGUMENT,
-                "internal_bind", "String")));
+                annots::INTERNAL_BIND, "String")));
         auto bind_val = vm->load_name(bind_name->get_value());
         op_assert(bind_val, mslib::create_name_error(
             diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, bind_name->get_value().c_str())));
@@ -1421,12 +1421,12 @@ void Annotate::exec(Interpreter *vm) {
         bind_class->bind(ref_class);
         // Remove the bound class
         vm->remove_global_name(ref_class->get_name());
-    } else if (name == "converter") {
+    } else if (name == annots::CONVERTER) {
         op_assert(fn, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CONVERTER_ON_NONFUN,
             d->get_type()->get_name().c_str())));
         auto args = get_str_list_annot(v, 2, name, vm);
         Interpreter::add_converter(args[0], args[1], fn);
-    } else if (name == "generator") {
+    } else if (name == annots::GENERATOR) {
         op_assert(fn, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::GENERATOR_ON_NONFUN,
             d->get_type()->get_name().c_str())));
         auto args = get_str_list_annot(v, 1, name, vm);
@@ -1437,13 +1437,13 @@ void Annotate::exec(Interpreter *vm) {
 void AnnotateMod::exec(Interpreter *vm) {
     auto *v = vm->load(val);
     assert(v && "Cannot load val");
-    if (name == "enable_code_output") {
+    if (name == annots::ENABLE_CODE_OUTPUT) {
         op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::ENABLE_CODE_OUT_ARG_SET)));
         vm->set_enable_code_output(true);
-    } else if (name == "disable_code_output") {
+    } else if (name == annots::DISABLE_CODE_OUTPUT) {
         op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::DISABLE_CODE_OUT_ARG_SET)));
         vm->set_enable_code_output(false);
-    } else if (name == "internal_module") {
+    } else if (name == annots::INTERNAL_MODULE) {
         op_assert(isa<NilValue>(v), mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::DISABLE_CODE_OUT_ARG_SET)));
         mslib::call_const_initializer(vm->get_src_file()->get_module_name(), vm);
     } else {
@@ -1454,7 +1454,7 @@ void AnnotateMod::exec(Interpreter *vm) {
 void Document::exec(Interpreter *vm) {
     auto d = vm->load(dst);
     assert(d && "loading non-existent register");
-    d->set_attr("__doc", new StringValue(val), true);
+    d->set_attr(known_names::DOC_STRING, new StringValue(val), true);
 }
 
 void Output::exec(Interpreter *vm) {
@@ -2868,7 +2868,7 @@ void Iter::exec(Interpreter *vm) {
     if (isa<ObjectValue>(coll)) {
         // Call __iter only if it exists otherwise use this object
         diags::DiagID did = diags::DiagID::UNKNOWN;
-        FunValue *iterf = lookup_method(vm, coll, "__iter", {coll}, did);
+        FunValue *iterf = lookup_method(vm, coll, known_names::OBJECT_ITERATOR, {coll}, did);
         if (iterf) {
             LOGMAX("Calling object iterator");
             auto new_iter = runtime_method_call(vm, iterf, {coll});

@@ -1609,7 +1609,7 @@ void BytecodeGen::emit(ir::Module *mod) {
         auto str_var = next_creg();
         append(new StoreStringConst(str_var, mod->get_documentation()));
         append(new StoreConst(doc_var, str_var));
-        append(new StoreName(doc_var, "__doc"));
+        append(new StoreName(doc_var, known_names::DOC_STRING));
     }
     emit(mod->get_body());
 }

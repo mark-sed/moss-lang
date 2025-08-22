@@ -156,7 +156,7 @@ FunValue::~FunValue() {
 
 Value *ObjectValue::iter(Interpreter *vm) {
     diags::DiagID did = diags::DiagID::UNKNOWN;
-    FunValue *iterf = opcode::lookup_method(vm, this, "__iter", {this}, did);
+    FunValue *iterf = opcode::lookup_method(vm, this, known_names::OBJECT_ITERATOR, {this}, did);
     Value *iterator = this;
     if (iterf) {
         // When iter is found then call it and use the return value otherwise use the object itself
@@ -172,7 +172,7 @@ Value *ObjectValue::iter(Interpreter *vm) {
 Value *ObjectValue::next(Interpreter *vm) {
     diags::DiagID did = diags::DiagID::UNKNOWN;
     // We use this as the iterator as next should be called on the iterator returned from iter
-    FunValue *nextf = opcode::lookup_method(vm, this, "__next", {this}, did);
+    FunValue *nextf = opcode::lookup_method(vm, this, known_names::ITERATOR_NEXT, {this}, did);
     Value *retv = nullptr;
     if (nextf) {
         retv = opcode::runtime_method_call(vm, nextf, {this});
@@ -180,7 +180,7 @@ Value *ObjectValue::next(Interpreter *vm) {
         if (did == diags::DiagID::UNKNOWN)
             opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_NEXT_DEFINED, this->get_type()->get_name().c_str())));
         else
-            opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, "__next", diags::DIAG_MSGS[did])));
+            opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, known_names::ITERATOR_NEXT, diags::DIAG_MSGS[did])));
     }
     return retv;
 }

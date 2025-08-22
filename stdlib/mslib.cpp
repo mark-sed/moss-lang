@@ -94,12 +94,78 @@ SpaceValue *mslib::get_space(ustring name, Interpreter *vm, Value *&err) {
     return spacetype;
 }
 
-opcode::Register mslib::get_constant_register(Interpreter *vm, ustring name) {
+opcode::Register mslib::get_global_register_of(Interpreter *vm, ustring name) {
     auto reg = vm->get_global_frame()->get_name_register(name);
     if (!reg)
         opcode::raise(mslib::create_name_error(
             diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str())));
     return *reg;
+}
+
+Value *mslib::call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
+    if (!isa<ObjectValue>(v)) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_CANNOT_BE_CONV, v->get_type()->get_name().c_str(), tname));
+        return nullptr;
+    }
+    
+    Value *rval = nullptr;
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    auto int_f = opcode::lookup_method(vm, v, fname, {v}, did);
+    if (int_f) {
+        rval = opcode::runtime_method_call(vm, int_f, {v});
+    } else {
+        if (did == diags::DiagID::UNKNOWN) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_TYPE_CONV_F_DEFINED, v->get_type()->get_name().c_str(), tname, fname));
+        } else {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fname, diags::DIAG_MSGS[did]));
+        }
+        return nullptr;
+    }
+    assert(rval && "Nothing returned?");
+    return rval;
+}
+
+Value *mslib::call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std::initializer_list<Value *> args, Value *&err) {
+    auto funv = cf->get_function();
+    assert(funv);
+    auto fun = dyn_cast<FunValue>(funv);
+    auto subres_class_v = fun->get_vm()->load_name(name);
+    if (!subres_class_v) {
+        err = mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
+        return nullptr;
+    }
+    auto subres_class = dyn_cast<ClassValue>(subres_class_v);
+    if (!subres_class) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, name.c_str(), subres_class_v->get_type()->get_name().c_str()));
+        return nullptr;
+    }
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    auto constr = opcode::lookup_method(vm, subres_class, name, args, did);
+    Value *res = nullptr;
+    if (constr) {
+        res = opcode::runtime_constructor_call(vm, constr, args, subres_class);
+    } else {
+        if (did == diags::DiagID::UNKNOWN) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
+        } else {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, name.c_str(), diags::DIAG_MSGS[did]));
+        }
+        return nullptr;
+    }
+    assert(res && "sanity check");
+    return res;
+}
+
+Value *mslib::create_exception(Value *type, ustring msg) {
+    auto clt = dyn_cast<ClassValue>(type);
+    assert(clt && "Passed non class type value");
+    auto err = new ObjectValue(clt);
+    err->set_attr("msg", new StringValue(msg));
+    return err;
+}
+
+Value *mslib::create_exception(Value *type, diags::Diagnostic dmsg) {
+    return create_exception(type, error::format_error(dmsg));
 }
 
 Value *vardump(Interpreter *vm, Value *v) {
@@ -270,60 +336,6 @@ Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
     return res;
 }
 
-Value *mslib::call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err) {
-    if (!isa<ObjectValue>(v)) {
-        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::TYPE_CANNOT_BE_CONV, v->get_type()->get_name().c_str(), tname));
-        return nullptr;
-    }
-    
-    Value *rval = nullptr;
-    diags::DiagID did = diags::DiagID::UNKNOWN;
-    auto int_f = opcode::lookup_method(vm, v, fname, {v}, did);
-    if (int_f) {
-        rval = opcode::runtime_method_call(vm, int_f, {v});
-    } else {
-        if (did == diags::DiagID::UNKNOWN) {
-            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_TYPE_CONV_F_DEFINED, v->get_type()->get_name().c_str(), tname, fname));
-        } else {
-            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, fname, diags::DIAG_MSGS[did]));
-        }
-        return nullptr;
-    }
-    assert(rval && "Nothing returned?");
-    return rval;
-}
-
-Value *mslib::call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std::initializer_list<Value *> args, Value *&err) {
-    auto funv = cf->get_function();
-    assert(funv);
-    auto fun = dyn_cast<FunValue>(funv);
-    auto subres_class_v = fun->get_vm()->load_name(name);
-    if (!subres_class_v) {
-        err = mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
-        return nullptr;
-    }
-    auto subres_class = dyn_cast<ClassValue>(subres_class_v);
-    if (!subres_class) {
-        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, name.c_str(), subres_class_v->get_type()->get_name().c_str()));
-        return nullptr;
-    }
-    diags::DiagID did = diags::DiagID::UNKNOWN;
-    auto constr = opcode::lookup_method(vm, subres_class, name, args, did);
-    Value *res = nullptr;
-    if (constr) {
-        res = opcode::runtime_constructor_call(vm, constr, args, subres_class);
-    } else {
-        if (did == diags::DiagID::UNKNOWN) {
-            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, name.c_str()));
-        } else {
-            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, name.c_str(), diags::DIAG_MSGS[did]));
-        }
-        return nullptr;
-    }
-    assert(res && "sanity check");
-    return res;
-}
-
 Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     (void)vm;
     IntValue *base_int = nullptr;
@@ -349,7 +361,7 @@ Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
         return new IntValue(static_cast<opcode::IntConst>(fv->get_value()));
     }
     assert(!base && "v should be String if base is not null");
-    auto rval = call_type_converter(vm, v, "Int", "__Int", err);
+    auto rval = call_type_converter(vm, v, "Int", known_names::TO_INT_METHOD, err);
     if (!err && rval && !isa<IntValue>(rval)) {
         err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Int", rval->get_type()->get_name().c_str()));
     }
@@ -376,7 +388,7 @@ Value *Float(Interpreter *vm, Value *v, Value *&err) {
     if (auto fv = dyn_cast<IntValue>(v)) {
         return new FloatValue(static_cast<opcode::FloatConst>(fv->get_value()));
     }
-    auto rval = call_type_converter(vm, v, "Float", "__Float", err);
+    auto rval = call_type_converter(vm, v, "Float", known_names::TO_FLOAT_METHOD, err);
     if (!err && rval && !isa<FloatValue>(rval)) {
         err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Float", rval->get_type()->get_name().c_str()));
     }
@@ -407,7 +419,7 @@ Value *Bool(Interpreter *vm, Value *v, Value *&err) {
         return new BoolValue(dv->size() != 0);
     }
     if (isa<ObjectValue>(v)) {
-        auto rval = call_type_converter(vm, v, "Bool", "__Bool", err);
+        auto rval = call_type_converter(vm, v, "Bool", known_names::TO_BOOL_METHOD, err);
         if (!err && rval && !isa<BoolValue>(rval)) {
             err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Bool", rval->get_type()->get_name().c_str()));
         }
@@ -424,21 +436,9 @@ Value *Note(Interpreter *vm, Value *format, Value *value) {
     return new NoteValue(format->as_string(), str_val);
 }
 
-Value *mslib::create_exception(Value *type, ustring msg) {
-    auto clt = dyn_cast<ClassValue>(type);
-    assert(clt && "Passed non class type value");
-    auto err = new ObjectValue(clt);
-    err->set_attr("msg", new StringValue(msg));
-    return err;
-}
-
-Value *mslib::create_exception(Value *type, diags::Diagnostic dmsg) {
-    return create_exception(type, error::format_error(dmsg));
-}
-
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry(ustring module_name) {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> libms_registry = {
-        {"__iter", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+        {known_names::OBJECT_ITERATOR, [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             auto args = cf->get_args();
             assert(args.size() == 1);
@@ -451,7 +451,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             return ths->iter(vm);
         }},
-        {"__next", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+        {known_names::ITERATOR_NEXT, [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             auto args = cf->get_args();
             assert(args.size() == 1);

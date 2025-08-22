@@ -20,13 +20,33 @@ class Value;
 class MemoryPool;
 class Interpreter;
 
+/// Names of annotations.
 namespace annots {
     inline constexpr char INTERNAL[] = "internal";
+    inline constexpr char INTERNAL_BIND[] = "internal_bind";
+    inline constexpr char CONVERTER[] = "converter";
+    inline constexpr char GENERATOR[] = "generator";
+
+    inline constexpr char ENABLE_CODE_OUTPUT[] = "enable_code_output";
+    inline constexpr char DISABLE_CODE_OUTPUT[] = "disable_code_output";
+    inline constexpr char INTERNAL_MODULE[] = "internal_module";
 };
 
+/// Names of built-in methods or known built-in attributes/variables.
 namespace known_names {
     inline constexpr char TO_STRING_METHOD[] = "__String";
+    inline constexpr char TO_INT_METHOD[] = "__Int";
+    inline constexpr char TO_FLOAT_METHOD[] = "__Float";
+    inline constexpr char TO_BOOL_METHOD[] = "__Bool";
+
     inline constexpr char BUILT_IN_EXT_VALUE[] = "__value";
+    inline constexpr char OBJECT_ITERATOR[] = "__iter";
+    inline constexpr char ITERATOR_NEXT[] = "__next";
+    inline constexpr char DOC_STRING[] = "__doc";
+    inline constexpr char HASH_METHOD[] = "__hash";
+    inline constexpr char SUBSC_OPERATOR[] = "__setitem";
+
+    inline constexpr char FILE_FSTREAM_ATT[] = "__fstream";
 }
 
 /// This namespace contains values (pointers) for all the built-in types
@@ -34,13 +54,14 @@ namespace known_names {
 ///        and instantiate it in builtins.cpp
 namespace BuiltIns {
 
-    /// Has to be called to store built ins in global frame
-    /// Without calling this all the values will be GCed
+    /// Has to be called to store built ins in global frame.
+    /// Without calling this all the values will be GCed.
     void init_built_ins(MemoryPool *gf, opcode::Register &reg);
 
+    /// Initializes constant variables in moss stdlib, such as args.
     void init_constant_variables(MemoryPool *gf, Interpreter *vm);
 
-    /// \return interned int or nullptr if it is not interned
+    /// \return interned int or nullptr if it is not interned.
     Value *get_interned_int(opcode::IntConst v);
 
     extern Value *Type;

@@ -44,24 +44,24 @@ Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
         err = create_file_not_found_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_OPEN_FILE, path->as_string().c_str()));
         return BuiltIns::Nil;
     }
-    ths->set_attr("__fstream", new t_cpp::FStreamValue(fs));
+    ths->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::FStreamValue(fs));
     return BuiltIns::Nil;
 }
 
 Value *MSFile::close(Interpreter *vm, Value *ths, Value *&err) {
     // TODO: Check if file is open
-    auto fstrm_v = mslib::get_attr(ths, "__fstream", vm, err);
+    auto fstrm_v = mslib::get_attr(ths, known_names::FILE_FSTREAM_ATT, vm, err);
     auto fstrm = dyn_cast<t_cpp::FStreamValue>(fstrm_v);
     assert(fstrm && "Not FStream value");
     fstrm->get_fs()->close();
-    ths->set_attr("__fstream", BuiltIns::Nil);
+    ths->set_attr(known_names::FILE_FSTREAM_ATT, BuiltIns::Nil);
     return BuiltIns::Nil;
 }
 
 Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
     // TODO: Generate exceptions on errors
-    assert(ths->has_attr("__fstream", vm) && "no __fstream generated");
-    auto fsv = ths->get_attr("__fstream", vm);
+    assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
     auto lines = new ListValue();
@@ -75,8 +75,8 @@ Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
 
 Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     // TODO: Generate exceptions on errors
-    assert(ths->has_attr("__fstream", vm) && "no __fstream generated");
-    auto fsv = ths->get_attr("__fstream", vm);
+    assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
     *(fsfs->get_fs()) << opcode::to_string(vm, content);

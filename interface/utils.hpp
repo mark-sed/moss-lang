@@ -1,7 +1,7 @@
 /// 
 /// \file utils.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief General helper functions
@@ -73,7 +73,8 @@ inline ustring formatv(const char *format, Args&& ... args) {
 }
 
 /// Replaces n or all occurences of target to value in string str.
-/// \param count if negative then all occurences are replaces
+/// \param count if negative then all occurences are replaces.
+/// \return new string with replaced substrings.
 inline ustring replace_n(ustring str, const ustring& target, const ustring& value, int count=-1) {
     if (target.empty() || count == 0) return str;
     size_t start_pos = 0;
@@ -85,6 +86,9 @@ inline ustring replace_n(ustring str, const ustring& target, const ustring& valu
     return str;
 }
 
+/// Replaces n or all occurences of target to value in string str.
+/// \param str string to replace substrings in. Will be modified.
+/// \param count if negative then all occurences are replaces.
 inline void replace_in_n(ustring &str, const ustring& target, const ustring& value, int count=-1) {
     if (target.empty() || count == 0) return;
     size_t start_pos = 0;

@@ -70,6 +70,9 @@ namespace error {
         extern const char *WHITE;
         extern const char *RESET;
 
+        /// Checks if output is redirected and use of colors is enabled and
+        /// if so then return true.
+        /// \return true if output should be colored, false otherwise.
         inline bool is_colored() {
             return is_stderr_atty() && clopts::use_color();
         }
@@ -104,7 +107,6 @@ namespace error {
         RUNTIME,       ///< Error caused by users program
         INTERNAL,      ///< Internal compiler error (such as unable to allocate memory)
         FILE_ACCESS,   ///< Problem opening/writing/working with users files (not internal config files)
-        UNIMPLEMENTED, ///< Problems with instruction
         BYTECODE,      ///< Problems with bytecode
         ARGUMENT,      ///< Problems with argument parsing
         UNKNOWN,       ///< Unknown error (shouldn't be really used)

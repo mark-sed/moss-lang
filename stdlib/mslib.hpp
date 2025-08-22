@@ -25,26 +25,57 @@ namespace moss {
 
 namespace mslib {
 
+/// \brief Type of internal function dispatcher.
 using mslib_dispatcher = std::function<Value*(Interpreter*, CallFrame*, Value*&)>;
 
+/// \brief Class that holds map of internal functions and their executors.
 class FunctionRegistry {
 public:
-    /// \return Moss stdlin function registery (map of function names and their c++ functions)
+    /// \return Moss stdin function registery (map of function names and their c++ functions)
     static const std::unordered_map<std::string, mslib_dispatcher>& get_registry(ustring module_name);
 };
 
+/// Some modules need to intialize their constants internally this method will call such initializers.
+/// \note This is not called for all modules imported only those marked "internal_module"
 void call_const_initializer(ustring module_name, Interpreter *vm);
 
+/// \brief Tries to extract attribute name from obj, if it is not present, then err is set to attribute_error.
+/// \return obj's attribute name if present, nullptr otherwise and sets err.
 Value *get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err);
+
+/// \brief Looks up an enum in current VM scope and returns it if present, otherwise err is set to name or type error.
+/// \return enum name or nullptr and err is set. 
 EnumTypeValue *get_enum(ustring name, Interpreter *vm, Value *&err);
+
+/// \brief Looks up an enum in VM of cf function scope and returns it if present, otherwise err is set to name or type error.
+/// \return enum name or nullptr and err is set. 
 EnumTypeValue *get_enum(ustring name, CallFrame *cf, Value *&err);
+
+/// \brief Looks up a space in current VM scope and returns it if present, otherwise err is set to name or type error.
+/// \return space name or nullptr and err is set. 
 SpaceValue *get_space(ustring name, Interpreter *vm, Value *&err);
 
-opcode::Register get_constant_register(Interpreter *vm, ustring name);
+/// \brief Looks up a name in global frame symbol table and returns its register.
+/// If name is not found then name error exception is raised.
+/// \return Register of name in global frame.
+/// \warning Raises name error if not found.
+opcode::Register get_global_register_of(Interpreter *vm, ustring name);
 
+/// \brief Calls a converter fname to convert to type tname of v.
+/// For example this is to call __Int converter of some object to convert it to Int.
+/// This function does runtime_method_call and if any check fails sets err to type error, but runtime call might also
+/// raise (this will not be set to err).
+/// \return Value returned by type converter or nullptr and err set to an exception.
 Value *call_type_converter(Interpreter *vm, Value *v, const char *tname, const char *fname, Value *&err);
+
+/// \brief Calls constructor name in VM of cf with arguments args.
+/// This function does runtime_constructor_call and if any check fails sets err to type error or name error, but
+/// runtime call might raise (this will not be set to err).
+/// \return Object constructed by called constructor or nullptr and err set to an exception.
 Value *call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std::initializer_list<Value *> args, Value *&err);
 
+/// \brief Extracts StringConst from Value, which has to be StringValue.
+/// This function only asserts, does not raise. Type of v has to be checked before call to this.
 inline opcode::StringConst get_string(Value *v) {
     assert(v && "Passed nullptr to extractor");
     auto strv = dyn_cast<StringValue>(v);
@@ -52,6 +83,8 @@ inline opcode::StringConst get_string(Value *v) {
     return strv->get_value();
 } 
 
+/// \brief Extracts IntConst from Value, which has to be IntValue.
+/// This function only asserts, does not raise. Type of v has to be checked before call to this.
 inline opcode::IntConst get_int(Value *v) {
     assert(v && "Passed nullptr to extractor");
     auto vv = dyn_cast<IntValue>(v);
@@ -59,6 +92,8 @@ inline opcode::IntConst get_int(Value *v) {
     return vv->get_value();
 }
 
+/// \brief Extracts FloatConst from Value, which has to be FloatValue.
+/// This function only asserts, does not raise. Type of v has to be checked before call to this.
 inline opcode::FloatConst get_float(Value *v) {
     assert(v && "Passed nullptr to extractor");
     auto vv = dyn_cast<FloatValue>(v);
@@ -66,6 +101,8 @@ inline opcode::FloatConst get_float(Value *v) {
     return vv->get_value();
 }
 
+/// \brief Extracts BoolConst from Value, which has to be BoolValue.
+/// This function only asserts, does not raise. Type of v has to be checked before call to this.
 inline opcode::BoolConst get_bool(Value *v) {
     assert(v && "Passed nullptr to extractor");
     auto vv = dyn_cast<BoolValue>(v);
@@ -73,6 +110,8 @@ inline opcode::BoolConst get_bool(Value *v) {
     return vv->get_value();
 }
 
+/// \brief Extracts std::vector from Value, which has to be ListValue.
+/// This function only asserts, does not raise. Type of v has to be checked before call to this.
 inline std::vector<Value *> get_list(Value *v) {
     assert(v && "Passed nullptr to extractor");
     auto vv = dyn_cast<ListValue>(v);
@@ -87,6 +126,7 @@ inline std::vector<Value *> get_list(Value *v) {
 /// \param err Possible exception from execution
 void dispatch(Interpreter *vm, ustring module_name, ustring name, Value *&err);
 
+/// \brief Constructs an exception from given type and message.
 Value *create_exception(Value *type, ustring msg);
 Value *create_exception(Value *type, diags::Diagnostic dmsg);
 

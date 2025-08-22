@@ -4,6 +4,7 @@
 #include "logging.hpp"
 #include "errors.hpp"
 #include "clopts.hpp"
+#include "builtins.hpp"
 #include <cassert>
 #include <climits>
 #include <cmath>
@@ -55,7 +56,7 @@ static Operator token2operator(TokenType t) {
 void Parser::check_code_output(Module *m, ir::IR *decl) {
     if (enable_code_output && !isa<ir::Note>(decl)) {
         auto annt = dyn_cast<ir::Annotation>(decl);
-        if (!annt || annt->get_name() != "enable_code_output") {
+        if (!annt || annt->get_name() != annots::ENABLE_CODE_OUTPUT) {
             std::stringstream code_str;
             code_str << "```moss\n";
             auto src_i = decl->get_src_info();
@@ -284,7 +285,9 @@ void Parser::put_back() {
 }
 
 void moss::parser_error(diags::Diagnostic err_msg) {
-    // TODO: Change to specific exception child type (such as TypeError)
+    // We are currently in the parsing stage and don't have any exceptions, therefore exceptions are
+    // just StringLiterals. It is not just ustring to be able to catch it nicely and distinguish it from other ones.
+    // TODO: Change the StringLiteral to actuall C++ exception to avoid not needed allocation of IR.
     auto str_msg = error::format_error(err_msg);
     SourceInfo msg_src;
     throw new Raise(new StringLiteral(str_msg, msg_src), msg_src);
@@ -391,9 +394,9 @@ ir::Annotation *Parser::annotation() {
         }
         
         // @!enable_code_output is also a parser annotation
-        if (name->get_value() == "enable_code_output" && !value) {
+        if (name->get_value() == annots::ENABLE_CODE_OUTPUT && !value) {
             enable_code_output = true;
-        } else if (name->get_value() == "disable_code_output" && !value) {
+        } else if (name->get_value() == annots::DISABLE_CODE_OUTPUT && !value) {
             enable_code_output = false;
         }
 

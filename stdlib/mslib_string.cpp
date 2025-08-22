@@ -10,7 +10,7 @@ Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {
     (void)err;
     if (isa<ObjectValue>(v)) {
         Value *trash_err = nullptr;
-        auto rval = mslib::call_type_converter(vm, v, "String", "__String", trash_err);
+        auto rval = mslib::call_type_converter(vm, v, "String", known_names::TO_STRING_METHOD, trash_err);
         if (rval && !trash_err) {
             if (!isa<StringValue>(rval)) {
                 rval = new StringValue(rval->as_string());
