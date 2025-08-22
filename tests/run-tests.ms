@@ -429,7 +429,8 @@ fun test_classes(name) {
     ~expect_pass("classes.ms", name, """42\n<class Cat>\n<object of class Cat>
 Vilda\nmeow\n<object of class Animal>
 foo1\nfoo1
-10\n56\n61\n42\n""", "")
+10\n56\n61\n42
+42\n42 []\n42 []\n42 [1, 2, 3, 4]\n""", "")
     ~expect_fail("class MyIntString : Int, File, String {}", name, "", exec=true)
 }
 

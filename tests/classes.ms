@@ -89,3 +89,25 @@ space MyOutterSpace {
 mic2 = MyOutterSpace.MyInnerClass(42)
 mic2.x
 "\n"
+
+class Cl1 {
+
+    fun Cl1(x) {
+        this.x = x
+    }
+
+    fun get_x() {
+        return this.x
+    }
+
+    fun print_all(... args) {
+        ~print(this.x, args)
+    }
+}
+
+c = Cl1(42)
+Cl1.get_x(this=c)
+"\n"
+~Cl1.print_all(this=c)
+~c.print_all()
+~Cl1.print_all(1, 2, 3, 4, this=c)

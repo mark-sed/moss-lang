@@ -1187,7 +1187,11 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             if (be && be->get_op().get_kind() == OperatorKind::OP_SET) {
                 // Named arg
                 a_val = emit(be->get_right(), true);
-                ustring name = be->get_left()->get_name();
+                ustring name = "";
+                if (isa<ThisLiteral>(be->get_left())) {
+                    name = "this";
+                } else 
+                    name = be->get_left()->get_name();
                 append(new PushNamedArg(free_reg(a_val), name));
             }
             else {
