@@ -203,3 +203,8 @@ subc = SubC()
 subc.a
 "\n"
 subc.b
+
+try {
+    subc.super
+} catch (e:AttributeError)
+    "caught\n"

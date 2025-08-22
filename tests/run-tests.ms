@@ -608,7 +608,7 @@ fun test_lambdas(name) {
 
 fun test_supers(name) {
     ~expect_pass("supers.ms", name, """B A\nA 2\nB\nD B\nC\nC\nA\nA foo 42\nVAL B\ncaught
-in parent\n1\ntext\n1\ntext\n""", "")
+in parent\n1\ntext\n1\ntext\ncaught\n""", "")
 }
 
 fun test_notes(name) {

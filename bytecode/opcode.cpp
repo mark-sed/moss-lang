@@ -254,7 +254,7 @@ void LoadAttr::exec(Interpreter *vm) {
     }
     op_assert(attr, mslib::create_attribute_error(
         diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED,
-            v->get_name().c_str(), this->name.c_str())));
+            v->get_type()->get_name().c_str(), this->name.c_str())));
     vm->store(this->dst, attr);
 }
 

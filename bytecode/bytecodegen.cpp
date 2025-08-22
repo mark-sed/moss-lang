@@ -31,7 +31,7 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
         }
     }
     if (expr->get_op().get_kind() != OperatorKind::OP_ACCESS ||
-          !(isa<Variable>(expr->get_right()) || isa<OperatorLiteral>(expr->get_right()))) {
+          !(isa<Variable>(expr->get_right()) || isa<OperatorLiteral>(expr->get_right()) || isa<SuperLiteral>(expr->get_right()))) {
         if (expr->get_op().get_kind() != OperatorKind::OP_SHORT_C_AND && expr->get_op().get_kind() != OperatorKind::OP_SHORT_C_OR) {
             right = emit(expr->get_right());
         }
@@ -970,6 +970,8 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 att_name = att->get_name();
             } else if (auto opl = dyn_cast<OperatorLiteral>(att)) {
                 att_name = opl->get_op().as_string();
+            } else if (isa<SuperLiteral>(att)) {
+                att_name = "super";
             } else {
                 assert(false && "Unknown IR in access");
             }
