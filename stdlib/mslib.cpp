@@ -324,9 +324,8 @@ Value *mslib::call_constructor(Interpreter *vm, CallFrame *cf, ustring name, std
     return res;
 }
 
-Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base, Value *&err) {
+Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     (void)vm;
-    (void)ths;
     IntValue *base_int = nullptr;
     if (base)
         base_int = dyn_cast<IntValue>(base);
@@ -357,9 +356,8 @@ Value *Int(Interpreter *vm, Value *ths, Value *v, Value *base, Value *&err) {
     return rval;
 }
 
-Value *Float(Interpreter *vm, Value *ths, Value *v, Value *&err) {
+Value *Float(Interpreter *vm, Value *v, Value *&err) {
     (void)vm;
-    (void)ths;
 
     if (isa<FloatValue>(v))
         return v;
@@ -385,9 +383,8 @@ Value *Float(Interpreter *vm, Value *ths, Value *v, Value *&err) {
     return rval;
 }
 
-Value *Bool(Interpreter *vm, Value *ths, Value *v, Value *&err) {
+Value *Bool(Interpreter *vm, Value *v, Value *&err) {
     (void)vm;
-    (void)ths;
 
     if (isa<BoolValue>(v))
         return v;
@@ -503,10 +500,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 1);
             return bin(vm, args[0].value);
         }},
-        {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+        {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             assert(cf->get_args().size() == 2);
-            return Bool(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+            auto ths = cf->get_arg("this");
+            auto bv = Bool(vm, cf->get_arg("v"), err);
+            if (ths->get_type() == BuiltIns::Bool) {
+                return bv;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Bool)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, bv);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
         }},
         {"capitalize", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 1);
@@ -594,10 +601,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 2);
             return divmod(vm, cf->get_arg("x"), cf->get_arg("y"), err);
         }},
-        {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+        {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             assert(cf->get_args().size() == 2);
-            return Float(vm, cf->get_arg("this"), cf->get_arg("v"), err);
+            auto ths = cf->get_arg("this");
+            auto fv = Float(vm, cf->get_arg("v"), err);
+            if (ths->get_type() == BuiltIns::Float) {
+                return fv;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Float)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, fv);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
         }},
         {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             auto arg = cf->get_arg("this");
@@ -653,7 +670,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             auto args = cf->get_args();
             assert((args.size() == 2 || args.size() == 3));
-            return Int(vm, cf->get_arg("this"), cf->get_arg("v"), cf->get_arg("base"), err);
+            auto ths = cf->get_arg("this");
+            auto iv = Int(vm, cf->get_arg("v"), cf->get_arg("base"), err);
+            if (ths->get_type() == BuiltIns::Int) {
+                return iv;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Int)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, iv);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
         }},
         /*{"join", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();

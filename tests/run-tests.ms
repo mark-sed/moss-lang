@@ -461,6 +461,8 @@ fun test_inheritance(name) {
 <object of class C>\nA\n<object of class D>\nb_call\na_call\na_call\nB\nb_call\n""", "")
     // Cannot call without argument as MyValue is extended and does not have constructor without argument
     ~expect_fail("class MyValue { fun MyValue(x) { this.x = x; };}; class TheirValue : MyValue {}; tv = TheirValue()", name, exec=true)
+    // Cannot extend NilType, nil is a true singleton value
+    ~expect_fail("class MyNilType : NilType {}", name, "", exec=true)
 }
 
 fun test_operator_funs(name) {
@@ -1169,6 +1171,12 @@ fun test_lib_extending_note(name) {
     ~expect_pass("stdlib_tests/extending_note.ms", name, """<class MyNote>\nhello\n5\nHELLO\n""", "")
 }
 
+fun test_lib_extending_int_float_bool(name) {
+    ~expect_pass("stdlib_tests/extending_int_float_bool.ms", name, """<class MyInt>\n42\n10
+<class MyFloat>\n0.500000
+<class MyBool>\ntrue\n""", "")
+}
+
 fun test_lib_random(name) {
     ~expect_pass("stdlib_tests/random.ms", name, "", "")
 }
@@ -1504,6 +1512,7 @@ fun run_all_tests() {
     ~run_test("lib_strings")
     ~run_test("lib_extending_string")
     ~run_test("lib_extending_note")
+    ~run_test("lib_extending_int_float_bool")
     ~run_test("lib_random")
     ~run_test("lib_math")
     ~run_test("lib_file")

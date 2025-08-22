@@ -1348,6 +1348,7 @@ void PushParent::exec(Interpreter *vm) {
                 diags::PARENT_CONFLICT, p->get_name().c_str(), cv->get_name().c_str())));
         }
     }
+    op_assert(cv != BuiltIns::NilType, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_EXTEND_NIL)));
     vm->push_parent(cv);
 }
 

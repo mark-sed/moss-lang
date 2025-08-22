@@ -185,6 +185,7 @@ enum DiagID : unsigned {
     DICT_BAD_ITER_SIZE,     ///< Size of elements in Dict constructor has to be 2
     PARENT_CONFLICT,        ///< When extending multiple built-in classes
     UNEXPECTED_TYPE_FOR_ATTR,///< When the type of attribue is not what was expected
+    CANNOT_EXTEND_NIL,      ///< When NilType is used as a base type
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -349,6 +350,7 @@ static const char * DIAG_MSGS[] = {
     "Dict constructor iterable must contain Lists of size 2, got size %ld",
     "Cannot extend multiple built-in classes (extending %s and %s)",
     "Attribute '%s' has expected type of '%s', but got '%s'",
+    "NilType cannot be a base type for a class",
 };
 
 /// \brief ID of diagnostic error
