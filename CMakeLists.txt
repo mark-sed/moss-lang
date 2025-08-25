@@ -51,6 +51,7 @@ set(SOURCES
     midend/ir.cpp
     midend/ir_pipeline.cpp
     midend/ir_visitor.cpp
+    midend/function_analyzer.cpp
     midend/method_analyzer.cpp
     stdlib/mslib_dict.cpp
     stdlib/mslib_file.cpp
@@ -189,6 +190,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/test_bytecode_rw.cpp
         tests/unittests/test_bytecode.cpp
         tests/unittests/test_clopts.cpp
+        tests/unittests/test_function_analysis.cpp
         tests/unittests/test_interpreter.cpp
         tests/unittests/test_ir.cpp
         tests/unittests/test_memory.cpp

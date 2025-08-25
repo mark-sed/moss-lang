@@ -382,7 +382,7 @@ public:
 
     void accept(IRVisitor& visitor) override;
 
-    std::vector<Argument *> get_args() { return this->info.args; }
+    const std::vector<Argument *>& get_args() { return this->info.args; }
     void set_constructor(bool c) { this->info.constructor = c; }
     bool is_constructor() { return this->info.constructor; }
     void set_method(bool c) { this->info.method = c; }

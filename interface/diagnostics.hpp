@@ -186,6 +186,7 @@ enum DiagID : unsigned {
     PARENT_CONFLICT,        ///< When extending multiple built-in classes
     UNEXPECTED_TYPE_FOR_ATTR,///< When the type of attribue is not what was expected
     CANNOT_EXTEND_NIL,      ///< When NilType is used as a base type
+    DUPLICATE_ARG,          ///< When there are multiple arguments with the same name in function definition
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -351,6 +352,7 @@ static const char * DIAG_MSGS[] = {
     "Cannot extend multiple built-in classes (extending %s and %s)",
     "Attribute '%s' has expected type of '%s', but got '%s'",
     "NilType cannot be a base type for a class",
+    "Duplicate argument name '%s' in function '%s'",
 };
 
 /// \brief ID of diagnostic error

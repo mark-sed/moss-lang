@@ -1410,7 +1410,7 @@ std::vector<ir::Argument *> Parser::arg_list() {
             parser_assert(!vararg, create_diag(diags::MULTIPLE_VARARGS));
             auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
             parser_assert(!check({TokenType::COLON, TokenType::SET}), create_diag(diags::NOT_PURE_VARARG));
-            arg = new Argument(id->get_value(), curr_src_info());
+            arg = new Argument(id->get_value(), id->get_src_info());
             vararg = true;
         }
         else {
@@ -1801,7 +1801,7 @@ Argument *Parser::argument(bool allow_default_value) {
             default_value = expression();
             parser_assert(default_value, create_diag(diags::EXPR_EXPECTED));
         }
-        return new Argument(id->get_value(), types, default_value, curr_src_info());
+        return new Argument(id->get_value(), types, default_value, id->get_src_info());
     }
     else {
         parser_error(create_diag(diags::INCORRECT_ARGUMENT));

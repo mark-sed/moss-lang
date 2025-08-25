@@ -86,8 +86,8 @@ fun h(a:[Int, String], b:[Int, Float]) {
 h(1, 2)
 h(1, 1.2)
 
-fun l(a, v, v) {}
-fun l(a, v, v, j) {}
+fun l(a, v, w) {}
+fun l(a, v, w, j) {}
 
 fun l(... a, b:Int=1) {
     return "l1\n"
