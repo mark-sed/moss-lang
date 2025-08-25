@@ -17,7 +17,43 @@ using namespace testing;
 TEST(FunctionAnalysis, DuplicateArgs){
     std::vector<ustring> lines = {
 "fun g(a, b, a, c) {}",
-"fun g(a, b, ... a) {}"
+"fun g(a, b, ... a) {}",
+"class Cls { fun Cls(a, v, g, a) {}; }",
+"class Cls { fun a(a, v, g, a) {}; }",
+"space f { fun f(a, a) {}; }",
+"fun d(a:[Bool,String], b, a:Int) {}",
+"fun(a, b, a=4) = 4",
+"class C { fun foo(a, b, b)=nil; }",
+"space s { fun(a, v, v)=true; }",
+// TODO: "lam = fun lambda(a, no, b, no) = 45",
+};
+
+    for (auto code: lines) {
+        SourceFile sf(code, SourceFile::SourceType::STRING);
+        Parser parser(sf);
+
+        auto mod = dyn_cast<ir::Module>(parser.parse());
+        ir::IRPipeline irp(parser);
+        auto err = irp.run(mod);
+        ASSERT_TRUE(err);
+        auto rs = dyn_cast<ir::Raise>(err);
+        ASSERT_TRUE(rs);
+
+        delete mod;
+        delete err;
+    }
+}
+
+/// Checks that args after varag has default value
+TEST(FunctionAnalysis, NonDefaultArgAfterVarargs){
+    std::vector<ustring> lines = {
+"fun g(a, b, ... t, c) {}",
+"class F { fun g(a, b, ... t, c) {}; }",
+"class F { fun F(a, ...b, f) {}; }",
+"space S { fun foo(a, l, ...m, o) {}; }",
+"fun(a, ...b, t=5, c) = 43",
+"class F { fun foo(a, b=4, ...c, t) = 4; }",
+"space { fun(a, b, ...d, o, p) = false; }",
 };
 
     for (auto code: lines) {

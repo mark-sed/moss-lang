@@ -20,11 +20,12 @@ namespace ir {
 /// Does analysis of function.
 class FunctionAnalyzer : public IRVisitor {
 private:
-    void check_arguments(class Function &fun);
+    void check_arguments(const std::vector<ir::Argument *> &args, ustring fname);
 public:
     FunctionAnalyzer(Parser &parser) : IRVisitor(parser) {}
     
     virtual void visit(class Function &fun) override;
+    virtual void visit(class Lambda &lf) override;
 };
 
 }

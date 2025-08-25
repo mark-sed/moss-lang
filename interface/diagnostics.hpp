@@ -187,6 +187,7 @@ enum DiagID : unsigned {
     UNEXPECTED_TYPE_FOR_ATTR,///< When the type of attribue is not what was expected
     CANNOT_EXTEND_NIL,      ///< When NilType is used as a base type
     DUPLICATE_ARG,          ///< When there are multiple arguments with the same name in function definition
+    NON_DEFAULT_ARG_AFTER_VARARG, ///< When there is argument after vararg one as has no default value
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -353,6 +354,7 @@ static const char * DIAG_MSGS[] = {
     "Attribute '%s' has expected type of '%s', but got '%s'",
     "NilType cannot be a base type for a class",
     "Duplicate argument name '%s' in function '%s'",
+    "Arguments after variable argument must have default value (argument '%s' in function '%s')"
 };
 
 /// \brief ID of diagnostic error

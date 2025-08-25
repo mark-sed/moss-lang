@@ -70,7 +70,11 @@ void PassManager::visit(Return &ret) {
 }
 
 void PassManager::visit(Lambda &fun) {
-    // TODO
+    for (auto p: passes) {
+        fun.accept(*p);
+    }
+
+    fun.get_body()->accept(*this);
 }
 
 void PassManager::add_pass(IRVisitor *p) { 
