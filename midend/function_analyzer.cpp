@@ -9,6 +9,7 @@ void FunctionAnalyzer::check_arguments(const std::vector<ir::Argument *> &args, 
     // Check that argument names differ
     std::set<ustring> existing;
     bool vararg = false;
+    bool def_val_found = false;
     for (size_t i = 0; i < args.size(); ++i) {
         auto a = args[i];
         auto name = a->get_name();
@@ -16,11 +17,14 @@ void FunctionAnalyzer::check_arguments(const std::vector<ir::Argument *> &args, 
             name.c_str(), fname.c_str()));
         parser_assert(!vararg || a->has_default_value(), parser.create_diag(a->get_src_info(), diags::NON_DEFAULT_ARG_AFTER_VARARG,
             name.c_str(), fname.c_str()));
+        parser_assert(!def_val_found || a->has_default_value() || a->is_vararg(), parser.create_diag(a->get_src_info(), diags::NON_DEFAULT_ARG_AFTER_DEFVAL,
+            name.c_str(), fname.c_str()));
         if (a->is_vararg()) {
             assert(!vararg && "multiple varags (this should be checked in parser)");
             vararg = true;
         }
-        
+        if (a->has_default_value())
+            def_val_found = true;
         existing.insert(name);
     }
 }
