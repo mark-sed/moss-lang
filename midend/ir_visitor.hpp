@@ -128,6 +128,7 @@ public:
 
     /// Adds a new pass to the manager to run
     void add_pass(IRVisitor *p);
+    void clear_passes() { passes.clear(); }
 
     PassManager(Parser &parser) : IRVisitor(parser) {}
 };

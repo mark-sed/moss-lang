@@ -43,18 +43,30 @@ void PassManager::visit(Function &fun) {
         fun.accept(*p);
     }
 
+    for (auto a: fun.get_args()) {
+        a->accept(*this);
+    }
+
     for (auto i : fun.get_body()) {
         i->accept(*this);
     }
 }
 
 void PassManager::visit(Else &els) {
+    for (auto p: passes) {
+        els.accept(*p);
+    }
+
     for (auto i : els.get_body()) {
         i->accept(*this);
     }
 }
 
 void PassManager::visit(If &i) {
+    for (auto p: passes) {
+        i.accept(*p);
+    }
+    i.get_cond()->accept(*this);
     for (auto j : i.get_body()) {
         j->accept(*this);
     }
@@ -68,22 +80,23 @@ void PassManager::visit(Switch &swt) {
         swt.accept(*p);
     }
 
+    swt.get_cond()->accept(*this);
     for (auto j : swt.get_body()) {
         j->accept(*this);
     }
-    swt.get_cond()->accept(*this);
 }
 
 void PassManager::visit(Case &cs) {
     for (auto p: passes) {
         cs.accept(*p);
     }
+    
+    for (auto v: cs.get_values()) {
+        v->accept(*this);
+    }
 
     for (auto j : cs.get_body()) {
         j->accept(*this);
-    }
-    for (auto v: cs.get_values()) {
-        v->accept(*this);
     }
 }
 
@@ -92,10 +105,10 @@ void PassManager::visit(Catch &ct) {
         ct.accept(*p);
     }
 
+    ct.get_arg()->accept(*this);
     for (auto j : ct.get_body()) {
         j->accept(*this);
     }
-    ct.get_arg()->accept(*this);
 }
 
 void PassManager::visit(Finally &fnl) {
@@ -128,11 +141,11 @@ void PassManager::visit(While &whl) {
     for (auto p: passes) {
         whl.accept(*p);
     }
+    whl.get_cond()->accept(*this);
 
     for (auto j : whl.get_body()) {
         j->accept(*this);
     }
-    whl.get_cond()->accept(*this);
 }
 
 void PassManager::visit(DoWhile &dwhl) {
@@ -150,12 +163,12 @@ void PassManager::visit(ForLoop &frl) {
     for (auto p: passes) {
         frl.accept(*p);
     }
-
+    
+    frl.get_iterator()->accept(*this);
+    frl.get_collection()->accept(*this);
     for (auto j : frl.get_body()) {
         j->accept(*this);
     }
-    frl.get_iterator()->accept(*this);
-    frl.get_collection()->accept(*this);
 }
 
 void PassManager::visit(Import &imp) {
@@ -242,6 +255,9 @@ void PassManager::visit(Lambda &fun) {
         fun.accept(*p);
     }
 
+    for (auto a: fun.get_args()) {
+        a->accept(*this);
+    }
     fun.get_body()->accept(*this);
 }
 
@@ -251,9 +267,9 @@ void PassManager::visit(Range &r) {
     }
 
     r.get_start()->accept(*this);
-    r.get_end()->accept(*this);
     if (r.get_second())
         r.get_second()->accept(*this);
+    r.get_end()->accept(*this);
 }
 
 void PassManager::visit(Call &cl) {
