@@ -25,29 +25,67 @@ class IRVisitor {
 protected:
     Parser &parser;
 public:
-    virtual void visit(class Module &mod) { 
-        (void)mod; 
+    virtual void visit(class Module &) {
     }
-    virtual void visit(class Space &spc) {
-        (void)spc;
+    virtual void visit(class Space &) {
     }
-    virtual void visit(class Class &cls) {
-        (void)cls;
+    virtual void visit(class Class &) {
     }
-    virtual void visit(class Function &fun) {
-        (void)fun;
+    virtual void visit(class Function &) {
     }
-    virtual void visit(class Lambda &fun) {
-        (void)fun;
+    virtual void visit(class Lambda &) {
     }
-    virtual void visit(class Return &ret) {
-        (void)ret;
+    virtual void visit(class Return &) {
     }
-    virtual void visit(class Else &els) {
-        (void)els;
+    virtual void visit(class Else &) {
     }
-    virtual void visit(class If &i) {
-        (void)i;
+    virtual void visit(class If &) {
+    }
+    virtual void visit(class Switch &) {
+    }
+    virtual void visit(class Case &) {
+    }
+    virtual void visit(class Catch &) {
+    }
+    virtual void visit(class Finally &) {
+    }
+    virtual void visit(class Try &) {
+    }
+    virtual void visit(class While &) {
+    }
+    virtual void visit(class DoWhile &) {
+    }
+    virtual void visit(class ForLoop &) {
+    }
+    //virtual void visit(class Enum &) {
+    //}
+    virtual void visit(class Import &) {
+    }
+    virtual void visit(class Assert &) {
+    }
+    virtual void visit(class Raise &) {
+    }
+    //virtual void visit(class Break &) {
+    //}
+    //virtual void visit(class Continue &) {
+    //}
+    virtual void visit(class Annotation &) {
+    }
+    virtual void visit(class BinaryExpr &) {
+    }
+    virtual void visit(class UnaryExpr &) {
+    }
+    virtual void visit(class Multivar &) {
+    }
+    virtual void visit(class TernaryIf &) {
+    }
+    virtual void visit(class Range &) {
+    }
+    virtual void visit(class Call &) {
+    }
+    virtual void visit(class List &) {
+    }
+    virtual void visit(class Dict &) {
     }
 
     IRVisitor(Parser &parser);
@@ -67,6 +105,26 @@ public:
     virtual void visit(class Return &ret) override;
     virtual void visit(class Else &els) override;
     virtual void visit(class If &i) override;
+    virtual void visit(class Switch &swt) override;
+    virtual void visit(class Case &cs) override;
+    virtual void visit(class Catch &ct) override;
+    virtual void visit(class Finally &fnl) override;
+    virtual void visit(class Try &tr) override;
+    virtual void visit(class While &whl) override;
+    virtual void visit(class DoWhile &dwhl) override;
+    virtual void visit(class ForLoop &frl) override;
+    virtual void visit(class Import &imp) override;
+    virtual void visit(class Assert &a) override;
+    virtual void visit(class Raise &r) override;
+    virtual void visit(class Annotation &a) override;
+    virtual void visit(class BinaryExpr &be) override;
+    virtual void visit(class UnaryExpr &ue) override;
+    virtual void visit(class Multivar &mv) override;
+    virtual void visit(class TernaryIf &ti) override;
+    virtual void visit(class Range &r) override;
+    virtual void visit(class Call &cl) override;
+    virtual void visit(class List &lst) override;
+    virtual void visit(class Dict &dct) override;
 
     /// Adds a new pass to the manager to run
     void add_pass(IRVisitor *p);

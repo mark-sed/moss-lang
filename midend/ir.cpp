@@ -140,3 +140,95 @@ void If::accept(IRVisitor& visitor) {
 void Else::accept(IRVisitor& visitor) {
     visitor.visit(*this);
 }
+
+void Switch::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Case::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Catch::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Finally::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Try::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void While::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void DoWhile::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void ForLoop::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+//void Enum::accept(IRVisitor& visitor) {
+//    visitor.visit(*this);
+//}
+
+void Import::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Assert::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Raise::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+//void Break::accept(IRVisitor& visitor) {
+//    visitor.visit(*this);
+//}
+//
+//void Continue::accept(IRVisitor& visitor) {
+//    visitor.visit(*this);
+//}
+
+void Annotation::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void BinaryExpr::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void UnaryExpr::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Multivar::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void TernaryIf::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Range::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Call::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void List::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Dict::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}

@@ -494,6 +494,8 @@ public:
     std::vector<Expression *> get_values() { return values; }
     bool is_default_case() { return default_case; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         if (!default_case) {
             os << "case ";
@@ -536,6 +538,8 @@ public:
 
     Expression *get_cond() { return this->cond; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "switch (" << *cond << ") {\n";
         for (auto d: body) {
@@ -562,6 +566,8 @@ public:
 
     Argument *get_arg() { return arg; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "catch (" << *arg << ") {\n";
         for (auto d: body) {
@@ -579,6 +585,8 @@ public:
     Finally(std::list<IR *> fnbody, SourceInfo src_info) : Construct(ClassType, "finally", src_info) {
         this->body = fnbody;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "finally {\n";
@@ -613,6 +621,8 @@ public:
     std::vector<Catch *>& get_catches() { return catches; }
     Finally *get_finally() { return finally_stmt; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "try {\n";
         for (auto d: body) {
@@ -645,6 +655,8 @@ public:
 
     Expression *get_cond() { return this->cond; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "while (" << *cond << ") {\n";
         for (auto d: body) {
@@ -671,6 +683,8 @@ public:
     }
 
     Expression *get_cond() { return this->cond; }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "do {\n";
@@ -702,6 +716,8 @@ public:
     Expression *get_iterator() { return this->iterator; }
     Expression *get_collection() { return this->collection; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "for (" << *iterator << ": " << *collection << ") {\n";
         for (auto d: body) {
@@ -729,6 +745,8 @@ public:
         os << "}";
         return os;
     }
+
+    //void accept(IRVisitor& visitor) override;
 
     std::vector<ustring> get_values() {
         return this->values;
@@ -762,6 +780,8 @@ public:
         assert(index < aliases.size() && "Out of bounds index");
         return aliases[index];
     }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "import ";
@@ -797,6 +817,8 @@ public:
 
     Expression *get_cond() { return this->cond; }
     Expression *get_msg() { return this->msg; }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "assert(" << *cond;
@@ -839,6 +861,8 @@ public:
         delete exception;
     }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "raise " << *exception;
         return os;
@@ -875,6 +899,8 @@ public:
 
     Break(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
+    //void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "break";
         return os;
@@ -886,6 +912,8 @@ public:
     static const IRType ClassType = IRType::CONTINUE;
 
     Continue(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
+
+    //void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "continue";
@@ -906,6 +934,8 @@ public:
     ~Annotation() {
         delete value;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (inner ? "@!" : "@") << name;
@@ -1063,6 +1093,8 @@ public:
         return left->as_string() + op.as_string() + right->as_string();
     }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << *left << " " << op << " " << *right << ")";
         return os;
@@ -1090,6 +1122,8 @@ public:
     Expression *get_expr() { return this->expr; }
     Operator get_op() { return this->op; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << op << " " << *expr << ")";
         return os;
@@ -1105,6 +1139,8 @@ public:
     Variable(ustring name, SourceInfo src_info, bool non_local=false) : Expression(ClassType, name, src_info), non_local(non_local) {}
 
     bool is_non_local() { return this->non_local; }
+
+    //void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (non_local ? "$" : "") << name;
@@ -1127,6 +1163,8 @@ public:
 
     std::vector<ir::Expression *> get_vars() { return this->vars; }
     int get_rest_index() { return this->rest_index; }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         bool first = true;
@@ -1151,6 +1189,8 @@ public:
     static const IRType ClassType = IRType::ALL_SYMBOLS;
 
     AllSymbols(SourceInfo src_info) : Expression(ClassType, "*", src_info) {}
+
+    //void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "*";
@@ -1180,6 +1220,8 @@ public:
     Expression *get_condition() { return condition; }
     Expression *get_value_true() { return value_true; }
     Expression *get_value_false() { return value_false; }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << *condition << " ? " << *value_true << " : " << *value_false << ")";
@@ -1263,6 +1305,8 @@ public:
     Expression *get_end() { return end; }
     Expression *get_second() { return second; }
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         if (second)
             os << "(" << *start << ", " << *second << ".." << *end << ")";
@@ -1290,6 +1334,8 @@ public:
 
     Expression *get_fun() { return this->fun; }
     std::vector<Expression *> get_args() { return this->args; }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << *fun << "(";
@@ -1496,6 +1542,8 @@ public:
 
     std::list<IR *> as_for();
 
+    void accept(IRVisitor& visitor) override;
+
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "[";
         if (!comprehension) {
@@ -1563,6 +1611,8 @@ public:
         for (auto i : values)
             delete i;
     }
+
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "{";
