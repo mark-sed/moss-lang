@@ -1425,6 +1425,7 @@ std::vector<ir::Argument *> Parser::arg_list() {
 }
 
 Expression *Parser::call_access_subs(bool allow_star) {
+    SourceInfo acc_srci = curr_src_info();
     Expression *expr = note();
 
     while(check({TokenType::LEFT_PAREN, TokenType::DOT, TokenType::LEFT_SQUARE})) {
@@ -1435,7 +1436,8 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto args = expr_list(false, true);
             skip_nls();
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-            expr = new Call(expr, args, curr_src_info());
+            acc_srci.update_ends(curr_src_info());
+            expr = new Call(expr, args, acc_srci);
         }
         else if (match(TokenType::DOT)) {
             parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
@@ -1443,12 +1445,14 @@ Expression *Parser::call_access_subs(bool allow_star) {
                 parser_assert(allow_star, create_diag(diags::STAR_MEMBER_OUTSIDE_IMPORT)); 
                 parser_assert(expr, create_diag(diags::STAR_IMPORT_GLOBAL));
                 // Return since there cannot be anything else after this
-                return new BinaryExpr(expr, new AllSymbols(curr_src_info()), Operator(OperatorKind::OP_ACCESS), curr_src_info());
+                acc_srci.update_ends(curr_src_info());
+                return new BinaryExpr(expr, new AllSymbols(curr_src_info()), Operator(OperatorKind::OP_ACCESS), acc_srci);
             }
             else {
                 auto elem = note();
                 parser_assert(elem, create_diag(diags::EXPR_EXPECTED));
-                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS), curr_src_info());
+                acc_srci.update_ends(curr_src_info());
+                expr = new BinaryExpr(expr, elem, Operator(OperatorKind::OP_ACCESS), acc_srci);
             }
         }
         else if (match(TokenType::LEFT_SQUARE)) {
@@ -1456,7 +1460,8 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto index = ternary_if();
             parser_assert(index, create_diag(diags::EXPR_EXPECTED));
             expect(TokenType::RIGHT_SQUARE, create_diag(diags::MISSING_RIGHT_SQUARE));
-            expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC), curr_src_info());
+            acc_srci.update_ends(curr_src_info());
+            expr = new BinaryExpr(expr, index, Operator(OperatorKind::OP_SUBSC), acc_srci);
         }
     }
     return expr;

@@ -24,6 +24,7 @@ namespace ir {
 class IRVisitor {
 protected:
     Parser &parser;
+    class IR *currently_visiting;
 public:
     virtual void visit(class Module &) {
     }

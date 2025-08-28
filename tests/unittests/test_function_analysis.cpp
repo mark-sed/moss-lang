@@ -25,7 +25,7 @@ TEST(FunctionAnalysis, DuplicateArgs){
 "fun(a, b, a=4) = 4",
 "class C { fun foo(a, b, b)=nil; }",
 "space s { fun(a, v, v)=true; }",
-// TODO: "lam = fun lambda(a, no, b, no) = 45",
+"lam = fun lambda(a, no, b, no) = 45",
 };
 
     for (auto code: lines) {
@@ -33,6 +33,7 @@ TEST(FunctionAnalysis, DuplicateArgs){
         Parser parser(sf);
 
         auto mod = dyn_cast<ir::Module>(parser.parse());
+        ASSERT_TRUE(mod);
         ir::IRPipeline irp(parser);
         auto err = irp.run(mod);
         ASSERT_TRUE(err);
@@ -61,6 +62,7 @@ TEST(FunctionAnalysis, NonDefaultArgAfterVarargs){
         Parser parser(sf);
 
         auto mod = dyn_cast<ir::Module>(parser.parse());
+        ASSERT_TRUE(mod);
         ir::IRPipeline irp(parser);
         auto err = irp.run(mod);
         ASSERT_TRUE(err);
@@ -89,6 +91,7 @@ TEST(FunctionAnalysis, NonDefaultArgAfterDefault){
         Parser parser(sf);
 
         auto mod = dyn_cast<ir::Module>(parser.parse());
+        ASSERT_TRUE(mod);
         ir::IRPipeline irp(parser);
         auto err = irp.run(mod);
         ASSERT_TRUE(err);

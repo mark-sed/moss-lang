@@ -1,6 +1,7 @@
 #include "ir_pipeline.hpp"
 #include "method_analyzer.hpp"
 #include "function_analyzer.hpp"
+#include "expression_analyzer.hpp"
 #include "ir.hpp"
 
 using namespace moss;
@@ -10,6 +11,7 @@ IRPipeline::IRPipeline(Parser &parser) : pm(parser), parser(parser) {
     // Method analyzer
     add_pass(new MethodAnalyzer(parser));
     add_pass(new FunctionAnalyzer(parser));
+    add_pass(new ExpressionAnalyzer(parser));
 }
 
 IRPipeline::~IRPipeline() {

@@ -6,7 +6,7 @@
 using namespace moss;
 using namespace ir;
 
-IRVisitor::IRVisitor(Parser &parser) : parser(parser) {}
+IRVisitor::IRVisitor(Parser &parser) : parser(parser), currently_visiting(nullptr) {}
 
 void PassManager::visit(Module &mod) {
     for (auto p: passes) {

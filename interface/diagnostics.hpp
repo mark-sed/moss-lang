@@ -189,6 +189,8 @@ enum DiagID : unsigned {
     DUPLICATE_ARG,          ///< When there are multiple arguments with the same name in function definition
     NON_DEFAULT_ARG_AFTER_VARARG, ///< When there is argument after vararg one as has no default value
     NON_DEFAULT_ARG_AFTER_DEFVAL, ///< When there is default value argument and after it one without default value
+    INCORRECT_ACCESS_SYNATAX,///< Inocorrect type of right in access - e.g. a.2
+    NON_LOCAL_AFTER_GLOBAL, ///< When you have ::$x
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -357,6 +359,8 @@ static const char * DIAG_MSGS[] = {
     "Duplicate argument name '%s' in function '%s'",
     "Arguments after variable argument must have default value (argument '%s' in function '%s')",
     "Argument without default value cannot follow argument with a default value (argument '%s' in function '%s')",
+    "Incorrect access ('.') syntax",
+    "Cannot have non-local symbol ('$') after global scope ('::')",
 };
 
 /// \brief ID of diagnostic error
