@@ -31,7 +31,13 @@ void ExpressionAnalyzer::visit(UnaryExpr &ue) {
 }
 
 void ExpressionAnalyzer::check_call_arg(Expression *arg) {
-    // TODO:
+    if (auto be = dyn_cast<BinaryExpr>(arg)) {
+        if (be->get_op().get_kind() == OperatorKind::OP_SET) {
+            // Named argument
+            auto *arg_name = be->get_left();
+            parser_assert(isa<ir::Variable>(arg_name) || isa<ir::ThisLiteral>(arg_name), parser.create_diag(arg_name->get_src_info(), diags::INCORRECT_ARG_NAME));
+        }
+    }
 }
 
 void ExpressionAnalyzer::visit(Call &c) {

@@ -1073,6 +1073,7 @@ Expression *Parser::expression(bool allow_set) {
 }
 
 Expression *Parser::silent() {
+    SourceInfo sil_src_inf = curr_src_info();
     bool is_silent = false;
     while (match(TokenType::SILENT)) {
         if (is_silent)
@@ -1082,7 +1083,8 @@ Expression *Parser::silent() {
         // Cannot be chained and has the lowest precedence
         auto expr = unpack();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT), curr_src_info());
+        sil_src_inf.update_ends(expr->get_src_info());
+        return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT), sil_src_inf);
     }
 
     return assignment();
@@ -1389,6 +1391,9 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allo
         if (expr) {
             if (only_scope_or_id)
                 parser_assert(is_id_or_member(expr), create_diag(diags::MEMBER_OR_ID_EXPECTED));
+            if (auto ua = dyn_cast<UnaryExpr>(expr)) {
+                parser_assert(ua->get_op().get_kind() != OperatorKind::OP_SILENT, create_diag(diags::SILENT_IN_EXPR, ua->get_src_info()));
+            }
             args.push_back(expr);
         }
     } while (match(TokenType::COMMA) && expr);
@@ -1574,11 +1579,11 @@ Expression *Parser::constant() {
     }
     else if (match(TokenType::NON_LOCAL)) {
         auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
-        return new Variable(id->get_value(), curr_src_info(), true);
+        return new Variable(id->get_value(), id->get_src_info(), true);
     }
     else if (check(TokenType::ID)) {
         auto id = advance();
-        return new Variable(id->get_value(), curr_src_info());
+        return new Variable(id->get_value(), id->get_src_info());
     }
     else if (match(TokenType::THREE_DOTS)) {
         ++lower_range_prec;
@@ -1696,7 +1701,7 @@ Expression *Parser::constant() {
         std::vector<ir::Expression *> vals;
         skip_nls();
         // Lets extract first expr and then check if this is a list comprehension
-        auto first = expression();
+        auto first = ternary_if();
         if (first) {
             if (check({TokenType::COLON, TokenType::IF})) {
                 skip_nls();
@@ -1705,11 +1710,11 @@ Expression *Parser::constant() {
                 if (check(TokenType::IF)) {
                     advance();
                     expect(TokenType::LEFT_PAREN, create_diag(diags::IF_REQUIRES_PARENTH));
-                    condition = expression();
+                    condition = ternary_if();
                     parser_assert(condition, create_diag(diags::EXPR_EXPECTED));
                     expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
                     if (match(TokenType::ELSE)) {
-                        else_result = expression();
+                        else_result = ternary_if();
                         parser_assert(else_result, create_diag(diags::EXPR_EXPECTED));
                     }
                 }
@@ -1754,11 +1759,11 @@ Expression *Parser::constant() {
         Expression *expr = nullptr;
         do {
             skip_nls();
-            expr = expression();
+            expr = ternary_if();
             if (expr) {
                 keys.push_back(expr);
                 expect(TokenType::COLON, create_diag(diags::DICT_NO_COLON));
-                auto val = expression();
+                auto val = ternary_if();
                 parser_assert(val, create_diag(diags::EXPR_EXPECTED));
                 vals.push_back(val);
             }

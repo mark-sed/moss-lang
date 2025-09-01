@@ -13,7 +13,7 @@ namespace{
 using namespace moss;
 using namespace testing;
 
-/// This tests that FunctionAnalysis reports duplicate argument names.
+/// This tests that ExpressionAnalysis reports incorrect member access.
 TEST(ExpressionAnalysis, MemberAccess){
     // Cannot test .* as that is checked in parser not analyzer.
     std::vector<ustring> lines = {
@@ -57,6 +57,29 @@ a.b.c.f(3)
 
     delete mod;
     delete err;
+}
+
+/// This tests that ExpressionAnalysis reports incorrect argument expressions.
+TEST(ExpressionAnalysis, ArgAnalysis){
+    std::vector<ustring> lines = {
+"foo(a.v=3, 5)",
+};
+
+    for (auto code: lines) {
+        SourceFile sf(code, SourceFile::SourceType::STRING);
+        Parser parser(sf);
+
+        auto mod = dyn_cast<ir::Module>(parser.parse());
+        ASSERT_TRUE(mod);
+        ir::IRPipeline irp(parser);
+        auto err = irp.run(mod);
+        ASSERT_TRUE(err);
+        auto rs = dyn_cast<ir::Raise>(err);
+        ASSERT_TRUE(rs);
+
+        delete mod;
+        delete err;
+    }
 }
 
 }

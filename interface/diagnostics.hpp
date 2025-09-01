@@ -191,6 +191,9 @@ enum DiagID : unsigned {
     NON_DEFAULT_ARG_AFTER_DEFVAL, ///< When there is default value argument and after it one without default value
     INCORRECT_ACCESS_SYNATAX,///< Inocorrect type of right in access - e.g. a.2
     NON_LOCAL_AFTER_GLOBAL, ///< When you have ::$x
+    INCORRECT_ARG_NAME,     ///< When argument name is not just an ID
+    SILENT_ARG,             ///< foo(~a)
+    SILENT_IN_EXPR,         ///< When silent is in an expression
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -361,6 +364,9 @@ static const char * DIAG_MSGS[] = {
     "Argument without default value cannot follow argument with a default value (argument '%s' in function '%s')",
     "Incorrect access ('.') syntax",
     "Cannot have non-local symbol ('$') after global scope ('::')",
+    "Incorrect argument name expression",
+    "Function argument cannot be silenced",
+    "Silent cannot be a part of an expression",
 };
 
 /// \brief ID of diagnostic error

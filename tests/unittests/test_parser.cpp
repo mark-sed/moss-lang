@@ -520,9 +520,17 @@ foo()::goo
 
 a+1, b+2, c+3 = [1,2]
 a, b+2 = [1,2]
+{~a: ~a}
+[5, 6, ~4]
+foo(3, ~a)
+bar(~1)
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
