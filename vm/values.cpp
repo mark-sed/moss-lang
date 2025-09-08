@@ -222,6 +222,16 @@ Value *DictValue::next(Interpreter *vm) {
     return new ListValue(lst_vals);
 }
 
+Value *FunValueList::next(Interpreter *vm) {
+    (void)vm;
+    if (this->iterator == this->funs.end()) {
+        opcode::raise(mslib::create_stop_iteration());
+    }
+    auto item = *iterator;
+    this->iterator++;
+    return item;
+}
+
 /*void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
     assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
     auto key_int = dyn_cast<IntValue>(key);

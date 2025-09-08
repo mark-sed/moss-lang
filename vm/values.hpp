@@ -919,6 +919,7 @@ public:
 class FunValueList : public Value {
 private:
     std::vector<FunValue *> funs;
+    std::vector<FunValue *>::iterator iterator;
 public:
     static const TypeKind ClassType = TypeKind::FUN_LIST;
 
@@ -941,6 +942,14 @@ public:
     FunValue *back() {
         assert(!funs.empty() && "no functions in funlist");
         return funs.back();
+    }
+
+    virtual Value *next(Interpreter *vm) override;
+
+    virtual Value *iter(Interpreter *vm) override {
+        (void)vm;
+        iterator = funs.begin();
+        return this;
     }
 
     virtual opcode::StringConst as_string() const override {

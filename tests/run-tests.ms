@@ -716,7 +716,10 @@ Second line
 Returns 42 Second comment.
 Class ACls
 Constructor
-Some space\n""", "")
+Some space
+foo(a,b)
+foo(a)
+foo()\n""", "")
 }
 
 fun test_multivar(name) {

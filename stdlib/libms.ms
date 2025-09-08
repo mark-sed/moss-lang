@@ -513,15 +513,27 @@ fun oct(number:Int) {}
 @internal
 fun bin(number:Int) {}
 
-fun info(a) {
-    docs = ""
-    try {
-        docs = a.__doc
-    } catch(e:AttributeError) {
-        return ""
+fun info(v) {
+    fun get_doc(a) {
+        docs = ""
+        try {
+            docs = a.__doc
+        } catch(e:AttributeError) {
+            return ""
+        }
+        // TODO: Split by new line and strip \t
+        return docs++"\n"
     }
-    // TODO: Split by new line and strip \t
-    return docs++"\n"
+
+    if (type(v) == FunctionList) {
+        docs = []
+        for (f: v) {
+            ~docs.append([f, get_doc(f)])
+        }
+        return docs;
+    } else {
+        return get_doc(v)
+    }
 }
 
 fun help(a) {

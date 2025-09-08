@@ -1454,7 +1454,11 @@ void AnnotateMod::exec(Interpreter *vm) {
 void Document::exec(Interpreter *vm) {
     auto d = vm->load(dst);
     assert(d && "loading non-existent register");
-    d->set_attr(known_names::DOC_STRING, new StringValue(val), true);
+    auto docv = new StringValue(val);
+    if (auto fvl = dyn_cast<FunValueList>(d)) {
+        d = load_last_fun(dst, vm);
+    }
+    d->set_attr(known_names::DOC_STRING, docv, true);
 }
 
 void Output::exec(Interpreter *vm) {
