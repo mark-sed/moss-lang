@@ -5,62 +5,128 @@ copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
            See accompanied LICENSE file.
 """
 
-__LIB_MS_VERSION = "0.0.5"
+__LIB_MS_VERSION = "0.0.6"
 
 @internal_bind("Int")
 class __Int {
     @internal
-    fun Int(v:String, base=10) {}
+    fun Int(v:String, base=10) {
+        d"Converts String value `v` of number base `base` into na Int."
+    }
 
     @internal
-    fun Int(v=0) {}
+    fun Int(v=0) {
+        d"""
+        Converts value `v` into Int.
+        If `v` is not Int, Float or Object which contains __Int function then TypeError is raised.
+        When converting Float, then the decimal part is cut of, not rounded.
+        """
+    }
 }
 
 @internal_bind("Float")
 class __Float {
     @internal
-    fun Float(v=0.0) {}
+    fun Float(v=0.0) {
+        d"""
+        Converts value `v` into Float value.
+        If `v` is not Float, Int, String or Object which contains __Float function then TypeError is raised.
+        """
+    }
 }
 
 @internal_bind("Bool")
 class __Bool {
     @internal
-    fun Bool(v=false) {}
+    fun Bool(v=false) {
+        d"""
+        Converts value `v` into Bool value (true or false).
+        TypeError is raised if `v` is not one of these types or Object which contains __Bool function:
+          - Bool.
+          - Int -- 0 is false, other are true.
+          - Float -- 0.0 is false, other are true.
+          - NilType (nil) -- always false.
+          - String -- empty string is false, otherwise it's true.
+          - List -- empty list is false, otherwise it's true.
+          - Dict -- empty dict is false, otherwise it's true.
+        """
+    }
 }
 
 @internal_bind("String")
 class __String {
     @internal
-    fun String(v="") {}
+    fun String(v="") {
+        d"""
+        Converts value `v` into String.
+        This functions behaves the same as concatinating with empty String and will always succeed for any type, as
+        __String method is called or implicit to string converter is used.
+        """
+    }
 
     @internal
     fun length() {
         d"Returns amount of characters in this string."
     }
 
-    fun empty() = this.length() == 0
+    fun empty() {
+        d"Returns true if String is empty, false otherwise."
+        return this.length() == 0
+    }
 
     @internal
-    fun strip() {}
+    fun strip() {
+        d"Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from start and end of String."
+    }
 
     fun reverse() = this[-1..-this.length()-1]
 
     @internal
-    fun capitalize() {}
+    fun capitalize() {
+        d"Makes the first letter uppercase and the rest of the String lowercase."
+    }
 
     @internal
-    fun upper() {}
+    fun upper() {
+        d"Converts all the string letters into uppercase."
+    }
 
     @internal
-    fun lower() {}
+    fun lower() {
+        d"Converts all the string letters into lowercase."
+    }
 
     @internal
-    fun replace(target:String, value:String, count:Int=-1) {}
+    fun replace(target:String, value:String, count:Int=-1) {
+        d"""
+        Replaces all the substrings equal to `target` with `value`.
+        When `count` is specified, then this replacing will happen that many times.
+        """
+    }
 
     @internal
-    fun multi_replace(mapping:List) {}
+    fun multi_replace(mapping:List) {
+        d"""
+        Replaces all substrings in `mapping` element at index 0 with string at index 1.
+        @param mapping List of mappings of value to replace with value to replace it with. So it should be a list of
+                       pairs (lists of size 2). 
+        Example:
+        ```
+        angles = "a: 45°, b: 75°"
+        angles.multi_replace([["a", "alfa"], ["b", "beta"]])
+        ```
+        """
+    }
 
     fun join(iterable) {
+        d"""
+        Converts values in `iterable` into String and concatenates these values together using this String as the
+        connector.
+        Example:
+        ```
+        ", ".join([1,2,3,4])
+        ```
+        """
         // TODO: Internal candidate
         r = ""
         first = true
@@ -454,7 +520,8 @@ fun info(a) {
     } catch(e:AttributeError) {
         return ""
     }
-    return String.strip(docs)++"\n"
+    // TODO: Split by new line and strip \t
+    return docs++"\n"
 }
 
 fun help(a) {

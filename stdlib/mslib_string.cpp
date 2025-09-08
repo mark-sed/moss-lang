@@ -24,7 +24,9 @@ Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {
 Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
+    auto text = strv->get_value();
     ustring res = strv->get_value();
+    std::transform(text.begin(), text.end(), res.begin(), ::tolower);
     res[0] = std::toupper(res[0]);
     return new StringValue(res);
 }

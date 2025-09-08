@@ -185,7 +185,7 @@ enum DiagID : unsigned {
     DICT_BAD_ITER_SIZE,     ///< Size of elements in Dict constructor has to be 2
     PARENT_CONFLICT,        ///< When extending multiple built-in classes
     UNEXPECTED_TYPE_FOR_ATTR,///< When the type of attribue is not what was expected
-    CANNOT_EXTEND_NIL,      ///< When NilType is used as a base type
+    CANNOT_EXTEND_WITH_BASE,///< When NilType or Bool is used as a base type
     DUPLICATE_ARG,          ///< When there are multiple arguments with the same name in function definition
     NON_DEFAULT_ARG_AFTER_VARARG, ///< When there is argument after vararg one as has no default value
     NON_DEFAULT_ARG_AFTER_DEFVAL, ///< When there is default value argument and after it one without default value
@@ -358,7 +358,7 @@ static const char * DIAG_MSGS[] = {
     "Dict constructor iterable must contain Lists of size 2, got size %ld",
     "Cannot extend multiple built-in classes (extending %s and %s)",
     "Attribute '%s' has expected type of '%s', but got '%s'",
-    "NilType cannot be a base type for a class",
+    "%s cannot be a base type for a class",
     "Duplicate argument name '%s' in function '%s'",
     "Arguments after variable argument must have default value (argument '%s' in function '%s')",
     "Argument without default value cannot follow argument with a default value (argument '%s' in function '%s')",

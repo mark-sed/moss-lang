@@ -21,13 +21,3 @@ type(mf)
 "\n"
 mf.__value
 "\n"
-
-class MyBool : Bool {
-
-}
-
-mb = MyBool(true)
-type(mb)
-"\n"
-mb.__value
-"\n"

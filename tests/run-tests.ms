@@ -1140,7 +1140,7 @@ a \tb
 hello\nthere madam!
 HELLO! BACK TO YOU - 98&*
 x1234y5--🧆
-X1234Y5--🧆
+X1234y5--🧆
 Marek
 ---hi
 1, 2, 3, 4, 5
@@ -1172,10 +1172,9 @@ fun test_lib_extending_note(name) {
     ~expect_pass("stdlib_tests/extending_note.ms", name, """<class MyNote>\nhello\n5\nHELLO\n""", "")
 }
 
-fun test_lib_extending_int_float_bool(name) {
-    ~expect_pass("stdlib_tests/extending_int_float_bool.ms", name, """<class MyInt>\n42\n10
-<class MyFloat>\n0.500000
-<class MyBool>\ntrue\n""", "")
+fun test_lib_extending_int_float(name) {
+    ~expect_pass("stdlib_tests/extending_int_float.ms", name, """<class MyInt>\n42\n10
+<class MyFloat>\n0.500000\n""", "")
 }
 
 fun test_lib_extending_list(name) {
@@ -1523,7 +1522,7 @@ fun run_all_tests() {
     ~run_test("lib_strings")
     ~run_test("lib_extending_string")
     ~run_test("lib_extending_note")
-    ~run_test("lib_extending_int_float_bool")
+    ~run_test("lib_extending_int_float")
     ~run_test("lib_extending_list")
     ~run_test("lib_extending_dict")
     ~run_test("lib_random")
