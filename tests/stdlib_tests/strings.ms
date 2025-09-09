@@ -176,3 +176,30 @@ catch(e:ValueError)
 "Hi\n".multi_replace([])
 
 "AaAcBBbAcaaaBaB\n".multi_replace([["b", "B"], ["B", "a"], ["a", "A"]])
+
+str = "hello\nthere\nfrom\nmoss"
+str.split()
+"\n"
+str.split(maxsplit=2)
+"\n"
+str.split(maxsplit=0)
+"\n"
+
+str2 = "1--2--3-4--5--"
+str2.split("--")
+"\n"
+str2.split("-")
+"\n"
+str2.split("--", maxsplit=1)
+"\n"
+"aabccbeeb".split("b")
+"\n"
+
+" ".isspace()
+"\n"
+" a".isspace()
+"\n"
+" \f\n\r\t\v".isspace()
+"\n"
+"".isspace()
+"\n"

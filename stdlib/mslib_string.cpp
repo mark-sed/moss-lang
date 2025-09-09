@@ -92,3 +92,99 @@ Value *String::multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value
     }
     return new StringValue(result);
 }
+
+static std::vector<ustring> split_whitespace(const std::string& text, long max_split=-1) {
+    std::vector<ustring> tokens;
+    size_t splits_done = 0;
+
+    auto it = text.begin();
+    while (it != text.end()) {
+        // Skip leading whitespace
+        it = std::find_if_not(it, text.end(), [](unsigned char ch){ return std::isspace(ch); });
+        if (it == text.end()) break;
+
+        // If max_split reached, take the rest of the string as the last token
+        if (splits_done > 0 && splits_done == max_split) {
+            tokens.emplace_back(it, text.end());
+            break;
+        }
+
+        // Find next whitespace
+        auto end = std::find_if(it, text.end(), [](unsigned char ch){ return std::isspace(ch); });
+        tokens.emplace_back(it, end);
+        it = end;
+        ++splits_done;
+    }
+
+    return tokens;
+}
+
+std::vector<ustring> split_on(const std::string& text, const std::string& delim, long max_split=-1) {
+    std::vector<ustring> tokens;
+    size_t start = 0;
+    size_t splits_done = 0;
+
+    if (delim.empty()) {
+        // Treat empty delimiter as splitting every character
+        for (char ch : text) {
+            tokens.push_back(std::string(1, ch));
+        }
+        return tokens;
+    }
+
+    while (start <= text.size()) {
+        if (splits_done > 0 && splits_done == max_split) {
+            // Take the rest of the string as last token
+            tokens.push_back(text.substr(start));
+            break;
+        }
+
+        size_t pos = text.find(delim, start);
+        if (pos == ustring::npos) {
+            tokens.push_back(text.substr(start));
+            break;
+        }
+
+        tokens.push_back(text.substr(start, pos - start));
+        start = pos + delim.size();
+        ++splits_done;
+    }
+
+    return tokens;
+}
+
+Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err) {
+    auto strv = dyn_cast<StringValue>(ths);
+    assert(strv && "not string");
+    auto max_splitv = dyn_cast<IntValue>(max_split);
+    assert(max_splitv && "not int");
+
+    StringValue *sepv = dyn_cast<StringValue>(sep);
+    assert((sepv || isa<NilValue>(sep)) && "incorrect type");
+
+    std::vector<ustring> splitted;
+    if (!sepv) {
+        splitted = split_whitespace(strv->get_value(), max_splitv->get_value());
+    } else {
+        splitted = split_on(strv->get_value(), sepv->get_value(), max_splitv->get_value());
+    }
+    std::vector<Value *> splitted_str;
+    splitted_str.reserve(splitted.size());
+    for (const auto s: splitted) {
+        splitted_str.push_back(new StringValue(s));
+    }
+
+    return new ListValue(splitted_str);
+}
+
+Value *String::isspace(Interpreter *vm, Value *ths, Value *&err) {
+    auto strv = dyn_cast<StringValue>(ths);
+    assert(strv && "not string");
+    ustring text = strv->get_value();
+    if (text.empty())
+        return BuiltIns::False;
+    bool all_space = std::all_of(text.begin(), text.end(), [](unsigned char c){
+        return std::isspace(c);
+    });
+    return all_space ? BuiltIns::True : BuiltIns::False;
+}

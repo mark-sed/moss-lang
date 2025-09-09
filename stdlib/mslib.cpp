@@ -695,6 +695,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
         }},
+        {"isspace", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 1);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            return String::isspace(vm, arg, err);
+        }},
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
             if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
@@ -903,6 +915,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto seconds = static_cast<opcode::IntConst>(cf->get_args()[0].value->as_float() * 1000);
             std::this_thread::sleep_for(std::chrono::milliseconds(seconds));
             return BuiltIns::Nil;
+        }},
+        {"split", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 3);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            return String::split(vm, arg, cf->get_arg("sep"), cf->get_arg("maxsplit"), err);
         }},
         {"String", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;

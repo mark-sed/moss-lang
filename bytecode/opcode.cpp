@@ -2726,7 +2726,7 @@ static void range(Value *start, Value *step, Value *end, Register dst, Interpret
             raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, "Range")));
         } else {
             raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
-                constr->get_name().c_str(), diags::DIAG_MSGS[did])));
+                "Range", diags::DIAG_MSGS[did])));
         }
     }
     Value *rval = nullptr;

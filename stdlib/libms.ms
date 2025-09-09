@@ -141,6 +141,23 @@ class __String {
     }
 
     @internal
+    fun isspace() {
+        d"""
+        Returns true if all the characters in this string are whitespace (' ', '\f', '\n', '\r', '\t', '\v').
+        """
+    }
+
+    @internal
+    fun split(sep:[String,NilType]=nil, maxsplit:Int=-1) {
+        d"""
+        Returns a list of strings, using `sep` as the delimiter string.
+        If `sep` is nil, then whitespace is used as the separator.
+        If `sep` in empty, then string is split at every character.
+        If `maxsplit` is non-negative number then split is done this many times.
+        """
+    }
+
+    @internal
     fun __iter() {}
     
     @internal
@@ -526,12 +543,43 @@ fun info(v) {
     fun get_doc(a) {
         docs = ""
         try {
-            docs = a.__doc
+            // This is needed if __doc is changed by hand and also for libms docs as those don't have correct signature.
+            docs = String(a.__doc)
         } catch(e:AttributeError) {
             return ""
         }
-        // TODO: Split by new line and strip \t
-        return docs++"\n"
+        // Extract indentation
+        splitted_all = docs.split("\n")
+        if (splitted_all.length() == 1)
+            splitted = splitted_all
+        else {
+            // Remove new lines from start and end of the doc string
+            start = 0
+            end = splitted_all.length()-1
+            for (start : 0..splitted_all.length()) {
+                if (not splitted_all[start].empty())
+                    break
+            }
+            // Also remove ws from the end lines, no need for that
+            for (i : splitted_all.length()-1..start) {
+                if (not splitted_all[i].empty() && not splitted_all[i].isspace()) {
+                    end = i
+                    break
+                }
+            }
+            splitted = splitted_all[start..end+1]
+        }
+        indent = ""
+        for (c: splitted[0]) {
+            if (not c.isspace())
+                break
+            indent ++= c
+        }
+        formatted = [l.replace(indent, "", 1) : l = splitted]
+        dstring = "\n".join(formatted)
+        if (not dstring.empty() && dstring[-1] != "\n")
+            return dstring++"\n"
+        return dstring
     }
 
     if (type(v) == FunctionList) {

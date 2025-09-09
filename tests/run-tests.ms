@@ -1163,7 +1163,16 @@ caught
 caught
 caught
 Hi
-AAAcAAAAcAAAAAA\n""", "")
+AAAcAAAAcAAAAAA
+["hello", "there", "from", "moss"]
+["hello", "there", "from
+moss"]
+["hello", "there", "from", "moss"]
+["1", "2", "3-4", "5", ""]
+["1", "", "2", "", "3", "4", "", "5", "", ""]
+["1", "2--3-4--5--"]
+["aa", "cc", "ee", ""]
+true\nfalse\ntrue\nfalse\n""", "")
 }
 
 fun test_lib_extending_string(name) {
@@ -1278,6 +1287,25 @@ caught
 Animal(name:[String], age:[Int, Float]=0)
 <anonymous>(a, b=1, c:[Bool]=false)
 lambda_with_name()\n""", "")
+}
+
+fun test_lib_info(name) {
+    ~expect_pass("stdlib_tests/info.ms", name, """Does foo things.
+Also might do baz things.
+Does foo2 things.
+Also might do baz2 things.
+returns nil.
+This function 
+
+Does some formatting
+This function can be called like this:
+    `with_code(3, 5)`
+There are many benefits to this, eg:
+  - Is nice
+  - is cool
+  - awesome
+When doc start on the quote line
+    then the indent will stay...\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {
@@ -1548,6 +1576,7 @@ fun run_all_tests() {
     ~run_test("lib_enumerate")
     ~run_test("lib_iterable_funs")
     ~run_test("lib_inspect")
+    ~run_test("lib_info")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")
