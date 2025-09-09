@@ -825,6 +825,11 @@ public:
         this->body_addr = body_addr;
     }
 
+    bool is_lambda() const {
+        assert(!name.empty() && "Function without name");
+        return std::isdigit(name[0]);
+    }
+
     void set_constructee(ClassValue *c) { this->constructee = c; }
     ClassValue *get_constructee() { return this->constructee; }
     bool is_constructor() { return this->constructee != nullptr; }
@@ -851,6 +856,8 @@ public:
                 os << ", ";
             }
             first = false;
+            if (a->vararg)
+                os << "... ";
             os << a->name;
             auto types = a->types;
             if (!types.empty()) {
@@ -864,7 +871,20 @@ public:
                 }
                 os << "]";
             }
+            if (a->default_value) {
+                os << "=" << a->default_value->dump();
+            }
         }
+        return os.str();
+    }
+
+    ustring get_signature() const {
+        std::stringstream os;
+        if (this->is_lambda())
+            os << "<anonymous>";
+        else
+            os << name;
+        os << "(" << get_args_as_str() << ")";
         return os.str();
     }
 

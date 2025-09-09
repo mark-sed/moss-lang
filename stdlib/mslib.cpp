@@ -888,6 +888,14 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             obj->set_attr(name->get_value(), value);
             return BuiltIns::Nil;
         }},
+        {"signature", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            (void)vm;
+            assert(cf->get_args().size() == 1);
+            auto fv = dyn_cast<FunValue>(cf->get_args()[0].value);
+            assert(fv && "Other type than function passed in");
+            return new StringValue(fv->get_signature());
+        }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));
         }},

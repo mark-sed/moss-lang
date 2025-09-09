@@ -513,6 +513,15 @@ fun oct(number:Int) {}
 @internal
 fun bin(number:Int) {}
 
+space Inspect {
+    @internal
+    fun signature(f:Function) {
+        d"""
+        Returns Function `f` signature as a string.
+        """
+    }
+}
+
 fun info(v) {
     fun get_doc(a) {
         docs = ""
