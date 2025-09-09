@@ -539,7 +539,11 @@ space Inspect {
     }
 }
 
-fun info(v) {
+fun info(v, indent:String="") {
+    d"""
+    Returns formatted doc string or list of pairs of [function, doc strings] for overloaded function.
+    For multi-line doc string indentation is removed based on indentation of the first line.
+    """
     fun get_doc(a) {
         docs = ""
         try {
@@ -569,13 +573,13 @@ fun info(v) {
             }
             splitted = splitted_all[start..end+1]
         }
-        indent = ""
+        indent_found = ""
         for (c: splitted[0]) {
             if (not c.isspace())
                 break
-            indent ++= c
+            indent_found ++= c
         }
-        formatted = [l.replace(indent, "", 1) : l = splitted]
+        formatted = [indent ++ l.replace(indent_found, "", 1) : l = splitted]
         dstring = "\n".join(formatted)
         if (not dstring.empty() && dstring[-1] != "\n")
             return dstring++"\n"
@@ -594,8 +598,20 @@ fun info(v) {
 }
 
 fun help(a) {
-    // TODO: For function output signature and similar for other types
-    return info(a)
+    txt = ""
+    if (type(a) == Function) {
+        txt = Inspect.signature(a) ++ "\n"
+        txt ++= info(a, "    ")
+    } else if (type(a) == FunctionList) {
+        for (f: a) {
+            txt ++= Inspect.signature(f) ++ "\n"
+            txt ++= info(f, "    ")
+            txt ++= "\n"
+        }
+    } else {
+        txt ++= info(a, "    ")
+    }
+    return txt
 }
 
 @internal_bind("File")

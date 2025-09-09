@@ -1308,6 +1308,20 @@ When doc start on the quote line
     then the indent will stay...\n""", "")
 }
 
+fun test_lib_help(name) {
+    ~expect_pass("stdlib_tests/help.ms", name, """foo(a, b)
+    Does foo(a,b)
+
+foo(a)
+
+foo()
+    Does foo()
+
+bar(a:[Int], b=true)
+    Will do bar.
+    And return some val.\n""", "")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -1577,6 +1591,7 @@ fun run_all_tests() {
     ~run_test("lib_iterable_funs")
     ~run_test("lib_inspect")
     ~run_test("lib_info")
+    ~run_test("lib_help")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")
