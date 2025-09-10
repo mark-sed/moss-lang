@@ -869,6 +869,16 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
+        {"name", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            (void)vm;
+            assert(cf->get_args().size() == 1);
+            auto arg = cf->get_args()[0].value;
+            if (auto fvl = dyn_cast<FunValueList>(arg)) {
+                arg = fvl->get_funs()[0];
+            }
+            return new StringValue(arg->get_name());
+        }},
         {"round", [](Interpreter* vm, CallFrame* cf, Value*&) {
             assert(cf->get_args().size() == 2);
             return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));

@@ -537,6 +537,13 @@ space Inspect {
         Returns Function `f` signature as a string.
         """
     }
+
+    @internal
+    fun name(obj:[Type,Space,Function,FunctionList]) {
+        d"""
+        Returns name of `obj`.
+        """
+    }
 }
 
 fun info(v, indent:String="") {

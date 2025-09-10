@@ -1286,7 +1286,8 @@ foo2(a="hello", ... other)
 caught
 Animal(name:[String], age:[Int, Float]=0)
 <anonymous>(a, b=1, c:[Bool]=false)
-lambda_with_name()\n""", "")
+lambda_with_name()
+En1\nCl2\nSpc\nprint\nInt\nInt\n""", "")
 }
 
 fun test_lib_info(name) {
