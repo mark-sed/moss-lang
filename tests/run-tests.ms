@@ -1281,8 +1281,8 @@ fun test_lib_iterable_funs(name) {
     ~expect_pass("stdlib_tests/iterable_funs.ms", name, """3\n0\ncaught\n5\n5\n0\n""", "")
 }
 
-fun test_lib_inspect(name) {
-    ~expect_pass("stdlib_tests/inspect.ms", name, """foo(a:[Int], b:[Bool], c=nil)
+fun test_lib_inspect_inspect(name) {
+    ~expect_pass("stdlib_tests/inspect_tests/inspect.ms", name, """foo(a:[Int], b:[Bool], c=nil)
 foo2(a="hello", ... other)
 caught
 Animal(name:[String], age:[Int, Float]=0)
@@ -1337,7 +1337,10 @@ enum EmptyEnum {}
 space SomeSpace
     Just some space being spaceous.
     Is tied to SomeTime.
-    Might bend.\n""", "")
+    Might bend.
+module empty_module
+    Empty module.
+    Does nothing.\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {
@@ -1607,7 +1610,6 @@ fun run_all_tests() {
     ~run_test("lib_attrs")
     ~run_test("lib_enumerate")
     ~run_test("lib_iterable_funs")
-    ~run_test("lib_inspect")
     ~run_test("lib_info")
     ~run_test("lib_help")
 
@@ -1620,6 +1622,9 @@ fun run_all_tests() {
     } else {
         ~print("[NOTE] Skipping cffi tests (not yet implemented on Windows).")
     }
+
+    // inspect
+    ~run_test("lib_inspect_inspect")
 
     // sys
     ~run_test("lib_sys_platform")

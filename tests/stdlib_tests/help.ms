@@ -49,3 +49,6 @@ space SomeSpace {
 }
 
 help(SomeSpace)
+
+import empty_module
+help(empty_module)

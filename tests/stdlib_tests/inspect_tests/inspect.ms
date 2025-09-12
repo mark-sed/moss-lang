@@ -1,18 +1,20 @@
+import inspect
+
 fun foo(a:Int, b:Bool, c=nil) {}
 
-Inspect.signature(foo)
+inspect.signature(foo)
 "\n"
 
 fun foo2(a="hello", ... other) {
 }
 
-Inspect.signature(foo2)
+inspect.signature(foo2)
 "\n"
 
 fun foo(a) {}
 
 try
-    Inspect.signature(foo)
+    inspect.signature(foo)
 catch (e:TypeError)
     "caught\n"
 
@@ -23,43 +25,43 @@ class Animal {
     }
 }
 
-Inspect.signature(Animal.Animal)
+inspect.signature(Animal.Animal)
 "\n"
 
-Inspect.signature(fun(a, b=1, c:Bool=false)=a)
+inspect.signature(fun(a, b=1, c:Bool=false)=a)
 "\n"
 
-Inspect.signature(fun lambda_with_name()=4)
+inspect.signature(fun lambda_with_name()=4)
 "\n"
 
 enum En1 {A;}
 class Cl2 {}
 space Spc {}
 
-Inspect.name(En1)
+inspect.name(En1)
 a = Cl2
 "\n"
-Inspect.name(a)
+inspect.name(a)
 "\n"
-Inspect.name(Spc)
+inspect.name(Spc)
 "\n"
-Inspect.name(print)
+inspect.name(print)
 "\n"
-Inspect.name(Int)
+inspect.name(Int)
 "\n"
-Inspect.name(Int.Int)
+inspect.name(Int.Int)
 "\n"
 
 enum EnB {
     A, B, C, D, E
 }
 
-Inspect.enum_values(EnB)
+inspect.enum_values(EnB)
 "\n"
-vl = Inspect.enum_values(EnB)
+vl = inspect.enum_values(EnB)
 type(vl[0])
 "\n"
 
 enum EmptyEnum {}
-Inspect.enum_values(EmptyEnum)
+inspect.enum_values(EmptyEnum)
 "\n"

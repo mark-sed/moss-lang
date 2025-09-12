@@ -530,29 +530,6 @@ fun oct(number:Int) {}
 @internal
 fun bin(number:Int) {}
 
-space Inspect {
-    @internal
-    fun signature(f:Function) {
-        d"""
-        Returns Function `f` signature as a string.
-        """
-    }
-
-    @internal
-    fun name(obj:[Type,Space,Function,FunctionList,Enum]) {
-        d"""
-        Returns name of `obj`.
-        """
-    }
-
-    @internal
-    fun enum_values(e:Enum) {
-        d"""
-        Returns list of values that enum `e` contains.
-        """
-    }
-}
-
 fun info(v, indent:String="") {
     d"""
     Returns formatted doc string or list of pairs of [function, doc strings] for overloaded function.
@@ -612,30 +589,35 @@ fun info(v, indent:String="") {
 }
 
 fun help(a) {
+    import inspect
     // TODO: list attributes and their info
     txt = ""
     if (type(a) == Function) {
-        txt = Inspect.signature(a) ++ "\n"
+        txt = inspect.signature(a) ++ "\n"
         txt ++= info(a, "    ")
     } else if (type(a) == FunctionList) {
         for (f: a) {
-            txt ++= Inspect.signature(f) ++ "\n"
+            txt ++= inspect.signature(f) ++ "\n"
             txt ++= info(f, "    ")
             txt ++= "\n"
         }
     } else if (type(a) == Type) {
-        txt ++= "class " ++ Inspect.name(a) ++ "\n"
+        // TODO: Add parents
+        txt ++= "class " ++ inspect.name(a) ++ "\n"
         txt ++= info(a, "    ")
     } else if (type(a) == Enum) {
-        txt ++= "enum " ++ Inspect.name(a) ++ " {"
-        for (e: Inspect.enum_values(a)) {
+        txt ++= "enum " ++ inspect.name(a) ++ " {"
+        for (e: inspect.enum_values(a)) {
             txt ++= "\n    " ++ e
         }
-        if (not Inspect.enum_values(a).empty())
+        if (not inspect.enum_values(a).empty())
             txt ++= "\n"
         txt ++= "}\n"
     } else if (type(a) == Space) {
-        txt ++= "space " ++ Inspect.name(a) ++ "\n"
+        txt ++= "space " ++ inspect.name(a) ++ "\n"
+        txt ++= info(a, "    ")
+    } else if (type(a) == Module) {
+        txt ++= "Module " ++ inspect.name(a) ++ "\n"
         txt ++= info(a, "    ")
     } else {
         txt ++= info(a, "    ")

@@ -9,6 +9,7 @@
 #include "mslib_file.hpp"
 #include "mslib_dict.hpp"
 #include "subprocess.hpp"
+#include "inspect.hpp"
 #include "sys.hpp"
 #include "cffi.hpp"
 #include "time.hpp"
@@ -614,20 +615,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 2);
             return divmod(vm, cf->get_arg("x"), cf->get_arg("y"), err);
         }},
-        {"enum_values", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
-            (void)vm;
-            assert(cf->get_args().size() == 1);
-            auto ev = dyn_cast<EnumTypeValue>(cf->get_args()[0].value);
-            assert(ev && "Other type than enum passed in");
-            auto evvl = ev->get_values();
-            std::vector<Value *> en_vals;
-            en_vals.reserve(evvl.size());
-            for (auto e: evvl) {
-                en_vals.push_back(e);
-            }
-            return new ListValue(en_vals);
-        }},
         {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             assert(cf->get_args().size() == 2);
@@ -785,6 +772,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(counti);
             return new IntValue(ai->get_value() << counti->get_value());
         }},
+        {"multi_replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            auto ths = cf->get_arg("this");
+            if (auto sv = get_subtype_value<StringValue>(ths, BuiltIns::String, vm, err)) {
+                assert(args.size() == 2);
+                return String::multi_replace(vm, sv, cf->get_arg("mapping"), err);
+            } else {
+                if (!err)
+                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"NilType", [](Interpreter*, CallFrame*, Value*&) {
             return new NilValue();
         }},
@@ -871,28 +870,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
-        {"multi_replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
-            auto args = cf->get_args();
-            auto ths = cf->get_arg("this");
-            if (auto sv = get_subtype_value<StringValue>(ths, BuiltIns::String, vm, err)) {
-                assert(args.size() == 2);
-                return String::multi_replace(vm, sv, cf->get_arg("mapping"), err);
-            } else {
-                if (!err)
-                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
-                return nullptr;
-            }
-        }},
-        {"name", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
-            (void)vm;
-            assert(cf->get_args().size() == 1);
-            auto arg = cf->get_args()[0].value;
-            if (auto fvl = dyn_cast<FunValueList>(arg)) {
-                arg = fvl->get_funs()[0];
-            }
-            return new StringValue(arg->get_name());
-        }},
         {"round", [](Interpreter* vm, CallFrame* cf, Value*&) {
             assert(cf->get_args().size() == 2);
             return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));
@@ -923,14 +900,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(value);
             obj->set_attr(name->get_value(), value);
             return BuiltIns::Nil;
-        }},
-        {"signature", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
-            (void)vm;
-            assert(cf->get_args().size() == 1);
-            auto fv = dyn_cast<FunValue>(cf->get_args()[0].value);
-            assert(fv && "Other type than function passed in");
-            return new StringValue(fv->get_signature());
         }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
             return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));
@@ -1019,6 +988,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> cffi_registry = cffi::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> sys_registry = sys::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> time_registry = time::get_registry();
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> inspect_registry = inspect::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> empty_registry{};
 
     // Based on module name return correct function registry
@@ -1032,6 +1002,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         return sys_registry;
     else if (module_name == "time")
         return time_registry;
+    else if (module_name == "inspect")
+        return inspect_registry;
     else {
         // We want to raise exception, not to assert, this will make it so
         // that the "internal" function will not be found.
