@@ -63,6 +63,7 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "FunctionList", BuiltIns::FunctionList, gf);
     store_glob_val(reg++, "Module", BuiltIns::Module, gf);
     store_glob_val(reg++, "Space", BuiltIns::Space, gf);
+    store_glob_val(reg++, "Enum", BuiltIns::Enum, gf);
 
     store_glob_val(reg++, "super", BuiltIns::super, gf);
 
@@ -111,6 +112,7 @@ Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
 
 Value *BuiltIns::Module = new ClassValue("Module");
 Value *BuiltIns::Space = new ClassValue("Space");
+Value *BuiltIns::Enum = new ClassValue("Enum");
 
 Value *BuiltIns::super = new ClassValue("super");
 

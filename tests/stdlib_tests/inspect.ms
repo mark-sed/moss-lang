@@ -49,3 +49,17 @@ Inspect.name(Int)
 "\n"
 Inspect.name(Int.Int)
 "\n"
+
+enum EnB {
+    A, B, C, D, E
+}
+
+Inspect.enum_values(EnB)
+"\n"
+vl = Inspect.enum_values(EnB)
+type(vl[0])
+"\n"
+
+enum EmptyEnum {}
+Inspect.enum_values(EmptyEnum)
+"\n"

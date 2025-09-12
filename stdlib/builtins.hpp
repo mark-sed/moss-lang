@@ -78,6 +78,7 @@ namespace BuiltIns {
     extern Value *Function;
     extern Value *Module;
     extern Value *Space;
+    extern Value *Enum;
     
     extern Value *super;
     

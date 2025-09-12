@@ -33,6 +33,20 @@ type(md"#H1")
 type(Type)
 "\n"
 
+enum Foo {
+    Baz
+    Bar
+}
+
+type(Foo)
+"\n"
+type(Foo.Baz)
+"\n"
+type(type(Foo))
+"\n"
+type(type(type(Foo)))
+"\n"
+
 // id
 a = [1,2,3]
 b = a

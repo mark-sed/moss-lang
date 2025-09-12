@@ -1240,6 +1240,7 @@ fun test_lib_args(name) {
 fun test_lib_types(name) {
     ~expect_pass("stdlib_tests/types.ms", name, """42\ntrue\ntrue\ncaught\ncaught
 <class Int>\ntrue\ntrue\n<class Space>\n<class Type>\n<class Note>\n<class Type>
+<class Enum>\n<Enum Foo>\n<class Type>\n<class Type>
 true\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\nfalse\ntrue
 false\ntrue\nfalse\ntrue\nfalse\ntrue\ntrue\n""", "")
 }
@@ -1287,7 +1288,8 @@ caught
 Animal(name:[String], age:[Int, Float]=0)
 <anonymous>(a, b=1, c:[Bool]=false)
 lambda_with_name()
-En1\nCl2\nSpc\nprint\nInt\nInt\n""", "")
+En1\nCl2\nSpc\nprint\nInt\nInt
+[A, B, C, D, E]\n<Enum EnB>\n[]\n""", "")
 }
 
 fun test_lib_info(name) {
@@ -1320,7 +1322,22 @@ foo()
 
 bar(a:[Int], b=true)
     Will do bar.
-    And return some val.\n""", "")
+    And return some val.
+class MyCls
+    It is my class.
+    Does classy things.
+enum EnB {
+    A
+    B
+    C
+    D
+    E
+}
+enum EmptyEnum {}
+space SomeSpace
+    Just some space being spaceous.
+    Is tied to SomeTime.
+    Might bend.\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {

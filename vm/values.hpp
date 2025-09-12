@@ -1025,9 +1025,9 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::ENUM;
 
-    EnumTypeValue(ustring name) : Value(ClassType, name, BuiltIns::Type) {}
+    EnumTypeValue(ustring name) : Value(ClassType, name, BuiltIns::Enum) {}
     EnumTypeValue(ustring name, std::vector<EnumValue *> vals) 
-        : Value(ClassType, name, BuiltIns::Type), vals(vals) {}
+        : Value(ClassType, name, BuiltIns::Enum), vals(vals) {}
 
     virtual Value *clone() override {
         return this;

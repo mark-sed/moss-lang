@@ -539,9 +539,16 @@ space Inspect {
     }
 
     @internal
-    fun name(obj:[Type,Space,Function,FunctionList]) {
+    fun name(obj:[Type,Space,Function,FunctionList,Enum]) {
         d"""
         Returns name of `obj`.
+        """
+    }
+
+    @internal
+    fun enum_values(e:Enum) {
+        d"""
+        Returns list of values that enum `e` contains.
         """
     }
 }
@@ -605,6 +612,7 @@ fun info(v, indent:String="") {
 }
 
 fun help(a) {
+    // TODO: list attributes and their info
     txt = ""
     if (type(a) == Function) {
         txt = Inspect.signature(a) ++ "\n"
@@ -615,6 +623,20 @@ fun help(a) {
             txt ++= info(f, "    ")
             txt ++= "\n"
         }
+    } else if (type(a) == Type) {
+        txt ++= "class " ++ Inspect.name(a) ++ "\n"
+        txt ++= info(a, "    ")
+    } else if (type(a) == Enum) {
+        txt ++= "enum " ++ Inspect.name(a) ++ " {"
+        for (e: Inspect.enum_values(a)) {
+            txt ++= "\n    " ++ e
+        }
+        if (not Inspect.enum_values(a).empty())
+            txt ++= "\n"
+        txt ++= "}\n"
+    } else if (type(a) == Space) {
+        txt ++= "space " ++ Inspect.name(a) ++ "\n"
+        txt ++= info(a, "    ")
     } else {
         txt ++= info(a, "    ")
     }

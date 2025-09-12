@@ -614,6 +614,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 2);
             return divmod(vm, cf->get_arg("x"), cf->get_arg("y"), err);
         }},
+        {"enum_values", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            (void)vm;
+            assert(cf->get_args().size() == 1);
+            auto ev = dyn_cast<EnumTypeValue>(cf->get_args()[0].value);
+            assert(ev && "Other type than enum passed in");
+            auto evvl = ev->get_values();
+            std::vector<Value *> en_vals;
+            en_vals.reserve(evvl.size());
+            for (auto e: evvl) {
+                en_vals.push_back(e);
+            }
+            return new ListValue(en_vals);
+        }},
         {"Float", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             assert(cf->get_args().size() == 2);
