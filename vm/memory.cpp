@@ -141,6 +141,7 @@ void MemoryPool::push_finally_stack() {
 
 void MemoryPool::pop_finally_stack() {
     assert(!this->finally_stack.empty() && "Trying to pop stack from empty finally stack");
+    assert(finally_stack.back().empty() && "Some finally was not run!");
     this->finally_stack.pop_back();
 }
 

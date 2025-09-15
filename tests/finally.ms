@@ -133,3 +133,46 @@ fun foo34() {
 
 foo34()
 "\n"
+
+
+fun f1() {
+    try {
+        raise 4
+    } catch(v) {
+        "catch\n"
+        raise v
+    } finally {
+        "Finally\n"
+    }
+}
+
+try  {
+    try
+        f1()
+    catch(g:Int) {
+        "caught 3\n"
+        raise g
+    }
+    finally
+        "finally 3\n"
+}
+catch (e)
+    "catch2\n"
+finally
+    "finally2\n"
+
+// TODO: Uncomment once fixed
+/*
+try  {
+    try
+        f1()
+    catch(g:SyntaxError)
+        "caught 3\n"
+    finally
+        "finally 3\n" // This is not outputted
+}
+catch (e)
+    "catch2\n"
+finally
+    "finally2\n"
+*/

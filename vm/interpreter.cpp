@@ -473,7 +473,7 @@ void Interpreter::call_finally() {
     assert(has_finally() && "Getting finally address from empty stack");
     auto fnl = get_top_frame()->get_finally_stack().back();
     int addr_offset = 0;
-    if (is_try_in_catch())
+    if (is_try_not_in_catch())
         addr_offset = -1;
     store_const(fnl->caller, new IntValue(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
@@ -481,7 +481,7 @@ void Interpreter::call_finally() {
     set_bci(fnl->addr + addr_offset);
 }
 
-bool Interpreter::is_try_in_catch() {
+bool Interpreter::is_try_not_in_catch() {
     assert(has_finally() && "Getting finally address from empty stack");
     auto fnl = get_top_frame()->get_finally_stack().back();
     auto val = load_const(fnl->caller);
@@ -542,6 +542,19 @@ void Interpreter::restore_to_global_frame() {
     const_pools.erase(std::next(frames.begin()), frames.end());    
 }
 
+std::optional<moss::ExceptionCatch> Interpreter::get_catch_for_exception(Value *exc, bool only_current_frame) {
+    for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
+        auto ec = *riter;
+        if (only_current_frame && ec.frame_position != get_top_frame())
+            return std::nullopt;
+        if (!ec.type || opcode::is_type_eq_or_subtype(exc->get_type(), ec.type)) {
+            return ec;
+        }
+    }
+    return std::nullopt;
+}
+
+
 void Interpreter::run() {
     LOG1("Running interpreter of " << (src_file ? src_file->get_name() : "??") << "\n----- OUTPUT: -----");
 
@@ -550,22 +563,33 @@ void Interpreter::run() {
         try {
             opc->exec(this);
         } catch (Value *v) {
-            // Match to known catches otherwise let fall through to next interpreter
-            // or interpreter owner to print or exit or both
-            bool handled = false;
-            for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
-                auto ec = *riter;
-                if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
-                    LOGMAX("Caught exception");
-                    handle_exception(ec, v);
-                    handled = true;
-                    break;
+            // FIXME: this does not handle case where catch is not run 
+            if (has_finally() && !is_try_not_in_catch()) {
+                LOGMAX("Raise before running finally - run finally");
+                call_finally();
+            } else {
+                // Match to known catches otherwise let fall through to next interpreter
+                // or interpreter owner to print or exit or both
+                bool handled = false;
+                for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
+                    auto ec = *riter;
+                    if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
+                        LOGMAX("Caught exception");
+                        handle_exception(ec, v);
+                        handled = true;
+                        break;
+                    }
                 }
-            }
-            // Rethrow exception to be handled by next interpreter or unhandled
-            if (!handled) {
-                LOGMAX("Rethrowing exception, no catch caught it");
-                throw v;
+                // Rethrow exception to be handled by next interpreter or unhandled
+                if (!handled) {
+                    if (has_finally()) {
+                        LOGMAX("Uncaught raise, run finally before rethrow");
+                        call_finally();
+                    }else {
+                        LOGMAX("Rethrowing exception, no catch caught it");
+                        throw v;
+                    }
+                }
             }
         }
         if (stop || global_controls::exit_called) {
@@ -584,5 +608,6 @@ void Interpreter::run() {
             global_controls::trigger_gc = false;
         }
     }
+    //assert((!is_main() || !has_finally()) && "Unrun finally");
     LOG1("Finished interpreter");
 }

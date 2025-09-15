@@ -399,10 +399,20 @@ fun test_finally(name) {
 Ran finally\n8\nin try\nin finally\nStart\nCLOSING\nhi\n\nStart\ncaught\nCLOSING\nnil
 Running division\n2\nRunning division\ninf\nin try\ncaught: 42\nran finally
 caught: 3\ncaught: true\ncaught: -1\nfinally 3 done\nfinally 2 done\nfinally 1 done
-finally 1\nfinally 2\n2\n""", "")
+finally 1\nfinally 2\n2
+catch\nFinally\ncaught 3\nfinally 3\ncatch2\nfinally2\n""", "")
 
     ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", name, "", /*rx_err="4"*/ exec=true)
     ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", name, "", /*rx_err="4"*/ exec=true)
+    ~expect_fail(r"""
+        try {
+            raise 4
+        } catch(v:String) {
+            "catch\n"
+        } finally {
+            "Finally\n"
+        }
+        """, name, "Finally\n", exec=true)
 }
 
 fun test_cycles_and_exceptions(name) {
@@ -1338,7 +1348,7 @@ space SomeSpace
     Just some space being spaceous.
     Is tied to SomeTime.
     Might bend.
-module empty_module
+Module empty_module
     Empty module.
     Does nothing.\n""", "")
 }

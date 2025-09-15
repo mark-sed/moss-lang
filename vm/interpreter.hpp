@@ -355,6 +355,7 @@ public:
     }
     /// \returns catch stack.
     std::list<ExceptionCatch>& get_catches() { return this->catches; }
+    std::optional<moss::ExceptionCatch> get_catch_for_exception(Value *exc, bool only_current_frame=false);
 
     /// \brief Pushes a new finally into finally stack.
     void push_finally(opcode::Finally *fnl);
@@ -370,7 +371,7 @@ public:
     /// \brief Initializes needed flags and jumps to top of the finally stack finally block.
     void call_finally();
     /// \returns true if we are currently executing inside of a catch.
-    bool is_try_in_catch();
+    bool is_try_not_in_catch();
 
     /// \brief Adds a new converter from to type into the list of converters.
     static void add_converter(ustring from, ustring to, FunValue *fun);
