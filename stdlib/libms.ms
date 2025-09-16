@@ -403,6 +403,9 @@ fun type(obj) {}
 fun id(obj) {}
 
 @internal
+fun isinstance(obj, types) {}
+
+@internal
 fun attrs() {}
 @internal
 fun attrs(obj) {}

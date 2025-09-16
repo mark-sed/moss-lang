@@ -437,6 +437,37 @@ Value *Note(Interpreter *vm, Value *format, Value *value) {
     return new NoteValue(format->as_string(), str_val);
 }
 
+Value *isinstance(Interpreter *vm, Value *obj, Value *types, Value *&err) {
+    auto type_list = dyn_cast<ListValue>(types);
+    bool is_class = true;
+    if (type_list) {
+        for (auto v: type_list->get_vals()) {
+            if (!isa<ClassValue>(v)) {
+                is_class = false;
+                break;
+            }
+        }
+    } else {
+        is_class = isa<ClassValue>(types);
+    }
+    if (!is_class) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::ISINSTANCE_REQUIRES_CLASS));
+        return nullptr;
+    }
+
+    if (type_list) {
+        for (auto v: type_list->get_vals()) {
+            if (opcode::is_type_eq_or_subtype(obj->get_type(), v)) {
+                return BuiltIns::True;
+            }
+        }
+    } else {
+        if (opcode::is_type_eq_or_subtype(obj->get_type(), types))
+            return BuiltIns::True;
+    }
+    return BuiltIns::False;
+}
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry(ustring module_name) {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> libms_registry = {
         {known_names::OBJECT_ITERATOR, [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -695,6 +726,13 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"isinstance", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            auto obj = cf->get_arg("obj");
+            auto types = cf->get_arg("types");
+            return isinstance(vm, obj, types, err);
         }},
         {"isspace", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 1);

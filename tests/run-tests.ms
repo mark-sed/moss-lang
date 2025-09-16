@@ -1353,6 +1353,10 @@ Module empty_module
     Does nothing.\n""", "")
 }
 
+fun test_lib_isinstance(name) {
+    ~expect_pass("stdlib_tests/isinstance.ms", name, """true\nfalse\ntrue\ntrue\nfalse\ntrue\nfalse\ncaught\nfalse\ntrue\ncaught\n""", "")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -1622,6 +1626,7 @@ fun run_all_tests() {
     ~run_test("lib_iterable_funs")
     ~run_test("lib_info")
     ~run_test("lib_help")
+    ~run_test("lib_isinstance")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")

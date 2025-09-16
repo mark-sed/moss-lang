@@ -194,6 +194,7 @@ enum DiagID : unsigned {
     INCORRECT_ARG_NAME,     ///< When argument name is not just an ID
     SILENT_ARG,             ///< foo(~a)
     SILENT_IN_EXPR,         ///< When silent is in an expression
+    ISINSTANCE_REQUIRES_CLASS,///< When non-class value is passed to isinstance
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -367,6 +368,7 @@ static const char * DIAG_MSGS[] = {
     "Incorrect argument name expression",
     "Function argument cannot be silenced",
     "Silent cannot be a part of an expression",
+    "Function `isinstance` expects class value or list of class values as the second argument",
 };
 
 /// \brief ID of diagnostic error
