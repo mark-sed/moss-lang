@@ -256,18 +256,18 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
     } else {
         auto cmd_res = run_command_separate(cmds->get_value(), combine_b->get_value(), err);
         code_v = IntValue::get(cmd_res.exit_code);
-        stdout_v = new StringValue(cmd_res.stdout_text);
-        stderr_v = new StringValue(cmd_res.stderr_text);
+        stdout_v = StringValue::get(cmd_res.stdout_text);
+        stderr_v = StringValue::get(cmd_res.stderr_text);
     }
 
     if (!code_v) {
         code_v = IntValue::get(-127);
     }
     if (!stdout_v) {
-        stdout_v = new StringValue("");
+        stdout_v = StringValue::get("");
     }
     if (!stderr_v) {
-        stderr_v = new StringValue("");
+        stderr_v = StringValue::get("");
     }
 
     return mslib::call_constructor(vm, cf, "SubprocessResult", {command, code_v, stdout_v, stderr_v}, err);

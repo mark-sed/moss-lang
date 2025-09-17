@@ -192,7 +192,7 @@ Value *StringValue::next(Interpreter *vm) {
     }
     auto chr = this->value[iterator];
     this->iterator++;
-    return new StringValue(ustring(1, chr));
+    return StringValue::get(ustring(1, chr));
 }
 
 Value *ListValue::next(Interpreter *vm) {
@@ -406,7 +406,7 @@ NoteValue::NoteValue(opcode::StringConst format, StringValue *value)
     this->kind = NoteValue::ClassType;
     if(BuiltIns::Note->get_attrs())
         this->attrs = BuiltIns::Note->get_attrs()->clone();
-    set_attr("format", new StringValue(format), true);
+    set_attr("format", StringValue::get(format), true);
     set_attr("value", value, true);
 }
 

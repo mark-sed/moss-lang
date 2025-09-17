@@ -36,7 +36,7 @@ Value *time::time(Interpreter *vm, Value *&err) {
     double timestamp = duration_cast<duration<double>>(
         system_clock::now().time_since_epoch()
     ).count();
-    return new FloatValue(timestamp);
+    return FloatValue::get(timestamp);
 }
 
 Value *time::localtime(Interpreter *vm, CallFrame *cf, Value *secs, Value *&err) {
@@ -63,10 +63,10 @@ Value *time::localtime(Interpreter *vm, CallFrame *cf, Value *secs, Value *&err)
     auto tm_isdst = IntValue::get(local->tm_isdst);
     // tm_zone and tm_gmtoff is only on posix
 #ifdef __linux__ // Add also mac
-    auto tm_zone = new StringValue(local->tm_zone);
+    auto tm_zone = StringValue::get(local->tm_zone);
     auto tm_gmtoff = IntValue::get(local->tm_gmtoff);
 #else
-    auto tm_zone = new StringValue("");
+    auto tm_zone = StringValue::get("");
     auto tm_gmtoff = BuiltIns::Nil;
 #endif
 
@@ -150,5 +150,5 @@ Value *time::strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, V
     assert(format_str && "Unexpected type");
 
     ustring formatted = strftime_dynamic(format_str->get_value(), time_to_format);
-    return new StringValue(formatted);
+    return StringValue::get(formatted);
 }

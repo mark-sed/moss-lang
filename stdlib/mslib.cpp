@@ -161,7 +161,7 @@ Value *mslib::create_exception(Value *type, ustring msg) {
     auto clt = dyn_cast<ClassValue>(type);
     assert(clt && "Passed non class type value");
     auto err = new ObjectValue(clt);
-    err->set_attr("msg", new StringValue(msg));
+    err->set_attr("msg", StringValue::get(msg));
     return err;
 }
 
@@ -173,7 +173,7 @@ Value *vardump(Interpreter *vm, Value *v) {
     (void)vm;
     std::stringstream ss;
     ss << *v << "\n";
-    return new StringValue(ss.str());
+    return StringValue::get(ss.str());
 }
 
 Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
@@ -212,7 +212,7 @@ Value *rand_float(Interpreter *vm, Value *min, Value *max) {
     auto min_int = min->as_float();
     auto max_int = max->as_float();
     std::uniform_real_distribution<opcode::FloatConst> distrib(min_int, max_int);
-    return new FloatValue(distrib(rng_device));
+    return FloatValue::get(distrib(rng_device));
 }
 
 Value *round(Interpreter *vm, Value *n, Value *ndigits) {
@@ -225,7 +225,7 @@ Value *round(Interpreter *vm, Value *n, Value *ndigits) {
         auto nfc = dyn_cast<IntValue>(ndigits)->get_value();
         double factor = std::pow(10.0, nfc);
         auto rounded = std::round(n->as_float() * factor) / factor;
-        return new FloatValue(rounded);
+        return FloatValue::get(rounded);
     }
 }
 
@@ -243,7 +243,7 @@ Value *input(Interpreter *vm, Value *prompt, Value *&err) {
         // TODO: Handle
         assert(false && "error in input");
     }
-    return new StringValue(line);
+    return StringValue::get(line);
 }
 
 Value *hex(Interpreter *vm, Value *number) {
@@ -254,7 +254,7 @@ Value *hex(Interpreter *vm, Value *number) {
     std::stringstream ss;
     ss << std::hex << std::abs(ni->get_value());
     std::string hex_str = ss.str();
-    return new StringValue((is_negative ? "-0x" : "0x") + hex_str);
+    return StringValue::get((is_negative ? "-0x" : "0x") + hex_str);
 }
 
 Value *bin(Interpreter *vm, Value *number) {
@@ -267,9 +267,9 @@ Value *bin(Interpreter *vm, Value *number) {
     std::string bin_str = ss.str();
     size_t non_zero_pos = bin_str.find_first_not_of('0');
     if (non_zero_pos != std::string::npos) {
-        return new StringValue((is_negative ? "-0b" : "0b") + bin_str.substr(non_zero_pos));
+        return StringValue::get((is_negative ? "-0b" : "0b") + bin_str.substr(non_zero_pos));
     }
-    return new StringValue("0b0");
+    return StringValue::get("0b0");
 }
 
 Value *oct(Interpreter *vm, Value *number) {
@@ -280,7 +280,7 @@ Value *oct(Interpreter *vm, Value *number) {
     std::stringstream ss;
     ss << std::oct << std::abs(ni->get_value());
     std::string oct_str = ss.str();
-    return new StringValue((is_negative ? "-0q" : "0q") + oct_str);
+    return StringValue::get((is_negative ? "-0q" : "0q") + oct_str);
 }
 
 Value *callable(Interpreter *vm, Value *obj) {
@@ -304,7 +304,7 @@ Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
         return ats;
     for (auto name: frame->get_sym_table_keys()) {
         if (!std::regex_match(name, ANON_VALUES))
-            ats->push(new StringValue(name));
+            ats->push(StringValue::get(name));
     }
     return ats;
 }
@@ -317,9 +317,9 @@ Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
             return nullptr;
         }
         opcode::FloatConst quotient = std::floor(x->as_float() / y->as_float());
-        res->push(new FloatValue(quotient));
+        res->push(FloatValue::get(quotient));
         opcode::FloatConst remainder = std::fmod(x->as_float(), y->as_float());
-        res->push(new FloatValue(remainder));
+        res->push(FloatValue::get(remainder));
     } else {
         auto xi = dyn_cast<IntValue>(x);
         assert(xi);
@@ -384,10 +384,10 @@ Value *Float(Interpreter *vm, Value *v, Value *&err) {
             LOGMAX("Errno error: " << strerror(errno));
             assert(false && "TODO: Raise conversion error");
         }
-        return new FloatValue(vf);
+        return FloatValue::get(vf);
     }
     if (auto fv = dyn_cast<IntValue>(v)) {
-        return new FloatValue(static_cast<opcode::FloatConst>(fv->get_value()));
+        return FloatValue::get(static_cast<opcode::FloatConst>(fv->get_value()));
     }
     auto rval = call_type_converter(vm, v, "Float", known_names::TO_FLOAT_METHOD, err);
     if (!err && rval && !isa<FloatValue>(rval)) {
@@ -503,7 +503,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return IntValue::get(std::abs(vi->get_value()));
             else {
                 assert(isa<FloatValue>(args[0].value));
-                return new FloatValue(std::fabs(args[0].value->as_float()));
+                return FloatValue::get(std::fabs(args[0].value->as_float()));
             }
         }},
         {"append", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -575,7 +575,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                     diags::Diagnostic(*vm->get_src_file(), 
                         diags::CHR_NOT_IN_RANGE, ii->get_value()));
             }
-            return new StringValue(ustring(1, ii->get_value()));
+            return StringValue::get(ustring(1, ii->get_value()));
         }},
         {"clear", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
@@ -602,7 +602,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return arg->clone();
         }},
         {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
-            return new FloatValue(std::cos(cf->get_args()[0].value->as_float()));
+            return FloatValue::get(std::cos(cf->get_args()[0].value->as_float()));
         }},
         {"delattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;
@@ -783,7 +783,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(xf);
             auto basef = cf->get_arg("base");
             assert(basef);
-            return new FloatValue(std::log(xf->as_float()) / std::log(basef->as_float()));
+            return FloatValue::get(std::log(xf->as_float()) / std::log(basef->as_float()));
         }},
         {"lower", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 1);
@@ -938,7 +938,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return BuiltIns::Nil;
         }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
-            return new FloatValue(std::sin(cf->get_args()[0].value->as_float()));
+            return FloatValue::get(std::sin(cf->get_args()[0].value->as_float()));
         }},
         {"sleep", [](Interpreter*, CallFrame* cf, Value*&) {
             auto seconds = static_cast<opcode::IntConst>(cf->get_args()[0].value->as_float() * 1000);
@@ -985,10 +985,10 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             auto strv = sv->get_value();
             utils::trim(strv);
-            return new StringValue(strv);
+            return StringValue::get(strv);
         }},
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
-            return new FloatValue(std::tan(cf->get_args()[0].value->as_float()));
+            return FloatValue::get(std::tan(cf->get_args()[0].value->as_float()));
         }},
         {"type", [](Interpreter* vm, CallFrame* cf, Value*& err)  {
             (void)err;

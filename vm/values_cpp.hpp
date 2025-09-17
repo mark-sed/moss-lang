@@ -131,7 +131,7 @@ namespace t_cpp {
         double get_value() { return this->value; }
 
         virtual Value *to_moss() override {
-            return new FloatValue(value);
+            return FloatValue::get(value);
         }
 
         virtual void *get_data_pointer() override {
@@ -156,7 +156,7 @@ namespace t_cpp {
         char *get_value() { return this->value; }
 
         virtual Value *to_moss() override {
-            return new StringValue(ustring(value));
+            return StringValue::get(ustring(value));
         }
 
         virtual void *get_data_pointer() override {

@@ -30,7 +30,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& inspect::get_reg
             if (auto fvl = dyn_cast<FunValueList>(arg)) {
                 arg = fvl->get_funs()[0];
             }
-            return new StringValue(arg->get_name());
+            return StringValue::get(arg->get_name());
         }},
         {"signature", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
@@ -38,7 +38,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& inspect::get_reg
             assert(cf->get_args().size() == 1);
             auto fv = dyn_cast<FunValue>(cf->get_args()[0].value);
             assert(fv && "Other type than function passed in");
-            return new StringValue(fv->get_signature());
+            return StringValue::get(fv->get_signature());
         }},
     };
     return registry;

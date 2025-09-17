@@ -68,7 +68,7 @@ Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
     ustring line;
     std::fstream *fstrm = fsfs->get_fs();
     while(std::getline(*fstrm, line)) {
-        lines->push(new StringValue(line));
+        lines->push(StringValue::get(line));
     }
     return lines;
 }

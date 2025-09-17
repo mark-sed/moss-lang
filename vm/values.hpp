@@ -341,10 +341,14 @@ public:
 class FloatValue : public Value {
 private:
     opcode::FloatConst value;
+
+    FloatValue(opcode::FloatConst value);
 public:
     static const TypeKind ClassType = TypeKind::FLOAT;
 
-    FloatValue(opcode::FloatConst value);
+    static FloatValue *get(opcode::FloatConst value) {
+        return new FloatValue(value);
+    }
     
     virtual Value *clone() override {
         return this;
@@ -432,10 +436,14 @@ class StringValue : public Value {
 protected:
     opcode::StringConst value;
     size_t iterator;
+    
+    StringValue(opcode::StringConst value);
 public:
     static const TypeKind ClassType = TypeKind::STRING;
 
-    StringValue(opcode::StringConst value);
+    static StringValue *get(opcode::StringConst value) {
+        return new StringValue(value);
+    }
 
     virtual Value *clone() override {
         // String is also immutable and so return it without copying;

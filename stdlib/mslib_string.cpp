@@ -13,12 +13,12 @@ Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {
         auto rval = mslib::call_type_converter(vm, v, "String", known_names::TO_STRING_METHOD, trash_err);
         if (rval && !trash_err) {
             if (!isa<StringValue>(rval)) {
-                rval = new StringValue(rval->as_string());
+                rval = StringValue::get(rval->as_string());
             }
             return rval;
         }
     }
-    return new StringValue(v->as_string());
+    return StringValue::get(v->as_string());
 }
 
 Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
@@ -28,7 +28,7 @@ Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
     ustring res = strv->get_value();
     std::transform(text.begin(), text.end(), res.begin(), ::tolower);
     res[0] = std::toupper(res[0]);
-    return new StringValue(res);
+    return StringValue::get(res);
 }
 
 Value *String::upper(Interpreter *vm, Value *ths, Value *&err) {
@@ -37,7 +37,7 @@ Value *String::upper(Interpreter *vm, Value *ths, Value *&err) {
     ustring text = strv->get_value();
     ustring res(text.length(), '\0');
     std::transform(text.begin(), text.end(), res.begin(), ::toupper);
-    return new StringValue(res);
+    return StringValue::get(res);
 }
 
 Value *String::lower(Interpreter *vm, Value *ths, Value *&err) {
@@ -46,7 +46,7 @@ Value *String::lower(Interpreter *vm, Value *ths, Value *&err) {
     ustring text = strv->get_value();
     ustring res(text.length(), '\0');
     std::transform(text.begin(), text.end(), res.begin(), ::tolower);
-    return new StringValue(res);
+    return StringValue::get(res);
 }
 
 Value *String::replace(Interpreter *vm, Value *ths, Value *target, Value *value, Value *count, Value *&err) {
@@ -61,7 +61,7 @@ Value *String::replace(Interpreter *vm, Value *ths, Value *target, Value *value,
     assert(valuev && "no string");
     auto countv = dyn_cast<IntValue>(count);
     assert(countv && "not int");
-    return new StringValue(utils::replace_n(strv->get_value(), targv->get_value(), valuev->get_value(), countv->get_value()));
+    return StringValue::get(utils::replace_n(strv->get_value(), targv->get_value(), valuev->get_value(), countv->get_value()));
 }
 
 Value *String::multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value *&err) {
@@ -90,7 +90,7 @@ Value *String::multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value
         auto value = dyn_cast<StringValue>(elemv->get_vals()[1]);
         utils::replace_in_n(result, target->get_value(), value->get_value());
     }
-    return new StringValue(result);
+    return StringValue::get(result);
 }
 
 static std::vector<ustring> split_whitespace(const std::string& text, long max_split=-1) {
@@ -171,7 +171,7 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
     std::vector<Value *> splitted_str;
     splitted_str.reserve(splitted.size());
     for (const auto s: splitted) {
-        splitted_str.push_back(new StringValue(s));
+        splitted_str.push_back(StringValue::get(s));
     }
 
     return new ListValue(splitted_str);

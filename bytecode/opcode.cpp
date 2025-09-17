@@ -382,7 +382,7 @@ void StoreIntConst::exec(Interpreter *vm) {
 }
 
 void StoreFloatConst::exec(Interpreter *vm) {
-    vm->store_const(dst, new FloatValue(val));
+    vm->store_const(dst, FloatValue::get(val));
 }
 
 void StoreBoolConst::exec(Interpreter *vm) {
@@ -394,7 +394,7 @@ void StoreBoolConst::exec(Interpreter *vm) {
 
 void StoreStringConst::exec(Interpreter *vm) {
     // TODO: Load precreated value
-    vm->store_const(dst, new StringValue(val));
+    vm->store_const(dst, StringValue::get(val));
 }
 
 void StoreNilConst::exec(Interpreter *vm) {
@@ -962,7 +962,7 @@ void Return::exec(Interpreter *vm) {
     if (cf->get_function()->has_annotation(annots::FORMATTER) && !isa<NoteValue>(ret_v)) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
-            rv_str = new StringValue(to_string(vm, ret_v));
+            rv_str = StringValue::get(to_string(vm, ret_v));
         ret_v = new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 
@@ -1011,7 +1011,7 @@ void ReturnConst::exec(Interpreter *vm) {
     if (cf->get_function()->has_annotation(annots::FORMATTER) && !isa<NoteValue>(ret_v)) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
-            rv_str = new StringValue(to_string(vm, ret_v));
+            rv_str = StringValue::get(to_string(vm, ret_v));
         ret_v =  new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 
@@ -1099,7 +1099,7 @@ void PushUnpacked::exec(Interpreter *vm) {
         }
     } else if (auto vstr = dyn_cast<StringValue>(v)) {
         for (auto elem: vstr->get_value()) {
-            vm->get_call_frame()->push_back(new StringValue(ustring(1, elem)));
+            vm->get_call_frame()->push_back(StringValue::get(ustring(1, elem)));
         }
     } else if (auto vdct = dyn_cast<DictValue>(v)) {
         for (auto elem: vdct->get_vals()) {
@@ -1455,7 +1455,7 @@ void AnnotateMod::exec(Interpreter *vm) {
 void Document::exec(Interpreter *vm) {
     auto d = vm->load(dst);
     assert(d && "loading non-existent register");
-    auto docv = new StringValue(val);
+    auto docv = StringValue::get(val);
     if (auto fvl = dyn_cast<FunValueList>(d)) {
         d = load_last_fun(dst, vm);
     }
@@ -1528,7 +1528,7 @@ static Value *concat(Value *s1, Value *s2, Interpreter *vm) {
     ustring s1_str = to_string(vm, s1);
     ustring s2_str = to_string(vm, s2);
 
-    return new StringValue(s1_str + s2_str);
+    return StringValue::get(s1_str + s2_str);
 }
 
 void Concat::exec(Interpreter *vm) {
@@ -1566,7 +1566,7 @@ static Value *exp(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         res = IntValue::get(static_cast<long>(std::pow(static_cast<double>(i1->get_value()), static_cast<double>(i2->get_value()))));
     }
     else if (is_float_expr(s1, s2)) {
-        res = new FloatValue(std::pow(s1->as_float(), s2->as_float()));
+        res = FloatValue::get(std::pow(s1->as_float(), s2->as_float()));
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "^", s1, s2, dst);
@@ -1604,7 +1604,7 @@ static Value *add(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         res = IntValue::get(i1->get_value() + i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new FloatValue(s1->as_float() + s2->as_float());
+        res = FloatValue::get(s1->as_float() + s2->as_float());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "+", s1, s2, dst);
@@ -1650,7 +1650,7 @@ static Value *sub(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         res = IntValue::get(i1->get_value() - i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new FloatValue(s1->as_float() - s2->as_float());
+        res = FloatValue::get(s1->as_float() - s2->as_float());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "-", s1, s2, dst);
@@ -1690,7 +1690,7 @@ static Value *div(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     }
     else if (is_float_expr(s1, s2)) {
         op_assert(s2->as_float() != 0.0,  mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO)));
-        res = new FloatValue(s1->as_float() / s2->as_float());
+        res = FloatValue::get(s1->as_float() / s2->as_float());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "/", s1, s2, dst);
@@ -1728,22 +1728,22 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         res = IntValue::get(i1->get_value() * i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new FloatValue(s1->as_float() * s2->as_float());
+        res = FloatValue::get(s1->as_float() * s2->as_float());
     }
     else if (isa<StringValue>(s1) && isa<IntValue>(s2)) {
         // String repeating
         ustring ss1 = dyn_cast<StringValue>(s1)->get_value();
         IntConst i1 = dyn_cast<IntValue>(s2)->get_value();
         if (i1 <= 0 || ss1.empty())
-            res = new StringValue("");
+            res = StringValue::get("");
         else if (ss1.size() == 1) {
-            res = new StringValue(ustring(i1, ss1[0]));
+            res = StringValue::get(ustring(i1, ss1[0]));
         } else {
             ustring result;
             result.reserve(ss1.size() * i1);
             for (int i = 0; i < i1; ++i)
                 result += ss1;
-            res = new StringValue(result);
+            res = StringValue::get(result);
         }
     } 
     else if (isa<ListValue>(s1) && isa<IntValue>(s2)) {
@@ -1800,7 +1800,7 @@ static Value *mod(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     }
     else if (is_float_expr(s1, s2)) {
         op_assert(s2->as_float() != 0.0,  mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO)));
-        res = new FloatValue(std::fmod(s1->as_float(), s2->as_float()));
+        res = FloatValue::get(std::fmod(s1->as_float(), s2->as_float()));
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "%", s1, s2, dst);
@@ -2384,7 +2384,7 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
             if (is_oob(st1, i2->get_value())) {
                 raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str(), i2->get_value())));
             }
-            res = new StringValue(str_index(st1, i2->get_value()));
+            res = StringValue::get(str_index(st1, i2->get_value()));
         } else if (s2->get_type() == BuiltIns::Range) {
             opcode::IntConst start;
             opcode::IntConst end;
@@ -2397,7 +2397,7 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
                 if (is_oob(st1, i)) break;
                 ss << str_index(st1, i);
             }
-            res = new StringValue(ss.str());
+            res = StringValue::get(ss.str());
         } else {
             raise_operand_exc(vm, "[]", s1, s2);
         }
@@ -2564,7 +2564,7 @@ void Neg::exec(Interpreter *vm) {
         res = IntValue::get(-(i1->get_value()));
     }
     else if (FloatValue *f1 = dyn_cast<FloatValue>(s1)) {
-        res = new FloatValue(-(f1->get_value()));
+        res = FloatValue::get(-(f1->get_value()));
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator_unary(vm, "-", s1, dst);

@@ -28,7 +28,7 @@ void BuiltIns::init_constant_variables(MemoryPool *gf, Interpreter *vm) {
     auto pr_args = clopts::get_program_args();
     std::vector<Value *> largs;
     for (auto a: pr_args) {
-        largs.push_back(new StringValue(a));
+        largs.push_back(StringValue::get(a));
     }
     store_glob_val(gf->get_free_reg(), "args", new ListValue(largs), gf);
     // end args
@@ -44,7 +44,7 @@ void BuiltIns::init_constant_variables(MemoryPool *gf, Interpreter *vm) {
     assert(!err && "Generators not in libms?");
     auto html_space = generators_space->get_attr("HTML", vm);
     assert(html_space && "html space not in Generators?");
-    html_space->set_attr("STYLE_PATH", new StringValue(style_path));
+    html_space->set_attr("STYLE_PATH", StringValue::get(style_path));
     // End STYLE_PATH
 }
 

@@ -78,7 +78,7 @@ void sys::init_constants(Interpreter *vm) {
 #ifndef NDEBUG
     version += " (DEBUG build)";
 #endif
-    gf->store(version_reg, new StringValue(version));
+    gf->store(version_reg, StringValue::get(version));
     // sys.version
 
     // sys.version_info
@@ -89,9 +89,9 @@ void sys::init_constants(Interpreter *vm) {
     version_info_space->set_attr("minor", IntValue::get(MOSS_VERSION_MINOR));
     version_info_space->set_attr("patch", IntValue::get(MOSS_VERSION_PATCH));
 #ifndef NDEBUG
-    version_info_space->set_attr("build_type", new StringValue("debug"));
+    version_info_space->set_attr("build_type", StringValue::get("debug"));
 #else
-    version_info_space->set_attr("build_type", new StringValue("release"));
+    version_info_space->set_attr("build_type", StringValue::get("release"));
 #endif
     // sys.version_info
 }
@@ -137,5 +137,5 @@ Value *sys::getenv(Interpreter *vm, Value *name, Value *def_val, Value *&err) {
         return nullptr;
     }
 
-    return new StringValue(ustring(value));
+    return StringValue::get(ustring(value));
 }

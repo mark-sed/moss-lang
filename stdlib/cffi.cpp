@@ -169,11 +169,11 @@ static Value *result_to_moss(FFIResult result, Value *type, Value *&err) {
     /*if (type == &ffi_type_ulong)
         return IntValue::get(result.cunsigned_long);
     if (type == &ffi_type_float)
-        return new FloatValue(result.cfloat);*/
+        return FloatValue::get(result.cfloat);*/
     if (type == BuiltIns::Cpp::CDouble)
-        return new FloatValue(result.cdouble);
+        return FloatValue::get(result.cdouble);
     if (type == BuiltIns::Cpp::CCharStar)
-        return new StringValue(ustring(static_cast<char *>(result.cvoid_star)));
+        return StringValue::get(ustring(static_cast<char *>(result.cvoid_star)));
     if (type == BuiltIns::Cpp::CVoidStar)
         return new t_cpp::CVoidStarValue(result.cvoid_star);
 
