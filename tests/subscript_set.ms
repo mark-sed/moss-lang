@@ -59,7 +59,7 @@ class Test2 {
 
 try {
     Test2()[2] = 5
-} catch(e:NameError) "caught\n"
+} catch(e:TypeError) "caught\n"
 
 class Test3 {
     fun Test3() {

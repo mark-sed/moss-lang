@@ -366,6 +366,10 @@ fun test_function_overwriting(name) {
     ~expect_pass("function_overwriting.ms", name, "foo2\nbar3\nbar3\nf1\nf2\ng2\ng3\nga\nbaz3\nbaz3\nh1\nh2\nl2\nP2\nP3\nP4\n", "")
 }
 
+fun test_annotations(name) {
+    ~expect_pass("annotations.ms", name, "caught\ncaught\ncaught\n", "")
+}
+
 fun test_ifs(name) {
     ~expect_pass("ifs.ms", name, """0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
 very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n""", "")
@@ -1567,6 +1571,7 @@ fun run_all_tests() {
     ~run_test("docstrings")
     ~run_test("multivar")
     ~run_test("function_overwriting")
+    ~run_test("annotations")
 
     ~run_test("basic_import")
     ~run_test("import_calls")

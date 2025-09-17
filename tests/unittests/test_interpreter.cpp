@@ -14,7 +14,6 @@ using namespace testing;
 /** Test to make sure that object and class has access only to its attributes */
 TEST(Interpreter, Attributes){
     ustring code = R"(
-@foo_annot
 class M {
     M_VAR = 4
 
@@ -61,8 +60,6 @@ m.v = true
     EXPECT_TRUE(m->has_attr("M", i));
     EXPECT_FALSE(m->has_attr("this", i));
 
-    EXPECT_FALSE(m->has_annotation("foo_annot"));
-
     // M
     EXPECT_TRUE(M->has_attr("M_VAR", i));
     EXPECT_TRUE(M->has_attr("me", i));
@@ -71,8 +68,6 @@ m.v = true
     EXPECT_FALSE(M->has_attr("v", i));
     EXPECT_FALSE(M->has_attr("a1", i));
     EXPECT_FALSE(M->has_attr("this", i));
-
-    EXPECT_TRUE(M->has_annotation("foo_annot"));
 
     delete i;
     delete bc;

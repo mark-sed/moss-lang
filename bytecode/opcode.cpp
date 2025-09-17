@@ -327,7 +327,7 @@ static void set_subsc(Interpreter *vm, Value *src, Value *obj, Value *key) {
             runtime_method_call(vm, setf, {key, src, objval});
         } else {
             if (did == diags::DiagID::UNKNOWN) {
-                raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SETITEM_DEFINED, objval->get_type()->get_name().c_str())));
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SETITEM_DEFINED, objval->get_type()->get_name().c_str())));
             } else {
                 raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, known_names::SUBSC_OPERATOR, diags::DIAG_MSGS[did])));
             }
@@ -719,7 +719,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
     else if ((!cf->get_args().empty() && cf->get_args().back().name == "this" && !has_methods(cf->get_args().back().value)) 
-              || funV->has_annotation("staticmethod")) {
+              || funV->has_annotation(annots::STATIC_METHOD)) {
         // this argument is set for all attribute calls (as we don't know the
         // type in bytecodegen), so remove it if the value should not know it
         LOGMAX("Removing this from non-object call");
@@ -907,7 +907,7 @@ void CallFormatter::exec(Interpreter *vm) {
     assert(vm->get_call_frame()->get_args().size() == 1 && "Note should have 1 arg and that is the note string");
     auto arg = vm->get_call_frame()->get_args().back();
     auto formatf = lookup_function(vm, name, {arg.value}, did);
-    if (formatf && formatf->has_annotation("formatter")) {
+    if (formatf && formatf->has_annotation(annots::FORMATTER)) {
         LOGMAX("Formatter found");
         call(vm, dst, formatf);
     }
@@ -963,7 +963,7 @@ void Return::exec(Interpreter *vm) {
 
     // Formatter return value conversion to NoteValue
     assert(cf->get_function() && "cannot check function annotations");
-    if (cf->get_function()->has_annotation("formatter") && !isa<NoteValue>(ret_v)) {
+    if (cf->get_function()->has_annotation(annots::FORMATTER) && !isa<NoteValue>(ret_v)) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
             rv_str = new StringValue(to_string(vm, ret_v));
@@ -1012,7 +1012,7 @@ void ReturnConst::exec(Interpreter *vm) {
 
     // Formatter return value conversion to NoteValue
     assert(cf->get_function() && "cannot check function annotations");
-    if (cf->get_function()->has_annotation("formatter") && !isa<NoteValue>(ret_v)) {
+    if (cf->get_function()->has_annotation(annots::FORMATTER) && !isa<NoteValue>(ret_v)) {
         StringValue *rv_str = dyn_cast<StringValue>(ret_v);
         if (!rv_str)
             rv_str = new StringValue(to_string(vm, ret_v));
@@ -1401,6 +1401,7 @@ void Annotate::exec(Interpreter *vm) {
         d->annotate(name, v);
     }
 
+    // TODO: Change to to use map once it gets too big
     if (name == annots::INTERNAL_BIND) {
         LOGMAX("Internal binding");
         auto bind_name = dyn_cast<StringValue>(v);
@@ -1431,6 +1432,10 @@ void Annotate::exec(Interpreter *vm) {
             d->get_type()->get_name().c_str())));
         auto args = get_str_list_annot(v, 1, name, vm);
         Interpreter::add_generator(args[0], fn);
+    } 
+    // Raise exception if annotation is not known.
+    else if (name != annots::INTERNAL && name != annots::STATIC_METHOD && name != annots::FORMATTER) {
+        raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::UNKNOWN_ANNOTATION, name.c_str())));
     }
 }
 

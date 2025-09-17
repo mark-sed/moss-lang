@@ -93,7 +93,7 @@ StringLiteral *Class::get_internal_bind() {
 
 bool Function::is_staticmethod() {
     for (auto a: annotations) {
-        if (a->get_name() == "staticmethod" && isa<NilLiteral>(a->get_value())) {
+        if (a->get_name() == annots::STATIC_METHOD && isa<NilLiteral>(a->get_value())) {
             return true;
         }
     }
@@ -102,7 +102,7 @@ bool Function::is_staticmethod() {
 
 bool Lambda::is_staticmethod() {
     for (auto a: annotations) {
-        if (a->get_name() == "staticmethod" && isa<NilLiteral>(a->get_value())) {
+        if (a->get_name() == annots::STATIC_METHOD && isa<NilLiteral>(a->get_value())) {
             return true;
         }
     }

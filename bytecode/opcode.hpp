@@ -1341,7 +1341,7 @@ public:
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "\"" << name << "\", %" << val;
+        os << mnem << " \"" << name << "\", %" << val;
         return os;
     }
     bool equals(OpCode *other) override {
