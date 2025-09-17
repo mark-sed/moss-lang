@@ -1256,7 +1256,8 @@ fun test_lib_types(name) {
 <class Int>\ntrue\ntrue\n<class Space>\n<class Type>\n<class Note>\n<class Type>
 <class Enum>\n<Enum Foo>\n<class Type>\n<class Type>
 true\ntrue\ntrue\ntrue\ntrue\nfalse\nfalse\nfalse\ntrue
-false\ntrue\nfalse\ntrue\nfalse\ntrue\ntrue\n""", "")
+false\ntrue\nfalse\ntrue\nfalse\ntrue\ntrue
+true\ntrue\ntrue\n""", "")
 }
 
 fun test_lib_complex(name) {

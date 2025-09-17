@@ -1929,17 +1929,17 @@ bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
 
 void Eq::exec(Interpreter *vm) {
     auto res = eq(vm->load(src1), vm->load(src2), vm);
-    vm->store(dst, new BoolValue(res));
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Eq2::exec(Interpreter *vm) {
     auto res = eq(vm->load_const(src1), vm->load(src2), vm);
-    vm->store(dst, new BoolValue(res));
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Eq3::exec(Interpreter *vm) {
     auto res = eq(vm->load(src1), vm->load_const(src2), vm);
-    vm->store(dst, new BoolValue(res));
+    vm->store(dst, BoolValue::get(res));
 }
 
 /*static bool can_eq(Value *s) {
@@ -1955,7 +1955,7 @@ static Value *neq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else {
         // TODO: Perhaps this should call can_eq??
         auto eqRes = eq(s1, s2, vm);
-        auto neqRes = new BoolValue(!eqRes);
+        auto neqRes = BoolValue::get(!eqRes);
         return neqRes;
     }
     return res;
@@ -1985,15 +1985,15 @@ static Value *bt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new BoolValue(i1->get_value() > i2->get_value());
+        res = BoolValue::get(i1->get_value() > i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new BoolValue(s1->as_float() > s2->as_float());
+        res = BoolValue::get(s1->as_float() > s2->as_float());
     }
     else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
-        res = new BoolValue(st1->get_value() > st2->get_value());
+        res = BoolValue::get(st1->get_value() > st2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, ">", s1, s2, dst);
@@ -2028,15 +2028,15 @@ static Value *lt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new BoolValue(i1->get_value() < i2->get_value());
+        res = BoolValue::get(i1->get_value() < i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new BoolValue(s1->as_float() < s2->as_float());
+        res = BoolValue::get(s1->as_float() < s2->as_float());
     }
     else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
-        res = new BoolValue(st1->get_value() < st2->get_value());
+        res = BoolValue::get(st1->get_value() < st2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "<", s1, s2, dst);
@@ -2071,15 +2071,15 @@ static Value *beq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new BoolValue(i1->get_value() >= i2->get_value());
+        res = BoolValue::get(i1->get_value() >= i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new BoolValue(s1->as_float() >= s2->as_float());
+        res = BoolValue::get(s1->as_float() >= s2->as_float());
     }
     else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
-        res = new BoolValue(st1->get_value() >= st2->get_value());
+        res = BoolValue::get(st1->get_value() >= st2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, ">=", s1, s2, dst);
@@ -2114,15 +2114,15 @@ static Value *leq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new BoolValue(i1->get_value() <= i2->get_value());
+        res = BoolValue::get(i1->get_value() <= i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
-        res = new BoolValue(s1->as_float() <= s2->as_float());
+        res = BoolValue::get(s1->as_float() <= s2->as_float());
     }
     else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
-        res = new BoolValue(st1->get_value() <= st2->get_value());
+        res = BoolValue::get(st1->get_value() <= st2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "<=", s1, s2, dst);
@@ -2158,7 +2158,7 @@ static Value *in(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
         // s1 in s2 => s2.find(s1)
-        res = new BoolValue(st2->get_value().find(st1->get_value()) != ustring::npos);
+        res = BoolValue::get(st2->get_value().find(st1->get_value()) != ustring::npos);
     }
     else if (isa<ObjectValue>(s2)) {
         // Here we need to flip the arguments as to call the method on the collection
@@ -2167,22 +2167,22 @@ static Value *in(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (auto lst = dyn_cast<ListValue>(s2)) {
         for (auto v: lst->get_vals()) {
             if (eq(v, s1, vm)) {
-                return new BoolValue(true);
+                return BoolValue::get(true);
             }
         }
-        return new BoolValue(false);
+        return BoolValue::get(false);
     }
     else if (auto dct = dyn_cast<DictValue>(s2)) {
         auto vals = dct->get_vals();
         auto dit = vals.find(hash(s1, vm));
         if (dit == vals.end())
-            return new BoolValue(false);
+            return BoolValue::get(false);
         for (std::pair<Value *, Value *> p: dit->second) {
             if (opcode::eq(p.first, s1, vm)) {
-                return new BoolValue(true);
+                return BoolValue::get(true);
             }
         }
-        return new BoolValue(false);
+        return BoolValue::get(false);
     }
     else {
         raise_operand_exc(vm, "in", s1, s2);
@@ -2219,7 +2219,7 @@ static Value *andOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
-        res = new BoolValue(b1->get_value() && b2->get_value());
+        res = BoolValue::get(b1->get_value() && b2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "and", s1, s2, dst);
@@ -2259,7 +2259,7 @@ static Value *orOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
-        res = new BoolValue(b1->get_value() || b2->get_value());
+        res = BoolValue::get(b1->get_value() || b2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "or", s1, s2, dst);
@@ -2299,7 +2299,7 @@ static Value *xorOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
         BoolValue *b2 = dyn_cast<BoolValue>(s2);
-        res = new BoolValue(b1->get_value() ^ b2->get_value());
+        res = BoolValue::get(b1->get_value() ^ b2->get_value());
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator(vm, "xor", s1, s2, dst);
@@ -2549,7 +2549,7 @@ void Not::exec(Interpreter *vm) {
         res = new IntValue(~(i1->get_value()));
     }
     else if (BoolValue *b1 = dyn_cast<BoolValue>(s1)) {
-        res = new BoolValue(!(b1->get_value()));
+        res = BoolValue::get(!(b1->get_value()));
     }
     else if (isa<ObjectValue>(s1)) {
         call_operator_unary(vm, "not", s1, dst);
@@ -2795,16 +2795,16 @@ void Switch::exec(Interpreter *vm) {
                 diags::DiagID did = diags::DiagID::UNKNOWN;
                 FunValue *funv = lookup_method(vm, lvals[i], "==", {cv, lvals[i]}, did);
                 if (!funv) {
-                    res = new BoolValue(eq(lvals[i], cv, vm)); 
+                    res = BoolValue::get(eq(lvals[i], cv, vm)); 
                 } else {
                     res = runtime_method_call(vm, funv, {cv, lvals[i]});
                     assert(res && "runtime call did not return");
                 }
             } else {
-                res = new BoolValue(eq(lvals[i], cv, vm));
+                res = BoolValue::get(eq(lvals[i], cv, vm));
             }
         } else {
-            res = new BoolValue(eq(lvals[i], cv, vm));
+            res = BoolValue::get(eq(lvals[i], cv, vm));
         }
         assert(res && "sanity check");
         auto resbool = dyn_cast<BoolValue>(res);

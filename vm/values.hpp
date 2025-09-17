@@ -293,10 +293,29 @@ public:
 class BoolValue : public Value {
 private:
     opcode::BoolConst value;
+
+    BoolValue(opcode::BoolConst value);
 public:
     static const TypeKind ClassType = TypeKind::BOOL;
 
-    BoolValue(opcode::BoolConst value);
+    BoolValue(const BoolValue&) = delete;            // no copying
+    BoolValue& operator=(const BoolValue&) = delete; // no assignment
+
+    static BoolValue* True() {
+        static BoolValue instance(true);
+        return &instance;
+    }
+
+    static BoolValue* False() {
+        static BoolValue instance(false);
+        return &instance;
+    }
+
+    static BoolValue *get(bool b) {
+        if (b)
+            return True();
+        return False();
+    }
     
     virtual Value *clone() override {
         return this;
@@ -375,10 +394,15 @@ public:
 
 /// Moss nil value (holds only one value)
 class NilValue : public Value {
+private:
+    NilValue() : Value(ClassType, "Nil", BuiltIns::NilType) {}
 public:
     static const TypeKind ClassType = TypeKind::NIL;
 
-    NilValue() : Value(ClassType, "Nil", BuiltIns::NilType) {}
+    static NilValue* Nil() {
+        static NilValue instance;
+        return &instance;
+    }
 
     virtual Value *clone() override {
         return this;

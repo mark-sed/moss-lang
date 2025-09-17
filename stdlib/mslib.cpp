@@ -286,7 +286,7 @@ Value *oct(Interpreter *vm, Value *number) {
 Value *callable(Interpreter *vm, Value *obj) {
     (void)vm;
     bool is_callable = isa<FunValue>(obj) || isa<FunValueList>(obj) || isa<ClassValue>(obj);
-    return new BoolValue(is_callable);
+    return BoolValue::get(is_callable);
 }
 
 Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
@@ -397,27 +397,25 @@ Value *Float(Interpreter *vm, Value *v, Value *&err) {
 }
 
 Value *Bool(Interpreter *vm, Value *v, Value *&err) {
-    (void)vm;
-
     if (isa<BoolValue>(v))
         return v;
     if (auto sv = dyn_cast<StringValue>(v)) {
-        return new BoolValue(!sv->get_value().empty());
+        return BoolValue::get(!sv->get_value().empty());
     }
     if (auto iv = dyn_cast<IntValue>(v)) {
-        return new BoolValue(iv->get_value() != 0);
+        return BoolValue::get(iv->get_value() != 0);
     }
     if (auto fv = dyn_cast<FloatValue>(v)) {
-        return new BoolValue(fv->get_value() != 0.0);
+        return BoolValue::get(fv->get_value() != 0.0);
     }
     if (isa<NilValue>(v)) {
-        return new BoolValue(false);
+        return BoolValue::False();
     }
     if (auto lv = dyn_cast<ListValue>(v)) {
-        return new BoolValue(!lv->get_vals().empty());
+        return BoolValue::get(!lv->get_vals().empty());
     }
     if (auto dv = dyn_cast<DictValue>(v)) {
-        return new BoolValue(dv->size() != 0);
+        return BoolValue::get(dv->size() != 0);
     }
     if (isa<ObjectValue>(v)) {
         auto rval = call_type_converter(vm, v, "Bool", known_names::TO_BOOL_METHOD, err);
@@ -427,7 +425,7 @@ Value *Bool(Interpreter *vm, Value *v, Value *&err) {
         return rval;
     }
     
-    return new BoolValue(true);
+    return BoolValue::get(true);
 }
 
 Value *Note(Interpreter *vm, Value *format, Value *value) {
@@ -688,7 +686,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(name);
             auto obj = cf->get_arg("obj");
             assert(name);
-            return new BoolValue(obj->has_attr(name->get_value(), vm));
+            return BoolValue::get(obj->has_attr(name->get_value(), vm));
         }},
         {"hash", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -823,7 +821,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
         }},
         {"NilType", [](Interpreter*, CallFrame*, Value*&) {
-            return new NilValue();
+            return NilValue::Nil();
         }},
         {"Note", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;

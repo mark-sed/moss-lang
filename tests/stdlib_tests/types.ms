@@ -115,3 +115,11 @@ callable(Cls1);
 
 callable(Cls1.bar)
 "\n"
+
+// Uniqueness of IDs of true, false and nil
+id(true) == id(4<5)
+"\n"
+id(false) == id(print == id)
+"\n"
+id(NilType()) == id(nil)
+"\n"

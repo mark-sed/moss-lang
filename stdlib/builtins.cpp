@@ -149,9 +149,9 @@ Value *BuiltIns::Cpp::CCharStar = new ClassValue("cchar_star");
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 Value *BuiltIns::Cpp::Ffi_cif = new ClassValue("ffi_cif");
 
-Value *BuiltIns::Nil = new NilValue();
-Value *BuiltIns::True = new BoolValue(true);
-Value *BuiltIns::False = new BoolValue(false);
+Value *BuiltIns::Nil = NilValue::Nil();
+Value *BuiltIns::True = BoolValue::True();
+Value *BuiltIns::False = BoolValue::False();
 
 Value *BuiltIns::get_interned_int(opcode::IntConst v) {
     if (v >= 0 && v <= 256)
