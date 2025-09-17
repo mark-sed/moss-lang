@@ -113,8 +113,6 @@ namespace BuiltIns {
     extern Value *Nil;
     extern Value *True;
     extern Value *False;
-    #define BUILT_INS_INT_CONSTANTS_AM 262
-    extern Value *IntConstants[BUILT_INS_INT_CONSTANTS_AM];
 
     /// C++ values as moss values
     namespace Cpp {

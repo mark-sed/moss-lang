@@ -52,19 +52,19 @@ Value *time::localtime(Interpreter *vm, CallFrame *cf, Value *secs, Value *&err)
         err = mslib::create_os_error(diags::Diagnostic(*vm->get_src_file(), diags::TIME_TIMESTAMP_OOR));
         return nullptr;
     }
-    auto tm_year = new IntValue(1900+local->tm_year);
-    auto tm_mon = new IntValue(1 + local->tm_mon); // C/C++ uses 0 for January
-    auto tm_mday = new IntValue(local->tm_mday);
-    auto tm_hour = new IntValue(local->tm_hour);
-    auto tm_min = new IntValue(local->tm_min);
-    auto tm_sec = new IntValue(local->tm_sec);
-    auto tm_wday = new IntValue(local->tm_wday);
-    auto tm_yday = new IntValue(local->tm_yday);
-    auto tm_isdst = new IntValue(local->tm_isdst);
+    auto tm_year = IntValue::get(1900+local->tm_year);
+    auto tm_mon = IntValue::get(1 + local->tm_mon); // C/C++ uses 0 for January
+    auto tm_mday = IntValue::get(local->tm_mday);
+    auto tm_hour = IntValue::get(local->tm_hour);
+    auto tm_min = IntValue::get(local->tm_min);
+    auto tm_sec = IntValue::get(local->tm_sec);
+    auto tm_wday = IntValue::get(local->tm_wday);
+    auto tm_yday = IntValue::get(local->tm_yday);
+    auto tm_isdst = IntValue::get(local->tm_isdst);
     // tm_zone and tm_gmtoff is only on posix
 #ifdef __linux__ // Add also mac
     auto tm_zone = new StringValue(local->tm_zone);
-    auto tm_gmtoff = new IntValue(local->tm_gmtoff);
+    auto tm_gmtoff = IntValue::get(local->tm_gmtoff);
 #else
     auto tm_zone = new StringValue("");
     auto tm_gmtoff = BuiltIns::Nil;

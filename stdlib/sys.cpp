@@ -85,9 +85,9 @@ void sys::init_constants(Interpreter *vm) {
     auto version_info_space = mslib::get_space("version_info", vm, err);
     if (err)
         opcode::raise(err);
-    version_info_space->set_attr("major", new IntValue(MOSS_VERSION_MAJOR));
-    version_info_space->set_attr("minor", new IntValue(MOSS_VERSION_MINOR));
-    version_info_space->set_attr("patch", new IntValue(MOSS_VERSION_PATCH));
+    version_info_space->set_attr("major", IntValue::get(MOSS_VERSION_MAJOR));
+    version_info_space->set_attr("minor", IntValue::get(MOSS_VERSION_MINOR));
+    version_info_space->set_attr("patch", IntValue::get(MOSS_VERSION_PATCH));
 #ifndef NDEBUG
     version_info_space->set_attr("build_type", new StringValue("debug"));
 #else

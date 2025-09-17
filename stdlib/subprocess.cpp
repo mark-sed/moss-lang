@@ -40,7 +40,7 @@ Value *subprocess::system(Interpreter *vm, Value *cmd, Value *&err) {
     auto cmds = dyn_cast<StringValue>(cmd);
     assert(cmds && "Non-string value passed in");
     int result = std::system(cmds->get_value().c_str());
-    return new IntValue(static_cast<opcode::IntConst>(result));
+    return IntValue::get(static_cast<opcode::IntConst>(result));
 }
 
 struct command_result {
@@ -255,13 +255,13 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
         code_v = subprocess::system(vm, command, err);
     } else {
         auto cmd_res = run_command_separate(cmds->get_value(), combine_b->get_value(), err);
-        code_v = new IntValue(cmd_res.exit_code);
+        code_v = IntValue::get(cmd_res.exit_code);
         stdout_v = new StringValue(cmd_res.stdout_text);
         stderr_v = new StringValue(cmd_res.stderr_text);
     }
 
     if (!code_v) {
-        code_v = new IntValue(-127);
+        code_v = IntValue::get(-127);
     }
     if (!stdout_v) {
         stdout_v = new StringValue("");

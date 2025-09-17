@@ -153,21 +153,21 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
 static Value *result_to_moss(FFIResult result, Value *type, Value *&err) {
     assert(type != BuiltIns::Cpp::CVoid && "invoked with void");
     /*if (type == &ffi_type_sint)
-        return new IntValue(result.cint);
+        return IntValue::get(result.cint);
     if (type == &ffi_type_uint)
-        return new IntValue(result.cunsigned_int);
+        return IntValue::get(result.cunsigned_int);
     if (type == &ffi_type_sshort)
-        return new IntValue(result.cshort);
+        return IntValue::get(result.cshort);
     if (type == &ffi_type_ushort)
-        return new IntValue(result.cunsigned_short);
+        return IntValue::get(result.cunsigned_short);
     if (type == &ffi_type_schar)
-        return new IntValue(result.cchar);
+        return IntValue::get(result.cchar);
     if (type == &ffi_type_uchar)
-        return new IntValue(result.cunsigned_char);*/
+        return IntValue::get(result.cunsigned_char);*/
     if (type == BuiltIns::Cpp::CLong)
-        return new IntValue(result.clong);
+        return IntValue::get(result.clong);
     /*if (type == &ffi_type_ulong)
-        return new IntValue(result.cunsigned_long);
+        return IntValue::get(result.cunsigned_long);
     if (type == &ffi_type_float)
         return new FloatValue(result.cfloat);*/
     if (type == BuiltIns::Cpp::CDouble)

@@ -189,7 +189,7 @@ void Interpreter::init_const_frame() {
     cf->store(reg++, BuiltIns::Nil);
     cf->store(reg++, BuiltIns::True);
     cf->store(reg++, BuiltIns::False);
-    for (auto i : BuiltIns::IntConstants) {
+    for (auto i : IntValue::get_interned()) {
         cf->store(reg++, i);
     }
 
@@ -475,7 +475,7 @@ void Interpreter::call_finally() {
     int addr_offset = 0;
     if (is_try_not_in_catch())
         addr_offset = -1;
-    store_const(fnl->caller, new IntValue(get_bci()));
+    store_const(fnl->caller, IntValue::get(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
     // pop_catch is at this address.
     set_bci(fnl->addr + addr_offset);

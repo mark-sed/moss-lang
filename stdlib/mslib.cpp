@@ -201,7 +201,7 @@ Value *rand_int(Interpreter *vm, Value *min, Value *max) {
     auto max_int = dyn_cast<IntValue>(max);
     assert(min_int && max_int && "not ints");
     std::uniform_int_distribution<opcode::IntConst> distrib(min_int->get_value(), max_int->get_value());
-    return new IntValue(distrib(rng_device));
+    return IntValue::get(distrib(rng_device));
 }
 
 Value *rand_float(Interpreter *vm, Value *min, Value *max) {
@@ -220,7 +220,7 @@ Value *round(Interpreter *vm, Value *n, Value *ndigits) {
     assert(isa<FloatValue>(n) || isa<IntValue>(n));
     if (isa<NilValue>(ndigits)) {
         if (isa<IntValue>(n)) return n;
-        return new IntValue(std::round(n->as_float()));
+        return IntValue::get(std::round(n->as_float()));
     } else {
         auto nfc = dyn_cast<IntValue>(ndigits)->get_value();
         double factor = std::pow(10.0, nfc);
@@ -330,8 +330,8 @@ Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
             return nullptr;
         }
         auto divres = std::ldiv(xi->get_value(), yi->get_value());
-        res->push(new IntValue(divres.quot));
-        res->push(new IntValue(divres.rem));
+        res->push(IntValue::get(divres.quot));
+        res->push(IntValue::get(divres.rem));
     }
     assert(res->size() == 2);
     return res;
@@ -356,10 +356,10 @@ Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
             LOGMAX("Errno error: " << strerror(errno));
             assert(false && "TODO: Raise conversion error");
         }
-        return new IntValue(vi);
+        return IntValue::get(vi);
     }
     if (auto fv = dyn_cast<FloatValue>(v)) {
-        return new IntValue(static_cast<opcode::IntConst>(fv->get_value()));
+        return IntValue::get(static_cast<opcode::IntConst>(fv->get_value()));
     }
     assert(!base && "v should be String if base is not null");
     auto rval = call_type_converter(vm, v, "Int", known_names::TO_INT_METHOD, err);
@@ -500,7 +500,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto args = cf->get_args();
             assert(args.size() == 1);
             if (auto vi = dyn_cast<IntValue>(args[0].value))
-                return new IntValue(std::abs(vi->get_value()));
+                return IntValue::get(std::abs(vi->get_value()));
             else {
                 assert(isa<FloatValue>(args[0].value));
                 return new FloatValue(std::fabs(args[0].value->as_float()));
@@ -691,7 +691,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"hash", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
             assert(cf->get_args().size() == 1);
-            return new IntValue(moss::hash(cf->get_arg("obj"), vm));
+            return IntValue::get(moss::hash(cf->get_arg("obj"), vm));
         }},
         {"hex", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -702,7 +702,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             (void)err;
             (void)vm;
             assert(cf->get_args().size() == 1);
-            return new IntValue(reinterpret_cast<opcode::IntConst>(cf->get_args()[0].value));
+            return IntValue::get(reinterpret_cast<opcode::IntConst>(cf->get_args()[0].value));
         }},
         {"input", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -747,11 +747,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
             if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
-                return new IntValue(lv->get_vals().size());
+                return IntValue::get(lv->get_vals().size());
             } else if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
-                return new IntValue(stv->get_value().length());
+                return IntValue::get(stv->get_value().length());
             } else if (auto dv = get_subtype_value<DictValue>(arg, BuiltIns::Dict, vm, err)) {
-                return new IntValue(dv->size());
+                return IntValue::get(dv->size());
             } else {
                 if (!err)
                     err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
@@ -806,7 +806,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(ai);
             auto counti = dyn_cast<IntValue>(cf->get_arg("count"));
             assert(counti);
-            return new IntValue(ai->get_value() << counti->get_value());
+            return IntValue::get(ai->get_value() << counti->get_value());
         }},
         {"multi_replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
@@ -861,7 +861,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                     diags::Diagnostic(*vm->get_src_file(), 
                         diags::ORD_INCORRECT_LENGTH, sv.c_str()));
             }
-            return new IntValue(static_cast<opcode::IntConst>(sv[0]));
+            return IntValue::get(static_cast<opcode::IntConst>(sv[0]));
         }},
         {"pop", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
@@ -919,7 +919,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(ai);
             auto counti = dyn_cast<IntValue>(cf->get_arg("count"));
             assert(counti);
-            return new IntValue(ai->get_value() >> counti->get_value());
+            return IntValue::get(ai->get_value() >> counti->get_value());
         }},
         {"setattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;

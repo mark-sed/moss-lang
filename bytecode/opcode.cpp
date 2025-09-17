@@ -378,11 +378,7 @@ void StoreConstSubscConst::exec(Interpreter *vm) {
 }
 
 void StoreIntConst::exec(Interpreter *vm) {
-    auto interned = BuiltIns::get_interned_int(val);
-    if (interned)
-        vm->store_const(dst, interned);
-    else
-        vm->store_const(dst, new IntValue(val));
+    vm->store_const(dst, IntValue::get(val));
 }
 
 void StoreFloatConst::exec(Interpreter *vm) {
@@ -1567,7 +1563,7 @@ static Value *exp(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(static_cast<long>(std::pow(static_cast<double>(i1->get_value()), static_cast<double>(i2->get_value()))));
+        res = IntValue::get(static_cast<long>(std::pow(static_cast<double>(i1->get_value()), static_cast<double>(i2->get_value()))));
     }
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(std::pow(s1->as_float(), s2->as_float()));
@@ -1605,7 +1601,7 @@ static Value *add(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(i1->get_value() + i2->get_value());
+        res = IntValue::get(i1->get_value() + i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() + s2->as_float());
@@ -1651,7 +1647,7 @@ static Value *sub(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(i1->get_value() - i2->get_value());
+        res = IntValue::get(i1->get_value() - i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() - s2->as_float());
@@ -1690,7 +1686,7 @@ static Value *div(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
         op_assert(i2->get_value() != 0, mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::DIV_BY_ZERO)));
-        res = new IntValue(i1->get_value() / i2->get_value());
+        res = IntValue::get(i1->get_value() / i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
         op_assert(s2->as_float() != 0.0,  mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO)));
@@ -1729,7 +1725,7 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(i1->get_value() * i2->get_value());
+        res = IntValue::get(i1->get_value() * i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
         res = new FloatValue(s1->as_float() * s2->as_float());
@@ -1800,7 +1796,7 @@ static Value *mod(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
         op_assert(i2->get_value() != 0, mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::DIV_BY_ZERO)));
-        res = new IntValue(i1->get_value() % i2->get_value());
+        res = IntValue::get(i1->get_value() % i2->get_value());
     }
     else if (is_float_expr(s1, s2)) {
         op_assert(s2->as_float() != 0.0,  mslib::create_division_by_zero_error(diags::Diagnostic(*vm->get_src_file(), diags::FDIV_BY_ZERO)));
@@ -2214,7 +2210,7 @@ static Value *andOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(i1->get_value() & i2->get_value());
+        res = IntValue::get(i1->get_value() & i2->get_value());
     }
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
@@ -2254,7 +2250,7 @@ static Value *orOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(i1->get_value() | i2->get_value());
+        res = IntValue::get(i1->get_value() | i2->get_value());
     }
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
@@ -2294,7 +2290,7 @@ static Value *xorOP(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = new IntValue(i1->get_value() ^ i2->get_value());
+        res = IntValue::get(i1->get_value() ^ i2->get_value());
     }
     else if (isa<BoolValue>(s1) && isa<BoolValue>(s2)) {
         BoolValue *b1 = dyn_cast<BoolValue>(s1);
@@ -2546,7 +2542,7 @@ void Not::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
     Value *res = nullptr;
     if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
-        res = new IntValue(~(i1->get_value()));
+        res = IntValue::get(~(i1->get_value()));
     }
     else if (BoolValue *b1 = dyn_cast<BoolValue>(s1)) {
         res = BoolValue::get(!(b1->get_value()));
@@ -2565,7 +2561,7 @@ void Neg::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
     Value *res = nullptr;
     if (IntValue *i1 = dyn_cast<IntValue>(s1)) {
-        res = new IntValue(-(i1->get_value()));
+        res = IntValue::get(-(i1->get_value()));
     }
     else if (FloatValue *f1 = dyn_cast<FloatValue>(s1)) {
         res = new FloatValue(-(f1->get_value()));

@@ -107,7 +107,7 @@ namespace t_cpp {
         long get_value() { return this->value; }
 
         virtual Value *to_moss() override {
-            return new IntValue(value);
+            return IntValue::get(value);
         }
 
         virtual void *get_data_pointer() override {
