@@ -39,3 +39,34 @@ try
     isinstance(4, [B, Int, 5])
 catch (e:TypeError)
     "caught\n"
+
+class B {}
+
+class A : B {}
+
+class C: A {}
+
+issubclass(A, A)
+"\n"
+issubclass(A, B)
+"\n"
+issubclass(B, A)
+"\n"
+issubclass(Note, String)
+"\n"
+issubclass(C, B)
+"\n"
+issubclass(A, [Int, String])
+"\n"
+issubclass(A, [Int, String, B])
+"\n"
+
+try
+    issubclass(4, Int)
+catch (e:TypeError)
+    "caught\n"
+
+try
+    issubclass(Int, [String, List, A()])
+catch (e:TypeError)
+    "caught\n"

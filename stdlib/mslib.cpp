@@ -466,6 +466,38 @@ Value *isinstance(Interpreter *vm, Value *obj, Value *types, Value *&err) {
     return BuiltIns::False;
 }
 
+Value *issubclass(Interpreter *vm, Value *cls, Value *types, Value *&err) {
+    assert(isa<ClassValue>(cls) && "Not a class passed in");
+    auto type_list = dyn_cast<ListValue>(types);
+    bool is_class = true;
+    if (type_list) {
+        for (auto v: type_list->get_vals()) {
+            if (!isa<ClassValue>(v)) {
+                is_class = false;
+                break;
+            }
+        }
+    } else {
+        is_class = isa<ClassValue>(types);
+    }
+    if (!is_class) {
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::ISSUBCLASS_REQUIRES_CLASS));
+        return nullptr;
+    }
+
+    if (type_list) {
+        for (auto v: type_list->get_vals()) {
+            if (opcode::is_type_eq_or_subtype(cls, v)) {
+                return BuiltIns::True;
+            }
+        }
+    } else {
+        if (opcode::is_type_eq_or_subtype(cls, types))
+            return BuiltIns::True;
+    }
+    return BuiltIns::False;
+}
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry(ustring module_name) {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> libms_registry = {
         {known_names::OBJECT_ITERATOR, [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -731,6 +763,13 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto obj = cf->get_arg("obj");
             auto types = cf->get_arg("types");
             return isinstance(vm, obj, types, err);
+        }},
+        {"issubclass", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            (void)err;
+            assert(cf->get_args().size() == 2);
+            auto cls = cf->get_arg("cls");
+            auto types = cf->get_arg("types");
+            return issubclass(vm, cls, types, err);
         }},
         {"isspace", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 1);

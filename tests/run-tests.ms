@@ -1359,7 +1359,8 @@ Module empty_module
 }
 
 fun test_lib_isinstance(name) {
-    ~expect_pass("stdlib_tests/isinstance.ms", name, """true\nfalse\ntrue\ntrue\nfalse\ntrue\nfalse\ncaught\nfalse\ntrue\ncaught\n""", "")
+    ~expect_pass("stdlib_tests/isinstance.ms", name, """true\nfalse\ntrue\ntrue\nfalse\ntrue\nfalse\ncaught\nfalse\ntrue\ncaught
+true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {
