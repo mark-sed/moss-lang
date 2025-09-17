@@ -30,18 +30,21 @@ void ExpressionAnalyzer::visit(UnaryExpr &ue) {
     //}
 }
 
-void ExpressionAnalyzer::check_call_arg(Expression *arg) {
+void ExpressionAnalyzer::check_call_arg(Expression *arg, std::unordered_set<ustring> &named_args) {
     if (auto be = dyn_cast<BinaryExpr>(arg)) {
         if (be->get_op().get_kind() == OperatorKind::OP_SET) {
             // Named argument
             auto *arg_name = be->get_left();
             parser_assert(isa<ir::Variable>(arg_name) || isa<ir::ThisLiteral>(arg_name), parser.create_diag(arg_name->get_src_info(), diags::INCORRECT_ARG_NAME));
+            parser_assert(named_args.count(arg_name->get_name()) == 0, parser.create_diag(arg_name->get_src_info(), diags::DUPLICATE_NAME_IN_CALL, arg_name->get_name().c_str()));
+            named_args.insert(arg_name->get_name());
         }
     }
 }
 
 void ExpressionAnalyzer::visit(Call &c) {
+    std::unordered_set<ustring> named_args{};
     for (auto a: c.get_args()) {
-        check_call_arg(a);
+        check_call_arg(a, named_args);
     }
 }

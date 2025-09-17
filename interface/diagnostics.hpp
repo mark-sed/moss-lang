@@ -195,6 +195,7 @@ enum DiagID : unsigned {
     SILENT_ARG,             ///< foo(~a)
     SILENT_IN_EXPR,         ///< When silent is in an expression
     ISINSTANCE_REQUIRES_CLASS,///< When non-class value is passed to isinstance
+    DUPLICATE_NAME_IN_CALL, ///< When call has duplicate named arg specified
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -369,6 +370,7 @@ static const char * DIAG_MSGS[] = {
     "Function argument cannot be silenced",
     "Silent cannot be a part of an expression",
     "Function `isinstance` expects class value or list of class values as the second argument",
+    "Repeated named argument '%s'",
 };
 
 /// \brief ID of diagnostic error

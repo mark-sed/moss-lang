@@ -63,6 +63,8 @@ a.b.c.f(3)
 TEST(ExpressionAnalysis, ArgAnalysis){
     std::vector<ustring> lines = {
 "foo(a.v=3, 5)",
+"fun ff(v, a) {}; ff(a=4, a=4)",
+"fun som(a, b, c) {}; som(a=3, b=3, a=5)"
 };
 
     for (auto code: lines) {

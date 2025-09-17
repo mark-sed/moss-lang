@@ -13,6 +13,7 @@
 #include "ir.hpp"
 #include "ir_visitor.hpp"
 #include "logging.hpp"
+#include <unordered_set>
 
 namespace moss {
 namespace ir {
@@ -20,7 +21,7 @@ namespace ir {
 /// Does analysis of expressions.
 class ExpressionAnalyzer : public IRVisitor {
 private:
-    void check_call_arg(Expression *arg);
+    void check_call_arg(Expression *arg, std::unordered_set<ustring> &named_args);
 public:
     ExpressionAnalyzer(Parser &parser) : IRVisitor(parser) {}
     
