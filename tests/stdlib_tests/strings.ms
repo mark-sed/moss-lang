@@ -203,3 +203,22 @@ str2.split("--", maxsplit=1)
 "\n"
 "".isspace()
 "\n"
+
+"aaa".count("aa")
+"\n"
+"abcabdda".count("a")
+"\n"
+"".count("a")
+"\n"
+"".count("")
+"\n"
+"abcd".count("")
+"\n"
+"hello".count("hello!")
+"\n"
+md"""
+Hello
+There
+Mr. Hello!
+""".count("Hello")
+"\n"

@@ -1140,7 +1140,8 @@ fun test_lib_lists(name) {
 [4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]
 [1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]
 false\ntrue\nfalse\nfalse\ntrue
-[1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]\n""", "")
+[1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]
+2\n2\n0\n1\n3\n0\n""", "")
 }
 
 fun test_lib_dicts(name) {
@@ -1186,7 +1187,8 @@ moss"]
 ["1", "", "2", "", "3", "4", "", "5", "", ""]
 ["1", "2--3-4--5--"]
 ["aa", "cc", "ee", ""]
-true\nfalse\ntrue\nfalse\n""", "")
+true\nfalse\ntrue\nfalse
+1\n3\n0\n0\n4\n0\n2\n""", "")
 }
 
 fun test_lib_extending_string(name) {

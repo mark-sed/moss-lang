@@ -42,6 +42,14 @@ Value *List::pop(Interpreter *vm, Value *ths, Value *index, Value *&err) {
     return removed;
 }
 
+Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&err) {
+    auto ls = mslib::get_list(ths);
+    return IntValue::get(std::count_if(ls.begin(), ls.end(),
+        [&](Value *v) {
+            return opcode::eq(val, v, vm);
+    }));
+}
+
 Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
     auto iterator = iterable->iter(vm);
     ListValue *lv = new ListValue();

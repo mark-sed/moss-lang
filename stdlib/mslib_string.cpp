@@ -21,6 +21,28 @@ Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {
     return StringValue::get(v->as_string());
 }
 
+static opcode::IntConst count_substrings(const std::string& str, const std::string& sub) {
+    if (sub.empty()) return 0; // avoid infinite loop
+    opcode::IntConst count = 0;
+    std::size_t pos = 0;
+
+    while ((pos = str.find(sub, pos)) != std::string::npos) {
+        ++count;
+        pos += sub.size(); // move past this occurrence
+    }
+
+    return count;
+}
+
+Value *String::count(Interpreter *vm, Value *ths, Value *sub, Value *&err) {
+    auto ths_str = mslib::get_string(ths);
+    auto sub_str = mslib::get_string(sub);
+    if (sub_str.empty())
+        return IntValue::get(ths_str.length());
+    return IntValue::get(count_substrings(ths_str, sub_str));
+}
+
+
 Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");

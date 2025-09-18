@@ -636,6 +636,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"cos", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::cos(cf->get_args()[0].value->as_float()));
         }},
+        {"count", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto arg = cf->get_arg("this");
+            if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
+                return List::count(vm, arg, cf->get_arg("val"), err);
+            } else if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
+                return String::count(vm, arg, cf->get_arg("sub"), err);
+            } else {
+                if (!err)
+                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"delattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;
             assert(cf->get_args().size() == 2);

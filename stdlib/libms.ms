@@ -158,6 +158,13 @@ class __String {
     }
 
     @internal
+    fun count(sub:String) {
+        d"""
+        Returns number of non-overlapping occurences of `sub` in this string.
+        """
+    }
+
+    @internal
     fun __iter() {}
     
     @internal
@@ -206,6 +213,9 @@ class __List {
 
     @internal
     fun clear() {}
+
+    @internal
+    fun count(val) {}
 }
 
 @internal_bind("Dict")
