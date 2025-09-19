@@ -174,76 +174,140 @@ class __String {
 @internal_bind("Note")
 class __Note : String {
     @internal
-    fun Note(value:String="", format:String="txt") {}
+    fun Note(value:String="", format:String="txt") {
+        d"""
+        Creates note with format `format` and contents in `value`.
+        The format controlls how `value` might be parsed and processed.
+        """
+    }
 }
 
 @internal_bind("NilType")
 class __NilType {
     @internal
-    fun NilType() { }
+    fun NilType() {
+        d"Returns nil."
+    }
 }
 
 @internal_bind("List")
 class __List {
     @internal
-    fun List() {}
+    fun List() {
+        d"Returns empty list."
+    }
     @internal
-    fun List(iterable) {}
+    fun List(iterable) {
+        d"Returns list with values in iterable."
+    }
 
     @internal
-    fun length() {}
+    fun length() {
+        d"Return number of values in this list."
+    }
 
-    fun empty() = this.length() == 0
+    fun empty() {
+        d"Returns true if list has no values, false otherwise."
+        return this.length() == 0
+    }
 
     @internal
-    fun append(... v) {}
+    fun append(... v) {
+        d"Appends all values in `v` to this list."
+    }
 
     fun copy() = ::copy(this)
 
     @internal
-    fun pop(index:Int=-1) {}
+    fun pop(index:Int=-1) {
+        d"""
+        Removes and returns value from this list at index `index`.
+        Might raise IndexError if `index` is out of bounds of this list.
+        """
+    }
 
     fun reverse() = this[-1..-this.length()-1]
+
+    @internal
+    fun clear() {
+        d"""
+        Removes all values from this list.
+        """
+    }
+
+    @internal
+    fun count(val) {
+        d"""
+        Returns how many times does `val` appear in this list (using `==` operator).
+        """
+    }
 
     @internal
     fun __iter() {}
 
     @internal
     fun __next() {}
-
-    @internal
-    fun clear() {}
-
-    @internal
-    fun count(val) {}
 }
 
 @internal_bind("Dict")
 class __Dict {
     @internal
-    fun Dict() {}
+    fun Dict() {
+        d"Returns an empty dict."
+    }
     @internal
-    fun Dict(iterable) {}
+    fun Dict(iterable) {
+        d"""
+        Returns a dict with pairs from iterable as its keys and values.
+        `iterable` has to be a list of lists of size 2, if not then TypeError will be raised.
+        Example:
+        ```
+        Dict([["a", 1], ["b", 2], ["c", 3]])
+        // This will create {"a": 1, "b": 2, "c": 3}
+        ```
+        """
+    }
 
     @internal
-    fun clear() {}
+    fun clear() {
+        d"Removes all value from this dictionary."
+    }
 
     fun copy() = ::copy(this)
 
     @internal
-    fun length() {}
+    fun length() {
+        d"Returns number of items (key and value) in this dictionary."
+    }
 
-    fun empty() = this.length() == 0
+    fun empty() {
+        d"Returns true if there are no items in this dictionary, false otherwise."
+        return this.length() == 0
+    }
 
     @internal
-    fun get(key, def_val=nil) {}
+    fun get(key, def_val=nil) {
+        d"""
+        Tries to extract and return `key` value from this dictionary, if it is not found, then def_val is returned.
+        """
+    }
 
     @internal
-    fun pop(key) {}
+    fun pop(key) {
+        d"""
+        Removes and returns value at key `key`, if it is not found then KeyError is raised.
+        """
+    }
+
     @internal
-    fun pop(key, def_val) {}
+    fun pop(key, def_val) {
+        d"""
+        Removes and returns value at key `key`, if it is not found then def_val is returned.
+        """
+    }
 
     fun remove(key) {
+        d"Removes item at key `key` from the dictionary."
         ~this.pop(key)
     }
 }
@@ -251,7 +315,11 @@ class __Dict {
 @internal_bind("Range")
 class __Range {
 
-    fun Range(start:Int, end:Int, step:Int=nil) {
+    fun Range(start:Int, end:Int, step:[Int,NilType]=nil) {
+        d"""
+        Creates range from `start` with step `step` (1 or -1 if nil) and end `end` (it is not included).
+        If `end` is less than `start` and `step` is nil, then `step` is -1 (range goes down).
+        """
         this.start = start
         this.end = end
         if (step != nil)
@@ -264,6 +332,9 @@ class __Range {
     }
 
     fun Range(end:Int) {
+        d"""
+        Creates range from 0 to `end` with step 1 or -1.
+        """
         this.start = 0
         this.end = end
         if (this.start < end)
