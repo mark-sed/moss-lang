@@ -9,6 +9,10 @@ __LIB_MS_VERSION = "0.0.6"
 
 @internal_bind("Int")
 class __Int {
+    d"""
+    Integer (whole number) value.
+    """
+
     @internal
     fun Int(v:String, base=10) {
         d"Converts String value `v` of number base `base` into na Int."
@@ -26,6 +30,11 @@ class __Int {
 
 @internal_bind("Float")
 class __Float {
+    d"""
+    Floating point value.
+    Internally this is double precision floating point with accordance with IEEE 754.
+    """
+
     @internal
     fun Float(v=0.0) {
         d"""
@@ -37,6 +46,10 @@ class __Float {
 
 @internal_bind("Bool")
 class __Bool {
+    d"""
+    Boolean value with 2 possible singleton values - true or false. 
+    """
+
     @internal
     fun Bool(v=false) {
         d"""
@@ -55,6 +68,10 @@ class __Bool {
 
 @internal_bind("String")
 class __String {
+    d"""
+    String value which can contain UNICODE values.
+    """
+
     @internal
     fun String(v="") {
         d"""
@@ -160,7 +177,7 @@ class __String {
     @internal
     fun count(sub:String) {
         d"""
-        Returns number of non-overlapping occurences of `sub` in this string.
+        Returns number of non-overlapping occurrences of `sub` in this string.
         """
     }
 
@@ -173,17 +190,25 @@ class __String {
 
 @internal_bind("Note")
 class __Note : String {
+    d"""
+    Value for outputting moss notes.
+    """
+
     @internal
     fun Note(value:String="", format:String="txt") {
         d"""
         Creates note with format `format` and contents in `value`.
-        The format controlls how `value` might be parsed and processed.
+        The format controls how `value` might be parsed and processed.
         """
     }
 }
 
 @internal_bind("NilType")
 class __NilType {
+    d"""
+    Class for singleton value nil.
+    """
+
     @internal
     fun NilType() {
         d"Returns nil."
@@ -192,6 +217,10 @@ class __NilType {
 
 @internal_bind("List")
 class __List {
+    d"""
+    A mutable, dynamically sized, ordered sequence type that can hold heterogeneous elements.
+    """
+
     @internal
     fun List() {
         d"Returns empty list."
@@ -251,6 +280,10 @@ class __List {
 
 @internal_bind("Dict")
 class __Dict {
+    d"""
+    A mutable, dynamically sized, unordered mapping type that associates hashable keys with arbitrary values.
+    """
+
     @internal
     fun Dict() {
         d"Returns an empty dict."
@@ -314,6 +347,10 @@ class __Dict {
 
 @internal_bind("Range")
 class __Range {
+    d"""
+    Represents arithmetic progression of integers.
+    Range can be ascending or descending with variable size step.
+    """
 
     fun Range(start:Int, end:Int, step:[Int,NilType]=nil) {
         d"""
@@ -359,7 +396,13 @@ class __Range {
 }
 
 class Enumerate {
+    d"""
+    Encloses an iterable in a new iterable with corresponding indices to values.
+    The new values are pairs [index, value].
+    """
+
     fun Enumerate(iterable, start:Int=0) {
+        d"Creates an enumeration from iterable with starting index `start`."
         this.iterable = iterable
         this.start = start
     }
@@ -379,6 +422,10 @@ class Enumerate {
 
 class Complex {
     fun Complex(real:[Int,Float]=0, imag:[Int,Float]=0) {
+        d"""
+        Complex number with real and imaginary part.
+        These parts might be Int or Float.
+        """
         this.real = real
         this.imag = imag
     }
@@ -451,85 +498,159 @@ class Complex {
 
 @internal_bind("Type")
 class __Type {
+    d"""
+    Class for representing class type.
+    The type of Type is itself (Type).
+    """
     //@internal
     //fun Type() { }
 }
 
 @internal
-fun vardump(value) {}
+fun vardump(value) {
+    d"""
+    Returns formatted internal info of `value` for outputting/inspecting.
+    """
+}
 
 @internal
-fun print(... msgs, end="\n", separator=" ") {}
+fun print(... msgs, end="\n", separator=" ") {
+    d"""
+    Outputs `msgs` values separated by `separator` and ended with `end`.
+    Print is not outputting, it is not affected by formatters, generators nor converters.
+    """
+}
 
 @internal
-fun input(prompt="") {}
+fun input(prompt="") {
+    d"""
+    Prints `prompt` to stdout and awaits user input from stdin.
+    """
+}
 
 fun exit(code=0) {
+    d"""
+    Terminates this program with exit code `code`.
+    This is internally done by raising SystemExit exception.
+    """
     raise SystemExit(code)
 }
 
 @internal
-fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {}
+fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {
+    d"""
+    Rounds `n` to number of digits `ndigits`.
+    If `ndigits` is nil, then `n` is rounded to Int.
+    When rounding using `Int`, then the decimal part is cut of, this function rounds.
+    """
+}
 
 @internal
-fun copy(obj) {}
+fun copy(obj) {
+    d"""
+    Does shallow copy of `obj`.
+    """
+}
 
 @internal
-fun hash(obj) {}
+fun hash(obj) {
+    d"""
+    Returns a hash of `obj`.
+    If `obj` is an object then `__hash` method is called.
+    """
+}
 
 @internal
-fun type(obj) {}
+fun type(obj) {
+    d"""
+    Returns type (class) of `obj`.
+    """
+}
 
 @internal
-fun id(obj) {}
+fun id(obj) {
+    d"""
+    Returns unique id of `obj`.
+    Note that some values, such as Ints might be interned and 2 separately created Ints might return same id.
+    Note id of nil, true and false is always the same for each instance of these values in one run.
+    """
+}
 
 @internal
-fun isinstance(obj, types) {}
+fun isinstance(obj, types) {
+    d"""
+    Returns true if `obj` is instance of class `type` or one of the classes in list of classes `types`.
+    Parameter `types` has to be a class or List of classes, otherwise TypeError will be raised.
+    """
+}
 
 @internal
-fun issubclass(cls:Type, types) {}
+fun issubclass(cls:Type, types) {
+    d"""
+    Returns true if class `cls` is a subclass (inherits from) of class `type` or one
+    of the classes in list of classes `types`.
+    Parameter `types` has to be a class or List of classes, otherwise TypeError will be raised.
+    """
+}
 
 @internal
-fun attrs() {}
+fun attrs() {
+    d"""
+    Returns a list of names of symbols in the current scope.
+    """
+}
 @internal
-fun attrs(obj) {}
+fun attrs(obj) {
+    d"Returns a list of names of attributes in obj."
+}
 
 @internal
-fun hasattr(obj, name:String) {}
+fun hasattr(obj, name:String) {
+    d"Returns true if value `obj` contains attribute `name`."
+}
 
 @internal
-fun getattr(obj, name:String) {}
+fun getattr(obj, name:String) {
+    d"Returns value of attribute `name` in value `obj`."
+}
 
 @internal
-fun setattr(obj, name:String, value) {}
+fun setattr(obj, name:String, value) {
+    d"Sets attribute `name` in `obj` to value `value`."
+}
 
 @internal
-fun delattr(obj, name:String) {}
+fun delattr(obj, name:String) {
+    d"""
+    Deletes attribute `name` from `obj`.
+    If `obj` is not modifiable or attribute does not exits, then AttributeError will be raised.
+    """
+}
 
 @internal
-fun callable(obj) {}
+fun callable(obj) {
+    d"Returns true if `obj` can be called."
+}
 
 @internal
 fun lshift(a:Int, count:Int) {
     d"""
-    Left shift.
-    @param a Int value.
-    @param count Amount to shift by.
-    @return First argument shifted left by the amount in the second argument.
+    Returns `a` shifted left by the amount in `count`.
     """
 }
 
 @internal
 fun rshift(a:Int, count:Int) {
     d"""
-    Right shift.
-    @param a Int value.
-    @param count Amount to shift by.
-    @return First argument shifted right by the amount in the second argument.
+    Returns `a` shifted right by the amount in `count`.
     """
 }
 
 fun all(iterable, test:Function) {
+    d"""
+    Returns true if all values in `iterable` when passed into `test` return true.
+    True will be returned also for empty iterable.
+    """
     for (i : iterable) {
         if (not test(i))
             return false
@@ -538,6 +659,10 @@ fun all(iterable, test:Function) {
 }
 
 fun all(iterable) {
+    d"""
+    Returns true if all values in `iterable` are true.
+    True will be returned also for empty iterable.
+    """
     for (i: iterable) {
         if (not i)
             return false
@@ -546,6 +671,10 @@ fun all(iterable) {
 }
 
 fun any(iterable, test:Function) {
+    d"""
+    Returns true if at least one value in `iterable` when passed into `test` returns true.
+    True will be returned also for empty iterable.
+    """
     for (i : iterable) {
         if (test(i))
             return true
@@ -554,6 +683,10 @@ fun any(iterable, test:Function) {
 }
 
 fun any(iterable) {
+    d"""
+    Returns true if at least one value in `iterable` is true.
+    True will be returned also for empty iterable.
+    """
     for (i: iterable) {
         if (i)
             return true
@@ -562,6 +695,7 @@ fun any(iterable) {
 }
 
 fun length(iterable) {
+    d"Returns amount of values in iterable."
     l = 0
     for (_: iterable)
         l += 1
