@@ -709,6 +709,11 @@ enum ValType {
 
 // TODO: Can be optimized
 fun max(iterable, key=nil, def_val=ValType.MISSING) {
+    d"""
+    Returns maximum value from iterable.
+    If key is not nil, then it is used to compare values from iterable.
+    When iterable is empty then def_val is returned if passed in, ValueError is raised otherwise.
+    """
     curr_max = ValType.NONE
     for (i: iterable) {
         if (curr_max == ValType.NONE || (key != nil && key(i) > key(curr_max)) || i > curr_max) {
@@ -723,6 +728,11 @@ fun max(iterable, key=nil, def_val=ValType.MISSING) {
 }
 
 fun min(iterable, key=nil, def_val=ValType.MISSING) {
+    d"""
+    Returns minimum value from iterable.
+    If key is not nil, then it is used to compare values from iterable.
+    When iterable is empty then def_val is returned if passed in, ValueError is raised otherwise.
+    """
     curr_max = ValType.NONE
     for (i: iterable) {
         if (curr_max == ValType.NONE || (key != nil && key(i) < key(curr_max)) || i < curr_max) {
@@ -737,19 +747,47 @@ fun min(iterable, key=nil, def_val=ValType.MISSING) {
 }
 
 @internal
-fun chr(i:Int) {}
+fun chr(i:Int) {
+    d"""
+    Returns UNICODE string corresponding to integer value `i`.
+    ValueError is raised if i < 0 or i > 0x10ffff.
+    """
+}
 
 @internal
-fun ord(c:String) {}
+fun ord(c:String) {
+    d"""
+    Returns ordinal value of UNICODE symbol `c`.
+    If c is more than 1 symbol, then ValueError is raised.
+    """
+}
 
 @internal
-fun hex(number:Int) {}
+fun hex(number:Int) {
+    d"""
+    Returns value of `number` as a hexadecimal string (hexstring).
+    If `number` is negative then the hexstring will start with `-`.
+    The hexstring returned is prefixed with `0x` and has no leading zeroes.
+    """
+}
 
 @internal
-fun oct(number:Int) {}
+fun oct(number:Int) {
+    d"""
+    Returns value of `number` as a octal string.
+    If `number` is negative then the octal string will start with `-`.
+    The octal string returned is prefixed with `0q` and has no leading zeroes.
+    """
+}
 
 @internal
-fun bin(number:Int) {}
+fun bin(number:Int) {
+    d"""
+    Returns value of `number` as a binary string.
+    If `number` is negative then the binary string will start with `-`.
+    The binary string returned is prefixed with `0b` and has no leading zeroes.
+    """
+}
 
 fun info(v, indent:String="") {
     d"""
@@ -810,6 +848,9 @@ fun info(v, indent:String="") {
 }
 
 fun help(a) {
+    d"""
+    Returns formatted doc string and additional type information of `a`.
+    """
     import inspect
     // TODO: list attributes and their info
     txt = ""
@@ -848,36 +889,82 @@ fun help(a) {
 
 @internal_bind("File")
 class __File {
+    d"""
+    This class works with and represents system files.
+    """
 
     fun File(path:String, mode:String="r") {
+        d"""
+        Initializes path and mode of operation with a file.
+        Opening mode `mode` can be one of the following:
+          - "r": reading.
+          - "w": writing (overwrites a file if it exists).
+          - "a": appending.
+          - "rb": reading binary.
+          - "wb": writing binary.
+          - "ab": appending binary.
+          - "r+": open/update (reading and writing).
+          - "w+": writing/update.
+          - "a+": append/update.
+          - "r+b": reading/update binary.
+          - "w+b": writing/update binary.
+          - "a+b": append/update binary.
+        When writing or appending to a file, which does not exist then it is created.
+        When reading file, which does not exist, then FileNotFoundError is raised.
+        """
         this.path = path
         this.mode = mode
     }
 
     @internal
-    fun write(content) {}
+    fun write(content) {
+        d"""
+        Writes content (converted to String if it is not already) to open file.
+        """
+    }
 
     //fun read(size:Int=-1) {}
     //fun readln() {}
     //fun seek(pos:Int) {}
 
     @internal
-    fun readlines() {}
+    fun readlines() {
+        d"""
+        Reads contents of the file and splits it by lines into a list, which it returns,
+        """
+    }
 
     @internal
-    fun open() {}
+    fun open() {
+        d"""
+        Opens file.
+        Open file has to be closed by calling close().
+        """
+    }
 
     @internal
-    fun close() {}
+    fun close() {
+        d"""
+        Closes file for all operations.
+        """
+    }
 }
 
 fun open(path:String, mode:String="r") {
+    d"""
+    Opens file on path `path` in mode `mode` and returns its File object.
+    This file has to be explicitly closed.
+    """
     f = File(path, mode)
     ~f.open()
     return f
 }
 
 fun with_open(path:String, func, mode:String="r") {
+    d"""
+    Opens file on path `path` in mode `mode` and passes it into `func`, closes 
+    the file and returns value from `func`.
+    """
     file = open(path, mode)
     try {
         return func(file)
