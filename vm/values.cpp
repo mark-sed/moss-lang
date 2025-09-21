@@ -385,16 +385,16 @@ std::list<ClassValue *> ClassValue::get_all_supers() {
     return sups;
 }
 
-ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals) {
+ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals), iterator(0) {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
 }
-ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {
+ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals(), iterator(0) {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
 }
 
-StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {
+StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value), iterator(0) {
     if(BuiltIns::String->get_attrs())
         this->attrs = BuiltIns::String->get_attrs()->clone();
 }
@@ -426,7 +426,7 @@ IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::I
 }
 
 DictValue::DictValue(ListValue *keys, ListValue *values, Interpreter *vm)
-        : Value(ClassType, "Dict", BuiltIns::Dict) {
+        : Value(ClassType, "Dict", BuiltIns::Dict), iterator(vals.begin()), keys_iterator(0) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
     LOGMAX("Creating dict");
@@ -440,7 +440,7 @@ DictValue::DictValue(ListValue *keys, ListValue *values, Interpreter *vm)
     }
 }
 DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals)
-        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals) {
+        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals), iterator(vals.begin()), keys_iterator(0) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }

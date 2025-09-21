@@ -1060,10 +1060,10 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::FUN_LIST;
 
-    FunValueList(FunValue *f) : Value(ClassType, "FunctionList", BuiltIns::FunctionList) {
+    FunValueList(FunValue *f) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), iterator(funs.begin()) {
         funs.push_back(f);
     }
-    FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs) {}
+    FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs), iterator(funs.begin()) {}
     
     virtual Value *clone() override {
         return this;
