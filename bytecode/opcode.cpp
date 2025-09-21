@@ -792,7 +792,14 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         // This calls the function
         LOGMAX("Calling different module's function");
         cf->set_extern_module_call(true);
-        fun->get_vm()->cross_module_call(fun, vm->get_call_frame());
+        try {
+            fun->get_vm()->cross_module_call(fun, vm->get_call_frame());
+        } catch(Value *v) {
+            LOGMAX("Exception in external function call, dropping frame and rethrowing");
+            LOGMAX("Dropping call frame after exception");
+            vm->drop_call_frame();
+            throw v;
+        }
         LOGMAX("External function has handed over control to original module");
         // This is after return from the function
         vm->store(cf->get_return_reg(), cf->get_extern_return_value());

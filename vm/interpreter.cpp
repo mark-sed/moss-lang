@@ -161,6 +161,10 @@ Interpreter::~Interpreter() {
         // It needs to be set to nullptr in case some other new Interpreter
         // is created, like in unit test case
         Interpreter::gc = nullptr;
+
+        for (auto v: generator_notes) {
+            delete v;
+        }
     }
     // Code is to be deleted by the creator of it
 }
