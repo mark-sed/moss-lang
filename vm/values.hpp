@@ -601,6 +601,7 @@ public:
     static const TypeKind ClassType = TypeKind::DICT;
 
     DictValue(ListValue *keys, ListValue *values, Interpreter *vm);
+    DictValue(std::vector<Value *> keys, std::vector<Value *> vals, Interpreter *vm);
     DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
     DictValue();
 

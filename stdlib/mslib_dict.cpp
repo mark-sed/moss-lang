@@ -5,7 +5,8 @@ using namespace mslib;
 
 Value *Dict::Dict(Interpreter *vm, Value *iterable, Value *&err) {
     auto iterator = iterable->iter(vm);
-    DictValue *dv = new DictValue();
+    std::vector<Value *> keys;
+    std::vector<Value *> vals;
     try {
         while(true) {
             auto elem = iterator->next(vm);
@@ -18,7 +19,8 @@ Value *Dict::Dict(Interpreter *vm, Value *iterable, Value *&err) {
                 err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::DICT_BAD_ITER_SIZE, elem_lst->size()));
                 return nullptr;
             }
-            dv->push(elem_lst->get_vals()[0], elem_lst->get_vals()[1], vm);
+            keys.push_back(elem_lst->get_vals()[0]);
+            vals.push_back(elem_lst->get_vals()[1]);
         }
     } catch (Value *exc) {
         if (exc->get_type() != BuiltIns::StopIteration) {
@@ -26,7 +28,7 @@ Value *Dict::Dict(Interpreter *vm, Value *iterable, Value *&err) {
             return nullptr;
         }
     }
-    return dv;
+    return new DictValue(keys, vals, vm);
 }
 
 Value *Dict::get(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err) {

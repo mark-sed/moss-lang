@@ -42,7 +42,7 @@ Value *List::pop(Interpreter *vm, Value *ths, Value *index, Value *&err) {
     return removed;
 }
 
-Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&err) {
+Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&) {
     auto ls = mslib::get_list(ths);
     return IntValue::get(std::count_if(ls.begin(), ls.end(),
         [&](Value *v) {
@@ -52,10 +52,11 @@ Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&err) {
 
 Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
     auto iterator = iterable->iter(vm);
-    ListValue *lv = new ListValue();
+    std::vector<Value *> lv;
     try {
         while(true) {
-            lv->push(iterator->next(vm));
+            auto ev = iterator->next(vm);
+            lv.push_back(ev);
         }
     } catch (Value *exc) {
         if (exc->get_type() != BuiltIns::StopIteration) {
@@ -63,5 +64,5 @@ Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
             return nullptr;
         }
     }
-    return lv;
+    return new ListValue(lv);
 }

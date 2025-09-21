@@ -448,6 +448,14 @@ DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }
+DictValue::DictValue(std::vector<Value *> keys, std::vector<Value *> vals, Interpreter *vm) : Value(ClassType, "Dict", BuiltIns::Dict) {
+    if(BuiltIns::Dict->get_attrs())
+        this->attrs = BuiltIns::Dict->get_attrs()->clone();
+    assert(vals.size() == keys.size() && "Mismatched sizes or keys and values");
+    for (size_t i = 0; i < keys.size(); ++i) {
+        push(keys[i], vals[i], vm);
+    }
+}
 
 template<>
 t_cpp::CppValue *moss::dyn_cast(Value* t) {
