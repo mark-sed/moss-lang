@@ -194,24 +194,32 @@ Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
     return BuiltIns::Nil;
 }
 
-Value *rand_int(Interpreter *vm, Value *min, Value *max) {
+Value *rand_int(Interpreter *vm, Value *min, Value *max, Value *&err) {
     (void)vm;
     static std::random_device rng_device;
     auto min_int = dyn_cast<IntValue>(min);
     auto max_int = dyn_cast<IntValue>(max);
     assert(min_int && max_int && "not ints");
+    if (min_int->get_value() > max_int->get_value()) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::MIN_LT_MAX_IN_RANDINT, min_int->get_value(), max_int->get_value()));
+        return nullptr;
+    }
     std::uniform_int_distribution<opcode::IntConst> distrib(min_int->get_value(), max_int->get_value());
     return IntValue::get(distrib(rng_device));
 }
 
-Value *rand_float(Interpreter *vm, Value *min, Value *max) {
+Value *rand_float(Interpreter *vm, Value *min, Value *max, Value *&err) {
     (void)vm;
     static std::random_device rng_device;
     assert((isa<FloatValue>(min) || isa<IntValue>(min)) && "not int/float");
     assert((isa<FloatValue>(max) || isa<IntValue>(max)) && "not int/float");
-    auto min_int = min->as_float();
-    auto max_int = max->as_float();
-    std::uniform_real_distribution<opcode::FloatConst> distrib(min_int, max_int);
+    auto min_f = min->as_float();
+    auto max_f = max->as_float();
+    if (min_f > max_f) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::MIN_LT_MAX_IN_RANDF, min_f, max_f));
+        return nullptr;
+    }
+    std::uniform_real_distribution<opcode::FloatConst> distrib(min_f, max_f);
     return FloatValue::get(distrib(rng_device));
 }
 
@@ -931,13 +939,13 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 3);
             return print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"));
         }},
-        {"rand_float", [](Interpreter* vm, CallFrame* cf, Value*&) {
+        {"rand_float", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             assert(cf->get_args().size() == 2);
-            return rand_float(vm, cf->get_arg("min"), cf->get_arg("max"));
+            return rand_float(vm, cf->get_arg("min"), cf->get_arg("max"), err);
         }},
-        {"rand_int", [](Interpreter* vm, CallFrame* cf, Value*&) {
+        {"rand_int", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             assert(cf->get_args().size() == 2);
-            return rand_int(vm, cf->get_arg("min"), cf->get_arg("max"));
+            return rand_int(vm, cf->get_arg("min"), cf->get_arg("max"), err);
         }},
         {"readlines", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();

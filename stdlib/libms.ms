@@ -5,7 +5,7 @@ copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
            See accompanied LICENSE file.
 """
 
-__LIB_MS_VERSION = "0.0.6"
+__LIB_MS_VERSION = "0.1.0"
 
 @internal_bind("Int")
 class __Int {
@@ -22,7 +22,8 @@ class __Int {
     fun Int(v=0) {
         d"""
         Converts value `v` into Int.
-        If `v` is not Int, Float or Object which contains __Int function then TypeError is raised.
+        If `v` is not Int, Float or Object which contains __Int function then
+        TypeError is raised.
         When converting Float, then the decimal part is cut of, not rounded.
         """
     }
@@ -32,14 +33,16 @@ class __Int {
 class __Float {
     d"""
     Floating point value.
-    Internally this is double precision floating point with accordance with IEEE 754.
+    Internally this is double precision floating point with accordance with
+    IEEE 754.
     """
 
     @internal
     fun Float(v=0.0) {
         d"""
         Converts value `v` into Float value.
-        If `v` is not Float, Int, String or Object which contains __Float function then TypeError is raised.
+        If `v` is not Float, Int, String or Object which contains __Float
+        function then TypeError is raised.
         """
     }
 }
@@ -54,7 +57,8 @@ class __Bool {
     fun Bool(v=false) {
         d"""
         Converts value `v` into Bool value (true or false).
-        TypeError is raised if `v` is not one of these types or Object which contains __Bool function:
+        TypeError is raised if `v` is not one of these types or Object which
+        contains __Bool function:
           - Bool.
           - Int -- 0 is false, other are true.
           - Float -- 0.0 is false, other are true.
@@ -76,7 +80,8 @@ class __String {
     fun String(v="") {
         d"""
         Converts value `v` into String.
-        This functions behaves the same as concatinating with empty String and will always succeed for any type, as
+        This functions behaves the same as concatinating with empty String and
+        will always succeed for any type, as
         __String method is called or implicit to string converter is used.
         """
     }
@@ -93,14 +98,19 @@ class __String {
 
     @internal
     fun strip() {
-        d"Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from start and end of String."
+        d"""
+        Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from
+        start and end of String.
+        """
     }
 
     fun reverse() = this[-1..-this.length()-1]
 
     @internal
     fun capitalize() {
-        d"Makes the first letter uppercase and the rest of the String lowercase."
+        d"""
+        Makes the first letter uppercase and the rest of the String lowercase.
+        """
     }
 
     @internal
@@ -117,16 +127,19 @@ class __String {
     fun replace(target:String, value:String, count:Int=-1) {
         d"""
         Replaces all the substrings equal to `target` with `value`.
-        When `count` is specified, then this replacing will happen that many times.
+        When `count` is specified, then this replacing will happen that many
+        times.
         """
     }
 
     @internal
     fun multi_replace(mapping:List) {
         d"""
-        Replaces all substrings in `mapping` element at index 0 with string at index 1.
-        @param mapping List of mappings of value to replace with value to replace it with. So it should be a list of
-                       pairs (lists of size 2). 
+        Replaces all substrings in `mapping` element at index 0 with string at
+        index 1.
+        @param mapping List of mappings of value to replace with value to 
+                replace it with. So it should be a list of pairs
+                (lists of size 2). 
         Example:
         ```
         angles = "a: 45°, b: 75°"
@@ -137,8 +150,8 @@ class __String {
 
     fun join(iterable) {
         d"""
-        Converts values in `iterable` into String and concatenates these values together using this String as the
-        connector.
+        Converts values in `iterable` into String and concatenates these values
+        together using this String as the connector.
         Example:
         ```
         ", ".join([1,2,3,4])
@@ -160,7 +173,8 @@ class __String {
     @internal
     fun isspace() {
         d"""
-        Returns true if all the characters in this string are whitespace (' ', '\f', '\n', '\r', '\t', '\v').
+        Returns true if all the characters in this string are whitespace 
+        (' ', '\f', '\n', '\r', '\t', '\v').
         """
     }
 
@@ -218,7 +232,8 @@ class __NilType {
 @internal_bind("List")
 class __List {
     d"""
-    A mutable, dynamically sized, ordered sequence type that can hold heterogeneous elements.
+    A mutable, dynamically sized, ordered sequence type that can hold
+    heterogeneous elements.
     """
 
     @internal
@@ -267,7 +282,8 @@ class __List {
     @internal
     fun count(val) {
         d"""
-        Returns how many times does `val` appear in this list (using `==` operator).
+        Returns how many times does `val` appear in this list (using `==`
+        operator).
         """
     }
 
@@ -281,7 +297,8 @@ class __List {
 @internal_bind("Dict")
 class __Dict {
     d"""
-    A mutable, dynamically sized, unordered mapping type that associates hashable keys with arbitrary values.
+    A mutable, dynamically sized, unordered mapping type that associates
+    hashable keys with arbitrary values.
     """
 
     @internal
@@ -292,7 +309,8 @@ class __Dict {
     fun Dict(iterable) {
         d"""
         Returns a dict with pairs from iterable as its keys and values.
-        `iterable` has to be a list of lists of size 2, if not then TypeError will be raised.
+        `iterable` has to be a list of lists of size 2, if not then TypeError
+        will be raised.
         Example:
         ```
         Dict([["a", 1], ["b", 2], ["c", 3]])
@@ -314,28 +332,33 @@ class __Dict {
     }
 
     fun empty() {
-        d"Returns true if there are no items in this dictionary, false otherwise."
+        d"""
+        Returns true if there are no items in this dictionary, false otherwise.
+        """
         return this.length() == 0
     }
 
     @internal
     fun get(key, def_val=nil) {
         d"""
-        Tries to extract and return `key` value from this dictionary, if it is not found, then def_val is returned.
+        Tries to extract and return `key` value from this dictionary, if it is
+        not found, then def_val is returned.
         """
     }
 
     @internal
     fun pop(key) {
         d"""
-        Removes and returns value at key `key`, if it is not found then KeyError is raised.
+        Removes and returns value at key `key`, if it is not found then KeyError
+        is raised.
         """
     }
 
     @internal
     fun pop(key, def_val) {
         d"""
-        Removes and returns value at key `key`, if it is not found then def_val is returned.
+        Removes and returns value at key `key`, if it is not found then def_val
+        is returned.
         """
     }
 
@@ -354,8 +377,10 @@ class __Range {
 
     fun Range(start:Int, end:Int, step:[Int,NilType]=nil) {
         d"""
-        Creates range from `start` with step `step` (1 or -1 if nil) and end `end` (it is not included).
-        If `end` is less than `start` and `step` is nil, then `step` is -1 (range goes down).
+        Creates range from `start` with step `step` (1 or -1 if nil) and end
+        `end` (it is not included).
+        If `end` is less than `start` and `step` is nil, then `step` is -1
+        (range goes down).
         """
         this.start = start
         this.end = end
@@ -517,7 +542,8 @@ fun vardump(value) {
 fun print(... msgs, end="\n", separator=" ") {
     d"""
     Outputs `msgs` values separated by `separator` and ended with `end`.
-    Print is not outputting, it is not affected by formatters, generators nor converters.
+    Print is not outputting, it is not affected by formatters, generators nor
+    converters.
     """
 }
 
@@ -541,7 +567,8 @@ fun round(n:[Int,Float], ndigits:[Int,NilType]=nil) {
     d"""
     Rounds `n` to number of digits `ndigits`.
     If `ndigits` is nil, then `n` is rounded to Int.
-    When rounding using `Int`, then the decimal part is cut of, this function rounds.
+    When rounding using `Int`, then the decimal part is cut of, this function
+    rounds.
     """
 }
 
@@ -571,25 +598,30 @@ fun type(obj) {
 fun id(obj) {
     d"""
     Returns unique id of `obj`.
-    Note that some values, such as Ints might be interned and 2 separately created Ints might return same id.
-    Note id of nil, true and false is always the same for each instance of these values in one run.
+    Note that some values, such as Ints might be interned and 2 separately
+    created Ints might return same id.
+    Note id of nil, true and false is always the same for each instance of these
+    values in one run.
     """
 }
 
 @internal
 fun isinstance(obj, types) {
     d"""
-    Returns true if `obj` is instance of class `type` or one of the classes in list of classes `types`.
-    Parameter `types` has to be a class or List of classes, otherwise TypeError will be raised.
+    Returns true if `obj` is instance of class `type` or one of the classes in
+    list of classes `types`.
+    Parameter `types` has to be a class or List of classes, otherwise TypeError
+    will be raised.
     """
 }
 
 @internal
 fun issubclass(cls:Type, types) {
     d"""
-    Returns true if class `cls` is a subclass (inherits from) of class `type` or one
-    of the classes in list of classes `types`.
-    Parameter `types` has to be a class or List of classes, otherwise TypeError will be raised.
+    Returns true if class `cls` is a subclass (inherits from) of class `type` or
+    one of the classes in list of classes `types`.
+    Parameter `types` has to be a class or List of classes, otherwise TypeError
+    will be raised.
     """
 }
 
@@ -623,7 +655,8 @@ fun setattr(obj, name:String, value) {
 fun delattr(obj, name:String) {
     d"""
     Deletes attribute `name` from `obj`.
-    If `obj` is not modifiable or attribute does not exits, then AttributeError will be raised.
+    If `obj` is not modifiable or attribute does not exits, then AttributeError
+    will be raised.
     """
 }
 
@@ -648,7 +681,8 @@ fun rshift(a:Int, count:Int) {
 
 fun all(iterable, test:Function) {
     d"""
-    Returns true if all values in `iterable` when passed into `test` return true.
+    Returns true if all values in `iterable` when passed into `test` return
+    true.
     True will be returned also for empty iterable.
     """
     for (i : iterable) {
@@ -672,7 +706,8 @@ fun all(iterable) {
 
 fun any(iterable, test:Function) {
     d"""
-    Returns true if at least one value in `iterable` when passed into `test` returns true.
+    Returns true if at least one value in `iterable` when passed into `test`
+    returns true.
     True will be returned also for empty iterable.
     """
     for (i : iterable) {
@@ -712,7 +747,8 @@ fun max(iterable, key=nil, def_val=ValType.MISSING) {
     d"""
     Returns maximum value from iterable.
     If key is not nil, then it is used to compare values from iterable.
-    When iterable is empty then def_val is returned if passed in, ValueError is raised otherwise.
+    When iterable is empty then def_val is returned if passed in, ValueError is
+    raised otherwise.
     """
     curr_max = ValType.NONE
     for (i: iterable) {
@@ -731,7 +767,8 @@ fun min(iterable, key=nil, def_val=ValType.MISSING) {
     d"""
     Returns minimum value from iterable.
     If key is not nil, then it is used to compare values from iterable.
-    When iterable is empty then def_val is returned if passed in, ValueError is raised otherwise.
+    When iterable is empty then def_val is returned if passed in, ValueError is
+    raised otherwise.
     """
     curr_max = ValType.NONE
     for (i: iterable) {
@@ -791,8 +828,10 @@ fun bin(number:Int) {
 
 fun info(v, indent:String="") {
     d"""
-    Returns formatted doc string or list of pairs of [function, doc strings] for overloaded function.
-    For multi-line doc string indentation is removed based on indentation of the first line.
+    Returns formatted doc string or list of pairs of [function, doc strings] for
+    overloaded function.
+    For multi-line doc string indentation is removed based on indentation of the
+    first line.
     """
     fun get_doc(a) {
         docs = ""
@@ -887,6 +926,19 @@ fun help(a) {
     return txt
 }
 
+/*fun help() {
+    d"""
+    Interactive help utility.
+    This function queries for input and runs `help` on it.
+    """
+    ~print("""Moss interactive help utility.
+------------------------------
+You can enter a name of a module to get more information on it.
+Currently this tool cannot work with expressions (e.g. "Int.Int").
+Enter "q" or "quit" to exit this tool.
+""")
+}*/
+
 @internal_bind("File")
 class __File {
     d"""
@@ -909,8 +961,10 @@ class __File {
           - "r+b": reading/update binary.
           - "w+b": writing/update binary.
           - "a+b": append/update binary.
-        When writing or appending to a file, which does not exist then it is created.
-        When reading file, which does not exist, then FileNotFoundError is raised.
+        When writing or appending to a file, which does not exist then it is
+        created.
+        When reading file, which does not exist, then FileNotFoundError is
+        raised.
         """
         this.path = path
         this.mode = mode
@@ -930,7 +984,8 @@ class __File {
     @internal
     fun readlines() {
         d"""
-        Reads contents of the file and splits it by lines into a list, which it returns,
+        Reads contents of the file and splits it by lines into a list, which it
+        returns
         """
     }
 
@@ -976,13 +1031,30 @@ fun with_open(path:String, func, mode:String="r") {
 }
 
 @internal
-fun rand_int(min:Int, max:Int) {}
+fun rand_int(min:Int, max:Int) {
+    d"""
+    Returns a pseudo-random integer with uniform distribution from `min` to
+    `max` (both including).
+    If min > max, then ValueError is raised.
+    """
+}
 
 @internal
-fun rand_float(min:[Float,Int]=0.0, max:[Float,Int]=1.0) {}
+fun rand_float(min:[Float,Int]=0.0, max:[Float,Int]=1.0) {
+    d"""
+    Returns a pseudo-random float with uniform distribution from `min` to
+    `max` (both including).
+    If min > max, then ValueError is raised.
+    """
+}
 
 @internal
-fun sleep(seconds:[Float,Int]) {}
+fun sleep(seconds:[Float,Int]) {
+    d"""
+    Puts this thread into sleep for `seconds` time.
+    `seconds` can be floating point representing a part of a second.
+    """
+}
 
 space Math {
     d"""
@@ -1007,44 +1079,44 @@ space Math {
     @internal
     fun sin(x:[Int,Float]) {
         d"""
-        Sine.
-        @param x Numeric value.
-        @return Sine of x in radians.
+        Returns sine of `x`.
         """
     }
 
     @internal
     fun tan(x:[Int,Float]) {
         d"""
-        Tangent.
-        @param x Numeric value.
-        @return Tangent of x in radians.
+        Returns tangent of `x`.
         """
     }
 
     @internal
     fun cos(x:[Int,Float]) {
         d"""
-        Cosine.
-        @param x Numeric value.
-        @return Cosine of x in radians.
+        Returns cosine of `x`.
         """
     }
 
     fun sqrt(x) {
         d"""
-        Square root function.
-        Is equal to x^0.5.
-        @param x Value to be calculated the square root of.
-        @return Square root of passed in argument.
+        Returns square root of `x`.
+        This is equal to `x^0.5`.
         """
         return x^0.5;
     }
 
     @internal
-    fun abs(n:[Int,Float]) {}
+    fun abs(n:[Int,Float]) {
+        d"""
+        Returns absolute value of `n`.
+        """
+    }
 
     fun sum(nums, start:[Int,Float]=0) {
+        d"""
+        Returns sum of values on `nums`, if `start` is set then it will be used
+        as the starting value for the sum.
+        """
         for (i : nums) {
             start += i
         }
@@ -1052,10 +1124,17 @@ space Math {
     }
 
     @internal
-    fun log(x:[Int,Float], base:[Int,Float]) {}
+    fun log(x:[Int,Float], base:[Int,Float]) {
+        d"Returns logarithm of base `base` of `x`."
+    }
 
     @internal
-    fun divmod(x:[Int,Float], y:[Int,Float]) {}
+    fun divmod(x:[Int,Float], y:[Int,Float]) {
+        d"""
+        Divides `x` by `y` and returns the result and reminder as a pair of
+        values (list of size 2).
+        """
+    }
 }
 
 space Converters {
@@ -1068,7 +1147,9 @@ These can be easily overridden by custom converters in user scope.
 
 @converter("txt", "md")
 @converter("txt", "markdown")
-fun txt2textual(n) {
+fun txt2md(n) {
+    d"Converter from text format to other markdown format."
+
     if (type(n) != String)
         return n
     markdown_escapes = [
@@ -1098,6 +1179,8 @@ fun txt2textual(n) {
 @converter("txt", "html5")
 @converter("txt", "html4")
 fun txt2html(txt) {
+    d"Converter from text format to html format."
+
     if (type(txt) != String)
         return txt
     // Not using &apos; to be compatible with HTML4
@@ -1116,6 +1199,8 @@ fun txt2html(txt) {
 @converter("md", "html5")
 @converter("md", "html4")
 fun md2html(txt) {
+    d"Converter from markdown to html format."
+
     import md_parser
     parsed = md_parser.parse_md(txt)
     converted = [l.to_html() : l = parsed]
@@ -1133,6 +1218,9 @@ These can be easily overridden by custom generators in user scope.
 """
 
 space HTML {
+    d"""
+    This space holds constants used for HTML generation and conversion.
+    """
     STYLE_PATH="" //< This value will be set based on the platform 
     TITLE=""
     FOOTER=nil
@@ -1140,6 +1228,11 @@ space HTML {
 
 @generator("html")
 fun html_gen(txts) {
+    d"""
+    HTML generator. This generator uses css style (specified by HTML.STYLE_PATH)
+    to style the generated document.
+    """
+
     import sys.version
     import time.strftime
     
@@ -1169,6 +1262,11 @@ fun html_gen(txts) {
 /// Exceptions
 @internal_bind("Exception")
 class __Exception {
+    d"""
+    Base class from Moss exceptions.
+    Each exception holds string `msg`, which should describe the exception
+    further in detail.
+    """
 
     fun Exception(msg="") {
         this.msg = msg
@@ -1306,6 +1404,12 @@ class __EOFError : Exception {
 
 @internal_bind("SystemExit")
 class __SystemExit : Exception {
+    d"""
+    Exception representing termination of a program.
+    If not caught Moss will terminate with exit code passed in.
+    This exception is used by `exit` function.
+    """
+
     fun SystemExit(code=0) {
         this.msg = this.code = code
     }
