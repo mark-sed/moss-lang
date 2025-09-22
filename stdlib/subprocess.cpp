@@ -18,6 +18,10 @@ using namespace moss;
 using namespace mslib;
 using namespace subprocess;
 
+Value *create_subprocess_error(Interpreter *vm, CallFrame *cf, ustring msg, Value *command, Value *&err) {
+    return mslib::call_constructor(vm, cf, "SubprocessError", {StringValue::get(msg), command}, err);
+}
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& subprocess::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
         {"system", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -39,6 +43,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& subprocess::get_
 Value *subprocess::system(Interpreter *vm, Value *cmd, Value *&err) {
     auto cmds = dyn_cast<StringValue>(cmd);
     assert(cmds && "Non-string value passed in");
+    // Flush is needed if stdout is used.
+    std::cout.flush();
     int result = std::system(cmds->get_value().c_str());
     return IntValue::get(static_cast<opcode::IntConst>(result));
 }
@@ -50,7 +56,7 @@ struct command_result {
 };
 
 #ifndef __windows__
-std::pair<int, ustring> run_command(const ustring& cmd, Value *&err) {
+/*std::pair<int, ustring> run_command(Interpreter *vm, CallFrame *cf, const ustring& cmd, Value *&err) {
     ustring result;
     constexpr std::size_t buffer_size = 4096;
     char buffer[buffer_size];
@@ -60,8 +66,7 @@ std::pair<int, ustring> run_command(const ustring& cmd, Value *&err) {
 
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(full_cmd.c_str(), "r"), pclose);
     if (!pipe) {
-        // FIXME: Correct error
-        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        err = create_subprocess_error(vm, cf, "Cannot create pipe", StringValue::get(command), err);
         return {-127, ""};
     }
 
@@ -77,27 +82,24 @@ std::pair<int, ustring> run_command(const ustring& cmd, Value *&err) {
     }
 
     return std::make_pair(exit_code, result);
-}
+}*/
 
-command_result run_command_separate(const ustring& command, bool combine_streams, Value *&err) {
+command_result run_command_separate(Interpreter *vm, CallFrame *cf, const ustring& command, bool combine_streams, Value *&err) {
     int stdout_pipe[2], stderr_pipe[2];
     if (pipe(stdout_pipe) == -1) {
-        // FIXME: Correct error
-        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        err = create_subprocess_error(vm, cf, "Cannot create stdout pipe", StringValue::get(command), err);
         return {"", "", -127};
     }
 
     if (!combine_streams && pipe(stderr_pipe) == -1) {
         close(stdout_pipe[0]); close(stdout_pipe[1]);
-        // FIXME: Correct error
-        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        err = create_subprocess_error(vm, cf, "Cannot create stderr pipes", StringValue::get(command), err);
         return {"", "", -127};
     }
 
     pid_t pid = fork();
     if (pid < 0) {
-        // FIXME: Correct error
-        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        err = create_subprocess_error(vm, cf, "Cannot fork process", StringValue::get(command), err);
         return {"", "", -127};
     }
 
@@ -155,7 +157,7 @@ command_result run_command_separate(const ustring& command, bool combine_streams
 
 
 #else
-command_result run_command_separate(const ustring& command, bool combine_streams, Value *&err) {
+command_result run_command_separate(Interpreter *vm, CallFrame *cf, const ustring& command, bool combine_streams, Value *&err) {
     SECURITY_ATTRIBUTES sa{ sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
 
     HANDLE stdout_read, stdout_write;
@@ -165,14 +167,12 @@ command_result run_command_separate(const ustring& command, bool combine_streams
     if (!combine_streams) {
         if (!CreatePipe(&stdout_read, &stdout_write, &sa, 0) ||
                 !CreatePipe(&stderr_read, &stderr_write, &sa, 0)) {
-            // FIXME: Correct error
-            err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+            err = create_subprocess_error(vm, cf, "Cannot create pipes", StringValue::get(command), err);
             return {"", "", -127};
         }
     } else {
         if (!CreatePipe(&stdout_read, &stdout_write, &sa, 0)) {
-            // FIXME: Correct error
-            err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+            err = create_subprocess_error(vm, cf, "Cannot create pipes", StringValue::get(command), err);
             return {"", "", -127};
         }
     }
@@ -199,8 +199,7 @@ command_result run_command_separate(const ustring& command, bool combine_streams
         CloseHandle(stdout_read); CloseHandle(stdout_write);
         if (!combine_streams)
             CloseHandle(stderr_read); CloseHandle(stderr_write);
-        // FIXME: Correct error
-        err = create_not_implemented_error("Subprocess.run failed, exception not yet implemented.\n");
+        err = create_subprocess_error(vm, cf, "Cannot create process to run cmd", StringValue::get(command), err);
         return {"", "", -127};
     }
 
@@ -254,7 +253,7 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
     if (!capture_out_b->get_value()) {
         code_v = subprocess::system(vm, command, err);
     } else {
-        auto cmd_res = run_command_separate(cmds->get_value(), combine_b->get_value(), err);
+        auto cmd_res = run_command_separate(vm, cf, cmds->get_value(), combine_b->get_value(), err);
         code_v = IntValue::get(cmd_res.exit_code);
         stdout_v = StringValue::get(cmd_res.stdout_text);
         stderr_v = StringValue::get(cmd_res.stderr_text);
