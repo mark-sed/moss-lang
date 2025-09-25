@@ -661,6 +661,20 @@ fun delattr(obj, name:String) {
 }
 
 @internal
+fun locals() {
+    d"""
+    Returns dict of current scope symbols and their values.
+    """
+}
+
+@internal
+fun globals() {
+    d"""
+    Returns dict of global scope symbols and their values.
+    """
+}
+
+@internal
 fun callable(obj) {
     d"Returns true if `obj` can be called."
 }

@@ -1289,6 +1289,10 @@ caught, caught, caught, caught
 """, "")
 }
 
+fun test_lib_globals(name) {
+    ~expect_pass("stdlib_tests/globals.ms", name, "", "")
+}
+
 fun test_lib_enumerate(name) {
     ~expect_pass("stdlib_tests/enumerate.ms", name, """0. 1\n1. 2\n2. 3\n[0, 1][1, 2][2, 3]
 [100, 9][101, 8][102, 7][103, 6][104, 5]\n""", "")
@@ -1631,6 +1635,7 @@ fun run_all_tests() {
     ~run_test("lib_complex")
     ~run_test("lib_filters")
     ~run_test("lib_attrs")
+    ~run_test("lib_globals")
     ~run_test("lib_enumerate")
     ~run_test("lib_iterable_funs")
     ~run_test("lib_info")

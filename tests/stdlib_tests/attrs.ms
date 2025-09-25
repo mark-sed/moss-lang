@@ -137,3 +137,27 @@ try
     ~delattr(some_str, "capitalize")
 catch(a:AttributeError)
     "caught\n"
+
+// Locals test
+
+fun test1() {
+    assert(locals() == {:}, "Locals differ")
+}
+
+fun test2() {
+    a = 65
+    b = a
+    assert(locals() == {"b": 65, "a": 65}, "Locals differ")
+}
+
+fun test3(c, d) {
+    fun foo(g) {}
+    space spc {
+        H = 3
+    }
+    assert(locals() == {"c": 1, "d": 2, "foo": foo, "spc": spc}, "Locals in test3 differ")
+}
+
+~test1()
+~test2()
+~test3(1, 2)

@@ -317,6 +317,18 @@ Value *attrs(Interpreter *vm, Value *obj, Value *&err) {
     return ats;
 }
 
+Value *symbols(Interpreter *vm, MemoryPool *frame) {
+    auto sym_tbl = frame->get_sym_table_keys();
+    std::vector<Value *> keys;
+    std::vector<Value *> vals;
+    for (auto name: sym_tbl) {
+        keys.push_back(StringValue::get(name));
+        auto v = frame->load_name(name, vm);
+        vals.push_back(v);
+    }
+    return new DictValue(keys, vals, vm);
+}
+
 Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
     ListValue *res = new ListValue();
     if (isa<FloatValue>(x) || isa<FloatValue>(y)) {
@@ -731,6 +743,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto attr_ret = get_attr(obj, name->get_value(), vm, err);
             return attr_ret;
         }},
+        {"globals", [](Interpreter* vm, CallFrame* cf, Value*&) {
+            auto args = cf->get_args();
+            assert(args.size() == 0);
+            return symbols(vm, vm->get_global_frame());
+        }},
         {"hasattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;
             assert(cf->get_args().size() == 2);
@@ -832,6 +849,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"locals", [](Interpreter* vm, CallFrame* cf, Value*&) {
+            auto args = cf->get_args();
+            assert(args.size() == 0);
+            return symbols(vm, vm->get_top_frame());
         }},
         {"log", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)vm;
