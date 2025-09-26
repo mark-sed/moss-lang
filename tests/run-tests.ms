@@ -1188,7 +1188,8 @@ moss"]
 ["1", "2--3-4--5--"]
 ["aa", "cc", "ee", ""]
 true\nfalse\ntrue\nfalse
-1\n3\n0\n0\n4\n0\n2\n""", "")
+1\n3\n0\n0\n4\n0\n2
+0\n-1\n7\n-1\n0\n-1\nsir\n-1\n4\n-1\n4\n""", "")
 }
 
 fun test_lib_extending_string(name) {

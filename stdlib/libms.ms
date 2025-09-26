@@ -87,8 +87,17 @@ class __String {
     }
 
     @internal
-    fun length() {
-        d"Returns amount of characters in this string."
+    fun capitalize() {
+        d"""
+        Makes the first letter uppercase and the rest of the String lowercase.
+        """
+    }
+
+    @internal
+    fun count(sub:String) {
+        d"""
+        Returns number of non-overlapping occurrences of `sub` in this string.
+        """
     }
 
     fun empty() {
@@ -97,54 +106,29 @@ class __String {
     }
 
     @internal
-    fun strip() {
+    fun index(value:String) {
         d"""
-        Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from
-        start and end of String.
+        Returns index of `value` in this String.
         """
     }
 
-    fun reverse() = this[-1..-this.length()-1]
-
-    @internal
-    fun capitalize() {
+    fun index(value:String, start:Int, end:Int) {
         d"""
-        Makes the first letter uppercase and the rest of the String lowercase.
+        Returns index of `value` in this String.
+        If `start` is specified then finding starts from this index.
+        If `end` is specified then finding ends at this index.
         """
+        inx = this[start..end].index(value)
+        if (inx <= -1)
+            return inx
+        return inx + start
     }
 
     @internal
-    fun upper() {
-        d"Converts all the string letters into uppercase."
-    }
-
-    @internal
-    fun lower() {
-        d"Converts all the string letters into lowercase."
-    }
-
-    @internal
-    fun replace(target:String, value:String, count:Int=-1) {
+    fun isspace() {
         d"""
-        Replaces all the substrings equal to `target` with `value`.
-        When `count` is specified, then this replacing will happen that many
-        times.
-        """
-    }
-
-    @internal
-    fun multi_replace(mapping:List) {
-        d"""
-        Replaces all substrings in `mapping` element at index 0 with string at
-        index 1.
-        @param mapping List of mappings of value to replace with value to 
-                replace it with. So it should be a list of pairs
-                (lists of size 2). 
-        Example:
-        ```
-        angles = "a: 45°, b: 75°"
-        angles.multi_replace([["a", "alfa"], ["b", "beta"]])
-        ```
+        Returns true if all the characters in this string are whitespace 
+        (' ', '\f', '\n', '\r', '\t', '\v').
         """
     }
 
@@ -171,12 +155,41 @@ class __String {
     }
 
     @internal
-    fun isspace() {
+    fun length() {
+        d"Returns amount of characters in this string."
+    }
+
+    @internal
+    fun lower() {
+        d"Converts all the string letters into lowercase."
+    }
+
+    @internal
+    fun multi_replace(mapping:List) {
         d"""
-        Returns true if all the characters in this string are whitespace 
-        (' ', '\f', '\n', '\r', '\t', '\v').
+        Replaces all substrings in `mapping` element at index 0 with string at
+        index 1.
+        @param mapping List of mappings of value to replace with value to 
+                replace it with. So it should be a list of pairs
+                (lists of size 2). 
+        Example:
+        ```
+        angles = "a: 45°, b: 75°"
+        angles.multi_replace([["a", "alfa"], ["b", "beta"]])
+        ```
         """
     }
+
+    @internal
+    fun replace(target:String, value:String, count:Int=-1) {
+        d"""
+        Replaces all the substrings equal to `target` with `value`.
+        When `count` is specified, then this replacing will happen that many
+        times.
+        """
+    }
+
+    fun reverse() = this[-1..-this.length()-1]
 
     @internal
     fun split(sep:[String,NilType]=nil, maxsplit:Int=-1) {
@@ -189,10 +202,16 @@ class __String {
     }
 
     @internal
-    fun count(sub:String) {
+    fun strip() {
         d"""
-        Returns number of non-overlapping occurrences of `sub` in this string.
+        Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from
+        start and end of String.
         """
+    }
+
+    @internal
+    fun upper() {
+        d"Converts all the string letters into uppercase."
     }
 
     @internal

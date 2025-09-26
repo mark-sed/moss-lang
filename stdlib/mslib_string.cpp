@@ -210,3 +210,14 @@ Value *String::isspace(Interpreter *vm, Value *ths, Value *&err) {
     });
     return all_space ? BuiltIns::True : BuiltIns::False;
 }
+
+Value *String::index(Interpreter *vm, Value *ths, Value *value, Value *&err) {
+    auto strv = mslib::get_string(ths);
+    ustring subst = mslib::get_string(value);
+
+    size_t pos = strv.find(subst);
+    if (pos == std::string::npos) {
+        return IntValue::get(-1);
+    }
+    return IntValue::get(pos);
+}

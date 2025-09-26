@@ -222,3 +222,35 @@ There
 Mr. Hello!
 """.count("Hello")
 "\n"
+
+"abcdef".index("ab")
+"\n"
+"".index("bh")
+"\n"
+"hello, there\n".index("there")
+"\n"
+"hello".index("hello!")
+"\n"
+"".index("")
+"\n"
+"".index("a")
+"\n"
+
+txt = """
+hello
+there
+sir
+"""
+txt[txt.index("sir")..txt.length()]
+
+txt.index("sir", 0, 14)
+"\n"
+
+"abcde".index("e", 4, 5)
+"\n"
+
+"".index("jh", 100, 101)
+
+"\n"
+"loool".index("l", start=1, end=100)
+"\n"
