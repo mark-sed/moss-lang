@@ -435,9 +435,9 @@ void Interpreter::runtime_call(FunValue *fun) {
     this->stop = pre_stop;
 }
 
-/*void Interpreter::collect_garbage() {
+void Interpreter::collect_garbage() {
     gc->collect_garbage();
-}*/
+}
 
 void Interpreter::push_currently_imported_module(ModuleValue *m) {
     gcs::TracingGC::push_currently_imported_module(m);

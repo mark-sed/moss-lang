@@ -62,6 +62,9 @@ public:
     static void push_popped_frame(MemoryPool *f);
 #ifndef NDEBUG
     static ModuleValue *top_currently_imported_module();
+    static size_t get_currently_imported_modules_size() { return currently_imported_modules.size(); }
+    static size_t get_popped_frames_size() { return popped_frames.size(); }
+    static std::list<MemoryPool *> get_popped_frames() { return popped_frames; }
 #endif
 };
 

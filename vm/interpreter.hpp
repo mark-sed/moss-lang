@@ -342,6 +342,12 @@ public:
     /// Returns current last module in the list of currently imported modules.
     /// This method is for debugging.
     ModuleValue *top_currently_imported_module();
+
+    /// Getter for gc that is to be used by testing.
+    /// @warning DO NOT USE for other purpose than tests.
+    gcs::TracingGC *__get_gc() {
+        return gc;
+    }
 #endif
 
     /// \brief Pushes a new catch exception block into the catch stack.
@@ -395,7 +401,7 @@ public:
     /// \returns if enable_code_output is set.
     static bool is_enable_code_output() { return enable_code_output; }
 
-    //void collect_garbage();
+    void collect_garbage();
 
     /// \return true if the current VM is vm of the main module.
     bool is_main() { return this->main; }
