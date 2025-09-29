@@ -59,10 +59,30 @@ ustring moss::get_local_app_data_path() {
 }
 #endif
 
+// TODO: Add sys.path (which will have MOSSPATH prepended on startup)
 std::optional<ustring> moss::get_file_path(ustring file) {
     auto filep = std::filesystem::path(file);
+    // Look in current directory
     if (std::filesystem::exists(global_controls::pwd / filep))
         return (global_controls::pwd / filep).string();
+
+    // See if there is MOSSPATH and look there
+    if (const char* value = std::getenv("MOSSPATH")) {
+        std::vector<ustring> paths;
+        // On linux the convention for separator is :, on windows it is ;
+#ifdef __linux__
+        paths = utils::split_csv(value, ':');
+#elif defined(__windows__)
+        paths = utils::split_csv(value, ';');
+#endif
+        for (auto p: paths) {
+            if (std::filesystem::exists(std::filesystem::path(p) / filep)) {
+                return (std::filesystem::path(p) / filep).string();
+            }
+        }
+    }
+
+    // Look into system path
 #ifdef __linux__
     if (std::filesystem::exists(std::filesystem::path("/lib/moss") / filep)) {
         return (std::filesystem::path("/lib/moss") / filep).string();
