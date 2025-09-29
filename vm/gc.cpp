@@ -213,7 +213,7 @@ void TracingGC::mark_roots(Interpreter *ivm) {
 
 void TracingGC::collect_garbage() {
     LOG1("Running GC");
-    if (!Interpreter::libms_mod) {
+    if (!Interpreter::libms_mod && !clopts::no_load_libms) {
         LOGMAX("Libms is not yet loaded, cannot collect garbage");
         return;
     }
