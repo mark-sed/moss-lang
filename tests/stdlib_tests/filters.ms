@@ -74,3 +74,50 @@ min("123456789", key=Int)
 
 min([], def_val=nil)
 "\n"
+
+// Filter
+
+filter(Bool, [0, 1, true, false, [], [1,2]])
+"\n"
+
+fun is_less(x) {
+    return x < 10
+}
+
+filter(is_less, [1,2,10,11,2,4,99])
+"\n"
+
+class MyIter {
+    fun MyIter(end) {
+        this.end = end
+    }
+
+    fun __iter() {
+        this.i = 0
+        return this;
+    }
+
+    fun __next() {
+        if (this.i >= this.end)
+            raise StopIteration()
+        v = this.i
+        this.i += 1
+        return v
+    }
+
+    fun ([])(index) {
+        return index;
+    }
+}
+
+filter(fun(x) = x > 4 && x < 10, MyIter(20))
+"\n"
+
+filter(Bool, MyIter(5))
+"\n"
+
+filter(String, [])
+"\n"
+
+filter(fun nb(x) = not Bool(x), [1,2,3])
+"\n"

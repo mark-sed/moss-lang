@@ -770,6 +770,42 @@ fun length(iterable) {
     return l
 }
 
+// TODO: Change to not require [] operator
+fun zip(... iterables) {
+    d"""
+    Takes one or more iterables and returns a iterable of lists, where the i-th
+    list contains the i-th element from each input list. Stops when the
+    shortest iterable is exhausted.
+    """
+    min_len = min([length(i) : i = iterables])
+    return [[lst[i] : lst = iterables] : i = 0..min_len]
+}
+
+fun map(func, ... iterables) {
+    d"""
+    Make an iterator that computes the function using arguments from
+    each of the iterables.  Stops when the shortest iterable is exhausted.
+    """
+    result = []
+    for (args : zip(<<iterables)) {
+        ~result.append(func(<<args))
+    }
+    return result
+}
+
+fun filter(func, iterable) {
+    d"""
+    Returns a list of those items in `iterable`, which returned true when
+    passed into `func`.
+    """
+    result = []
+    for (item : iterable) {
+        if(func(item))
+            ~result.append(item)
+    }
+    return result
+}
+
 enum ValType {
     MISSING,
     NONE

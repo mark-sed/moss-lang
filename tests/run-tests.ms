@@ -1274,7 +1274,8 @@ true\n0.400000-2.300000i\ncaught\n-1+2i\ntrue\nfalse\nfalse\ntrue
 fun test_lib_filters(name) {
     ~expect_pass("stdlib_tests/filters.ms", name, """true\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
 false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse
-4\nawesome\ncaught\nhi\n9\nnil\ncaught\nhi\n1\nnil\n""", "")
+4\nawesome\ncaught\nhi\n9\nnil\ncaught\nhi\n1\nnil
+[1, true, [1, 2]]\n[1, 2, 2, 4]\n[5, 6, 7, 8, 9]\n[1, 2, 3, 4]\n[]\n[]\n""", "")
 }
 
 fun test_lib_attrs(name) {
@@ -1368,6 +1369,27 @@ Module empty_module
 fun test_lib_isinstance(name) {
     ~expect_pass("stdlib_tests/isinstance.ms", name, """true\nfalse\ntrue\ntrue\nfalse\ntrue\nfalse\ncaught\nfalse\ntrue\ncaught
 true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ncaught\ncaught\n""", "")
+}
+
+fun test_lib_zip(name) {
+    ~expect_pass("stdlib_tests/zip.ms", name, """[[1, true], [2, false], [3, nil]]
+[]
+[[1, 1, -1], [2, 2, -2], [3, 3, -3]]
+[[1], [2], [3], [4], [5]]
+[[0, 0, 0], [1, 1, 1], [2, 2, 2]]
+[[0, true], [1, false]]\n""", "")
+}
+
+fun test_lib_map(name) {
+    ~expect_pass("stdlib_tests/map.ms", name, """["1!", "2!", "3!", "4!", "5!"]
+[]
+[0, 2, 4, 6]
+[]
+[0, 2]
+[2, 4, 6]
+[11, 22, 33]
+[11, 22]
+["ABC", "DEF", "GHI"]\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {
@@ -1642,6 +1664,8 @@ fun run_all_tests() {
     ~run_test("lib_info")
     ~run_test("lib_help")
     ~run_test("lib_isinstance")
+    ~run_test("lib_zip")
+    ~run_test("lib_map")    
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")
