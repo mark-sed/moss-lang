@@ -215,8 +215,10 @@ Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t
     std::setlocale(LC_CTYPE, "");
 #endif
 
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-    std::wstring text = conv.from_bytes(str_text);
+    std::vector<wchar_t> buf(str_text.size() + 1);
+    std::mbstowcs(buf.data(), str_text.c_str(), buf.size());
+    std::wstring text(buf.data());
+
     if (text.empty())
         return BuiltIns::False;
     for (std::wint_t c: text){
