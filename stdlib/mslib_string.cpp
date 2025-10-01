@@ -199,14 +199,14 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
     return new ListValue(splitted_str);
 }
 
-Value *String::isspace(Interpreter *vm, Value *ths, Value *&err) {
+Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(int)> fn, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring text = strv->get_value();
     if (text.empty())
         return BuiltIns::False;
-    bool all_space = std::all_of(text.begin(), text.end(), [](unsigned char c){
-        return std::isspace(c);
+    bool all_space = std::all_of(text.begin(), text.end(), [fn](unsigned char c){
+        return fn(c);
     });
     return all_space ? BuiltIns::True : BuiltIns::False;
 }

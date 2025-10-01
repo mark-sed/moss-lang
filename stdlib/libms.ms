@@ -125,11 +125,33 @@ class __String {
     }
 
     @internal
+    fun isalpha() {
+        d"Returns true if all the characters in the String are alphabetic."
+    }
+
+    @internal
+    fun isalnum() {
+        d"""Returns true if all the characters in the String are alphabetic
+        or numeric.
+        """
+    }
+
+    @internal
+    fun islower() {
+        d"Returns true if all the characters in the String are lowercase."
+    }
+
+    @internal
     fun isspace() {
         d"""
         Returns true if all the characters in this string are whitespace 
         (' ', '\f', '\n', '\r', '\t', '\v').
         """
+    }
+
+    @internal
+    fun isupper() {
+        d"Returns true if all the characters in the String are uppercase."
     }
 
     fun join(iterable) {

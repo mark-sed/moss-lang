@@ -24,6 +24,7 @@
 #include <bitset>
 #include <climits>
 #include <regex>
+#include <cctype>
 
 using namespace moss;
 using namespace mslib;
@@ -518,6 +519,19 @@ Value *issubclass(Interpreter *vm, Value *cls, Value *types, Value *&err) {
     return BuiltIns::False;
 }
 
+Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(int)> fn, Value *&err) {
+    assert(cf->get_args().size() == 1);
+    auto arg = cf->get_arg("this");
+    auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+    if (err)
+        return nullptr;
+    if (!sv) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+        return nullptr;
+    }
+    return String::isfun(vm, arg, fn, err);
+}
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry(ustring module_name) {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> libms_registry = {
         {known_names::OBJECT_ITERATOR, [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -822,17 +836,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto types = cf->get_arg("types");
             return issubclass(vm, cls, types, err);
         }},
+        {"isalpha", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isalpha), err);
+        }},
+        {"isalnum", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isalnum), err);
+        }},
+        {"islower", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::islower), err);
+        }},
         {"isspace", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            assert(cf->get_args().size() == 1);
-            auto arg = cf->get_arg("this");
-            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
-            if (err)
-                return nullptr;
-            if (!sv) {
-                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
-                return nullptr;
-            }
-            return String::isspace(vm, arg, err);
+            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isspace), err);
+        }},
+        {"isupper", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isupper), err);
         }},
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
