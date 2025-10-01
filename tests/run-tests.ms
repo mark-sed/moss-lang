@@ -1195,7 +1195,15 @@ fun test_lib_string_is(name) {
     ~expect_pass("stdlib_tests/string_is.ms", name, """true\nfalse\ntrue\nfalse
 ----
 true\nfalse\ntrue
-----\n""", "")
+----
+false\ntrue\nfalse\nfalse\ntrue
+-----
+false\ntrue\nfalse\nfalse\ntrue
+-----
+true\nfalse\nfalse\nfalse\ntrue
+-----
+true\nfalse\ntrue\ntrue\nfalse
+-----\n""", "")
 }
 
 fun test_lib_extending_string(name) {
