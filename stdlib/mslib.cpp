@@ -519,7 +519,7 @@ Value *issubclass(Interpreter *vm, Value *cls, Value *types, Value *&err) {
     return BuiltIns::False;
 }
 
-Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(int)> fn, Value *&err) {
+Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(std::wint_t)> fn, Value *&err) {
     assert(cf->get_args().size() == 1);
     auto arg = cf->get_arg("this");
     auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
@@ -837,19 +837,19 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return issubclass(vm, cls, types, err);
         }},
         {"isalpha", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isalpha), err);
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswalpha), err);
         }},
         {"isalnum", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isalnum), err);
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswalnum), err);
         }},
         {"islower", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::islower), err);
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswlower), err);
         }},
         {"isspace", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isspace), err);
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswspace), err);
         }},
         {"isupper", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            return String_isfun(vm, cf, static_cast<int(*)(int)>(std::isupper), err);
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswupper), err);
         }},
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");

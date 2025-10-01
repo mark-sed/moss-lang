@@ -192,23 +192,43 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
     }
     std::vector<Value *> splitted_str;
     splitted_str.reserve(splitted.size());
-    for (const auto s: splitted) {
+    for (const auto &s: splitted) {
         splitted_str.push_back(StringValue::get(s));
     }
 
     return new ListValue(splitted_str);
 }
 
-Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(int)> fn, Value *&err) {
+Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t)> fn, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
-    ustring text = strv->get_value();
+    ustring str_text = strv->get_value();
+    // Save current locale
+    char* old_locale = std::setlocale(LC_CTYPE, nullptr);
+
+    // Copy it because setlocale returns pointer to internal storage
+    std::string saved_locale = old_locale ? old_locale : "C";
+
+#ifdef __windows__
+    std::setlocale(LC_CTYPE, ".UTF-8");
+#else
+    std::setlocale(LC_CTYPE, "");
+#endif
+
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    std::wstring text = conv.from_bytes(str_text);
     if (text.empty())
         return BuiltIns::False;
-    bool all_space = std::all_of(text.begin(), text.end(), [fn](unsigned char c){
-        return fn(c);
-    });
-    return all_space ? BuiltIns::True : BuiltIns::False;
+    for (std::wint_t c: text){
+        if (!fn(c)) {
+            // Restore previous locale
+            std::setlocale(LC_CTYPE, saved_locale.c_str());
+            return BuiltIns::False;
+        }
+    }
+    // Restore previous locale
+    std::setlocale(LC_CTYPE, saved_locale.c_str());
+    return BuiltIns::True;
 }
 
 Value *String::index(Interpreter *vm, Value *ths, Value *value, Value *&err) {

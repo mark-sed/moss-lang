@@ -1187,9 +1187,15 @@ moss"]
 ["1", "", "2", "", "3", "4", "", "5", "", ""]
 ["1", "2--3-4--5--"]
 ["aa", "cc", "ee", ""]
-true\nfalse\ntrue\nfalse
 1\n3\n0\n0\n4\n0\n2
 0\n-1\n7\n-1\n0\n-1\nsir\n-1\n4\n-1\n4\n""", "")
+}
+
+fun test_lib_string_is(name) {
+    ~expect_pass("stdlib_tests/string_is.ms", name, """true\nfalse\ntrue\nfalse
+----
+true\nfalse\ntrue
+----\n""", "")
 }
 
 fun test_lib_extending_string(name) {
@@ -1645,6 +1651,7 @@ fun run_all_tests() {
     ~run_test("lib_lists")
     ~run_test("lib_dicts")
     ~run_test("lib_strings")
+    ~run_test("lib_string_is")
     ~run_test("lib_extending_string")
     ~run_test("lib_extending_note")
     ~run_test("lib_extending_int_float")

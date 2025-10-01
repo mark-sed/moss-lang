@@ -195,15 +195,6 @@ str2.split("--", maxsplit=1)
 "aabccbeeb".split("b")
 "\n"
 
-" ".isspace()
-"\n"
-" a".isspace()
-"\n"
-" \f\n\r\t\v".isspace()
-"\n"
-"".isspace()
-"\n"
-
 "aaa".count("aa")
 "\n"
 "abcabdda".count("a")
