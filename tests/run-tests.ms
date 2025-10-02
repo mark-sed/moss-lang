@@ -1191,7 +1191,10 @@ moss"]
 0\n-1\n7\n-1\n0\n-1\nsir\n-1\n4\n-1\n4
 AABBCCD
  A - 2 Č D Α
-HHHEL23-O\n""", "")
+HHHEL23-O
+ČŘŽ
+7ýžč
+Žába!\n""", "")
 }
 
 fun test_lib_string_is(name) {

@@ -6,6 +6,23 @@
 using namespace moss;
 using namespace mslib;
 
+static inline ustring set_locale() {
+    // Save current locale
+    char* old_locale = std::setlocale(LC_ALL, nullptr);
+    // Copy it because setlocale returns pointer to internal storage
+    std::string saved_locale = old_locale ? old_locale : "C";
+#ifdef __windows__
+    std::setlocale(LC_ALL, ".UTF-8");
+#else
+    std::setlocale(LC_ALL, "");
+#endif
+    return saved_locale;
+}
+
+static inline void reset_locale(ustring prev) {
+    std::setlocale(LC_ALL, prev.c_str());
+}
+
 Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {
     (void)err;
     if (isa<ObjectValue>(v)) {
@@ -46,29 +63,49 @@ Value *String::count(Interpreter *vm, Value *ths, Value *sub, Value *&err) {
 Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
-    auto text = strv->get_value();
-    ustring res = strv->get_value();
-    std::transform(text.begin(), text.end(), res.begin(), ::tolower);
-    res[0] = std::toupper(res[0]);
-    return StringValue::get(res);
+    ustring str = strv->get_value();
+    auto saved_locale = set_locale();
+    auto text = utils::str2wstr(str);
+    bool first = true;
+    for (auto &c: text) {
+        if (first) {
+            c = std::towupper(c);
+            first = false;
+        }
+        else
+            c = std::towlower(c);
+    }
+    auto rv = StringValue::get(utils::wstr2str(text));
+    reset_locale(saved_locale);
+    return rv;
 }
 
 Value *String::upper(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
-    ustring text = strv->get_value();
-    ustring res(text.length(), '\0');
-    std::transform(text.begin(), text.end(), res.begin(), ::toupper);
-    return StringValue::get(res);
+    ustring str = strv->get_value();
+    auto saved_locale = set_locale();
+    auto text = utils::str2wstr(str);
+    for (auto &c: text) {
+        c = std::towupper(c);
+    }
+    auto rv = StringValue::get(utils::wstr2str(text));
+    reset_locale(saved_locale);
+    return rv;
 }
 
 Value *String::lower(Interpreter *vm, Value *ths, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
-    ustring text = strv->get_value();
-    ustring res(text.length(), '\0');
-    std::transform(text.begin(), text.end(), res.begin(), ::tolower);
-    return StringValue::get(res);
+    ustring str = strv->get_value();
+    auto saved_locale = set_locale();
+    auto text = utils::str2wstr(str);
+    for (auto &c: text) {
+        c = std::towlower(c);
+    }
+    auto rv = StringValue::get(utils::wstr2str(text));
+    reset_locale(saved_locale);
+    return rv;
 }
 
 Value *String::replace(Interpreter *vm, Value *ths, Value *target, Value *value, Value *count, Value *&err) {
@@ -197,23 +234,6 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
     }
 
     return new ListValue(splitted_str);
-}
-
-static inline ustring set_locale() {
-    // Save current locale
-    char* old_locale = std::setlocale(LC_ALL, nullptr);
-    // Copy it because setlocale returns pointer to internal storage
-    std::string saved_locale = old_locale ? old_locale : "C";
-#ifdef __windows__
-    std::setlocale(LC_ALL, ".UTF-8");
-#else
-    std::setlocale(LC_ALL, "");
-#endif
-    return saved_locale;
-}
-
-static inline void reset_locale(ustring prev) {
-    std::setlocale(LC_ALL, prev.c_str());
 }
 
 Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t)> fn, Value *&err) {

@@ -253,3 +253,9 @@ txt.index("sir", 0, 14)
 "".swapcase()
 "hHHel23-o".swapcase()
 "\n"
+
+"čřž\n".upper()
+"7ÝŽČ\n".lower()
+
+"žába!".capitalize()
+"\n"

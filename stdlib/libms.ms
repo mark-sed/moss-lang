@@ -90,6 +90,7 @@ class __String {
     fun capitalize() {
         d"""
         Makes the first letter uppercase and the rest of the String lowercase.
+        This function works with UNICODE.
         """
     }
 
@@ -204,7 +205,10 @@ class __String {
 
     @internal
     fun lower() {
-        d"Converts all the string letters into lowercase."
+        d"""
+        Converts all the string letters into lowercase.
+        This function works with UNICODE.
+        """
     }
 
     @internal
@@ -263,7 +267,10 @@ class __String {
 
     @internal
     fun upper() {
-        d"Converts all the string letters into uppercase."
+        d"""
+        Converts all the string letters into uppercase.
+        This function works with UNICODE.
+        """
     }
 
     @internal
