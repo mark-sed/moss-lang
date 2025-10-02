@@ -141,11 +141,21 @@ class __String {
     }
 
     @internal
+    fun isdigit() {
+        d"Returns true if all the characters in the String are digits."
+    }
+
+    @internal
     fun islower() {
         d"""
         Returns true if all the characters in the String are lowercase.
         This function works with UNICODE in current locale.
         """
+    }
+
+    @internal
+    fun isprintable() {
+        d"Returns true if all the characters in the String are printable."
     }
 
     @internal
@@ -239,6 +249,15 @@ class __String {
         d"""
         Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from
         start and end of String.
+        """
+    }
+
+    @internal
+    fun swapcase() {
+        d"""
+        Returns version of this String where lowercase letters are changed to
+        uppercase and vice versa.
+        This function works with UNICODE.
         """
     }
 

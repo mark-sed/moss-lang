@@ -245,3 +245,11 @@ txt.index("sir", 0, 14)
 "\n"
 "loool".index("l", start=1, end=100)
 "\n"
+
+"aAbBcCd".swapcase()
+"\n"
+" a - 2 č d α".swapcase()
+"\n"
+"".swapcase()
+"hHHel23-o".swapcase()
+"\n"

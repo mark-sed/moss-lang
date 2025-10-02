@@ -99,6 +99,19 @@ inline void replace_in_n(ustring &str, const ustring& target, const ustring& val
     }
 }
 
+inline std::wstring str2wstr(ustring &str_text) {
+    std::vector<wchar_t> buf(str_text.size() + 1);
+    std::mbstowcs(buf.data(), str_text.c_str(), buf.size());
+    return std::wstring(buf.data());
+}
+
+inline std::string wstr2str(const std::wstring &wstr_text) {
+    // Allocate buffer (wcstombs writes up to size-1 chars + '\0')
+    std::vector<char> buf(wstr_text.size() * MB_CUR_MAX + 1);
+    std::wcstombs(buf.data(), wstr_text.c_str(), buf.size());
+    return std::string(buf.data());
+}
+
 }
 
 #endif//_UTILS_HPP_

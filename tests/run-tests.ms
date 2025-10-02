@@ -1188,7 +1188,10 @@ moss"]
 ["1", "2--3-4--5--"]
 ["aa", "cc", "ee", ""]
 1\n3\n0\n0\n4\n0\n2
-0\n-1\n7\n-1\n0\n-1\nsir\n-1\n4\n-1\n4\n""", "")
+0\n-1\n7\n-1\n0\n-1\nsir\n-1\n4\n-1\n4
+AABBCCD
+ A - 2 Č D Α
+HHHEL23-O\n""", "")
 }
 
 fun test_lib_string_is(name) {
@@ -1203,6 +1206,10 @@ false\ntrue\nfalse\nfalse\ntrue
 true\nfalse\nfalse\nfalse\ntrue
 -----
 true\nfalse\ntrue\ntrue\nfalse
+-----
+false\ntrue\nfalse\nfalse\nfalse\ntrue
+-----
+true\nfalse\nfalse\nfalse
 -----\n""", "")
 }
 

@@ -199,38 +199,58 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
     return new ListValue(splitted_str);
 }
 
+static inline ustring set_locale() {
+    // Save current locale
+    char* old_locale = std::setlocale(LC_ALL, nullptr);
+    // Copy it because setlocale returns pointer to internal storage
+    std::string saved_locale = old_locale ? old_locale : "C";
+#ifdef __windows__
+    std::setlocale(LC_ALL, ".UTF-8");
+#else
+    std::setlocale(LC_ALL, "");
+#endif
+    return saved_locale;
+}
+
+static inline void reset_locale(ustring prev) {
+    std::setlocale(LC_ALL, prev.c_str());
+}
+
 Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t)> fn, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring str_text = strv->get_value();
-    // Save current locale
-    char* old_locale = std::setlocale(LC_CTYPE, nullptr);
+    
+    auto saved_locale = set_locale();
 
-    // Copy it because setlocale returns pointer to internal storage
-    std::string saved_locale = old_locale ? old_locale : "C";
-
-#ifdef __windows__
-    std::setlocale(LC_CTYPE, ".UTF-8");
-#else
-    std::setlocale(LC_CTYPE, "");
-#endif
-
-    std::vector<wchar_t> buf(str_text.size() + 1);
-    std::mbstowcs(buf.data(), str_text.c_str(), buf.size());
-    std::wstring text(buf.data());
+    auto text = utils::str2wstr(str_text);
 
     if (text.empty())
         return BuiltIns::False;
     for (std::wint_t c: text){
         if (!fn(c)) {
             // Restore previous locale
-            std::setlocale(LC_CTYPE, saved_locale.c_str());
+            reset_locale(saved_locale);
             return BuiltIns::False;
         }
     }
     // Restore previous locale
-    std::setlocale(LC_CTYPE, saved_locale.c_str());
+    reset_locale(saved_locale);
     return BuiltIns::True;
+}
+
+Value *String::swapcase(Interpreter *vm, StringValue *ths, Value *&err) {
+    auto str = ths->get_value();
+    auto saved_locale = set_locale();
+    auto text = utils::str2wstr(str);
+    for (auto &c: text) {
+        if (std::iswupper(c))
+            c = std::towlower(c);
+        c = std::towupper(c);
+    }
+    auto rv = StringValue::get(utils::wstr2str(text));
+    reset_locale(saved_locale);
+    return rv;
 }
 
 Value *String::index(Interpreter *vm, Value *ths, Value *value, Value *&err) {

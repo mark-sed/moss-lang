@@ -842,8 +842,14 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"isalnum", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswalnum), err);
         }},
+        {"isdigit", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswdigit), err);
+        }},
         {"islower", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswlower), err);
+        }},
+        {"isprintable", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswprint), err);
         }},
         {"isspace", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswspace), err);
@@ -1098,6 +1104,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto strv = sv->get_value();
             utils::trim(strv);
             return StringValue::get(strv);
+        }},
+        {"swapcase", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 1);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            return String::swapcase(vm, sv, err);
         }},
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::tan(cf->get_args()[0].value->as_float()));
