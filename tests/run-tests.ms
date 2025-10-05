@@ -1151,7 +1151,8 @@ caught\ntrue\nnil\nnot in\n1\ncaught\n1\ncaught\n4\nfalse\ntrue\n0\n3
 {"a": 1}\n{"a": 2}\n2\nnil\n{"a": "changed"}\n{"a": "changed"}
 []\n[["lst", [1, 2, 3]]]
 []
-[]\n""", "")
+[]
+[1, true]\ncaught\n""", "")
 }
 
 fun test_lib_strings(name) {

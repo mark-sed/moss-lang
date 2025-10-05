@@ -187,3 +187,18 @@ assert(vl2.length() == 3, "size")
 assert({"a": "a"} in vl2, "aa")
 assert([1,2] in vl2, "12")
 assert(nil in vl2, "nil")
+
+dc = {"a": 1, "b": 2, "c": 3}
+i1 = dc.pop_item()
+i2 = dc.pop_item()
+i3 = dc.pop_item()
+assert(dc.length() == 0, "size")
+assert(Dict([i1, i2, i3]) == {"a": 1, "b": 2, "c": 3}, "Diff")
+
+{1: true}.pop_item()
+"\n"
+
+try {
+    {:}.pop_item()
+} catch(k: KeyError)
+    "caught\n"

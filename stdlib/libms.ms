@@ -470,6 +470,17 @@ class __Dict {
         """
     }
 
+    fun pop_item() {
+        d"Removed key and its value from this dict and returns it."
+        
+        if (this.empty())
+            raise KeyError("Dictionary is empty in call to 'pop_item'.\n")
+        items = this.items()
+        last = items[-1]
+        ~this.pop(last[0])
+        return last
+    }
+
     fun remove(key) {
         d"Removes item at key `key` from the dictionary."
         ~this.pop(key)
