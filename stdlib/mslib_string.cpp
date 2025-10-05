@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <cstdlib>
+#include <cwctype>
 
 using namespace moss;
 using namespace mslib;

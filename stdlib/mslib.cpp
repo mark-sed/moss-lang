@@ -25,6 +25,7 @@
 #include <climits>
 #include <regex>
 #include <cctype>
+#include <cwctype>
 
 using namespace moss;
 using namespace mslib;
@@ -855,7 +856,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswspace), err);
         }},
         {"isupper", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswupper), err);
+            return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(iswupper), err);
         }},
         {"length", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
