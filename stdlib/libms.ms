@@ -404,11 +404,6 @@ class __Dict {
 
     fun copy() = ::copy(this)
 
-    @internal
-    fun length() {
-        d"Returns number of items (key and value) in this dictionary."
-    }
-
     fun empty() {
         d"""
         Returns true if there are no items in this dictionary, false otherwise.
@@ -422,6 +417,41 @@ class __Dict {
         Tries to extract and return `key` value from this dictionary, if it is
         not found, then def_val is returned.
         """
+    }
+
+    fun items() {
+        d"Returns list of lists (pairs) from this dict."
+
+        vals = []
+        for (k, v: this) {
+            ~vals.append([k, v])
+        }
+        return vals
+    }
+
+    fun keys() {
+        d"Returns list of keys in this dict."
+
+        ks = []
+        for (k, _: this) {
+            ~ks.append(k)
+        }
+        return ks
+    }
+
+    fun values() {
+        d"Returns list of values in this dict."
+
+        vls = []
+        for (_, v: this) {
+            ~vls.append(v)
+        }
+        return vls
+    }
+
+    @internal
+    fun length() {
+        d"Returns number of items (key and value) in this dictionary."
     }
 
     @internal

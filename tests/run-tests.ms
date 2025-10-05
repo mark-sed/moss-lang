@@ -1148,7 +1148,10 @@ fun test_lib_dicts(name) {
     ~expect_pass("stdlib_tests/dicts.ms", name, """{"A": 1, "B": 2, "C": 3}\n{:}\n{:}\n{:}\n{"a": 1, "b": 2, "c": 3}
 2\n{"a": 1, "c": 3}\n1\n{"c": 3}\n3\n{:}\ncaught\nnil\n1\n{:}\n{"hello": [1, 2, 3]}\n{1: true, 2: false}\n{:}
 caught\ntrue\nnil\nnot in\n1\ncaught\n1\ncaught\n4\nfalse\ntrue\n0\n3
-{"a": 1}\n{"a": 2}\n2\nnil\n{"a": "changed"}\n{"a": "changed"}\n""", "")
+{"a": 1}\n{"a": 2}\n2\nnil\n{"a": "changed"}\n{"a": "changed"}
+[]\n[["lst", [1, 2, 3]]]
+[]
+[]\n""", "")
 }
 
 fun test_lib_strings(name) {

@@ -140,3 +140,50 @@ d11[1]
 "\n"
 ~order(d10[2])
 ~order(d11[2])
+
+its = {"a": 1, "b": 2, "c": 3}.items()
+assert(its.length() == 3, "size")
+assert(["a", 1] in its, "a1")
+assert(["b", 2] in its, "b2")
+assert(["c", 3] in its, "c3")
+
+{:}.items()
+"\n"
+
+its2 = {"dct": {"sub": true}, true: nil}.items()
+assert(its2.length() == 2, "size")
+assert(["dct", {"sub": true}] in its2, "sub")
+assert([true, nil] in its2, "true")
+
+its3 = {"lst": [1, 2, 3]}.items()
+its3
+"\n"
+
+ks = {"a": 1, "b": 2, "c": 3}.keys()
+assert(ks.length() == 3, "size")
+assert("a" in ks, "a")
+assert("b" in ks, "b")
+assert("c" in ks, "c")
+
+{:}.keys()
+"\n"
+
+ks2 = {true: [1,2], false: "f"}
+assert(ks2.length() == 2, "size")
+assert(true in ks2, "tr")
+assert(false in ks2, "fl")
+
+vl = {"a": 1, "b": 2, "c": 3}.values()
+assert(vl.length() == 3, "size")
+assert(1 in vl, "1")
+assert(2 in vl, "2")
+assert(3 in vl, "3")
+
+{:}.values()
+"\n"
+
+vl2 = {1: {"a": "a"}, 2: [1,2], 3:nil}.values()
+assert(vl2.length() == 3, "size")
+assert({"a": "a"} in vl2, "aa")
+assert([1,2] in vl2, "12")
+assert(nil in vl2, "nil")
