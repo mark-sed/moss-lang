@@ -881,6 +881,7 @@ IR *Parser::declaration() {
             auto fn = dyn_cast<Function>(decl);
             fn->set_body(fnbody);
             fn->get_src_info().update_ends(curr_src_info());
+            no_end_needed = true;
         }
         else if (match(TokenType::SET)) {
             auto lmbody = expression();

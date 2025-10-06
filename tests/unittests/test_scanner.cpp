@@ -171,6 +171,18 @@ f"{{}"
         run_tokenizer(ss, strs_code);
         EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
     }
+
+    {
+        ustring strs_code = R"(
+f"""
+{\"}"""
+)"; // escaped quote outside of string
+        ustring expected = "END_NL ERROR_TOKEN ";
+
+        std::stringstream ss;
+        run_tokenizer(ss, strs_code);
+        EXPECT_TRUE(ss.str() == expected) << ss.str() << "\n != \n" << expected << "\n";
+    }
 }
 
 /** Tokenization of strings */

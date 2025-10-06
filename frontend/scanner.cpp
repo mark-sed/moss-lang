@@ -53,7 +53,6 @@ UTF8Char Scanner::peek() {
     // Peek should never happen after a new line, but might on last line
     // Which means its eof
     if (this->curr_byte >= curr_line.size()) {
-        assert(stream->peek() == EOF && "Peeked when line was fully read and not on EOF");
         return UTF8Char(EOF);
     }
 
@@ -441,6 +440,13 @@ Token *Scanner::parse_string(bool triple_quote, bool fstring) {
                         ft = next_token();
                         this->len = prev_len;
                         this->col = 0;
+                        if (ft->get_type() == TokenType::END_NL) {
+                            this->col = 0;
+                            this->len = 0;
+                            if (!triple_quote) {
+                                return err_tokenize(value, "", error::msgs::UNTERMINATED_STRING_LITERAL, "");
+                            }
+                        }
                         if (ft->get_type() == TokenType::END_OF_FILE)
                             return err_tokenize(value, "", error::msgs::UNTERMINATED_FSTRING_EXPR, "");
                         toks.push_back(ft);
