@@ -807,6 +807,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 1);
             return input(vm, cf->get_args()[0].value, err);
         }},
+        {"insert", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto arg = cf->get_arg("this");
+            if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
+                return List::insert(vm, arg, cf->get_arg("index"), cf->get_arg("value"), err);
+            }/* else if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
+                return String::index(vm, arg, cf->get_arg("value"), err);
+            } else if (auto dv = get_subtype_value<DictValue>(arg, BuiltIns::Dict, vm, err)) {
+                return IntValue::get(dv->size());
+            }*/ else {
+                if (!err)
+                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"Int", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             auto args = cf->get_args();

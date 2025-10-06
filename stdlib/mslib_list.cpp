@@ -50,6 +50,18 @@ Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&) {
     }));
 }
 
+Value *List::insert(Interpreter *vm, Value *ths, Value *index, Value *value, Value *&err) {
+    auto &lst = get_list(ths);
+    auto idx = get_int(index);
+    if (idx < 0)
+        idx = 0;
+    else if (idx > lst.size())
+        idx = idx = lst.size();
+
+    lst.insert(lst.begin() + idx, value);
+    return nullptr;
+}
+
 Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
     auto iterator = iterable->iter(vm);
     std::vector<Value *> lv;

@@ -533,7 +533,7 @@ public:
     virtual inline bool is_hashable() override { return false; }
     virtual inline bool is_iterable() override { return true; }
 
-    std::vector<Value *> get_vals() { return this->vals; }
+    std::vector<Value *> &get_vals() { return this->vals; }
 
     void push(Value *v) { vals.push_back(v); }
     size_t size() { return vals.size(); }

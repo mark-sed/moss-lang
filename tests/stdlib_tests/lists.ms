@@ -107,3 +107,64 @@ ls8
 "\n"
 [true, false, true].count(1)
 "\n"
+
+[1,2,3].index(2)
+"\n"
+try
+    [].index(true)
+catch(e:ValueError)
+    "caught\n"
+
+class E {
+    fun E(v) {
+        this.v = v
+    }
+
+    fun (==)(e2) {
+        return this.v == e2.v
+    }
+}
+
+e = E("")
+[e, TypeError("")].index(e)
+"\n"
+
+try
+    [E(1), 2].index(e)
+catch (e:ValueError)
+    "caught\n"
+
+try
+    [1,2,3,4,5].index(1, 1, 4)
+catch (e:ValueError)
+    "caught\n"
+
+[1,2,3,4,5].index(3, 1, 4)
+"\n"
+
+l1 = [1,2,3]
+~l1.insert(0, 0)
+l1
+"\n"
+
+~l1.insert(l1.length(), 4)
+l1
+"\n"
+
+l2 = [1,3]
+~l2.insert(1, true)
+l2
+"\n"
+
+l3 = []
+~l3.insert(0, nil)
+l3
+"\n"
+
+~l3.insert(-10, 1)
+l3
+"\n"
+
+~l3.insert(100, 2)
+l3
+"\n"

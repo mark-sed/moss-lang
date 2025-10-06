@@ -324,8 +324,25 @@ class __List {
     }
 
     @internal
-    fun length() {
-        d"Return number of values in this list."
+    fun append(... v) {
+        d"Appends all values in `v` to this list."
+    }
+
+    @internal
+    fun clear() {
+        d"""
+        Removes all values from this list.
+        """
+    }
+
+    fun copy() = ::copy(this)
+
+    @internal
+    fun count(val) {
+        d"""
+        Returns how many times does `val` appear in this list (using `==`
+        operator).
+        """
     }
 
     fun empty() {
@@ -333,12 +350,45 @@ class __List {
         return this.length() == 0
     }
 
-    @internal
-    fun append(... v) {
-        d"Appends all values in `v` to this list."
+    fun index(value) {
+        d"""
+        Returns index of `value` in this List.
+        """
+        i = 0
+        for (e: this) {
+            if (e == value)
+                return i
+            i += 1
+        }
+        raise ValueError(f"Value '{value}' is not in list.\n")
     }
 
-    fun copy() = ::copy(this)
+    fun index(value, start:Int, end:Int) {
+        d"""
+        Returns index of `value` in this List.
+        If `start` is specified then finding starts from this index.
+        If `end` is specified then finding ends at this index.
+        """
+        inx = this[start..end].index(value)
+        if (inx <= -1)
+            return inx
+        return inx + start
+    }
+
+    @internal
+    fun insert(index:Int, value) {
+        d"""
+        Inserts `value` into this List before index `index`.
+        If `index` > length of this List then `value` is appended at
+        the end.
+        If `index` <= 0 then `value` is prepended to the List.
+        """
+    }
+
+    @internal
+    fun length() {
+        d"Return number of values in this list."
+    }
 
     @internal
     fun pop(index:Int=-1) {
@@ -349,21 +399,6 @@ class __List {
     }
 
     fun reverse() = this[-1..-this.length()-1]
-
-    @internal
-    fun clear() {
-        d"""
-        Removes all values from this list.
-        """
-    }
-
-    @internal
-    fun count(val) {
-        d"""
-        Returns how many times does `val` appear in this list (using `==`
-        operator).
-        """
-    }
 
     @internal
     fun __iter() {}

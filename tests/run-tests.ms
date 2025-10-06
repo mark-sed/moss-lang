@@ -1141,7 +1141,14 @@ fun test_lib_lists(name) {
 [1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]
 false\ntrue\nfalse\nfalse\ntrue
 [1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]
-2\n2\n0\n1\n3\n0\n""", "")
+2\n2\n0\n1\n3\n0
+1\ncaught\n0\ncaught\ncaught\n2
+[0, 1, 2, 3]
+[0, 1, 2, 3, 4]
+[1, true, 3]
+[nil]
+[1, nil]
+[1, nil, 2]\n""", "")
 }
 
 fun test_lib_dicts(name) {

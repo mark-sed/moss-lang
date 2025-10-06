@@ -112,7 +112,7 @@ inline opcode::BoolConst get_bool(Value *v) {
 
 /// \brief Extracts std::vector from Value, which has to be ListValue.
 /// This function only asserts, does not raise. Type of v has to be checked before call to this.
-inline std::vector<Value *> get_list(Value *v) {
+inline std::vector<Value *> &get_list(Value *v) {
     assert(v && "Passed nullptr to extractor");
     auto vv = dyn_cast<ListValue>(v);
     assert(vv && "Value to extract list is not a ListValue");
