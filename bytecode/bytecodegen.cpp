@@ -1509,6 +1509,7 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     Register iter = 0;
     auto i_expr = forlp->get_iterator();
     auto mva = dyn_cast<Multivar>(i_expr);
+    std::vector<opcode::Register> multi_var_regs;
     if (isa<Variable>(i_expr)) {
         iter = next_reg();
     } else if (mva) {
@@ -1516,9 +1517,9 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
         append(new BuildList(iter));
         for (size_t i = 0; i < mva->get_vars().size(); ++i) {
             auto name_reg = next_reg();
+            multi_var_regs.push_back(name_reg);
             append(new StoreNilConst(next_creg()));
             append(new StoreConst(name_reg, val_last_creg()));
-            append(new StoreName(name_reg, mva->get_vars()[i]->get_name()));
             append(new opcode::StoreIntConst(next_creg(), name_reg));
             append(new ListPushConst(iter, val_last_creg()));
         }
@@ -1529,7 +1530,6 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     if (!mva) {
         append(new StoreNilConst(next_creg()));
         append(new StoreConst(iter, val_last_creg()));
-        append(new StoreName(iter, forlp->get_iterator()->get_name()));
     }
     auto collection = emit(forlp->get_collection(), true);
     auto new_iter = next_reg();
@@ -1539,6 +1539,9 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     if (!mva) {
         auto for_op = new opcode::For(iter, new_iter, 0);
         append(for_op);
+        // Name store needs to be here so that if no iteration is done, the variable is not created and also
+        // does not override some outside value.
+        append(new StoreName(iter, forlp->get_iterator()->get_name()));
         emit(forlp->get_body());
         update_jmps(pre_for_bc, get_curr_address()+1, get_curr_address()+2, pre_for_bc);
         append(new Jmp(pre_for_bc));
@@ -1548,6 +1551,10 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
         append(new StoreIntConst(unpack_reg, mva->get_rest_index()));
         auto for_op = new opcode::ForMulti(iter, new_iter, 0, unpack_reg);
         append(for_op);
+        // Just as above the names have to be stored inside of the for to not overwrite.
+        for (size_t i = 0; i < mva->get_vars().size(); ++i) {
+            append(new StoreName(multi_var_regs[i], mva->get_vars()[i]->get_name()));
+        }
         emit(forlp->get_body());
         update_jmps(pre_for_bc, get_curr_address()+1, get_curr_address()+2, pre_for_bc);
         append(new Jmp(pre_for_bc));
