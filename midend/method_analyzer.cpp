@@ -10,7 +10,7 @@ void MethodAnalyzer::check_constructor(Function &method, Class &cls) {
     if (method.get_name() == cls.get_name()) {
         LOGMAX("Setting " << method.get_name() << " as constructor");
         method.set_constructor(true);
-        // TODO: Technically staticmethod constructors could be allowed and user just would not have an access to
+        // TODO: Technically static_method constructors could be allowed and user just would not have an access to
         // this value, but the way constructors currently work it is not possible as the object
         // for constructor to work with is passed in on call as this.
         // FIXME: Uncomment -- causes issues

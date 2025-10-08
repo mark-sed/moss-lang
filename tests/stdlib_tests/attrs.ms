@@ -61,7 +61,7 @@ class SomeClassFoo {
         this.name = NAME
     }
 
-    @staticmethod
+    @static_method
     fun foo() {}
 
 }

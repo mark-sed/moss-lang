@@ -446,6 +446,21 @@ class __Dict {
         return this.length() == 0
     }
 
+    @static_method
+    fun from_keys(iterable, value=nil) {
+        d"""
+        Creates a dictionary from `iterable` used as the keys and `value` as
+        the value.
+        """
+        // TODO: Once length is fixed uncomment.
+        // return ::Dict(zip(iterable, [value : _ = 0..length(iterable)]))
+        d = {:}
+        for (k: iterable) {
+            d[k] = value
+        }
+        return d
+    }
+
     @internal
     fun get(key, def_val=nil) {
         d"""

@@ -202,3 +202,41 @@ try {
     {:}.pop_item()
 } catch(k: KeyError)
     "caught\n"
+
+assert(Dict.from_keys([1,2,3]) == {1:nil, 2:nil, 3:nil}, "diff1")
+assert(Dict.from_keys([1,2,3], "h") == {1:"h", 2:"h", 3:"h"}, "diff2")
+assert(Dict.from_keys([]) == {:}, "diff3")
+
+class It {
+    fun It(end) {
+        this.end = end
+    }
+
+    fun __iter() {
+        this.i = 0
+        return this
+    }
+
+    fun __next() {
+        if (this.i >= this.end)
+            raise StopIteration()
+        v = this.i
+        this.i += 1
+        return v
+    }
+}
+
+assert(Dict.from_keys(It(3)) == {0:nil, 1:nil, 2:nil}, "diff4")
+assert(Dict.from_keys(It(3), 1) == {0:1, 1:1, 2:1}, "diff5")
+
+assert(Dict.from_keys(10..7, 1) == {10:1, 9:1, 8:1}, "diff6")
+
+try
+    Dict.from_keys([[1,2]])
+catch (e:TypeError)
+    "caught\n"
+
+try
+    Dict.from_keys(1)
+catch (e:TypeError)
+    "caught\n"

@@ -3,7 +3,7 @@ class StatClass {
         this.x = x
     }
 
-    @staticmethod
+    @static_method
     fun get_info(name) {
         try {
             return name ++ ": " ++ this.x ++ "\n"
@@ -12,7 +12,7 @@ class StatClass {
         }
     }
 
-    @staticmethod
+    @static_method
     fun get_info2(name, id:Int) {
         return name ++ ", " ++ id ++ "\n"
     }

@@ -482,7 +482,7 @@ class MDParser {
         return MDBlockQuotes(this.textual(), level)
     }
 
-    //@staticmethod
+    //@static_method
     fun get_ol_number(text, i) {
         val = ""
         ok = true

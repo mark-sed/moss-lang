@@ -1159,7 +1159,8 @@ caught\ntrue\nnil\nnot in\n1\ncaught\n1\ncaught\n4\nfalse\ntrue\n0\n3
 []\n[["lst", [1, 2, 3]]]
 []
 []
-[1, true]\ncaught\n""", "")
+[1, true]\ncaught
+caught\ncaught\n""", "")
 }
 
 fun test_lib_strings(name) {
