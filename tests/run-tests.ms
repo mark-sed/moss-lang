@@ -1534,7 +1534,7 @@ gc.cpp::sweep: Deleting: LIST(List)\n""", args="--v5=gc.cpp::sweep --stress-test
 }
 
 fun test_gc_recursion(name) {
-    if (::EXTRA_FLAGS == "--stress-test-gc")
+    if ("--stress-test-gc" in ::EXTRA_FLAGS)
         return
     // This test just checks that GC is triggered without any special mode
     // If this fails it might be because of changes in gc threshold (next_gc) 

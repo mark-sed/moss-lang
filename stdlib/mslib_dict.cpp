@@ -28,7 +28,9 @@ Value *Dict::Dict(Interpreter *vm, Value *iterable, Value *&err) {
             return nullptr;
         }
     }
-    return new DictValue(keys, vals, vm);
+    auto dc = new DictValue();
+    dc->push(keys, vals, vm);
+    return dc;
 }
 
 Value *Dict::get(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err) {

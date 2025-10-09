@@ -2684,7 +2684,9 @@ void BuildDict::exec(Interpreter *vm) {
     assert(kl && "keys are not a list");
     auto vl = dyn_cast<ListValue>(v);
     assert(vl && "values are not a list");
-    vm->store(dst, new DictValue(kl, vl, vm));
+    auto dc = new DictValue();
+    dc->push(kl, vl, vm);
+    vm->store(dst, dc);
 }
 
 void BuildEnum::exec(Interpreter *vm) {

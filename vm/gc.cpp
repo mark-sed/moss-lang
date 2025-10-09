@@ -198,6 +198,11 @@ void TracingGC::mark_roots(Interpreter *ivm) {
         mark_value(cf->get_function());
     }
 
+    // Generator notes are kept to be outputted at the end of program
+    for (auto n: Interpreter::get_generator_notes()) {
+        mark_value(n);
+    }
+
     // libms marking
     if (ivm->is_main() && Interpreter::libms_mod) {
         assert(Interpreter::libms_mod->get_vm() && "sanity check");

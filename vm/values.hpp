@@ -600,8 +600,7 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::DICT;
 
-    DictValue(ListValue *keys, ListValue *values, Interpreter *vm);
-    DictValue(std::vector<Value *> keys, std::vector<Value *> vals, Interpreter *vm);
+    // Since pushing a value might cause an exception there cannot be a constructor which takes list as is bellow.
     DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
     DictValue();
 
@@ -617,6 +616,10 @@ public:
     std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> &get_vals() { return this->vals; }
 
     void push(Value *k, Value *v, Interpreter *vm);
+    void push(std::vector<Value *> &keys, std::vector<Value *> &values, Interpreter *vm);
+    void push(ListValue *keys, ListValue *values, Interpreter *vm) {
+        push(keys->get_vals(), values->get_vals(), vm);
+    }
     size_t size() {
         size_t s = 0;
         for (auto [k, v]: vals) {

@@ -328,7 +328,9 @@ Value *symbols(Interpreter *vm, MemoryPool *frame) {
         auto v = frame->load_name(name, vm);
         vals.push_back(v);
     }
-    return new DictValue(keys, vals, vm);
+    auto dc = new DictValue();
+    dc->push(keys, vals, vm);
+    return dc;
 }
 
 Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {

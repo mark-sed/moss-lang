@@ -375,6 +375,12 @@ void DictValue::push(Value *k, Value *v, Interpreter *vm) {
     }
 }
 
+void DictValue::push(std::vector<Value *> &keys, std::vector<Value *> &values, Interpreter *vm){
+    for (size_t i = 0; i < keys.size(); ++i) {
+        this->push(keys[i], values[i], vm);
+    }
+}
+
 std::list<ClassValue *> ClassValue::get_all_supers() {
     std::list<ClassValue *> sups(supers);
     // Append supers of supers
@@ -425,20 +431,6 @@ IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::I
         this->attrs = BuiltIns::Int->get_attrs()->clone();
 }
 
-DictValue::DictValue(ListValue *keys, ListValue *values, Interpreter *vm)
-        : Value(ClassType, "Dict", BuiltIns::Dict), iterator(vals.begin()), keys_iterator(0) {
-    if(BuiltIns::Dict->get_attrs())
-        this->attrs = BuiltIns::Dict->get_attrs()->clone();
-    LOGMAX("Creating dict");
-    auto kvs = keys->get_vals();
-    auto vvs = values->get_vals();
-    assert(kvs.size() == vvs.size() && "key size does not match value size");
-    for (size_t i = 0; i < kvs.size(); ++i) {
-        auto k = kvs[i];
-        auto v = vvs[i];
-        push(k, v, vm);
-    }
-}
 DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals)
         : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals), iterator(vals.begin()), keys_iterator(0) {
     if(BuiltIns::Dict->get_attrs())
@@ -447,14 +439,6 @@ DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, V
 DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
-}
-DictValue::DictValue(std::vector<Value *> keys, std::vector<Value *> vals, Interpreter *vm) : Value(ClassType, "Dict", BuiltIns::Dict) {
-    if(BuiltIns::Dict->get_attrs())
-        this->attrs = BuiltIns::Dict->get_attrs()->clone();
-    assert(vals.size() == keys.size() && "Mismatched sizes or keys and values");
-    for (size_t i = 0; i < keys.size(); ++i) {
-        push(keys[i], vals[i], vm);
-    }
 }
 
 template<>

@@ -162,9 +162,9 @@ Interpreter::~Interpreter() {
         // is created, like in unit test case
         Interpreter::gc = nullptr;
 
-        for (auto v: generator_notes) {
-            delete v;
-        }
+        //for (auto v: generator_notes) {
+        //    delete v;
+        //}
     }
     // Code is to be deleted by the creator of it
 }
