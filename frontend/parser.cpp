@@ -1514,6 +1514,14 @@ ir::OperatorLiteral *Parser::operator_name() {
             put_back();
         }
     }
+    // ()
+    if (match(TokenType::LEFT_PAREN)) {
+        if (match(TokenType::RIGHT_PAREN)) {
+            return new OperatorLiteral(Operator(OperatorKind::OP_CALL), curr_src_info());
+        } else {
+            put_back();
+        }
+    }
     if (check({TokenType::CONCAT, TokenType::EXP, TokenType::PLUS,
           TokenType::MINUS, TokenType::DIV, TokenType::MUL,
           TokenType::MOD, TokenType::EQ, TokenType::NEQ,

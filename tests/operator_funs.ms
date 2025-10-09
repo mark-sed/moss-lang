@@ -78,6 +78,15 @@ class NumOffset {
     fun ([])(i) {
         return ((this.x + this.off)++"")[i]
     }
+
+    fun (())(a:Int, b) {
+        return this.x + a + b
+    }
+
+    fun (())() {
+        return nil
+    }
+
 }
 
 no = NumOffset(10, 1000)
@@ -176,3 +185,48 @@ try {
 } catch(e:TypeError) {
     "caught\n"
 }
+
+no(3, 5)
+"\n"
+no()
+"\n"
+try
+    no(1)
+catch(e)
+    "caught\n"
+
+try
+    no(true, 4)
+catch(e)
+    "caught\n"
+
+class It {
+    fun It(end) {
+        this.end = end
+    }
+
+    fun __iter() {
+        this.i = 0
+        return this
+    }
+
+    fun __next() {
+        if (this.i >= this.end)
+            raise StopIteration()
+        v = this.i
+        this.i += 1
+        return v
+    }
+
+    fun (())() {
+        return "called " ++ this.end ++ "\n"
+    }
+
+    fun (())(pref) {
+        return pref ++ " called " ++ this.end ++ "\n"
+    }
+}
+
+it = It(3)
+it()
+it(">")

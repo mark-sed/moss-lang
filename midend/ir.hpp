@@ -992,6 +992,7 @@ enum OperatorKind {
     OP_IN,     ///< in
     OP_ACCESS, ///< `.`
     OP_SUBSC,  ///< [] or [..]
+    OP_CALL,  ///< () for call function
     OP_SCOPE,  ///< :: 
     OP_UNPACK  ///< <<
 };
@@ -1037,7 +1038,8 @@ public:
             case OP_XOR: return "xor"; 
             case OP_IN: return "in"; 
             case OP_ACCESS: return "."; 
-            case OP_SUBSC: return "[]"; 
+            case OP_SUBSC: return "[]";
+            case OP_CALL: return "()";
             case OP_SCOPE: return "::"; 
             case OP_UNPACK: return "<<"; 
             case OP_UNKNOWN: return "unknown"; 
