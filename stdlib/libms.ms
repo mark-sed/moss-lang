@@ -345,6 +345,11 @@ class __List {
         """
     }
 
+    @internal
+    fun delete(index:[Int,Range]) {
+        d"Removes value at index `index` or all values in range."
+    }
+
     fun empty() {
         d"Returns true if list has no values, false otherwise."
         return this.length() == 0
@@ -396,6 +401,13 @@ class __List {
         Removes and returns value from this list at index `index`.
         Might raise IndexError if `index` is out of bounds of this list.
         """
+    }
+
+    fun remove(value) {
+        i = this.find(value)
+        if (i < 0)
+            raise ValueError(f"'{value}' is not present in List.\n")
+        this.delete(i)
     }
 
     fun reverse() = this[-1..-this.length()-1]

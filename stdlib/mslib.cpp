@@ -702,6 +702,16 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             return BuiltIns::Nil;
         }},
+        {"delete", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
+            auto arg = cf->get_arg("this");
+            if (isa<ListValue>(arg)) {
+                assert(cf->get_args().size() == 2);
+                return List::List_delete(vm, arg, cf->get_arg("index"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"Dict", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value *{
             assert(cf->get_args().size() == 2 || cf->get_args().size() == 1);
             auto ths = cf->get_arg("this");

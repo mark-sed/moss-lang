@@ -29,6 +29,8 @@ Value *pop(Interpreter *vm, Value *ths, Value *index, Value *&err);
 
 Value *count(Interpreter *vm, Value *ths, Value *val, Value *&err);
 
+Value *List_delete(Interpreter *vm, Value *ths, Value *index, Value *&err);
+
 Value *insert(Interpreter *vm, Value *ths, Value *index, Value *value, Value *&err);
 
 Value *List(Interpreter *vm, Value *iterable, Value *&err);
