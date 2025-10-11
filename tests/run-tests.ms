@@ -1152,6 +1152,14 @@ false\ntrue\nfalse\nfalse\ntrue
 [1, nil, 2]\n""", "")
 }
 
+fun test_lib_list_delete(name) {
+    ~expect_pass("stdlib_tests/list_delete.ms", name, """[0, 4, 5]
+[4, 5]\n[0, 1, 2]\n[1, 3, 5, 7]\n[]\n[]
+[0, 1, 2, 3, 4, 5]\ncaught
+[1, 2, 3, 4, 5]\n[2, 3, 4, 5]\n[3, 4, 5]\n[4, 5]\n[5]\n[]
+[0, 1, 2, 3, 4]\ncaught\n[0, 1, 2, 3]\n""", "")
+}
+
 fun test_lib_dicts(name) {
     ~expect_pass("stdlib_tests/dicts.ms", name, """{"A": 1, "B": 2, "C": 3}\n{:}\n{:}\n{:}\n{"a": 1, "b": 2, "c": 3}
 2\n{"a": 1, "c": 3}\n1\n{"c": 3}\n3\n{:}\ncaught\nnil\n1\n{:}\n{"hello": [1, 2, 3]}\n{1: true, 2: false}\n{:}
@@ -1680,6 +1688,7 @@ fun run_all_tests() {
     ~run_test("lib_input")
     ~run_test("lib_copy")
     ~run_test("lib_lists")
+    ~run_test("lib_list_delete")
     ~run_test("lib_dicts")
     ~run_test("lib_strings")
     ~run_test("lib_string_is")

@@ -50,13 +50,13 @@ Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&) {
     }));
 }
 
-Value *List::insert(Interpreter *vm, Value *ths, Value *index, Value *value, Value *&err) {
+Value *List::insert(Interpreter *, Value *ths, Value *index, Value *value, Value *&) {
     auto &lst = get_list(ths);
     auto idx = get_int(index);
     if (idx < 0)
         idx = 0;
-    else if (idx > lst.size())
-        idx = idx = lst.size();
+    else if (idx > static_cast<opcode::IntConst>(lst.size()))
+        idx = lst.size();
 
     lst.insert(lst.begin() + idx, value);
     return nullptr;
@@ -65,7 +65,7 @@ Value *List::insert(Interpreter *vm, Value *ths, Value *index, Value *value, Val
 Value *List::List_delete(Interpreter *vm, Value *ths, Value *index, Value *&err) {
     auto &lst = get_list(ths);
     if (IntValue *iv = dyn_cast<IntValue>(index)) {
-        if (iv->get_value() >= lst.size() || iv->get_value() < 0) {
+        if (iv->get_value() >= static_cast<opcode::IntConst>(lst.size()) || iv->get_value() < 0) {
             err = mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, "List", iv->get_value()));
             return nullptr;
         }
@@ -85,8 +85,9 @@ Value *List::List_delete(Interpreter *vm, Value *ths, Value *index, Value *&err)
         auto step = get_int(stepv);
 
         opcode::IntConst deleted = 0;
-        while ((step > 0 && i < end && i < lst.size()+deleted) || (step < 0 && i > end && i > 0)) {
-            if (i >= lst.size()+deleted) {
+        while ((step > 0 && i < end && i < static_cast<opcode::IntConst>(lst.size()+deleted)) || 
+                (step < 0 && i > end && i >= 0)) {
+            if (i >= static_cast<opcode::IntConst>(lst.size()+deleted) || i-deleted < 0) {
                 i += step;
                 continue;
             }

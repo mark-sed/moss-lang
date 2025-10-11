@@ -404,10 +404,10 @@ class __List {
     }
 
     fun remove(value) {
-        i = this.find(value)
+        i = this.index(value)
         if (i < 0)
             raise ValueError(f"'{value}' is not present in List.\n")
-        this.delete(i)
+        ~this.delete(i)
     }
 
     fun reverse() = this[-1..-this.length()-1]
