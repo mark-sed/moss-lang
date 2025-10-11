@@ -2685,8 +2685,10 @@ void BuildDict::exec(Interpreter *vm) {
     auto vl = dyn_cast<ListValue>(v);
     assert(vl && "values are not a list");
     auto dc = new DictValue();
-    dc->push(kl, vl, vm);
+    // We have to first store into register so that the value does not get
+    // gced while __hash is called.
     vm->store(dst, dc);
+    dc->push(kl, vl, vm);
 }
 
 void BuildEnum::exec(Interpreter *vm) {
