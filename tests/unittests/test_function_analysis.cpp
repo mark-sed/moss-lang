@@ -13,6 +13,24 @@ namespace{
 using namespace moss;
 using namespace testing;
 
+void check_all_lines_err(std::vector<ustring> lines, ustring test) {
+    for (auto code: lines) {
+        SourceFile sf(code, SourceFile::SourceType::STRING);
+        Parser parser(sf);
+
+        auto mod = dyn_cast<ir::Module>(parser.parse());
+        ASSERT_TRUE(mod) << test << ": " << code << "\n";
+        ir::IRPipeline irp(parser);
+        auto err = irp.run(mod);
+        ASSERT_TRUE(err) << test << ": " << code << "\n";
+        auto rs = dyn_cast<ir::Raise>(err);
+        ASSERT_TRUE(rs) << test << ": " << code << "\n";
+
+        delete mod;
+        delete err;
+    }
+}
+
 /// This tests that FunctionAnalysis reports duplicate argument names.
 TEST(FunctionAnalysis, DuplicateArgs){
     std::vector<ustring> lines = {
@@ -28,21 +46,7 @@ TEST(FunctionAnalysis, DuplicateArgs){
 "lam = fun lambda(a, no, b, no) = 45",
 };
 
-    for (auto code: lines) {
-        SourceFile sf(code, SourceFile::SourceType::STRING);
-        Parser parser(sf);
-
-        auto mod = dyn_cast<ir::Module>(parser.parse());
-        ASSERT_TRUE(mod);
-        ir::IRPipeline irp(parser);
-        auto err = irp.run(mod);
-        ASSERT_TRUE(err);
-        auto rs = dyn_cast<ir::Raise>(err);
-        ASSERT_TRUE(rs);
-
-        delete mod;
-        delete err;
-    }
+    check_all_lines_err(lines, "DuplicateArgs");
 }
 
 /// Checks that args after varag have default value
@@ -57,21 +61,7 @@ TEST(FunctionAnalysis, NonDefaultArgAfterVarargs){
 "space { fun(a, b, ...d, o, p) = false; }",
 };
 
-    for (auto code: lines) {
-        SourceFile sf(code, SourceFile::SourceType::STRING);
-        Parser parser(sf);
-
-        auto mod = dyn_cast<ir::Module>(parser.parse());
-        ASSERT_TRUE(mod);
-        ir::IRPipeline irp(parser);
-        auto err = irp.run(mod);
-        ASSERT_TRUE(err);
-        auto rs = dyn_cast<ir::Raise>(err);
-        ASSERT_TRUE(rs);
-
-        delete mod;
-        delete err;
-    }
+    check_all_lines_err(lines, "NonDefaultArgAfterVarargs");
 }
 
 /// Checks that args after default value have default value
@@ -86,21 +76,37 @@ TEST(FunctionAnalysis, NonDefaultArgAfterDefault){
 "space DF { fun foo(a, b=4, c, d=4) {}; }",
 };
 
-    for (auto code: lines) {
-        SourceFile sf(code, SourceFile::SourceType::STRING);
-        Parser parser(sf);
+    check_all_lines_err(lines, "NonDefaultArgAfterDefault");
+}
 
-        auto mod = dyn_cast<ir::Module>(parser.parse());
-        ASSERT_TRUE(mod);
-        ir::IRPipeline irp(parser);
-        auto err = irp.run(mod);
-        ASSERT_TRUE(err);
-        auto rs = dyn_cast<ir::Raise>(err);
-        ASSERT_TRUE(rs);
-
-        delete mod;
-        delete err;
-    }
+/// This tests that FunctionAnalysis reports when operator function is declared
+/// outside of a class.
+TEST(FunctionAnalysis, OperatorFunsOutsideOfClass){
+    std::vector<ustring> lines = {
+"fun (+)(a) { return this.x + a + this.off; }",
+"fun (+)(a) = this.x + a + this.off;",
+"fun (-)(a) {return this.x - a + this.off;}",
+"fun (-)() {return -this.x + this.off;}",
+"fun (==)(a:NumOffset) { return this.x == a.x and this.off == a.off;}",
+"fun (!=)(a:NumOffset) {return not this.(==)(a);}",
+"fun (/)(a) { return this.x / a + this.off; }",
+"fun (*)(a) { return this.x * a + this.off; }",
+"fun (^)(a) { return (this.x ^ a) + this.off; }",
+"fun (%)(a) { return this.x % a + this.off;}",
+"fun (>)(a) { return this.x + this.off > a; }",
+"fun (<)(a) {  return this.x + this.off < a;}",
+"fun (>=)(a) { return this.x + this.off >= a;}",
+"fun (<=)(a) { return this.x + this.off <= a;}",
+"fun (in)(a) {return a <= this.x + this.off;}",
+"fun (and)(a) {return a and (this.x + this.off);}",
+"fun (or)(a) = a or (this.x + this.off)",
+"fun (xor)(a) {return a xor (this.x + this.off);}",
+"fun (not)() {return not (this.x + this.off); }",
+"fun (())(a:Int, b) {return this.x + a + b;}",
+"fun (())() {return nil;}",
+"fun ([])(other) = other",
+};
+    check_all_lines_err(lines, "OperatorFunsOutsideOfClass");
 }
 
 

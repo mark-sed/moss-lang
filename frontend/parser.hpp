@@ -186,6 +186,7 @@ public:
     /// \throw ir::Raise with parser/scanner error to be rethrown by moss
     std::vector<ir::IR *> parse_line();
 
+    static bool is_operator_fun(ustring name);
     SourceFile &get_src_file() { return this->src_file; }
     Scanner *get_scanner() { return this->scanner; }
 };

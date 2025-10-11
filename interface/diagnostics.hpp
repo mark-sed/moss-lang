@@ -200,6 +200,7 @@ enum DiagID : unsigned {
     DUPLICATE_NAME_IN_CALL, ///< When call has duplicate named arg specified
     MIN_LT_MAX_IN_RANDINT,  ///< When min > max in rand_int
     MIN_LT_MAX_IN_RANDF,    ///< When min > max in rand_float
+    OP_FUN_OUTSIDE_CLASS,   ///< When operator function appears outside of a class
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -379,6 +380,7 @@ static const char * DIAG_MSGS[] = {
     "Repeated named argument '%s'",
     "Argument 'min' (%ld) cannot be greater than 'max` in call to rand_int (%ld)",
     "Argument 'min' (%f) cannot be greater than 'max` in call to rand_float (%f)",
+    "Operator methods ('%s') can be declared only inside of classes",
 };
 
 /// \brief ID of diagnostic error

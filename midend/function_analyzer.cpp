@@ -31,8 +31,12 @@ void FunctionAnalyzer::check_arguments(const std::vector<ir::Argument *> &args, 
 
 void FunctionAnalyzer::visit(Function &fun) {
     check_arguments(fun.get_args(), fun.get_name());
+    // Method analyzer was already run and methods are marked, report any
+    // operator function that are not methods.
+    parser_assert(!Parser::is_operator_fun(fun.get_name()) || fun.is_method(), parser.create_diag(fun.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, fun.get_name().c_str()));
 }
 
 void FunctionAnalyzer::visit(Lambda &lf) {
     check_arguments(lf.get_args(), "lambda");
+    parser_assert(!Parser::is_operator_fun(lf.get_name()) || lf.is_method(), parser.create_diag(lf.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, lf.get_name().c_str()));
 }

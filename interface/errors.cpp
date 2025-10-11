@@ -111,6 +111,12 @@ ustring error::format_error(diags::Diagnostic msg, bool warning_as_error) {
         std::string curr_line = msg.scanner->get_src_text()[info.get_lines().first];
         unsigned col_start = info.get_cols().first;
         unsigned col_end = info.get_cols().second;
+        
+        // FIXME: Make this work with multiline snippets
+        if (info.get_lines().first != info.get_lines().second) {
+            col_end = curr_line.size();
+        }
+
         // Append space to take place for a new line which was removed and is at
         // fault here. This makes sure that the token error indicator (^) is
         // pointing right after the token

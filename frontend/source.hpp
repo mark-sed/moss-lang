@@ -139,7 +139,17 @@ public:
         this->lines = std::make_pair(this->lines.first, srci.lines.second);
         this->cols = std::make_pair(this->cols.first, srci.cols.second);
     }
+
+    std::ostream& debug(std::ostream& os) {
+        os << "SourceInfo {\n  File: " << file.get_name() << "\n  Lines: <" << lines.first << ", " << lines.second
+            << ">\n  Columns: <" << cols.first << ", " << cols.second << ">\n}";
+        return os;
+    }
 };
+
+inline std::ostream& operator<< (std::ostream& os, SourceInfo sci) {
+    return sci.debug(os);
+}
 
 std::optional<ustring> get_file_path(ustring file);
 

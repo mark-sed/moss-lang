@@ -9,7 +9,7 @@ using namespace ir;
 
 IRPipeline::IRPipeline(Parser &parser) : pm(parser), parser(parser) {
     // Method analyzer
-    add_pass(new MethodAnalyzer(parser));
+    add_pass(new MethodAnalyzer(parser)); // Method analyzer has to be run before function analyzer (it uses method tag).
     add_pass(new FunctionAnalyzer(parser));
     add_pass(new ExpressionAnalyzer(parser));
 }

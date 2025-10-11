@@ -1505,6 +1505,17 @@ Expression *Parser::scope() {
     return constant();
 }
 
+bool Parser::is_operator_fun(ustring name) {
+    static std::unordered_set<ustring> OP_FUNS = {
+        "[]", "()", "++", "^", "+", "-",
+        "/", "*", "%", "==", "!=", ">",
+        "<", ">=", "<=", "&&", "||",
+        "and", "or", "not", "xor", "in",
+    };
+    return OP_FUNS.find(name) != OP_FUNS.end();
+}
+
+// Note: Any operator added here has to be also added to "is_operator_fun".
 ir::OperatorLiteral *Parser::operator_name() {
     // []
     if (match(TokenType::LEFT_SQUARE)) {
