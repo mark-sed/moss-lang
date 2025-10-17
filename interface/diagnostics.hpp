@@ -202,6 +202,8 @@ enum DiagID : unsigned {
     MIN_LT_MAX_IN_RANDF,    ///< When min > max in rand_float
     OP_FUN_OUTSIDE_CLASS,   ///< When operator function appears outside of a class
     DISALLOWED_METHOD_ANNOT, ///< When method is annotated by annotation for only functions
+    BREAK_OUTSIDE_OF_LOOP,  ///< When break is not inside of a loop
+    CONTINUE_OUTSIDE_OF_LOOP, ///< When continue is outside of a loop
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -383,6 +385,8 @@ static const char * DIAG_MSGS[] = {
     "Argument 'min' (%f) cannot be greater than 'max` in call to rand_float (%f)",
     "Operator methods ('%s') can be declared only inside of classes",
     "Method ('%s') cannot be annotated as '%s'",
+    "Break outside of a loop",
+    "Continue outside of a loop",
 };
 
 /// \brief ID of diagnostic error

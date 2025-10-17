@@ -33,7 +33,7 @@ int Repl::run() {
     output_header();
 
     Bytecode *bc = new Bytecode();
-    bcgen::BytecodeGen cgen(bc);
+    bcgen::BytecodeGen cgen(bc, &parser);
 
     Interpreter *interpreter = new Interpreter(bc, &src_file, true);
     ir::IRPipeline ipl(parser);
@@ -42,22 +42,31 @@ int Repl::run() {
     while (!eof_reached && !global_controls::exit_called) {
         outs << error::colors::colorize(error::colors::LIGHT_GREEN) << "moss> " << error::colors::reset();
         std::vector<ir::IR *> line_irs = parser.parse_line();
-        for (auto i : line_irs) {
+        for (auto *i : line_irs) {
             LOGMAX(*i);
             if (isa<ir::EndOfFile>(i)) {
                 eof_reached = true;
                 outs << "\n";
             }
             // IR pipeline run
-            if (auto err = ipl.run(i)) {
+            if (auto *err = ipl.run(i)) {
                 i = err;
             }
+            try {
 #ifndef NDEBUG
-            if (!clopts::parse_only)
-                cgen.generate(i);
+                if (!clopts::parse_only)
+                    cgen.generate(i);
 #else
-            cgen.generate(i);
+                cgen.generate(i);
 #endif
+            } catch (ir::IR *err) {
+                if (auto exc = dyn_cast<ir::Raise>(err)) {
+                    ir::StringLiteral *err_msg = dyn_cast<ir::StringLiteral>(exc->get_exception());
+                    errs << "SemanticsError: " << err_msg->get_value();
+                } else {
+                    assert(false && "report of ir error with non-ir value");
+                }
+            }
         }
 
 #ifndef NDEBUG

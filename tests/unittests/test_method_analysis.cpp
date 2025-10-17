@@ -13,22 +13,6 @@ namespace{
 using namespace moss;
 using namespace testing;
 
-void check_line_err(ustring code, ustring test) {
-    SourceFile sf(code, SourceFile::SourceType::STRING);
-    Parser parser(sf);
-
-    auto mod = dyn_cast<ir::Module>(parser.parse());
-    ASSERT_TRUE(mod) << test << ": " << code;
-    ir::IRPipeline irp(parser);
-    auto err = irp.run(mod);
-    ASSERT_TRUE(err) << test << ": " << code;
-    auto rs = dyn_cast<ir::Raise>(err);
-    ASSERT_TRUE(rs) << test << ": " << code;
-
-    delete mod;
-    delete err;
-}
-
 /// This tests that MethodAnalysis correctly sets the constructor and method
 /// tags in the Function and Lambda IR
 TEST(MethodAnalysis, ConstructorAndMethodTagging){
@@ -175,7 +159,7 @@ class SomeClass {
 }
 )";
 
-    check_line_err(code, "LambdaConstructors");
+    testing::check_line_err(code, "LambdaConstructors");
 }
 
 /// This tests that MethodAnalysis raises error there is non-nil return in a constructor
@@ -191,7 +175,7 @@ class SomeClass {
 }
 )";
 
-    check_line_err(code, "NonNilReturnInConstructor");
+    testing::check_line_err(code, "NonNilReturnInConstructor");
 }
 
 /// Test reporting of incorrect annotations over methods.
@@ -205,7 +189,7 @@ class X {
 }
 )";
 
-    check_line_err(code, "DisallowedAnnotations");
+    testing::check_line_err(code, "DisallowedAnnotations");
 
     ustring code2 = R"(
 class X {
@@ -216,7 +200,7 @@ class X {
 }
 )";
 
-    check_line_err(code2, "DisallowedAnnotations");
+    testing::check_line_err(code2, "DisallowedAnnotations");
 }
 
 }

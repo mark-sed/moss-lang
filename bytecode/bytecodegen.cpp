@@ -1848,12 +1848,12 @@ void BytecodeGen::emit(ir::Assert *asr) {
 }
 
 void BytecodeGen::emit(ir::Break *br) {
-    (void)br;
+    parser_assert(cycle_depth > 0, parser->create_diag(br->get_src_info(), diags::BREAK_OUTSIDE_OF_LOOP));
     append(new opcode::BreakTo(0, opcode::BreakTo::BreakState::NOT_SET_BREAK));
 }
 
 void BytecodeGen::emit(ir::Continue *ct) {
-    (void)ct;
+    parser_assert(cycle_depth > 0, parser->create_diag(ct->get_src_info(), diags::CONTINUE_OUTSIDE_OF_LOOP));
     append(new opcode::BreakTo(0, opcode::BreakTo::BreakState::NOT_SET_CONTINUE));
 }
 
@@ -1895,13 +1895,19 @@ void BytecodeGen::emit(ir::IR *decl) {
         emit(s);
     }
     else if (auto f = dyn_cast<ir::ForLoop>(decl)) {
+        ++cycle_depth;
         emit(f);
+        --cycle_depth;
     }
     else if (auto w = dyn_cast<ir::While>(decl)) {
+        ++cycle_depth;
         emit(w);
+        --cycle_depth;
     }
     else if (auto w = dyn_cast<ir::DoWhile>(decl)) {
+        ++cycle_depth;
         emit(w);
+        --cycle_depth;
     }
     else if (auto i = dyn_cast<ir::Import>(decl)) {
         emit(i);

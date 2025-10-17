@@ -25,38 +25,14 @@ TEST(ExpressionAnalysis, MemberAccess){
 //"::$a.boo",
 };
 
-    for (auto code: lines) {
-        SourceFile sf(code, SourceFile::SourceType::STRING);
-        Parser parser(sf);
-
-        auto mod = dyn_cast<ir::Module>(parser.parse());
-        ASSERT_TRUE(mod);
-        ir::IRPipeline irp(parser);
-        auto err = irp.run(mod);
-        ASSERT_TRUE(err);
-        auto rs = dyn_cast<ir::Raise>(err);
-        ASSERT_TRUE(rs);
-
-        delete mod;
-        delete err;
-    }
+    testing::check_all_lines_err(lines, "MemberAccess");
 
     ustring correct = R"(
 1 + (2).foo();
 a.b.c.f(3)
 )";
 
-    SourceFile sf(correct, SourceFile::SourceType::STRING);
-    Parser parser(sf);
-
-    auto mod = dyn_cast<ir::Module>(parser.parse());
-    ASSERT_TRUE(mod);
-    ir::IRPipeline irp(parser);
-    auto err = irp.run(mod);
-    ASSERT_FALSE(err) << "Failed but was supposed to pass";
-
-    delete mod;
-    delete err;
+    testing::check_line_ok(correct, "MemberAccess");
 }
 
 /// This tests that ExpressionAnalysis reports incorrect argument expressions.
@@ -67,21 +43,7 @@ TEST(ExpressionAnalysis, ArgAnalysis){
 "fun som(a, b, c) {}; som(a=3, b=3, a=5)"
 };
 
-    for (auto code: lines) {
-        SourceFile sf(code, SourceFile::SourceType::STRING);
-        Parser parser(sf);
-
-        auto mod = dyn_cast<ir::Module>(parser.parse());
-        ASSERT_TRUE(mod);
-        ir::IRPipeline irp(parser);
-        auto err = irp.run(mod);
-        ASSERT_TRUE(err);
-        auto rs = dyn_cast<ir::Raise>(err);
-        ASSERT_TRUE(rs);
-
-        delete mod;
-        delete err;
-    }
+    testing::check_all_lines_err(lines, "ArgAnalysis");
 }
 
 }

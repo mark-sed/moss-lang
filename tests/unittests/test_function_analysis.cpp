@@ -13,24 +13,6 @@ namespace{
 using namespace moss;
 using namespace testing;
 
-void check_all_lines_err(std::vector<ustring> lines, ustring test) {
-    for (auto code: lines) {
-        SourceFile sf(code, SourceFile::SourceType::STRING);
-        Parser parser(sf);
-
-        auto mod = dyn_cast<ir::Module>(parser.parse());
-        ASSERT_TRUE(mod) << test << ": " << code << "\n";
-        ir::IRPipeline irp(parser);
-        auto err = irp.run(mod);
-        ASSERT_TRUE(err) << test << ": " << code << "\n";
-        auto rs = dyn_cast<ir::Raise>(err);
-        ASSERT_TRUE(rs) << test << ": " << code << "\n";
-
-        delete mod;
-        delete err;
-    }
-}
-
 /// This tests that FunctionAnalysis reports duplicate argument names.
 TEST(FunctionAnalysis, DuplicateArgs){
     std::vector<ustring> lines = {
@@ -46,7 +28,7 @@ TEST(FunctionAnalysis, DuplicateArgs){
 "lam = fun lambda(a, no, b, no) = 45",
 };
 
-    check_all_lines_err(lines, "DuplicateArgs");
+    testing::check_all_lines_err(lines, "DuplicateArgs");
 }
 
 /// Checks that args after varag have default value
@@ -61,7 +43,7 @@ TEST(FunctionAnalysis, NonDefaultArgAfterVarargs){
 "space { fun(a, b, ...d, o, p) = false; }",
 };
 
-    check_all_lines_err(lines, "NonDefaultArgAfterVarargs");
+    testing::check_all_lines_err(lines, "NonDefaultArgAfterVarargs");
 }
 
 /// Checks that args after default value have default value
@@ -76,7 +58,7 @@ TEST(FunctionAnalysis, NonDefaultArgAfterDefault){
 "space DF { fun foo(a, b=4, c, d=4) {}; }",
 };
 
-    check_all_lines_err(lines, "NonDefaultArgAfterDefault");
+    testing::check_all_lines_err(lines, "NonDefaultArgAfterDefault");
 }
 
 /// This tests that FunctionAnalysis reports when operator function is declared
@@ -106,7 +88,7 @@ TEST(FunctionAnalysis, OperatorFunsOutsideOfClass){
 "fun (())() {return nil;}",
 "fun ([])(other) = other",
 };
-    check_all_lines_err(lines, "OperatorFunsOutsideOfClass");
+    testing::check_all_lines_err(lines, "OperatorFunsOutsideOfClass");
 }
 
 
