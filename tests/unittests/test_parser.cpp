@@ -524,9 +524,11 @@ a, b+2 = [1,2]
 [5, 6, ~4]
 foo(3, ~a)
 bar(~1)
+<<foo
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
@@ -1251,7 +1253,9 @@ fun Foo (t:Bool)
 {}
 
 fun baz(a, b, ... others, more=true) {}
-fun bar(...o) {}
+fun bar(...o) {
+    baz(4, 5, <<o)
+}
 )";
 
     IRType expected[] = {

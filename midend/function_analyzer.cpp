@@ -1,5 +1,6 @@
 #include "function_analyzer.hpp"
 #include "parser.hpp"
+#include "builtins.hpp"
 #include <set>
 
 using namespace moss;
@@ -34,6 +35,8 @@ void FunctionAnalyzer::visit(Function &fun) {
     // Method analyzer was already run and methods are marked, report any
     // operator function that are not methods.
     parser_assert(!Parser::is_operator_fun(fun.get_name()) || fun.is_method(), parser.create_diag(fun.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, fun.get_name().c_str()));
+    parser_assert(!fun.has_annotation(annots::CONVERTER) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::CONVERTER));
+    parser_assert(!fun.has_annotation(annots::GENERATOR) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::GENERATOR));
 }
 
 void FunctionAnalyzer::visit(Lambda &lf) {

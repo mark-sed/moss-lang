@@ -138,6 +138,8 @@ public:
     ustring get_documentation() { return this->documentation; }
 
     std::list<Annotation *> get_annotations() { return this->annotations; }
+
+    bool has_annotation(ustring name);
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {

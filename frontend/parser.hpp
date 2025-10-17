@@ -74,7 +74,7 @@ private:
     std::list<ir::IR *> body();
 
     ir::Expression *constant();
-    std::vector<ir::Expression *> expr_list(bool only_scope_or_id=false, bool allow_set=false);
+    std::vector<ir::Expression *> expr_list(bool only_scope_or_id=false, bool allow_set=false, bool is_fun_call=false);
     std::vector<ir::Argument *> arg_list();
     ir::OperatorLiteral *operator_name();
     ir::Argument *argument(bool allow_default_value=false);
@@ -82,7 +82,6 @@ private:
     ir::Expression *list_of_vars(ir::Expression *first, ir::Expression *second, int rest_index);
     ir::Expression *fstring(FStringToken *fstr);
 
-    ir::Expression *unpack();
     ir::Expression *silent();
     ir::Expression *assignment();
     ir::Expression *ternary_if();

@@ -1082,7 +1082,7 @@ Expression *Parser::silent() {
         is_silent = true;
         // Calling unpack makes this left associative, but this operator
         // Cannot be chained and has the lowest precedence
-        auto expr = unpack();
+        auto expr = ternary_if();
         parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
         sil_src_inf.update_ends(expr->get_src_info());
         return new UnaryExpr(expr, Operator(OperatorKind::OP_SILENT), sil_src_inf);
@@ -1092,7 +1092,7 @@ Expression *Parser::silent() {
 }
 
 Expression *Parser::assignment() {
-    Expression *expr = unpack();
+    Expression *expr = ternary_if();
 
     bool is_set = false;
     while (match(TokenType::SET)) {
@@ -1120,16 +1120,6 @@ Expression *Parser::assignment() {
     }
 
     return expr;
-}
-
-Expression *Parser::unpack() {
-    if (match(TokenType::UNPACK)) {
-        auto expr = ternary_if();
-        parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
-        return new UnaryExpr(expr, Operator(OperatorKind::OP_UNPACK), curr_src_info());
-    }
-
-    return ternary_if();
 }
 
 Expression *Parser::ternary_if() {
@@ -1379,7 +1369,7 @@ Expression *Parser::unary_plus_minus() {
 }
 
 
-std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allow_set) {
+std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allow_set, bool is_fun_call) {
     std::vector<ir::Expression *> args;
     // Setting this to true will indicate to not give precedence to range over
     // another argument
@@ -1388,7 +1378,12 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allo
     Expression *expr = nullptr;
     do {
         skip_nls();
-        expr = expression(allow_set);
+        if (is_fun_call && match(TokenType::UNPACK)) {
+            expr = ternary_if();
+            parser_assert(expr, create_diag(diags::EXPR_EXPECTED));
+            expr = new UnaryExpr(expr, Operator(OperatorKind::OP_UNPACK), curr_src_info());
+        } else 
+            expr = expression(allow_set);
         if (expr) {
             if (only_scope_or_id)
                 parser_assert(is_id_or_member(expr), create_diag(diags::MEMBER_OR_ID_EXPECTED));
@@ -1439,7 +1434,7 @@ Expression *Parser::call_access_subs(bool allow_star) {
             // This assert should never be raised as ( would be matched in constant
             parser_assert(expr, create_diag(diags::BIN_OP_REQUIRES_LHS, "()"));
             // All exprs and allow set for named function params
-            auto args = expr_list(false, true);
+            auto args = expr_list(false, true, true);
             skip_nls();
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
             acc_srci.update_ends(curr_src_info());

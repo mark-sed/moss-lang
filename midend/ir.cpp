@@ -91,6 +91,15 @@ StringLiteral *Class::get_internal_bind() {
     return nullptr;
 }
 
+bool IR::has_annotation(ustring name) {
+    for (auto a: annotations) {
+        if (a->get_name() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool Function::is_staticmethod() {
     for (auto a: annotations) {
         if (a->get_name() == annots::STATIC_METHOD && isa<NilLiteral>(a->get_value())) {
