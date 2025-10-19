@@ -641,6 +641,15 @@ Title2
 Paragraph2
 Hello
 Foo1Class\n""", "")
+
+    ~expect_fail(r"""
+@converter("txt", "yy")
+fun toyy(x) {
+    "also txt"
+    return "yy"++x
+}
+"hi\n"
+""", name, "", /*rx_err="Recursive converter"*/ exec=true, args="-f yy")
 }
 
 fun test_converters_pipeline(name) {
@@ -1108,6 +1117,7 @@ Caught: ValueError:
 Caught: OSError: 
 Caught: FileNotFoundError: 
 Caught: EOFError: 
+Caught: OutputError: 
 Caught: 0
 Caught: NameError: 
 Caught: SyntaxError: 

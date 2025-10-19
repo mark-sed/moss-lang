@@ -190,6 +190,10 @@ inline Value *create_eof_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::EOFError, dmsg);
 }
 
+inline Value *create_output_error(diags::Diagnostic dmsg) {
+    return create_exception(BuiltIns::OutputError, dmsg);
+}
+
 inline Value *create_os_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::OSError, dmsg);
 }

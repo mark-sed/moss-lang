@@ -108,6 +108,7 @@ namespace BuiltIns {
     extern Value *OSError;
     extern Value *FileNotFoundError;
     extern Value *EOFError;
+    extern Value *OutputError;
     extern Value *SystemExit;
 
     extern Value *Nil;

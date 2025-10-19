@@ -204,6 +204,7 @@ enum DiagID : unsigned {
     DISALLOWED_METHOD_ANNOT, ///< When method is annotated by annotation for only functions
     BREAK_OUTSIDE_OF_LOOP,  ///< When break is not inside of a loop
     CONTINUE_OUTSIDE_OF_LOOP, ///< When continue is outside of a loop
+    RECURSIVE_CONVERTER_CALL,///< When converter is called within a converter
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -387,6 +388,7 @@ static const char * DIAG_MSGS[] = {
     "Method ('%s') cannot be annotated as '%s'",
     "Break outside of a loop",
     "Continue outside of a loop",
+    "Recursive converter (from: '%s', to: '%s') call — outputting inside of a converter",
 };
 
 /// \brief ID of diagnostic error

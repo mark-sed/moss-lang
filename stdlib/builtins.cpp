@@ -89,6 +89,7 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "OSError", BuiltIns::OSError, gf);
     store_glob_val(reg++, "FileNotFoundError", BuiltIns::FileNotFoundError, gf);
     store_glob_val(reg++, "EOFError", BuiltIns::EOFError, gf);
+    store_glob_val(reg++, "OutputError", BuiltIns::OutputError, gf);
     store_glob_val(reg++, "SystemExit", BuiltIns::SystemExit, gf);
 
     store_glob_val(reg++, "cpp", BuiltIns::Cpp::CppSpace, gf);
@@ -138,6 +139,7 @@ Value *BuiltIns::DivisionByZeroError = new ClassValue("DivisionByZeroError");
 Value *BuiltIns::OSError = new ClassValue("OSError");
 Value *BuiltIns::FileNotFoundError = new ClassValue("FileNotFoundError");
 Value *BuiltIns::EOFError = new ClassValue("EOFError");
+Value *BuiltIns::OutputError = new ClassValue("OutputError");
 Value *BuiltIns::SystemExit = new ClassValue("SystemExit");
 
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);

@@ -1491,13 +1491,14 @@ void Document::exec(Interpreter *vm) {
 }
 
 void Output::exec(Interpreter *vm) {
+    static std::unordered_set<ustring> running_converters{};
     if (clopts::disable_notes) {
         LOGMAX("Notes disabled, not outputting");
         return;
     }
     auto *v = vm->load(src);
     assert(v && "Cannot load src");
-
+    
     auto get_value_format = [vm](Value *v) {
         if (auto nv = dyn_cast<NoteValue>(v)) {
             auto f = nv->get_attr("format", vm);
@@ -1506,7 +1507,7 @@ void Output::exec(Interpreter *vm) {
         }
         return ustring("txt");
     };
-
+    
     auto val_format = get_value_format(v);
     auto target_format = clopts::get_note_format();
     if (!Interpreter::running_generator && Interpreter::is_generator(target_format)) {
@@ -1515,17 +1516,20 @@ void Output::exec(Interpreter *vm) {
         return;
     }
     else if (val_format != target_format) {
+        op_assert(running_converters.find(val_format) == running_converters.end(), mslib::create_output_error(diags::Diagnostic(*vm->get_src_file(), diags::RECURSIVE_CONVERTER_CALL, val_format.c_str(), target_format.c_str())));
+        running_converters.insert(val_format);
         auto key = std::make_pair(val_format, target_format);
         auto converter = Interpreter::get_converter(key);
-
+        
         op_assert(!converter.empty(), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_CONVERTER,
-            val_format.c_str(), target_format.c_str())));
-    
+        val_format.c_str(), target_format.c_str())));
+        
         assert(v);
         for (auto f: converter) {
             v = runtime_function_call(vm, f, {v});
             assert(v && "no return from converter?");
         }
+        running_converters.erase(val_format);
     }
     auto ov = to_string(vm, v);
     

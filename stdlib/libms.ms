@@ -1633,6 +1633,13 @@ class __EOFError : Exception {
     }
 }
 
+@internal_bind("OutputError")
+class __OutputError : Exception {
+    fun __String() {
+        return "OutputError: " ++ this.msg
+    }
+}
+
 @internal_bind("SystemExit")
 class __SystemExit : Exception {
     d"""

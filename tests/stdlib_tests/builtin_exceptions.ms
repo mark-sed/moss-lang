@@ -107,6 +107,12 @@ try {
 }
 
 try {
+    raise OutputError("")
+} catch (e:OutputError) {
+    "Caught: "++e++"\n"
+}
+
+try {
     raise SystemExit()
 } catch (e:SystemExit) {
     "Caught: "++e++"\n"
