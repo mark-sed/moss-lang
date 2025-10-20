@@ -1033,11 +1033,25 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 2);
             return rand_int(vm, cf->get_arg("min"), cf->get_arg("max"), err);
         }},
+        {"read", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto ths = cf->get_arg("this");
+            assert(opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::File));
+            return MSFile::read(vm, ths, cf->get_arg("size"), err);
+        }},
         {"readlines", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
             assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
             return MSFile::readlines(vm, args[0].value, err);
+        }},
+        {"readln", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto ths = cf->get_arg("this");
+            assert(opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::File));
+            return MSFile::readln(vm, ths, cf->get_arg("size"), err);
         }},
         {"replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();

@@ -50,3 +50,17 @@ f4 = open(".created_file_2.txt", "w")
 f5 = with_open(".created_file_2.txt", fun(f)=f.readlines(),"r")
 for (l: f5)
     l ++ "\n"
+
+with_open(".created_file_2.txt", fun(f)=f.read(6))
+with_open(".created_file_2.txt", fun(f)=f.read())
+
+"---\n"
+f6 = open(".created_file_2.txt")
+f6.readln(6)
+"|"
+try {
+    while (true)
+        f6.readln()
+} catch (e: EOFError)
+    "end\n"
+~f6.close()

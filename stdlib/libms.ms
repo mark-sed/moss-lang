@@ -1208,8 +1208,20 @@ class __File {
         """
     }
 
-    //fun read(size:Int=-1) {}
-    //fun readln() {}
+    @internal
+    fun read(size:Int=-1) {
+        d"""
+        Reads `size` amount of bytes from this file.
+        """
+    }
+
+    @internal
+    fun readln(size:Int=-1) {
+        d"""
+        Reads one line of file.
+        If `size` is specified then at most `size` bytes will be read.
+        """
+    }
     //fun seek(pos:Int) {}
 
     @internal

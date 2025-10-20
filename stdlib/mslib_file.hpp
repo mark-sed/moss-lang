@@ -31,6 +31,10 @@ Value *close(Interpreter *vm, Value *ths, Value *&err);
 
 Value *readlines(Interpreter *vm, Value *ths, Value *&err);
 
+Value *read(Interpreter *vm, Value *ths, Value *size, Value *&err);
+
+Value *readln(Interpreter *vm, Value *ths, Value *size, Value *&err);
+
 Value *write(Interpreter *vm, Value *ths, Value *content, Value *&err);
 
 }

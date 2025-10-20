@@ -1296,7 +1296,13 @@ fun test_lib_file(name) {
 [\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]
 written line
 Lorem Ipsum
-Lorem Ipsum\n""", "")
+Lorem Ipsum
+Lorem Lorem Ipsum
+Lorem Ipsum
+---
+Lorem |Ipsum
+Lorem Ipsum
+end\n""", "")
 
     ~rm(DATA_FILE, false)
     ~rm(".created_file_t.txt1", false)

@@ -82,3 +82,59 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     *(fsfs->get_fs()) << opcode::to_string(vm, content);
     return BuiltIns::Nil;
 }
+
+Value *MSFile::read(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
+    auto size = get_int(sizev);
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    assert(fsfs && "fstream is not std::fstream");
+    auto file = fsfs->get_fs();
+    if (size < 0) {
+        // Read entire file
+        file->seekg(0, std::ios::end);
+        std::streamsize length = file->tellg();
+        file->seekg(0, std::ios::beg);
+
+        std::string content(length, '\0');
+        file->read(&content[0], length);
+        return StringValue::get(content);
+    } else {
+        // Read up to 'size' bytes
+        std::string content(size, '\0');
+        file->read(&content[0], size);
+        content.resize(file->gcount()); // Trim if fewer bytes were read
+        return StringValue::get(content);
+    }
+}
+
+Value *MSFile::readln(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
+    auto size = get_int(sizev);
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    assert(fsfs && "fstream is not std::fstream");
+    auto file = fsfs->get_fs();
+    std::string line;
+
+    if (file->eof()) {
+        err = create_eof_error(diags::Diagnostic(*vm->get_src_file(), diags::EOF_INPUT));
+        return nullptr;
+    }
+
+    if (size < 0) {
+        // Read until newline (like readline())
+        std::getline(*file, line);
+        if (!file->eof())
+            line.push_back('\n'); // mimic Python: keep '\n' at end if present
+    } else {
+        // Read up to `size` bytes or until newline
+        line.reserve(size);
+        char ch;
+        while (size-- > 0 && file->get(ch)) {
+            line.push_back(ch);
+            if (ch == '\n')
+                break;
+        }
+    }
+
+    return StringValue::get(line);
+}
