@@ -161,7 +161,7 @@ void TracingGC::mark_frame(MemoryPool *p) {
     // Mark the frame itself as popped frames need to be freed by the GC
     p->set_marked(true);
     // There will be bunch of nullptrs as the pool is initialized that way
-    for (auto v : p->get_pool()) {
+    for (auto [k, v] : p->get_pool()) {
         mark_value(v);
     }
     // Spilled values

@@ -19,8 +19,10 @@ void ExpressionAnalyzer::visit(BinaryExpr &be) {
 }
 
 void ExpressionAnalyzer::visit(UnaryExpr &ue) {
-    auto opk = ue.get_op().get_kind();
-    // FIXME: This is the case only when then expression is not from import, since you can import non-local space
+    //auto opk = ue.get_op().get_kind();
+    
+    // This was uncommented because space import might be non-local.
+    // This is the case only when then expression is not from import, since you can import non-local space
     //if (opk == OperatorKind::OP_SCOPE) {
     //    // TODO: Isn't expr guaranteeed to be a variable?
     //    if (auto v = dyn_cast<Variable>(ue.get_expr())) {

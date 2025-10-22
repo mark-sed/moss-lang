@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <iostream>
 #include <optional>
+#include <limits>
 
 namespace moss {
 
@@ -35,7 +36,7 @@ namespace opcode {
 class MemoryPool {
 private:
     Value *pool_owner; ///< This value is set to the owner of this pool if it is a function
-    std::vector<Value *> pool;
+    std::map<opcode::Register, Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     std::vector<std::vector<opcode::Finally *>> finally_stack;
@@ -43,21 +44,13 @@ private:
     bool holds_consts;
     bool global;
     bool marked;
+    static opcode::Register dynamic_register_am;
 public:
 #ifndef NDEBUG
     static long allocated;
 #endif
-    MemoryPool(bool holds_consts=false, bool global=false) : pool_owner(nullptr), holds_consts(holds_consts), global(global), marked(false) {
-        if (!global && !holds_consts) {
-            // TODO: Fine tune these values
-            pool = std::vector<Value *>(128, nullptr);
-        }
-        else if (holds_consts) {
-            pool = std::vector<Value *>(BC_RESERVED_CREGS+256, nullptr);
-        }
-        else {
-            pool = std::vector<Value *>(BC_RESERVED_REGS+256, nullptr);
-        }
+    MemoryPool(bool holds_consts=false, bool global=false) : pool_owner(nullptr), holds_consts(holds_consts),
+               global(global), marked(false) {
         this->finally_stack.push_back({});
 #ifndef NDEBUG
         ++allocated;
@@ -107,15 +100,12 @@ public:
     }
 
     /// \return first free register
-    size_t get_free_reg() {
-        for (size_t i = 0; i < pool.size(); ++i) {
-            if (!pool[i]) return i;
-        }
-        pool.push_back(nullptr);
-        return pool.size()-1;
+    opcode::Register get_free_reg() {
+        // TODO: Having dynamic_register_am non-static causes issues, try fixing and changing this
+        return std::numeric_limits<opcode::Register>::max() - ++dynamic_register_am;
     }
 
-    std::vector<Value *> &get_pool() { return this->pool; }
+    std::map<opcode::Register, Value *> &get_pool() { return this->pool; }
     std::list<Value *> &get_spilled_values() { return this->spilled_values; }
 
     /// \return true if frame is global frame

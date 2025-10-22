@@ -8,18 +8,14 @@ using namespace moss;
 long MemoryPool::allocated = 0;
 #endif
 
+opcode::Register MemoryPool::dynamic_register_am = 0;
+
 void MemoryPool::store(opcode::Register reg, Value *v) {
-    while (reg >= static_cast<opcode::Register>(pool.size())) {
-        LOGMAX("No more space, resizing pool from: " << pool.size() << " to " << pool.size()+(pool.size()/4));
-        // TODO: Find some nice heuristic for this number
-        pool.resize(pool.size()+(pool.size()/4), nullptr);
-    }
     pool[reg] = v;
 }
 
 Value *MemoryPool::load(opcode::Register reg) {
-    // FIXME
-    assert(reg < static_cast<opcode::Register>(pool.size()) && "TODO: Pool access out of bounds, handle");
+    assert(pool.find(reg) != pool.end() && "Pool access of unknown register");
     Value *v = pool[reg];
     assert(v && "Loading non-existent value");
     return v;
@@ -160,7 +156,7 @@ void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
         }
         first = false;
         os << "\n";
-        os << std::string(tab_depth*2, ' ') << "\"" << k << "\": " << *(this->pool[v]);
+        os << std::string(tab_depth*2, ' ') << "\"" << k << "\": " << *(this->pool.at(v));
     }
     --tab_depth;
 }
@@ -168,7 +164,7 @@ void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
 std::ostream& MemoryPool::debug(std::ostream& os) const {
     os << "> Symbol table:\n";
     for (auto [k, v] : this->sym_table) {
-        os << "\"" << k << "\": " << v << " (" << *(this->pool[v]) << ")\n";
+        os << "\"" << k << "\": " << v << " (" << *(this->pool.at(v)) << ")\n";
     }
     os << "> Memory pool:\n";
     size_t skip = 0;
@@ -176,9 +172,9 @@ std::ostream& MemoryPool::debug(std::ostream& os) const {
         skip = holds_consts ? BC_RESERVED_CREGS : 0;
         os << "-- Reserved regs (" << skip << ") skipped --\n";
     }
-    for (size_t i = skip; i < this->pool.size(); ++i) {
-        if (this->pool[i]) {
-            os << i << ": " << *(this->pool[i]) << "\n";
+    for (auto [k, v] : this->pool) {
+        if (v) {
+            os << k << ": " << *(v) << "\n";
         }
     }
     return os;

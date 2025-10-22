@@ -1081,7 +1081,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return IntValue::get(ai->get_value() >> counti->get_value());
         }},
         {"setattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
-            (void)err;
             assert(cf->get_args().size() == 3);
             auto obj = cf->get_arg("obj");
             assert(obj);

@@ -232,22 +232,6 @@ Value *FunValueList::next(Interpreter *vm) {
     return item;
 }
 
-/*void StringValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
-    assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
-    auto key_int = dyn_cast<IntValue>(key);
-    if (!key_int)
-        opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::STR_INDEX_NOT_INT_OR_RANGE, key->get_type()->get_name().c_str())));
-    auto index = key_int->get_value();
-    if ((index < 0 && -1*index > static_cast<opcode::IntConst>(this->value.length())) || (index >= 0 && index >= static_cast<opcode::IntConst>(this->value.length()))) {
-        opcode::raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, name.c_str(), index)));
-    }
-    auto val_str = val->as_string();
-    if (index >= 0)
-        this->value.replace(key_int->get_value(), 1, val_str);
-    else
-        this->value.replace(this->value.length() + key_int->get_value(), 1, val_str);
-}*/
-
 void ListValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
     assert(key->get_type() != BuiltIns::Range && "TODO: Implement range subsc set");
     auto key_int = dyn_cast<IntValue>(key);
