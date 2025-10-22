@@ -11,6 +11,11 @@ long MemoryPool::allocated = 0;
 opcode::Register MemoryPool::dynamic_register_am = 0;
 
 void MemoryPool::store(opcode::Register reg, Value *v) {
+    while (pool.size()+1 >= pool.bucket_count()) {
+        LOGMAX("No more reserved space, resizing pool from: " << pool.bucket_count() << " to " << pool.bucket_count()+(pool.bucket_count()/4));
+        // TODO: Find some nice heuristic for this number
+        pool.reserve(pool.bucket_count()+(pool.bucket_count()/4));
+    }
     pool[reg] = v;
 }
 

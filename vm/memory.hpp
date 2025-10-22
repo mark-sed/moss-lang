@@ -15,6 +15,7 @@
 #include "opcode.hpp"
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <cstdint>
 #include <iostream>
 #include <optional>
@@ -36,7 +37,7 @@ namespace opcode {
 class MemoryPool {
 private:
     Value *pool_owner; ///< This value is set to the owner of this pool if it is a function
-    std::map<opcode::Register, Value *> pool;
+    std::unordered_map<opcode::Register, Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     std::vector<std::vector<opcode::Finally *>> finally_stack;
@@ -51,6 +52,16 @@ public:
 #endif
     MemoryPool(bool holds_consts=false, bool global=false) : pool_owner(nullptr), holds_consts(holds_consts),
                global(global), marked(false) {
+        if (!global && !holds_consts) {
+            // TODO: Fine tune these values
+            pool = std::unordered_map<opcode::Register, Value *>(128);
+        }
+        else if (holds_consts) {
+            pool = std::unordered_map<opcode::Register, Value *>(BC_RESERVED_CREGS+256);
+        }
+        else {
+            pool = std::unordered_map<opcode::Register, Value *>(BC_RESERVED_REGS+256);
+        }
         this->finally_stack.push_back({});
 #ifndef NDEBUG
         ++allocated;
@@ -105,7 +116,7 @@ public:
         return std::numeric_limits<opcode::Register>::max() - ++dynamic_register_am;
     }
 
-    std::map<opcode::Register, Value *> &get_pool() { return this->pool; }
+    std::unordered_map<opcode::Register, Value *> &get_pool() { return this->pool; }
     std::list<Value *> &get_spilled_values() { return this->spilled_values; }
 
     /// \return true if frame is global frame
