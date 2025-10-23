@@ -1211,8 +1211,7 @@ caught
 Hi
 AAAcAAAAcAAAAAA
 ["hello", "there", "from", "moss"]
-["hello", "there", "from
-moss"]
+["hello", "there", "from\\nmoss"]
 ["hello", "there", "from", "moss"]
 ["1", "2", "3-4", "5", ""]
 ["1", "", "2", "", "3", "4", "", "5", "", ""]
@@ -1411,12 +1410,12 @@ class MyCls
     It is my class.
     Does classy things.
 enum EnB {
-    A
-    B
-    C
-    D
-    E
-}
+        A
+        B
+        C
+        D
+        E
+    }
 enum EmptyEnum {}
 space SomeSpace
     Just some space being spaceous.

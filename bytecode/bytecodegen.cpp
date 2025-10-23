@@ -1743,7 +1743,12 @@ void BytecodeGen::emit(ir::Enum *enm) {
         append(new StoreStringConst(v_reg, v));
         append(new ListPushConst(list_reg, v_reg));
     }
-    append(new BuildEnum(next_reg(), list_reg, enm->get_name()));
+    
+    auto en_reg = next_reg();
+    append(new BuildEnum(en_reg, list_reg, enm->get_name()));
+    if (!enm->get_documentation().empty()) {
+        append(new Document(en_reg, enm->get_documentation()));
+    }
 }
 
 void BytecodeGen::emit(ir::Try *tcf) {

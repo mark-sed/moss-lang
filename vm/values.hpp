@@ -141,7 +141,7 @@ public:
 
     virtual opcode::StringConst as_string() const = 0;
     virtual opcode::StringConst dump() {
-        return as_string();
+        return utils::sanitize(as_string());
     }
     /// Converts numeric type to float. The type has to be checked if it is
     /// numeric otherwise assert is raised or 0.0 returned
@@ -476,7 +476,7 @@ public:
     }
 
     virtual opcode::StringConst dump() override {
-        return "\"" + value + "\"";
+        return "\"" + utils::sanitize(value) + "\"";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
@@ -864,7 +864,7 @@ public:
     opcode::StringConst get_format() { return this->format; }
 
     virtual opcode::StringConst dump() override {
-        return format + dyn_cast<StringValue>(this)->dump();
+        return utils::sanitize(format) + utils::sanitize(dyn_cast<StringValue>(this)->dump());
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {

@@ -1138,13 +1138,15 @@ fun help(a) {
         txt ++= "class " ++ inspect.name(a) ++ "\n"
         txt ++= info(a, "    ")
     } else if (type(a) == Enum) {
-        txt ++= "enum " ++ inspect.name(a) ++ " {"
+        en_name = inspect.name(a)
+        txt ++= "enum " ++ en_name ++ " {"
         for (e: inspect.enum_values(a)) {
-            txt ++= "\n    " ++ e
+            txt ++= "\n        " ++ e
         }
         if (not inspect.enum_values(a).empty())
-            txt ++= "\n"
+            txt ++= "\n    "
         txt ++= "}\n"
+        txt ++= info(a, "    ")
     } else if (type(a) == Space) {
         txt ++= "space " ++ inspect.name(a) ++ "\n"
         txt ++= info(a, "    ")

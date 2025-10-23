@@ -751,7 +751,9 @@ IR *Parser::declaration() {
         auto name = expect(TokenType::ID, create_diag(diags::ENUM_REQUIRES_NAME));
         skip_nls();
         expect(TokenType::LEFT_CURLY, create_diag(diags::MISSING_BLOCK));
-        skip_nls();
+        auto endecl = new Enum(name->get_value(), enumsrci);
+        parents.push_back(endecl);
+        bind_docstring();
         std::vector<ustring> values;
 
         while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
@@ -776,7 +778,8 @@ IR *Parser::declaration() {
 
         --multi_line_parsing;
         enumsrci.update_ends(curr_src_info());
-        decl = new Enum(name->get_value(), values, enumsrci);
+        endecl->set_values(values);
+        decl = endecl;
         no_end_needed = true;
     }
 

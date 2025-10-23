@@ -738,6 +738,7 @@ public:
     static const IRType ClassType = IRType::ENUM;
 
     Enum(ustring name, std::vector<ustring> values, SourceInfo src_info) : IR(ClassType, name, src_info), values(values) {}
+    Enum(ustring name, SourceInfo src_info) : IR(ClassType, name, src_info) {}
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "enum " << name << " {\n";
@@ -746,6 +747,14 @@ public:
         }
         os << "}";
         return os;
+    }
+
+    virtual bool can_be_documented() override {
+        return true;
+    }
+
+    void set_values(std::vector<ustring> values) {
+        this->values = values;
     }
 
     //void accept(IRVisitor& visitor) override;
