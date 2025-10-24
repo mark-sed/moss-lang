@@ -87,11 +87,13 @@ Value *SuperValue::get_attr(ustring name, Interpreter *caller_vm) {
 
 void Value::set_attrs(MemoryPool *p) {
     assert(this->is_modifiable() && "Setting attribute for not-modifiable value");
+    assert(p);
     this->attrs = p;
 }
 
 void Value::copy_attrs(MemoryPool *p) {
     assert(this->is_modifiable() && "Setting attribute for non-modifiable value");
+    assert(p);
     this->attrs = p->clone();
 }
 

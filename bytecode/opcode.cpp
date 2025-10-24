@@ -62,6 +62,12 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
     return false;
 }
 
+ustring get_type_or_name(Value *v) {
+    if (isa<ObjectValue>(v))
+        return (ustring("object of type ")+v->get_type()->get_name());
+    return v->get_type()->get_name()+" "+v->get_name();
+}
+
 /// \brief Does a call to a function in the code
 /// \param vm Current vm
 /// \param funV Function which to call
@@ -254,7 +260,7 @@ void LoadAttr::exec(Interpreter *vm) {
     }
     op_assert(attr, mslib::create_attribute_error(
         diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED,
-            v->get_type()->get_name().c_str(), this->name.c_str())));
+            get_type_or_name(v).c_str(), this->name.c_str())));
     vm->store(this->dst, attr);
 }
 

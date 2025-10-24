@@ -1,3 +1,7 @@
+space FooSpace2 {
+    NAME = "FooSpace2mod\n"
+}
+
 space FooSpace {
     NAME = "spaced_module FooSpace\n"
 }

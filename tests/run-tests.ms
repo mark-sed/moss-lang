@@ -795,7 +795,9 @@ mod1 ran!\nanon_space_value\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninne
 
 fun test_modules_and_spaces(name) {
     ~expect_pass("module_tests/space_user.ms", name, """spaced_module FooSpace\nspace_user FooSpace
-sm val1\nsm val2\n""", "")
+sm val1\nsm val2
+foospace2
+FooSpace2mod\n""", "")
 }
 
 fun test_space_imports(name) {

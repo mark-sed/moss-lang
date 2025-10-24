@@ -11,4 +11,10 @@ import spaced_module.Values.*
 VAL1
 VAL2
 
-// TODO: Once fixed test also importing it as a * import
+import spaced_module.*
+space FooSpace2 {
+    NAME2 = "foospace2\n"
+}
+
+FooSpace2.NAME2
+FooSpace2.NAME
