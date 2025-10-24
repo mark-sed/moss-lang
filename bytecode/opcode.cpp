@@ -227,28 +227,28 @@ void Load::exec(Interpreter *vm) {
 
 void LoadAttr::exec(Interpreter *vm) {
     auto *v = vm->load(this->src);
-    // TODO: Raise type error if type cannot have attributes, such as function
     auto attr = v->get_attr(this->name, vm);
     // This could possibly be an object or a class
-    if (!attr && v->get_type() && !isa<EnumTypeValue>(v)) {
-        ClassValue *cls = nullptr;
-        if (isa<ClassValue>(v)) {
-            cls = dyn_cast<ClassValue>(v);
-        } else {
-            cls = dyn_cast<ClassValue>(v->get_type());
-        }
-
-        for (auto sup: cls->get_all_supers()) {
-            attr = sup->get_attr(this->name, vm);
-            if (attr)
-                break;
-        }
-    } else if (!attr && isa<EnumTypeValue>(v)) {
-        auto etv = dyn_cast<EnumTypeValue>(v);
-        for (auto ev: etv->get_values()) {
-            if (ev->get_name() == this->name) {
-                attr = ev;
-                break;
+    if (!attr && !isa<EnumValue>(v)) {
+        if (auto etv = dyn_cast<EnumTypeValue>(v)) {
+            for (auto ev: etv->get_values()) {
+                if (ev->get_name() == this->name) {
+                    attr = ev;
+                    break;
+                }
+            }
+        } else if (v->get_type() && !isa<EnumTypeValue>(v)) {
+            ClassValue *cls = nullptr;
+            if (isa<ClassValue>(v)) {
+                cls = dyn_cast<ClassValue>(v);
+            } else {
+                cls = dyn_cast<ClassValue>(v->get_type());
+                assert(cls && "cannot cast type into classvalue");
+            }
+            for (auto sup: cls->get_all_supers()) {
+                attr = sup->get_attr(this->name, vm);
+                if (attr)
+                    break;
             }
         }
     }

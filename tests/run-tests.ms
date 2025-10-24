@@ -743,7 +743,8 @@ Constructor
 Some space
 foo(a,b)
 foo(a)
-foo()\n""", "")
+foo()
+Foo enum.\nHas ABC.\n""", "")
 }
 
 fun test_multivar(name) {

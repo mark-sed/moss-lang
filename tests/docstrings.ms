@@ -87,3 +87,16 @@ for (f: foo3) {
     assert(f == dcs2[i][0], f++" is missing in doc list --2")
     i += 1
 }
+
+enum FooNum {
+    d"""
+    Foo enum.
+    Has ABC.
+    """
+    A
+    B
+    C
+}
+
+dnenum = info(FooNum)
+dnenum
