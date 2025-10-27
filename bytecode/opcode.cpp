@@ -1416,6 +1416,13 @@ std::vector<ustring> get_str_list_annot(Value *args, unsigned long arg_am, ustri
 }
 
 void Annotate::exec(Interpreter *vm) {
+    static std::unordered_set<ustring> KNOWN_ANNOTS = {
+        annots::INTERNAL,
+        annots::STATIC_METHOD,
+        annots::FORMATTER,
+        annots::IF_MAIN
+    };
+
     auto *d = vm->load(dst);
     assert(d && "Cannot load dst");
     auto *v = vm->load(val);
@@ -1464,7 +1471,7 @@ void Annotate::exec(Interpreter *vm) {
         Interpreter::add_generator(args[0], fn);
     } 
     // Raise exception if annotation is not known.
-    else if (name != annots::INTERNAL && name != annots::STATIC_METHOD && name != annots::FORMATTER) {
+    else if (KNOWN_ANNOTS.find(name) == KNOWN_ANNOTS.end()) {
         raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::UNKNOWN_ANNOTATION, name.c_str())));
     }
 }

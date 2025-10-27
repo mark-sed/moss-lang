@@ -201,6 +201,17 @@ class X {
 )";
 
     testing::check_line_err(code2, "DisallowedAnnotations");
+
+    ustring code3 = R"(
+class S {
+    @if_main
+    fun main() {
+        "main!\n"
+    }
+}
+)";
+
+    testing::check_line_err(code3, "DisallowedAnnotations");
 }
 
 }

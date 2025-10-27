@@ -30,6 +30,7 @@ namespace annots {
     inline constexpr char GENERATOR[] = "generator";
     inline constexpr char FORMATTER[] = "formatter";
     inline constexpr char STATIC_METHOD[] = "static_method";
+    inline constexpr char IF_MAIN[] = "if_main";
 
     inline constexpr char ENABLE_CODE_OUTPUT[] = "enable_code_output";
     inline constexpr char DISABLE_CODE_OUTPUT[] = "disable_code_output";
