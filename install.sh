@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script can run the moss cmake installation targets to simplify the
 # installation to just one command.
 # It can be also used to run tests.
