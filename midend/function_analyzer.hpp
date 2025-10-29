@@ -21,6 +21,7 @@ namespace ir {
 class FunctionAnalyzer : public IRVisitor {
 private:
     void check_arguments(const std::vector<ir::Argument *> &args, ustring fname);
+    void check_annotated_fun(class IR &fun, const std::vector<ir::Argument *> &args);
 public:
     FunctionAnalyzer(Parser &parser) : IRVisitor(parser) {}
     

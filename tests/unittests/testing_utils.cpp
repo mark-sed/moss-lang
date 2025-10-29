@@ -91,10 +91,10 @@ void testing::check_line_ok(ustring code, ustring test) {
     Parser parser(sf);
 
     auto mod = dyn_cast<ir::Module>(parser.parse());
-    ASSERT_TRUE(mod);
+    ASSERT_TRUE(mod) << test << ": " << code;
     ir::IRPipeline irp(parser);
     auto err = irp.run(mod);
-    ASSERT_FALSE(err) << "Failed but was supposed to pass";
+    ASSERT_FALSE(err) << test << "Failed but was supposed to pass: " << code;
 
     delete mod;
     delete err;

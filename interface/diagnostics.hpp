@@ -205,6 +205,9 @@ enum DiagID : unsigned {
     BREAK_OUTSIDE_OF_LOOP,  ///< When break is not inside of a loop
     CONTINUE_OUTSIDE_OF_LOOP, ///< When continue is outside of a loop
     RECURSIVE_CONVERTER_CALL,///< When converter is called within a converter
+    INCOMPATIBLE_ANNOTS,    ///< When there are multiple incompatible annotations
+    CONVERTER_INCORR_ARGS,  ///< When converter has incorrect args
+    GENERATOR_INCORR_ARGS,  ///< When generator has incorrect args
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -389,6 +392,9 @@ static const char * DIAG_MSGS[] = {
     "Break outside of a loop",
     "Continue outside of a loop",
     "Recursive converter (from: '%s', to: '%s') call — outputting inside of a converter",
+    "Incompatible annotations '%s' and '%s' (on '%s')",
+    "Function ('%s') annotated as 'converter' has to take exactly 1 untyped argument or typed as '[String,Note]'",
+    "Function ('%s') annotated as 'generator' has to take exactly 1 untyped argument or typed as 'List'",
 };
 
 /// \brief ID of diagnostic error

@@ -91,5 +91,17 @@ TEST(FunctionAnalysis, OperatorFunsOutsideOfClass){
     testing::check_all_lines_err(lines, "OperatorFunsOutsideOfClass");
 }
 
+/// Tests for incorrect annotations or function signatures based on annotations.
+TEST(FunctionAnalysis, MismatchedFunsAndAnnotations){
+    std::vector<ustring> lines = {
+R"(fun pt2pta(a) { @!generator("pt"); @!converter("txt", "pt"); })",
+R"(@generator("pt") @converter("txt", "pt") fun pt2pta(a) = a)",
+R"(@converter("pt", "pta") fun pt2pta(a, b) {})",
+R"(@converter("pt", "pta") fun pt2pta(a, b) = a)",
+R"(@generator("pt") fun pt2pta2() { a; })",
+};
+    testing::check_all_lines_err(lines, "MismatchedFunsAndAnnotations");
+}
+
 
 }

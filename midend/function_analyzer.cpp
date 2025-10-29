@@ -30,6 +30,19 @@ void FunctionAnalyzer::check_arguments(const std::vector<ir::Argument *> &args, 
     }
 }
 
+void FunctionAnalyzer::check_annotated_fun(IR &fun, const std::vector<ir::Argument *> &args) {
+    if (fun.has_annotation(annots::CONVERTER)) {
+        parser_assert(!fun.has_annotation(annots::GENERATOR), parser.create_diag(fun.get_src_info(),
+                diags::INCOMPATIBLE_ANNOTS, annots::CONVERTER, annots::GENERATOR, fun.get_name().c_str()));
+        parser_assert(args.size() == 1, parser.create_diag(fun.get_src_info(),
+                diags::CONVERTER_INCORR_ARGS, fun.get_name().c_str()));
+    } else if (fun.has_annotation(annots::GENERATOR)) {
+        // No need to check for having converter annotation as it would be checked above.
+        parser_assert(args.size() == 1, parser.create_diag(fun.get_src_info(),
+                diags::GENERATOR_INCORR_ARGS, fun.get_name().c_str()));
+    }
+}
+
 void FunctionAnalyzer::visit(Function &fun) {
     check_arguments(fun.get_args(), fun.get_name());
     // Method analyzer was already run and methods are marked, report any
@@ -38,9 +51,13 @@ void FunctionAnalyzer::visit(Function &fun) {
     parser_assert(!fun.has_annotation(annots::CONVERTER) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::CONVERTER));
     parser_assert(!fun.has_annotation(annots::GENERATOR) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::GENERATOR));
     parser_assert(!fun.has_annotation(annots::IF_MAIN) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::IF_MAIN));
+    if (!fun.get_annotations().empty())
+        check_annotated_fun(fun, fun.get_args());
 }
 
 void FunctionAnalyzer::visit(Lambda &lf) {
     check_arguments(lf.get_args(), "lambda");
     parser_assert(!Parser::is_operator_fun(lf.get_name()) || lf.is_method(), parser.create_diag(lf.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, lf.get_name().c_str()));
+    if (!lf.get_annotations().empty())
+        check_annotated_fun(lf, lf.get_args());
 }
