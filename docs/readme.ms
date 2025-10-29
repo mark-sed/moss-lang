@@ -107,7 +107,7 @@ import time.strftime
 Note(
     f"""
 -----
-This file was generated on {strftime("%b %-d %Y")} by 
+This file was generated on {strftime("%b %d %Y")} by 
 [Moss](https://github.com/mark-sed/moss-lang) {version} from 
 [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
 """, "md")

@@ -111,6 +111,10 @@ Value *time::strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, V
     if (isa<NilValue>(t)) {
         auto now = std::time(nullptr);
         time_to_format = std::localtime(&now);
+        if (!time_to_format) {
+            err = mslib::create_os_error(diags::Diagnostic(*vm->get_src_file(), diags::TIME_TIMESTAMP_OOR));
+            return nullptr;
+        }
     } else {
         assert(t->get_type()->get_name() == "StructTime" && "Unexpected type");
         temp_time.tm_year = get_time_int_att("tm_year")-1900;

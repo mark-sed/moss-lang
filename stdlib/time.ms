@@ -34,4 +34,4 @@ fun time() {}
 fun localtime(secs:[Int,Float,NilType]=nil) {}
 
 @internal
-fun strftime(format, t:[StructTime,NilType]=nil) {}
+fun strftime(format:String, t:[StructTime,NilType]=nil) {}

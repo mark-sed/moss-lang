@@ -68,11 +68,22 @@ sudo bash instal.sh
 ```
 
 With CMake it can be done with target `moss` and `libms`. If you wish to also
-install it onto correct path you can use `installation` target:
+install it onto correct path (to have command `moss`) you can use `installation`
+target.
+
+__On Linux:__
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j $(nproc) --target moss libms
 sudo cmake --build build -j $(nproc) --target installation
+```
+
+__On Windows:__
+
+Open `Developer Command Prompt` and navigate into cloned moss-lang directory. 
+```sh
+cmake -S . -B build
+cmake --build build --config Release --target moss libms installation
 ```
 
 You can test this with:
@@ -81,10 +92,10 @@ You can test this with:
 ./build/moss --version
 
 # On Windows
-build\\Debug\\moss.exe --version
+build\\Release\\moss.exe --version
 ```
 
 -----
-This page was generated on Oct 28 2025 by 
+This file was generated on Oct 29 2025 by 
 [Moss](https://github.com/mark-sed/moss-lang) 0.6.10 from 
 [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
