@@ -503,6 +503,7 @@ IR *Parser::declaration() {
         if (annot->is_inner()) {
             assert(!parents.empty() && "No top level IR?");
             auto parent = parents.back();
+            assert(parent);
             parser_assert(parent->can_be_annotated(), create_diag(diags::CANNOT_BE_ANNOTATED, parent->get_name().c_str()));
             // For module we want to output the annotation as IR
             if (parents.size() == 1) {
@@ -754,6 +755,7 @@ IR *Parser::declaration() {
         auto endecl = new Enum(name->get_value(), enumsrci);
         parents.push_back(endecl);
         bind_docstring();
+        parents.pop_back();
         std::vector<ustring> values;
 
         while (!check(TokenType::RIGHT_CURLY) && !check(TokenType::END_OF_FILE)) {
