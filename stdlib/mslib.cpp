@@ -10,6 +10,7 @@
 #include "mslib_dict.hpp"
 #include "subprocess.hpp"
 #include "inspect.hpp"
+#include "python.hpp"
 #include "sys.hpp"
 #include "cffi.hpp"
 #include "time.hpp"
@@ -1195,6 +1196,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> sys_registry = sys::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> time_registry = time::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> inspect_registry = inspect::get_registry();
+    static const std::unordered_map<std::string, mslib::mslib_dispatcher> python_registry = python::get_registry();
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> empty_registry{};
 
     // Based on module name return correct function registry
@@ -1210,6 +1212,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         return time_registry;
     else if (module_name == "inspect")
         return inspect_registry;
+    else if (module_name == "python")
+        return python_registry;
     else {
         // We want to raise exception, not to assert, this will make it so
         // that the "internal" function will not be found.
@@ -1246,4 +1250,6 @@ void mslib::dispatch(Interpreter *vm, ustring module_name, ustring name, Value *
 void mslib::call_const_initializer(ustring module_name, Interpreter *vm) {
     if (module_name == "sys")
         sys::init_constants(vm);
+    else if (module_name == "python")
+        python::init_constants(vm);
 }

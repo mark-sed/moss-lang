@@ -65,9 +65,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
     return vars;
 }*/
 
-
-
-
 void sys::init_constants(Interpreter *vm) {
     auto gf = vm->get_global_frame();
     Value *err = nullptr;
