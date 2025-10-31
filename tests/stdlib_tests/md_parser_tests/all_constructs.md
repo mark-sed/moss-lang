@@ -112,3 +112,7 @@ __not_bold__
 [text](url "even title, but no parenth"
 
 text
+
+---
+*******
+________

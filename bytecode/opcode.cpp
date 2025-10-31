@@ -1556,7 +1556,7 @@ void Output::exec(Interpreter *vm) {
         } else if (target_format == "html") {
             if (ov.back() == '\n')
                 ov.pop_back();
-            ov = "<pre><code class=\"moss-output\">" + ov + "</code></pre>";
+            ov = "<div class=\"moss-output-wrapper\"><pre class=\"moss-output\"><code class=\"moss-output-code\">" + ov + "</code></pre></div>";
         }
     }
     

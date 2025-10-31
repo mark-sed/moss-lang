@@ -13,6 +13,7 @@ class HTMLToken {
         BLOCK_QUOTES
         LIST
         CODE_BLOCK
+        HORIZONTAL_RULE
     }
 
     fun HTMLToken(value, type:TokenType) {
@@ -158,5 +159,15 @@ class HTMLList : HTMLToken {
         if (this.ordered)
             return "<ol start=\"" ++ this.start ++ "\">" ++ this.indented(this.start) ++ "</ol>"
         return "<ul>" ++ this.indented() ++ "</ul>"
+    }
+}
+
+class HTMLHorizontalRule : HTMLToken {
+    fun HTMLHorizontalRule() {
+        ~super("", HTMLToken.TokenType.LINK)
+    }
+
+    fun __String() {
+        return "<hr>"
     }
 }

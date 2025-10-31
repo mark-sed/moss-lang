@@ -217,6 +217,24 @@ class MDList : MDToken {
     }
 }
 
+class MDHLine : MDToken {
+    fun MDHLine(text) {
+        ~super(text, MDToken.TokenType.HLINE)
+    }
+
+    fun to_txt() {
+        return this.value
+    }
+
+    fun to_html() {
+        return html_parser.HTMLHorizontalRule()
+    }
+
+    fun __String() {
+        return this.value
+    }
+}
+
 class MDParser {
 
     fun MDParser(text:String, allow_strikethrough:Bool=true) {
@@ -328,8 +346,10 @@ class MDParser {
         elem = []
         toks = []
         escape = false
+        og_text = []
         while (this.i < this.text.length()) {
             c = this.text[this.i]
+            ~og_text.append(c)
             if (escape && c in this.ESCAPE_LIST) {
                 ~elem.append(this.text[this.i])
                 this.i += 1
@@ -339,7 +359,9 @@ class MDParser {
                 this.code = not this.code
             } else if (not this.code && this.check_adv("_")) {
                 if (this.check_adv("_")) {
+                    ~og_text.append("_")
                     if (this.check_adv("_")) {
+                        ~og_text.append("_")
                         ~add_text()
                         this.bold = not this.bold
                         this.italic = not this.italic
@@ -353,7 +375,9 @@ class MDParser {
                 }
             } else if (not this.code && this.check_adv("*")) {
                 if (this.check_adv("*")) {
+                    ~og_text.append("*")
                     if (this.check_adv("*")) {
+                        ~og_text.append("*")
                         ~add_text()
                         this.bold_star = not this.bold_star
                         this.italic_star = not this.italic_star
@@ -367,6 +391,7 @@ class MDParser {
                 }
             } else if (this.allow_strikethrough && this.check_adv("~")) {
                 if (this.check_adv("~")) {
+                    ~og_text.append("~")
                     ~add_text()
                     this.strikethrough = not this.strikethrough
                 } else {
@@ -392,12 +417,29 @@ class MDParser {
             }
         }
         ~add_text()
+        if (toks.empty() && not og_text.empty()) {
+            ~toks.append(MDText("".join(og_text)))
+        }
         return toks
     }
 
     fun paragraph() {
         if (this.i < this.text.length()) {
-            return MDParagraph(this.textual())
+            txt = this.textual()
+            // Check if the paragraph could be hline
+            if (txt.length() == 1 && txt[0].type == MDToken.TokenType.TEXT) {
+                value = txt[0].value
+                while (not value.empty() && value[-1] == "\n")
+                    value = value[0..value.length()-1]
+                while (not value.empty() && value[0] == "\n")
+                    value = value[1..value.length()]
+                if (value.length() > 2) {
+                    if (all(value, fun(c)=c=="-") || all(value, fun(c)=c=="*") || all(value, fun(c)=c=="_")) {
+                        return MDHLine(value)
+                    }
+                }
+            } 
+            return MDParagraph(txt)
         }
         return MDParagraph([])
     }

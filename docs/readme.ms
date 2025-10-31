@@ -1,4 +1,5 @@
 #!/usr/bin/moss
+@!enable_code_output
 
 md"""
 # 🌿 Moss
@@ -22,7 +23,6 @@ The example bellow showcases some nice Moss features, such as typed function
 arguments, ranges (`start..end`), calls to standard library functions (`sum` in
 space `Math`), list comprehension, documentation strings and outputting.
 """
-@!enable_code_output
 
 fun normalized_squares(start:Int, end:Int) {
     d"""
@@ -35,8 +35,6 @@ fun normalized_squares(start:Int, end:Int) {
 }
 
 normalized_squares(1, 6)
-
-@!disable_code_output
 
 md"""
 As seen above in output for this function the return value was outputted.

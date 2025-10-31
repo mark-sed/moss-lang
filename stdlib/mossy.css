@@ -1702,16 +1702,45 @@ body > footer {
   }
 }
 
+.moss-output-wrapper {
+  position: relative;
+  display: block;
+  margin: 1.2em 0 1em;
+}
+
+.moss-output-code {
+  background-color: var(--background-alt);
+  padding: 0;
+  margin: 0;
+}
+
 .moss-output {
-  background-color: #d9ede4;
-  color: var(--code);
+  background-color: var(--background);
+  color: var(--background);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 10px;
   font-family: monospace;
   white-space: pre-wrap;
-  margin: 1em 0;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
 }
+
+.moss-output-wrapper::before {
+  content: "Output:";
+  position: absolute;
+  top: -1em;
+  left: 0.5em;
+  background: #FDC221;
+  color: #000;
+  font-size: 0.75em;
+  font-weight: bold;
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+}
+
 @media (prefers-color-scheme: dark) {
   .moss-output {
     background-color: var(--background-alt);
