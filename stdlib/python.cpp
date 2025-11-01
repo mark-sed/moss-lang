@@ -21,12 +21,32 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
             assert(args.size() == 2);
             return python::PythonObject(vm, cf->get_arg("this"), cf->get_arg("ptr"), err);
         }},
+        {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            return python::PyObj_get(vm, cf, cf->get_arg("this"), cf->get_arg("name"), err);
+        }},
     };
     return registry;
 }
 
+PythonObjectValue::PythonObjectValue(PyObject *ptr) 
+    : Value(ClassType, "<object of PythonObject>", BuiltIns::PythonObject), ptr(ptr) {
+    if(BuiltIns::PythonObject->get_attrs())
+        this->attrs = BuiltIns::PythonObject->get_attrs()->clone();
+}
+
 PythonObjectValue::~PythonObjectValue() {
     Py_XDECREF(ptr);
+}
+
+// FIXME: Change to dyn_cast
+PythonObjectValue *py_dyn_cast(Value *v) {
+    assert(v);
+    if (v->get_kind() == TypeKind::PYTHON_OBJ)
+        return dynamic_cast<PythonObjectValue*>(v);
+    return nullptr;
 }
 
 static ustring get_py_exception(PyObject **exc_out) {
@@ -84,6 +104,20 @@ Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *&err) 
     }
 
     return new PythonObjectValue(p_module);
+}
+
+Value *python::PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err) {
+    auto po = py_dyn_cast(ths);
+    assert(po && "This is not PythonObject");
+    auto name_str = mslib::get_string(name);
+    PyObject *att = PyObject_GetAttrString(po->get_value(), name_str.c_str());
+    if (!att) {
+        auto exc = extract_py_exception(vm, cf, err);
+        if (!err)
+            err = exc; 
+        return nullptr;
+    }
+    return new PythonObjectValue(att);
 }
 
 Value *python::PythonObject(Interpreter *vm, Value *ths, Value *ptr, Value *&err) {

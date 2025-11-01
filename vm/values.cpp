@@ -430,7 +430,6 @@ DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
 template<>
 t_cpp::CppValue *moss::dyn_cast(Value* t) {
     assert(t && "Passed nullptr to dyn_cast");
-    // special case for StringValue when NoteValue (its child) is passed in
     if (t->get_kind() >= TypeKind::CPP_CVOID)
         return dynamic_cast<t_cpp::CppValue*>(t);
     return nullptr;

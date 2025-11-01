@@ -31,14 +31,16 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::PYTHON_OBJ;
 
-    PythonObjectValue(PyObject *ptr)
-        : Value(ClassType, "<object of PythonObject>", BuiltIns::PythonObject),
-          ptr(ptr) {}
+    PythonObjectValue(PyObject *ptr);
     ~PythonObjectValue();
 
     Value *clone() override {
         Py_XINCREF(ptr);
         return new PythonObjectValue(ptr);
+    }
+
+    PyObject *get_value() {
+        return this->ptr;
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -63,6 +65,8 @@ void init_constants(Interpreter *vm);
 Value *module(Interpreter *vm, CallFrame *cf, Value *name, Value *&err);
 
 Value *PythonObject(Interpreter *vm, Value *ths, Value *ptr, Value *&err);
+
+Value *PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err);
 
 }
 }

@@ -4,15 +4,23 @@ Module for interoperability with Python3.
 
 @internal_bind("PythonObject")
 class __PythonObject {
-    d"""
-    Moss version of a Python object.
-    """
+    d"Moss version of a Python object."
 
     @internal
     fun PythonObject(ptr:cpp.cvoid_star) {}
+
+    @internal
+    fun get(name:String) {
+        d"""
+        Accesses an attribute inside of this object.
+        This works just as dot (`.`) operator in Python.
+        """
+    }
 }
 
 class PythonException : Exception {
+    d"Moss exception that represents a Python exception."
+
     fun PythonException(msg:String, obj:PythonObject=nil) {
         ~super(msg)
         this.obj = obj
@@ -24,6 +32,12 @@ class PythonException : Exception {
 }
 
 @internal
-fun module(name:String) {}
+fun module(name:String) {
+    d"""
+    Imports and returns python module by name `name`.
+    If such module does not exists or there is an error, then PythonException is
+    raised.
+    """
+}
 
 @!internal_module

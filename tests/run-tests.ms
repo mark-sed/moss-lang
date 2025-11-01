@@ -1484,6 +1484,10 @@ fun test_lib_python_module_imports(name) {
 <object of class PythonObject>\n""", "")
 }
 
+fun test_lib_python_attrs_calls(name) {
+    ~expect_pass(f"stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>\n""", "")
+}
+
 fun test_lib_sys_platform(name) {
     ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
@@ -1749,6 +1753,7 @@ fun run_all_tests() {
 
     // python
     ~run_test("lib_python_module_imports")
+    ~run_test("lib_python_attrs_calls")
 
     // inspect
     ~run_test("lib_inspect_inspect")

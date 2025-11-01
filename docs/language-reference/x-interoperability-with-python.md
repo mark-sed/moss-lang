@@ -9,8 +9,8 @@ Module `python` provides all needed resources.
 import python
 
 datetime = python.module("datetime")
-dtcls = ~datetime.cls("datetime")
-now = dtcls.def("now")
+dtcls = ~datetime.get("datetime")
+now = dtcls.get("now")
 // Or
 dtcls.now()
 print(now())
