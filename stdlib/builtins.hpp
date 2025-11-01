@@ -112,6 +112,8 @@ namespace BuiltIns {
     extern Value *OutputError;
     extern Value *SystemExit;
 
+    extern Value *PythonObject;
+
     extern Value *Nil;
     extern Value *True;
     extern Value *False;

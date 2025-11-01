@@ -1479,6 +1479,11 @@ CLIB
 done\n""", "")
 }
 
+fun test_lib_python_module_imports(name) {
+    ~expect_pass(f"stdlib_tests/python_tests/py_module_imports.ms", name, """caught
+<object of class PythonObject>\n""", "")
+}
+
 fun test_lib_sys_platform(name) {
     ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
@@ -1741,6 +1746,9 @@ fun run_all_tests() {
     } else {
         ~print("[NOTE] Skipping cffi tests (not yet implemented on Windows).")
     }
+
+    // python
+    ~run_test("lib_python_module_imports")
 
     // inspect
     ~run_test("lib_inspect_inspect")

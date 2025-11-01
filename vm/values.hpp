@@ -50,6 +50,8 @@ enum class TypeKind {
     ENUM_VALUE,
     SUPER_VALUE,
 
+    PYTHON_OBJ,
+
     // Values after this has to be CPP values as dyn_cast relies on this.
     CPP_CVOID, // This has to be the first cpp value
     CPP_CVOID_STAR,
@@ -79,6 +81,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
         case TypeKind::SUPER_VALUE: return "SUPER_VALUE";
+        case TypeKind::PYTHON_OBJ: return "PYTHON_OBJ";
         case TypeKind::CPP_CVOID: return "CPP_CVOID";
         case TypeKind::CPP_CVOID_STAR: return "CPP_CVOID_STAR";
         case TypeKind::CPP_CLONG: return "CPP_CLONG";

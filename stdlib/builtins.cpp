@@ -92,6 +92,8 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "OutputError", BuiltIns::OutputError, gf);
     store_glob_val(reg++, "SystemExit", BuiltIns::SystemExit, gf);
 
+    store_glob_val(reg++, "PythonObject", BuiltIns::PythonObject, gf);
+
     store_glob_val(reg++, "cpp", BuiltIns::Cpp::CppSpace, gf);
     
     init_cpp_built_ins();
@@ -141,6 +143,7 @@ Value *BuiltIns::FileNotFoundError = new ClassValue("FileNotFoundError");
 Value *BuiltIns::EOFError = new ClassValue("EOFError");
 Value *BuiltIns::OutputError = new ClassValue("OutputError");
 Value *BuiltIns::SystemExit = new ClassValue("SystemExit");
+Value *BuiltIns::PythonObject = new ClassValue("PythonObject");
 
 Value *BuiltIns::Cpp::CppSpace = new SpaceValue("cpp", nullptr);
 Value *BuiltIns::Cpp::CVoid = new ClassValue("cvoid");
