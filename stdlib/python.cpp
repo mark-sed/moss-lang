@@ -1,4 +1,6 @@
 #include "python.hpp"
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
 
 using namespace moss;
 using namespace mslib;
@@ -17,5 +19,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
 }
 
 void python::init_constants(Interpreter *vm) {
-    
+    LOGMAX("Initialized Python");
+    Py_Initialize();
+    // FIXME: Change the path to be moss path
+    PyRun_SimpleString("import sys; sys.path.append('.')");
 }

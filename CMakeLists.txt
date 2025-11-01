@@ -179,13 +179,17 @@ add_custom_target(
 
 # Include libffi headers
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBFFI_INCLUDE_DIRS})
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${LIBFFI_CFLAGS_OTHER})
 
+# Python support
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+target_include_directories(${PROJECT_NAME} PRIVATE ${Python3_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Python3_LIBRARIES})
+
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} msvcrt ${LIBFFI_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} PRIVATE msvcrt ${LIBFFI_LIBRARIES})
 else()
-    target_link_libraries(${PROJECT_NAME} m ${LIBFFI_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} PRIVATE m ${LIBFFI_LIBRARIES})
 endif()
 
 # testsmoss target
@@ -222,7 +226,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 
     target_link_libraries(
-        testsmoss
+        testsmoss PRIVATE
         gtest_main
         ${LIBFFI_LIBRARIES}
     )
@@ -231,6 +235,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(GoogleTest)
     gtest_discover_tests(testsmoss)
     target_include_directories(testsmoss PRIVATE ${LIBFFI_INCLUDE_DIRS})
+
+    # Python
+    target_include_directories(testsmoss PRIVATE ${Python3_INCLUDE_DIRS})
+    target_link_libraries(testsmoss PRIVATE ${Python3_LIBRARIES})
 
     # Docs build
     # docs target
