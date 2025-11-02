@@ -68,6 +68,8 @@ Value *PythonObject(Interpreter *vm, Value *ths, Value *ptr, Value *&err);
 
 Value *PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err);
 
+Value *PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err);
+
 }
 }
 }

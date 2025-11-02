@@ -16,6 +16,13 @@ class __PythonObject {
         This works just as dot (`.`) operator in Python.
         """
     }
+
+    @internal
+    fun call(... args) {}
+
+    //fun (())(... args) {
+    //    return this.call(<<args)
+    //}
 }
 
 class PythonException : Exception {

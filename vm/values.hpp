@@ -1261,6 +1261,15 @@ T *dyn_cast(Value* t) {
 template<>
 t_cpp::CppValue *dyn_cast(Value* t);
 
+namespace mslib {
+    namespace python {
+        class PythonObjectValue;
+    }
+}
+
+template<>
+mslib::python::PythonObjectValue *dyn_cast(Value* t);
+
 }
 
 #endif//VALUES_HPP_
