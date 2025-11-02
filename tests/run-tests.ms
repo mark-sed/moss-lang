@@ -1485,7 +1485,8 @@ fun test_lib_python_module_imports(name) {
 }
 
 fun test_lib_python_attrs_calls(name) {
-    ~expect_pass(f"stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>\n""", "")
+    ~expect_pass(f"stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>
+-1.000000\n1.000000\n""", "")
 }
 
 fun test_lib_sys_platform(name) {

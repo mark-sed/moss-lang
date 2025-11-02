@@ -35,6 +35,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
             assert(args.size() == 2);
             return python::PythonObject(vm, cf->get_arg("this"), cf->get_arg("ptr"), err);
         }},
+        {"to_moss", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            (void)err;
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return python::to_moss(vm, cf, args[0].value, err);
+        }},
         
     };
     return registry;
@@ -85,9 +91,15 @@ static Value *extract_py_exception(Interpreter *vm, CallFrame *cf, Value *&err) 
     PyObject *exc_obj = nullptr;
     auto msg = get_py_exception(&exc_obj);
     Value *ms_exc_obj = new PythonObjectValue(exc_obj);
-    if (err)
-        return nullptr;
     return mslib::call_constructor(vm, cf, "PythonException", {StringValue::get(msg), ms_exc_obj}, err);
+}
+
+static Value *create_PythonToMossConversionError(Interpreter *vm, CallFrame *cf, ustring msg, Value *&err) {
+    return mslib::call_constructor(vm, cf, "PythonToMossConversionError", {StringValue::get(msg)}, err);
+}
+
+static Value *create_MossToPythonConversionError(Interpreter *vm, CallFrame *cf, ustring msg, Value *&err) {
+    return mslib::call_constructor(vm, cf, "MossToPythonConversionError", {StringValue::get(msg)}, err);
 }
 
 Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *&err) {
@@ -121,12 +133,69 @@ Value *python::PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name
     return new PythonObjectValue(att);
 }
 
+static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) {
+    if (auto mv = dyn_cast<IntValue>(v)) {
+        return PyLong_FromLongLong(mv->get_value());
+    } else if (auto mv = dyn_cast<FloatValue>(v)) {
+        return PyFloat_FromDouble(mv->get_value());
+    } else if (auto mv = dyn_cast<BoolValue>(v)) {
+        if (mv->get_value())
+            Py_RETURN_TRUE;
+        Py_RETURN_FALSE;
+    }
+    // TODO: Add more types
+    auto ce = create_MossToPythonConversionError(vm, cf, "No known conversion from Moss type '"+v->get_type()->get_name()+"' to Python type.", err);
+    if (!err)
+        err = ce;
+    return nullptr;
+}
+
+static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err) {
+    PyTypeObject *t = Py_TYPE(obj);
+    if (t == &PyLong_Type) {
+        return IntValue::get(PyLong_AsLongLong(obj));
+    } else if (t == &PyBool_Type) {
+        return BoolValue::get(static_cast<bool>(PyLong_AsLong(obj)));
+    } else if (t == &PyFloat_Type) {
+        return FloatValue::get(PyFloat_AsDouble(obj));
+    } else if (obj == Py_None) {
+        return NilValue::Nil();
+    }
+    // TODO: Add more types
+    auto ce = create_PythonToMossConversionError(vm, cf, "No known conversion from Python type '"+ustring(t->tp_name)+"' to Moss type.", err);
+    if (!err)
+        err = ce;
+    return nullptr;
+}
+
 Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *call_args, Value *&err) {
     PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
     assert(po && "This is not PythonObject");
     auto args = mslib::get_list(call_args);
-    // TODO
-    return nullptr;
+    
+    PyObject *py_args = PyTuple_New(args.size());
+    for (size_t i = 0; i < args.size(); ++i) {
+        PyTuple_SetItem(py_args, i, moss2py(vm, cf, args[i], err));
+        if (err) {
+            Py_DECREF(py_args);
+            return nullptr;
+        }
+    }
+    auto rval = PyObject_CallObject(po->get_value(), py_args);
+    Py_DECREF(py_args);
+    if (!rval || PyErr_Occurred()) {
+        auto exc = extract_py_exception(vm, cf, err);
+        if (!err)
+            err = exc; 
+        return nullptr;
+    }
+    return new PythonObjectValue(rval);
+}
+
+Value *python::to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) {
+    PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
+    assert(po && "This is not PythonObject");
+    return py2moss(vm, cf, po->get_value(), err);
 }
 
 Value *python::PythonObject(Interpreter *vm, Value *ths, Value *ptr, Value *&err) {

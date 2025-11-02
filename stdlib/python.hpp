@@ -70,6 +70,8 @@ Value *PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value 
 
 Value *PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err);
 
+Value *to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err);
+
 }
 }
 }
