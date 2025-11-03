@@ -15,3 +15,11 @@ now = dtcls.get("now")
 dtcls.now()
 print(now())
 ```
+
+```cpp
+import python
+
+random = python.module("random")
+random.def("randint")
+random.randint(1, 10)
+```

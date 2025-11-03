@@ -7,10 +7,11 @@ using namespace moss;
 using namespace mslib;
 using namespace python;
 
+static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err);
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
         {"call", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
             auto ths = cf->get_arg("this");
@@ -18,25 +19,29 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
             return python::PyObj_call(vm, cf, ths, val, err);
         }},
         {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
             return python::PyObj_get(vm, cf, cf->get_arg("this"), cf->get_arg("name"), err);
         }},
         {"module", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 1);
             return python::module(vm, cf, args[0].value, err);
         }},
         {"PythonObject", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
-            return python::PythonObject(vm, cf->get_arg("this"), cf->get_arg("ptr"), err);
+            if (cf->get_arg("ptr")) {
+                return python::PythonObject(vm, cf->get_arg("this"), cf->get_arg("ptr"), err);
+            } else {
+                assert(cf->get_arg("v"));
+                auto pyv = moss2py(vm, cf, cf->get_arg("v"), err);
+                if (err)
+                    return nullptr;
+                return new PythonObjectValue(pyv);
+            }
         }},
         {"to_moss", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 1);
             return python::to_moss(vm, cf, args[0].value, err);
@@ -142,6 +147,8 @@ static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) 
         if (mv->get_value())
             Py_RETURN_TRUE;
         Py_RETURN_FALSE;
+    } else if (auto mv = dyn_cast<PythonObjectValue>(v)) {
+        return mv->get_value();
     }
     // TODO: Add more types
     auto ce = create_MossToPythonConversionError(vm, cf, "No known conversion from Moss type '"+v->get_type()->get_name()+"' to Python type.", err);
@@ -198,7 +205,7 @@ Value *python::to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) 
     return py2moss(vm, cf, po->get_value(), err);
 }
 
-Value *python::PythonObject(Interpreter *vm, Value *ths, Value *ptr, Value *&err) {
+Value *python::PythonObject(Interpreter *, Value *, Value *ptr, Value *&) {
     auto cvs = dyn_cast<t_cpp::CVoidStarValue>(ptr);
     assert(cvs);
     return new PythonObjectValue(static_cast<PyObject *>(cvs->get_value()));
@@ -209,6 +216,21 @@ void python::init_constants(Interpreter *vm) {
     Py_Initialize();
     // FIXME: Change the path to be moss path
     PyRun_SimpleString("import sys; sys.path.append('.')");
+
+    // Loading builtins module into stdlib variable
+    auto gf = vm->get_global_frame();
+    Value *err = nullptr;
+
+    // python.stdlib
+    auto stdlib_reg = mslib::get_global_register_of(vm, "stdlib");
+    PyObject *p_name = PyUnicode_DecodeFSDefault("builtins");
+    assert(p_name);
+    PyObject *p_module = PyImport_Import(p_name);
+    Py_DECREF(p_name);
+    assert(p_module && "Couldn't import builtins module");
+    if (p_module) {
+        gf->store(stdlib_reg, new PythonObjectValue(p_module));
+    }
 }
 
 template<>

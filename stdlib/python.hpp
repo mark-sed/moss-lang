@@ -43,6 +43,8 @@ public:
         return this->ptr;
     }
 
+    virtual inline bool is_modifiable() override { return true; }
+
     virtual inline bool is_hashable() override { return true; }
     virtual opcode::IntConst hash() override {
         return std::hash<size_t>{}((size_t)ptr);

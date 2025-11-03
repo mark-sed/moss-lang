@@ -1481,12 +1481,17 @@ done\n""", "")
 
 fun test_lib_python_module_imports(name) {
     ~expect_pass(f"stdlib_tests/python_tests/py_module_imports.ms", name, """caught
-<object of class PythonObject>\n""", "")
+<object of class PythonObject>\n42\n""", "")
 }
 
 fun test_lib_python_attrs_calls(name) {
     ~expect_pass(f"stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>
--1.000000\n1.000000\n""", "")
+-1.000000\n-1.000000\n1.000000\n0.000000
+PythonException: module 'random' has no attribute 'NONEXISTENT_FUN'\n<object of class PythonObject>\n<object of class PythonObject>\n""", "")
+}
+
+fun test_lib_python_type_conversions(name) {
+    ~expect_pass(f"stdlib_tests/python_tests/py_type_conversions.ms", name, """24\ntrue\n2.000000\n""", "")
 }
 
 fun test_lib_sys_platform(name) {
@@ -1755,6 +1760,7 @@ fun run_all_tests() {
     // python
     ~run_test("lib_python_module_imports")
     ~run_test("lib_python_attrs_calls")
+    ~run_test("lib_python_type_conversions")
 
     // inspect
     ~run_test("lib_inspect_inspect")

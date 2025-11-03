@@ -1,6 +1,14 @@
 d"""
 Module for interoperability with Python3.
+
+The main type here is PythonObject, which represents Python 3 objects including
+modules, values and functions. This object can be created initially with
+function `module`, which imports a Python module and then by calling `def` or
+`get` on this object and accessing it's attributes.
 """
+
+// This will be instantiated to builtins module
+stdlib = nil
 
 @internal_bind("PythonObject")
 class __PythonObject {
@@ -8,6 +16,14 @@ class __PythonObject {
 
     @internal
     fun PythonObject(ptr:cpp.cvoid_star) {}
+    @internal
+    fun PythonObject(v) {
+        d"""
+        Converts Moss value `v` into Python version of this object.
+        If no such conversion exists, then MossToPythonConversionError is
+        raised.
+        """
+    }
 
     @internal
     fun get(name:String) {
@@ -17,11 +33,40 @@ class __PythonObject {
         """
     }
 
-    @internal
-    fun to_moss() {}
+    fun def(name:String) {
+        d"""
+        Sets attribute `name` of this object to extracted one using `get`.
+        """
+        a = this.get(name)
+        ~setattr(this, name, a)
+    }
 
     @internal
-    fun call(... args) {}
+    fun to_moss() {
+        d"""
+        Converts PythonObject into a Moss value.
+        If no such conversion exists, then PythonToMossConversionError is
+        raised.
+        """
+    }
+
+    @internal
+    fun call(... args) {
+        d"""
+        Function call to this object with passed in arguments.
+        Arguments can be Moss values and those will be converted or
+        PythonObject values.
+        """
+    }
+
+    fun call_moss(... args) {
+        d"""
+        Function call to this object and then conversion of returned value into
+        a Moss value.
+        """
+        rval = this.call(<<args)
+        return rval.to_moss()
+    }
 
     //fun (())(... args) {
     //    return this.call(<<args)
@@ -71,6 +116,14 @@ fun module(name:String) {
     If such module does not exists or there is an error, then PythonException is
     raised.
     """
+}
+
+fun to_py(v) {
+    d"""
+    Converts Moss value to Python value.
+    This is an equivalent of calling PythonObject constructor.
+    """
+    return PythonObject(v)
 }
 
 @!internal_module
