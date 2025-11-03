@@ -10,3 +10,7 @@ python.module("random")
 
 python.stdlib.get("int").call_moss(42)
 "\n"
+
+// Test initial population of stdlib
+python.stdlib.bool.call_moss(42)
+"\n"

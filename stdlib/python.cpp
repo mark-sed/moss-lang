@@ -25,20 +25,29 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
         }},
         {"module", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
+            assert(args.size() == 2);
+            return python::module(vm, cf, cf->get_arg("name"), cf->get_arg("populate"), err);
+        }},
+        {"populate", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
             assert(args.size() == 1);
-            return python::module(vm, cf, args[0].value, err);
+            return python::populate(vm, cf, args[0].value, err);
         }},
         {"PythonObject", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
-            assert(args.size() == 2);
+            assert(args.size() == 3);
             if (cf->get_arg("ptr")) {
-                return python::PythonObject(vm, cf->get_arg("this"), cf->get_arg("ptr"), err);
+                return python::PythonObject(vm, cf, cf->get_arg("this"), cf->get_arg("ptr"), cf->get_arg("populate"), err);
             } else {
                 assert(cf->get_arg("v"));
                 auto pyv = moss2py(vm, cf, cf->get_arg("v"), err);
                 if (err)
                     return nullptr;
-                return new PythonObjectValue(pyv);
+                auto nobj = new PythonObjectValue(pyv);
+                if (get_bool(cf->get_arg("populate"))) {
+                    python::populate(vm, cf, nobj, err);
+                }
+                return nobj;
             }
         }},
         {"to_moss", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -52,9 +61,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
 }
 
 PythonObjectValue::PythonObjectValue(PyObject *ptr) 
-    : Value(ClassType, "<object of PythonObject>", BuiltIns::PythonObject), ptr(ptr) {
-    if(BuiltIns::PythonObject->get_attrs())
-        this->attrs = BuiltIns::PythonObject->get_attrs()->clone();
+    : ObjectValue(dyn_cast<ClassValue>(BuiltIns::PythonObject)), ptr(ptr) {
+    this->kind = PythonObjectValue::ClassType;
+    this->name = "<python object>";
 }
 
 PythonObjectValue::~PythonObjectValue() {
@@ -107,7 +116,7 @@ static Value *create_MossToPythonConversionError(Interpreter *vm, CallFrame *cf,
     return mslib::call_constructor(vm, cf, "MossToPythonConversionError", {StringValue::get(msg)}, err);
 }
 
-Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *&err) {
+Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *popul, Value *&err) {
     auto name_str = mslib::get_string(name);
     PyObject *p_name = PyUnicode_DecodeFSDefault(name_str.c_str());
     assert(p_name);
@@ -121,7 +130,11 @@ Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *&err) 
         return nullptr;
     }
 
-    return new PythonObjectValue(p_module);
+    auto nobj = new PythonObjectValue(p_module);
+    if (get_bool(popul)) {
+        python::populate(vm, cf, nobj, err);
+    }
+    return nobj;
 }
 
 Value *python::PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err) {
@@ -205,10 +218,42 @@ Value *python::to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) 
     return py2moss(vm, cf, po->get_value(), err);
 }
 
-Value *python::PythonObject(Interpreter *, Value *, Value *ptr, Value *&) {
+Value *python::populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) {
+    PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
+    assert(po && "This is not PythonObject");
+
+    PyObject *dir_list = PyObject_Dir(po->get_value());
+    if (!dir_list) {
+        auto exc = extract_py_exception(vm, cf, err);
+        if (!err)
+            err = exc; 
+        return nullptr;
+    }
+    Py_ssize_t len = PyList_Size(dir_list);
+    for (Py_ssize_t i = 0; i < len; ++i) {
+        PyObject *item = PyList_GetItem(dir_list, i);  // Borrowed reference
+        const char *name = PyUnicode_AsUTF8(item);
+        PyObject *att = PyObject_GetAttrString(po->get_value(), name);
+        if (!att) {
+            auto exc = extract_py_exception(vm, cf, err);
+            if (!err)
+                err = exc; 
+            return nullptr;
+        }
+        ths->set_attr(name, new PythonObjectValue(att));
+    }
+    Py_DECREF(dir_list);
+    return nullptr;
+}
+
+Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr, Value *popul, Value *&err) {
     auto cvs = dyn_cast<t_cpp::CVoidStarValue>(ptr);
     assert(cvs);
-    return new PythonObjectValue(static_cast<PyObject *>(cvs->get_value()));
+    auto nobj = new PythonObjectValue(static_cast<PyObject *>(cvs->get_value()));
+    if (get_bool(popul)) {
+        python::populate(vm, cf, nobj, err);
+    }
+    return nobj;
 }
 
 void python::init_constants(Interpreter *vm) {
@@ -216,21 +261,20 @@ void python::init_constants(Interpreter *vm) {
     Py_Initialize();
     // FIXME: Change the path to be moss path
     PyRun_SimpleString("import sys; sys.path.append('.')");
+}
 
-    // Loading builtins module into stdlib variable
-    auto gf = vm->get_global_frame();
-    Value *err = nullptr;
-
-    // python.stdlib
-    auto stdlib_reg = mslib::get_global_register_of(vm, "stdlib");
-    PyObject *p_name = PyUnicode_DecodeFSDefault("builtins");
-    assert(p_name);
-    PyObject *p_module = PyImport_Import(p_name);
-    Py_DECREF(p_name);
-    assert(p_module && "Couldn't import builtins module");
-    if (p_module) {
-        gf->store(stdlib_reg, new PythonObjectValue(p_module));
+std::ostream& PythonObjectValue::debug(std::ostream& os) const {
+    // TODO: Output all needed debug info
+    os << "Object : " << type->get_name() << " {"; 
+    if (!attrs || attrs->is_empty_sym_table()) {
+        os << "}";
     }
+    else {
+        attrs->debug_sym_table(os, tab_depth);
+        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+    }
+
+    return os;
 }
 
 template<>

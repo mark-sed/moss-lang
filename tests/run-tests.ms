@@ -1481,7 +1481,7 @@ done\n""", "")
 
 fun test_lib_python_module_imports(name) {
     ~expect_pass(f"stdlib_tests/python_tests/py_module_imports.ms", name, """caught
-<object of class PythonObject>\n42\n""", "")
+<object of class PythonObject>\n42\ntrue\n""", "")
 }
 
 fun test_lib_python_attrs_calls(name) {

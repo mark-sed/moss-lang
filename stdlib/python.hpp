@@ -25,7 +25,7 @@ namespace python {
 
 /// Moss version of PyObject, holds the pointer to it.
 /// This is needed to decrement the reference counter on value deletion.
-class PythonObjectValue : public Value {
+class PythonObjectValue : public ObjectValue {
 private:
     PyObject *ptr;
 public:
@@ -54,25 +54,24 @@ public:
         return "<object of class PythonObject>";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
-        os << "PythonObject(" << ptr << ")";
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const override;
 };
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
 void init_constants(Interpreter *vm);
 
-Value *module(Interpreter *vm, CallFrame *cf, Value *name, Value *&err);
+Value *module(Interpreter *vm, CallFrame *cf, Value *name, Value *popul, Value *&err);
 
-Value *PythonObject(Interpreter *vm, Value *ths, Value *ptr, Value *&err);
+Value *PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr, Value *popul, Value *&err);
 
 Value *PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err);
 
 Value *PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err);
 
 Value *to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err);
+
+Value *populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err);
 
 }
 }

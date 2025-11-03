@@ -7,21 +7,23 @@ function `module`, which imports a Python module and then by calling `def` or
 `get` on this object and accessing it's attributes.
 """
 
-// This will be instantiated to builtins module
-stdlib = nil
+// This annotation has to be before any calls to python runtime so that
+// it can initialize it.
+@!internal_module
 
 @internal_bind("PythonObject")
 class __PythonObject {
     d"Moss version of a Python object."
 
     @internal
-    fun PythonObject(ptr:cpp.cvoid_star) {}
+    fun PythonObject(ptr:cpp.cvoid_star, populate:Bool=false) {}
     @internal
-    fun PythonObject(v) {
+    fun PythonObject(v, populate:Bool=false) {
         d"""
         Converts Moss value `v` into Python version of this object.
         If no such conversion exists, then MossToPythonConversionError is
         raised.
+        When populate is true, then `populate` method is called.
         """
     }
 
@@ -39,6 +41,14 @@ class __PythonObject {
         """
         a = this.get(name)
         ~setattr(this, name, a)
+    }
+
+    @internal
+    fun populate() {
+        d"""
+        Populates this object with all the attributes inside of Python version
+        of this value.
+        """
     }
 
     @internal
@@ -68,9 +78,9 @@ class __PythonObject {
         return rval.to_moss()
     }
 
-    //fun (())(... args) {
-    //    return this.call(<<args)
-    //}
+    fun (())(... args) {
+        return this.call_moss(<<args)
+    }
 }
 
 class PythonException : Exception {
@@ -110,7 +120,7 @@ class MossToPythonConversionError : PythonException {
 }
 
 @internal
-fun module(name:String) {
+fun module(name:String, populate:Bool=false) {
     d"""
     Imports and returns python module by name `name`.
     If such module does not exists or there is an error, then PythonException is
@@ -118,12 +128,14 @@ fun module(name:String) {
     """
 }
 
-fun to_py(v) {
+fun to_py(v, populate:Bool=false) {
     d"""
     Converts Moss value to Python value.
     This is an equivalent of calling PythonObject constructor.
     """
-    return PythonObject(v)
+    return PythonObject(v, populate)
 }
 
-@!internal_module
+// Python stdlib (implicitly imported values)
+stdlib = module("builtins")
+~stdlib.populate()
