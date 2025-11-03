@@ -21,8 +21,8 @@
 #define MACRO_TO_STR(x) MACRO_TO_STR_HELPER(x)
 
 #define MOSS_VERSION_MAJOR 0  ///< Interpreter's major version
-#define MOSS_VERSION_MINOR 6  ///< Interpreter's minor version
-#define MOSS_VERSION_PATCH 10 ///< Interpreter's patch
+#define MOSS_VERSION_MINOR 7  ///< Interpreter's minor version
+#define MOSS_VERSION_PATCH 0 ///< Interpreter's patch
 
 /// Moss version as a string
 #define MOSS_VERSION MACRO_TO_STR(MOSS_VERSION_MAJOR) "." MACRO_TO_STR(MOSS_VERSION_MINOR) "." MACRO_TO_STR(MOSS_VERSION_PATCH)

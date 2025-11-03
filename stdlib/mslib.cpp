@@ -1253,3 +1253,7 @@ void mslib::call_const_initializer(ustring module_name, Interpreter *vm) {
     else if (module_name == "python")
         python::init_constants(vm);
 }
+
+void mslib::deinitialize_modules() {
+    python::deinitialize_python();
+}

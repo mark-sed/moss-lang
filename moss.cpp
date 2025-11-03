@@ -235,6 +235,8 @@ int main(int argc, const char *argv[]) {
             }
         }
 
+        mslib::deinitialize_modules();
+
         LOGMAX(*interpreter);
         exit_code = interpreter->get_exit_code();
 

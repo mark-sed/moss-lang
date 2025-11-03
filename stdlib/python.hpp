@@ -60,6 +60,7 @@ public:
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
 void init_constants(Interpreter *vm);
+void deinitialize_python();
 
 Value *module(Interpreter *vm, CallFrame *cf, Value *name, Value *popul, Value *&err);
 

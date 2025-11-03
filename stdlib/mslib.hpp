@@ -126,6 +126,9 @@ inline std::vector<Value *> &get_list(Value *v) {
 /// \param err Possible exception from execution
 void dispatch(Interpreter *vm, ustring module_name, ustring name, Value *&err);
 
+/// Calls deinitializers for modules, which need it, like python module.
+void deinitialize_modules();
+
 /// \brief Constructs an exception from given type and message.
 Value *create_exception(Value *type, ustring msg);
 Value *create_exception(Value *type, diags::Diagnostic dmsg);

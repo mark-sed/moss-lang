@@ -8,6 +8,8 @@ using namespace moss;
 using namespace mslib;
 using namespace python;
 
+bool PYTHON_INITIALIZED = false;
+
 static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err);
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_registry() {
@@ -163,8 +165,22 @@ static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) 
         Py_RETURN_FALSE;
     } else if (auto mv = dyn_cast<PythonObjectValue>(v)) {
         return mv->get_value();
+    } else if (auto mv = dyn_cast<StringValue>(v)) {
+        return PyUnicode_FromString(mv->get_value().c_str());
+    } else if (isa<NilValue>(v)) {
+        return Py_None;
+    } else if (auto mv = dyn_cast<ListValue>(v)) {
+        PyObject *lst = PyList_New(mv->size());
+        size_t index = 0;
+        for (auto elm: mv->get_vals()) {
+            PyList_SetItem(lst, index, moss2py(vm, cf, elm, err));
+            if (err)
+                return nullptr;
+            ++index;
+        }
+        return lst;
     }
-    // TODO: Add more types
+    // TODO: Add more types - dict, set
     auto ce = create_MossToPythonConversionError(vm, cf, "No known conversion from Moss type '"+v->get_type()->get_name()+"' to Python type.", err);
     if (!err)
         err = ce;
@@ -181,8 +197,22 @@ static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err
         return FloatValue::get(PyFloat_AsDouble(obj));
     } else if (obj == Py_None) {
         return NilValue::Nil();
+    } else if (t == &PyUnicode_Type) {
+        return StringValue::get(PyUnicode_AsUTF8(obj));
+    } else if (t == &PyList_Type) {
+        Py_ssize_t size = PyList_Size(obj);
+        auto lst = new ListValue();
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            PyObject *item = PyList_GetItem(obj, i);
+            auto elm = py2moss(vm, cf, item, err);
+            if (err) {
+                return nullptr;
+            }
+            lst->push(elm);
+        }
+        return lst;
     }
-    // TODO: Add more types
+    // TODO: Add more types - dict
     auto ce = create_PythonToMossConversionError(vm, cf, "No known conversion from Python type '"+ustring(t->tp_name)+"' to Moss type.", err);
     if (!err)
         err = ce;
@@ -269,6 +299,15 @@ void python::init_constants(Interpreter *vm) {
 #endif
     Py_Initialize();
     PyRun_SimpleString("import sys; sys.path.append('.')");
+    PYTHON_INITIALIZED = true;
+}
+
+void python::deinitialize_python() {
+    if (PYTHON_INITIALIZED) {
+        LOGMAX("Deinitializing Python");
+        PYTHON_INITIALIZED = false;
+        Py_Finalize();
+    }
 }
 
 std::ostream& PythonObjectValue::debug(std::ostream& os) const {
