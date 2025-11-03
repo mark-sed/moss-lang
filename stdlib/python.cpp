@@ -2,6 +2,7 @@
 #include "values_cpp.hpp"
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <filesystem>
 
 using namespace moss;
 using namespace mslib;
@@ -258,13 +259,19 @@ Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr,
 
 void python::init_constants(Interpreter *vm) {
     LOGMAX("Initialized Python");
+#ifdef __windows__
+#ifdef PYTHON_DLL_PATH
+    std::filesystem::path dll_path = std::filesystem::path(PYTHON_DLL_PATH);
+    std::filesystem::path python_root = dll_path.parent_path(); 
+    LOGMAX("PYTHON_DLL_PATH set so setting home dir to: " << python_root.string());
+    Py_SetPythonHome(python_root.wstring().c_str());
+#endif
+#endif
     Py_Initialize();
-    // FIXME: Change the path to be moss path
     PyRun_SimpleString("import sys; sys.path.append('.')");
 }
 
 std::ostream& PythonObjectValue::debug(std::ostream& os) const {
-    // TODO: Output all needed debug info
     os << "Object : " << type->get_name() << " {"; 
     if (!attrs || attrs->is_empty_sym_table()) {
         os << "}";
