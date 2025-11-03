@@ -4,6 +4,7 @@
 #include "mslib.hpp"
 #include "gc.hpp"
 #include "values_cpp.hpp"
+#include "python.hpp"
 #include <new>
 
 using namespace moss;
@@ -428,9 +429,39 @@ DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
 }
 
 template<>
+bool moss::isa<t_cpp::CppValue>(Value& t) {
+    return t.get_kind() >= TypeKind::CPP_CVOID;
+}
+
+template<>
+bool moss::isa<t_cpp::CppValue>(Value* t) {
+    assert(t && "Passed nullptr to isa");
+    return t->get_kind() >= TypeKind::CPP_CVOID;
+}
+
+template<>
 t_cpp::CppValue *moss::dyn_cast(Value* t) {
     assert(t && "Passed nullptr to dyn_cast");
     if (t->get_kind() >= TypeKind::CPP_CVOID)
         return dynamic_cast<t_cpp::CppValue*>(t);
+    return nullptr;
+}
+
+template<>
+bool moss::isa<ObjectValue>(Value& t) {
+    return t.get_kind() == ObjectValue::ClassType || t.get_kind() == mslib::python::PythonObjectValue::ClassType;
+}
+
+template<>
+bool moss::isa<ObjectValue>(Value* t) {
+    assert(t && "Passed nullptr to isa");
+    return t->get_kind() == ObjectValue::ClassType || t->get_kind() == mslib::python::PythonObjectValue::ClassType;
+}
+
+template<>
+ObjectValue *moss::dyn_cast(Value* t) {
+    assert(t && "Passed nullptr to dyn_cast");
+    if (t->get_kind() == TypeKind::OBJECT || t->get_kind() == TypeKind::PYTHON_OBJ)
+        return dynamic_cast<ObjectValue*>(t);
     return nullptr;
 }

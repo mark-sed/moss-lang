@@ -1487,7 +1487,8 @@ fun test_lib_python_module_imports(name) {
 fun test_lib_python_attrs_calls(name) {
     ~expect_pass(f"stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>
 -1.000000\n-1.000000\n1.000000\n0.000000
-PythonException: module 'random' has no attribute 'NONEXISTENT_FUN'\n<object of class PythonObject>\n<object of class PythonObject>\n""", "")
+PythonException: module 'random' has no attribute 'NONEXISTENT_FUN'\n<object of class PythonObject>\n<object of class PythonObject>
+20\n""", "")
 }
 
 fun test_lib_python_type_conversions(name) {

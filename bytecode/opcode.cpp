@@ -729,6 +729,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
     // Lookup (()) operator if value is an object
     if (auto obj = dyn_cast<ObjectValue>(funV)) {
+        LOGMAX("Looking up () operator override on object");
         funV = funV->get_attr("()", vm);
         op_assert(funV, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED, funV->get_type()->get_name().c_str(), "()")));
         assert((isa<FunValue>(funV) || isa<FunValueList>(funV)) && "() operator is not a function");

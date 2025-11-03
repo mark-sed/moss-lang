@@ -28,3 +28,9 @@ try {
     python.stdlib.get("str").call(e.obj)
     "\n"
 }
+
+import python.*
+
+math = module("math", populate=true)
+math.gcd(180, 980).to_moss()
+"\n"

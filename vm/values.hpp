@@ -1241,9 +1241,21 @@ bool isa(Value* t) {
     return t->get_kind() == T::ClassType;
 }
 
+template<>
+bool isa<ObjectValue>(Value& t);
+
+template<>
+bool isa<ObjectValue>(Value* t);
+
 namespace t_cpp {
     class CppValue;
 }
+
+template<>
+bool isa<t_cpp::CppValue>(Value& t);
+
+template<>
+bool isa<t_cpp::CppValue>(Value* t);
 
 template<class T>
 T *dyn_cast(Value* t) {
@@ -1260,6 +1272,9 @@ T *dyn_cast(Value* t) {
 
 template<>
 t_cpp::CppValue *dyn_cast(Value* t);
+
+template<>
+ObjectValue *dyn_cast(Value* t);
 
 namespace mslib {
     namespace python {
