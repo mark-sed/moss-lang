@@ -125,3 +125,10 @@ q
 "\n"
 Math.divmod(2.3, 45)
 "\n"
+
+Math.cumsum([])
+"\n"
+Math.cumsum([1,2,3,4,5])
+"\n"
+Math.cumsum([0,0,-10,0,11])
+"\n"

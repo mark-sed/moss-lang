@@ -43,6 +43,42 @@ notebooks and documents with runnable code that is recomputed on every
 generation. On top of that this output can be then easily converted to other
 formats (by specifying `-f` option followed by the desired format).
 
+## 🐍 Python interoperability
+
+Moss has a built-in Python interoperability to take advantage of a wast library
+ecosystem which Python offers. This should also allow for easier implementation
+of Moss into existing projects which rely on existing Python scripts.
+
+Working with python is very straight forward, Moss has PythonObject wrapper
+over Python objects. Here is an example of plotting a graph using
+[matplotlib](https://matplotlib.org/):
+```moss
+space {
+    import python.*
+
+    plt = module("matplotlib.pyplot")
+
+    points = [18, 18, 25, 8, 18, 12, 25, 12, 1, 18,
+            0, 10, 20, 2, 18, 25, 25, 18, 33, 15]
+    accum = Math.cumsum(points)
+    races = [i : i = 1..points.length()+1]
+
+    ~plt.plot(races, accum)
+    ~plt.title("Max Verstappen - 2025 Season Cumulative Points")
+    ~plt.xlabel("Race number")
+    ~plt.ylabel("Cumulative Points")
+    ~plt.xticks(races)
+    ~plt.grid(true)
+    ~plt.savefig("docs/resources/ver_points.png")
+    ~plt.close.call()
+}
+```
+![Generated image](https://github.com/mark-sed/moss-lang/blob/main/docs/resources/ver_points.png)
+> [!Note]
+> Calls to "void" functions are prefixed with silence operator `~` so that `nil` is not outputted.
+
+Moss also has built-in interoperability with C and any C-calling convention functions (see `cffi` module).
+
 ## 📚 Other useful resources
 
 * [Language reference documentation](https://github.com/mark-sed/moss-lang/tree/main/docs/language-reference)
@@ -54,8 +90,9 @@ Moss can be built and run on Linux and Windows. On Max it should be possible,
 but is not tested yet.
 
 ### 📦 Requirement
-* C++17 compatible compiler (gcc, clang)
-* CMake
+* C++17 compatible compiler (gcc, clang),
+* CMake,
+* Python 3 (as Moss has a built-in interoperability).
 
 ### ⚙️ Build
 
@@ -99,8 +136,23 @@ You can test this with:
 # On Windows
 build\\Release\\moss.exe --version
 ```
+```moss
+import sys.version
+```
+```moss
+import time.strftime
+```
+```moss
+Note(
+    f"""
+-----
+This file was generated on {strftime("%b %d %Y")} by 
+[Moss](https://github.com/mark-sed/moss-lang) {version} from 
+[readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
+""", "md")
+```
 
 -----
-This file was generated on Oct 30 2025 by 
-[Moss](https://github.com/mark-sed/moss-lang) 0.6.10 from 
+This file was generated on Nov 04 2025 by 
+[Moss](https://github.com/mark-sed/moss-lang) 0.7.0 (DEBUG build) from 
 [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).

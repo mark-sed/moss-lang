@@ -8,9 +8,9 @@ try {
 python.module("random")
 "\n"
 
-python.stdlib.get("int").call_moss(42)
+python.builtins.get("int").call_moss(42)
 "\n"
 
-// Test initial population of stdlib
-python.stdlib.bool.call_moss(42)
+// Test initial population of builtins
+python.builtins.bool.call_moss(42)
 "\n"

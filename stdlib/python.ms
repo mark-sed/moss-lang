@@ -16,9 +16,9 @@ class __PythonObject {
     d"Moss version of a Python object."
 
     @internal
-    fun PythonObject(ptr:cpp.cvoid_star, populate:Bool=false) {}
+    fun PythonObject(ptr:cpp.cvoid_star, populate:Bool=true) {}
     @internal
-    fun PythonObject(v, populate:Bool=false) {
+    fun PythonObject(v, populate:Bool=true) {
         d"""
         Converts Moss value `v` into Python version of this object.
         If no such conversion exists, then MossToPythonConversionError is
@@ -121,7 +121,7 @@ class MossToPythonConversionError : PythonException {
 }
 
 @internal
-fun module(name:String, populate:Bool=false) {
+fun module(name:String, populate:Bool=true) {
     d"""
     Imports and returns python module by name `name`.
     If such module does not exists or there is an error, then PythonException is
@@ -129,7 +129,7 @@ fun module(name:String, populate:Bool=false) {
     """
 }
 
-fun to_py(v, populate:Bool=false) {
+fun to_py(v, populate:Bool=true) {
     d"""
     Converts Moss value to Python value.
     This is an equivalent of calling PythonObject constructor.
@@ -137,6 +137,6 @@ fun to_py(v, populate:Bool=false) {
     return PythonObject(v, populate)
 }
 
-// Python stdlib (implicitly imported values)
-stdlib = module("builtins")
-~stdlib.populate()
+// Python stdlib builtins (implicitly imported values)
+builtins = module("builtins")
+~builtins.populate()

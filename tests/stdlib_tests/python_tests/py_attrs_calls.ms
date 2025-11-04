@@ -25,7 +25,7 @@ try {
     e
     e.obj.get("args")
     "\n"
-    python.stdlib.get("str").call(e.obj)
+    python.builtins.get("str").call(e.obj)
     "\n"
 }
 

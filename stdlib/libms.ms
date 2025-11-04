@@ -1368,6 +1368,17 @@ space Math {
         return start
     }
 
+    fun cumsum(nums) {
+        d"Returns cumulative sum of value in `nums`."
+        total = 0
+        accum = []
+        for (v : nums) {
+            total += v
+            ~accum.append(total)
+        }
+        return accum
+    }
+
     @internal
     fun log(x:[Int,Float], base:[Int,Float]) {
         d"Returns logarithm of base `base` of `x`."
@@ -1478,7 +1489,7 @@ fun html_gen(txts) {
     to style the generated document.
     """
 
-    import sys.version
+    import sys.version_info
     import time.strftime
     
     Note(f"""\
@@ -1493,7 +1504,7 @@ fun html_gen(txts) {
         t
     }
     if (HTML.FOOTER == nil)
-        footer = f"""Page generated on {strftime("%b %-d %Y %H:%M:%S")} by <a href="https://github.com/mark-sed/moss-lang">Moss</a> {version}."""
+        footer = f"""Page generated on {strftime("%b %d %Y")} by <a href="https://github.com/mark-sed/moss-lang">Moss</a> {version_info.major++"."++version_info.minor++"."++version_info.patch}."""
     else
         footer = HTML.FOOTER
     Note(f"""\

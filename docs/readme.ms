@@ -46,6 +46,49 @@ formats (by specifying `-f` option followed by the desired format).
 """
 
 md"""
+## 🐍 Python interoperability
+
+Moss has a built-in Python interoperability to take advantage of a wast library
+ecosystem which Python offers. This should also allow for easier implementation
+of Moss into existing projects which rely on existing Python scripts.
+
+Working with python is very straight forward, Moss has PythonObject wrapper
+over Python objects. Here is an example of plotting a graph using
+[matplotlib](https://matplotlib.org/):
+"""
+
+space {
+    import python.*
+
+    plt = module("matplotlib.pyplot")
+
+    points = [18, 18, 25, 8, 18, 12, 25, 12, 1, 18,
+            0, 10, 20, 2, 18, 25, 25, 18, 33, 15]
+    accum = Math.cumsum(points)
+    races = [i : i = 1..points.length()+1]
+
+    ~plt.plot(races, accum)
+    ~plt.title("Max Verstappen - 2025 Season Cumulative Points")
+    ~plt.xlabel("Race number")
+    ~plt.ylabel("Cumulative Points")
+    ~plt.xticks(races)
+    ~plt.grid(true)
+    ~plt.savefig("docs/resources/ver_points.png")
+    ~plt.close.call()
+}
+
+md"![Generated image](https://github.com/mark-sed/moss-lang/blob/main/docs/resources/ver_points.png)"
+
+md"""
+> [!Note]
+> Calls to "void" functions are prefixed with silence operator `~` so that `nil` is not outputted.
+"""
+
+md"""
+Moss also has built-in interoperability with C and any C-calling convention functions (see `cffi` module).
+"""
+
+md"""
 ## 📚 Other useful resources
 
 * [Language reference documentation](https://github.com/mark-sed/moss-lang/tree/main/docs/language-reference)
@@ -59,8 +102,9 @@ Moss can be built and run on Linux and Windows. On Max it should be possible,
 but is not tested yet.
 
 ### 📦 Requirement
-* C++17 compatible compiler (gcc, clang)
-* CMake
+* C++17 compatible compiler (gcc, clang),
+* CMake,
+* Python 3 (as Moss has a built-in interoperability).
 
 ### ⚙️ Build
 
