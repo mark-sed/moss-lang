@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
             printf "Moss installation script.\nUsage: bash $0\n" 
             exit 256
             ;;
-        release|debug|all|tests)
+        release|debug|all|tests|docs)
             [ -z "${TARGET}" ] || {
                 echo "Only one install command can be specified"
                 exit 1
@@ -34,6 +34,22 @@ set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 # Use default target if not set
 [ -z "${TARGET}" ] && TARGET="release"
 echo "Running installation target: ${TARGET}"
+
+# Regenerates passed in .ms notebook file if it has changed to its git version.
+regenerate_docs() {
+    local file="$1"
+    local out_path="$2"
+    local base_name
+    base_name="${file%.ms}"
+
+    if ! git diff --quiet HEAD -- "$file"; then
+        echo "[CHANGED] $file has changed, regenerating..."
+        moss -f md -O ${base_name}.md $file || exit 1
+        echo "[GENERATED] ${base_name}.md."
+    else
+        echo "[SKIPPED] $file has not changed, skipping."
+    fi
+}
 
 if [ "${TARGET}" = "release" ]; then
     # Default builds moss, moss library and installs it as a command.
@@ -58,4 +74,13 @@ elif [ "${TARGET}" = "all" ]; then
     sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
     sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) || exit 1
     cmake --build $BUILD_DIR -j $(nproc) --target libms installation
+elif [ "${TARGET}" == "docs" ]; then
+    echo "Regenerating docs..."
+    # Recursively loop over all .ms files in docs/
+    find docs/language-reference -type f -name "*.ms" | while read -r f; do
+        regenerate_docs "$f"
+    done
+    regenerate_docs docs/readme.ms
+    mv docs/readme.md ./ 2>/dev/null
+    echo "Done regenerating docs."
 fi

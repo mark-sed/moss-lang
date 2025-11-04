@@ -58,8 +58,7 @@ space {
 
     plt = module("matplotlib.pyplot")
 
-    points = [18, 18, 25, 8, 18, 12, 25, 12, 1, 18,
-            0, 10, 20, 2, 18, 25, 25, 18, 33, 15]
+    points = [18, 18, 25, 8, 18, 12, 25, 12, 1, 18, 0, 10, 20, 2, 18, 25, 25, 18, 33, 15]
     accum = Math.cumsum(points)
     races = [i : i = 1..points.length()+1]
 
@@ -86,7 +85,7 @@ Moss also has built-in interoperability with C and any C-calling convention func
 
 ## 🛠️ Building Moss
 
-Moss can be built and run on Linux and Windows. On Max it should be possible,
+Moss can be built and run on Linux and Windows. On MacOS it should be possible,
 but is not tested yet.
 
 ### 📦 Requirement
