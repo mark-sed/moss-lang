@@ -69,7 +69,7 @@ space {
 
     ~plt.plot(races, accum)
     ~plt.title("Max Verstappen - 2025 Season Cumulative Points")
-    ~plt.xlabel("Race number")
+    ~plt.xlabel("Race Number")
     ~plt.ylabel("Cumulative Points")
     ~plt.xticks(races)
     ~plt.grid(true)
@@ -77,7 +77,7 @@ space {
     ~plt.close.call()
 }
 
-md"![Generated image](https://github.com/mark-sed/moss-lang/blob/main/docs/resources/ver_points.png)"
+md"![Generated image](docs/resources/ver_points.png)"
 
 md"""
 > [!Note]
@@ -150,13 +150,15 @@ build\\Release\\moss.exe --version
 ```
 """
 
-import sys.version
+@!disable_code_output
+
+import sys.version_info
 import time.strftime
 
 Note(
     f"""
 -----
 This file was generated on {strftime("%b %d %Y")} by 
-[Moss](https://github.com/mark-sed/moss-lang) {version} from 
-[readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
+[Moss](https://github.com/mark-sed/moss-lang) {version_info.major++"."++version_info.minor++"."++version_info.patch}
+from [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
 """, "md")

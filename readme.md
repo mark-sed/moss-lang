@@ -65,7 +65,7 @@ space {
 
     ~plt.plot(races, accum)
     ~plt.title("Max Verstappen - 2025 Season Cumulative Points")
-    ~plt.xlabel("Race number")
+    ~plt.xlabel("Race Number")
     ~plt.ylabel("Cumulative Points")
     ~plt.xticks(races)
     ~plt.grid(true)
@@ -73,7 +73,7 @@ space {
     ~plt.close.call()
 }
 ```
-![Generated image](https://github.com/mark-sed/moss-lang/blob/main/docs/resources/ver_points.png)
+![Generated image](docs/resources/ver_points.png)
 > [!Note]
 > Calls to "void" functions are prefixed with silence operator `~` so that `nil` is not outputted.
 
@@ -136,23 +136,8 @@ You can test this with:
 # On Windows
 build\\Release\\moss.exe --version
 ```
-```moss
-import sys.version
-```
-```moss
-import time.strftime
-```
-```moss
-Note(
-    f"""
------
-This file was generated on {strftime("%b %d %Y")} by 
-[Moss](https://github.com/mark-sed/moss-lang) {version} from 
-[readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
-""", "md")
-```
 
 -----
 This file was generated on Nov 04 2025 by 
-[Moss](https://github.com/mark-sed/moss-lang) 0.7.0 (DEBUG build) from 
-[readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
+[Moss](https://github.com/mark-sed/moss-lang) 0.7.0
+from [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
