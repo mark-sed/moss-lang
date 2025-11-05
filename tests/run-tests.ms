@@ -1494,7 +1494,8 @@ PythonException: module 'random' has no attribute 'NONEXISTENT_FUN'\n<object of 
 
 fun test_lib_python_type_conversions(name) {
     ~expect_pass(f"stdlib_tests/python_tests/py_type_conversions.ms", name, """24\ntrue\n2.000000\nlit 😎\nnil
-[1, 2, True, [], None]\n[]\n[[[42]]]\n[1, 2, [true, false], 3, 4, [nil]]\n""", "")
+[1, 2, True, [], None]\n[]\n[[[42]]]\n[1, 2, [true, false], 3, 4, [nil]]
+{1, 2, 3, 4, 5}\n[33, 11, 22]\n""", "")
 }
 
 fun test_lib_sys_platform(name) {

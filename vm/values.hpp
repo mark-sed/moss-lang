@@ -617,6 +617,7 @@ public:
     virtual inline bool is_iterable() override { return true; }
 
     std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> &get_vals() { return this->vals; }
+    std::vector<std::pair<Value *, Value *>> vals_as_list();
 
     void push(Value *k, Value *v, Interpreter *vm);
     void push(std::vector<Value *> &keys, std::vector<Value *> &values, Interpreter *vm);

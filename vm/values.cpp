@@ -254,6 +254,14 @@ void DictValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
     this->push(key, val, vm);
 }
 
+std::vector<std::pair<Value *, Value *>> DictValue::vals_as_list() {
+    std::vector<std::pair<Value *, Value *>> res;
+    for (auto [_, vs] : vals) {
+        res.insert(res.end(), vs.begin(), vs.end());
+    }
+    return res;
+}
+
 std::ostream& ClassValue::debug(std::ostream& os) const {
     // TODO: Output all needed debug info
     os << "Class " << name;

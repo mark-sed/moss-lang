@@ -179,6 +179,18 @@ static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) 
             ++index;
         }
         return lst;
+    } else if (auto mv = dyn_cast<DictValue>(v)) {
+        PyObject *dct = PyDict_New();
+        for (auto [k, v]: mv->vals_as_list()) {
+            auto key = moss2py(vm, cf, k, err);
+            if (err)
+                return nullptr;
+            auto val = moss2py(vm, cf, v, err);
+            if (err)
+                return nullptr;
+            PyDict_SetItem(dct, key, val);
+        }
+        return dct;
     }
     // TODO: Add more types - dict, set
     auto ce = create_MossToPythonConversionError(vm, cf, "No known conversion from Moss type '"+v->get_type()->get_name()+"' to Python type.", err);
@@ -209,6 +221,35 @@ static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err
                 return nullptr;
             }
             lst->push(elm);
+        }
+        return lst;
+    } else if (t == &PyDict_Type) {
+        Py_ssize_t pos = 0;
+        PyObject *key, *value;
+        std::vector<Value *> keys;
+        std::vector<Value *> vals;
+        while (PyDict_Next(obj, &pos, &key, &value)) {
+            auto k = py2moss(vm, cf, key, err);
+            if (err)
+                return nullptr;
+            auto d = py2moss(vm, cf, value, err);
+            if (err)
+                return nullptr;
+            keys.push_back(k);
+            vals.push_back(d);
+        }
+        auto dc = new DictValue();
+        dc->push(keys, vals, vm);
+        return dc;
+    } else if (t == &PySet_Type) {
+        PyObject *it = PyObject_GetIter(obj);
+        PyObject *item;
+        auto lst = new ListValue();
+        while ((item = PyIter_Next(it))) {
+            auto v = py2moss(vm, cf, item, err);
+            if (err)
+                return nullptr;
+            lst->push(v);
         }
         return lst;
     }
