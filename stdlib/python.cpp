@@ -1,5 +1,6 @@
 #include "python.hpp"
 #include "values_cpp.hpp"
+#include "values.hpp"
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <filesystem>
@@ -11,6 +12,7 @@ using namespace python;
 bool PYTHON_INITIALIZED = false;
 
 static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err);
+static Value *new_PythonObject(PyObject *ptr);
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
@@ -46,7 +48,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
                 auto pyv = moss2py(vm, cf, cf->get_arg("v"), err);
                 if (err)
                     return nullptr;
-                auto nobj = new PythonObjectValue(pyv);
+                auto nobj = new_PythonObject(pyv);
+                if (err)
+                    return nullptr;
                 if (get_bool(cf->get_arg("populate"))) {
                     python::populate(vm, cf, nobj, err);
                 }
@@ -63,14 +67,34 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
     return registry;
 }
 
-PythonObjectValue::PythonObjectValue(PyObject *ptr) 
-    : ObjectValue(dyn_cast<ClassValue>(BuiltIns::PythonObject)), ptr(ptr) {
-    this->kind = PythonObjectValue::ClassType;
-    this->name = "<python object>";
+static Value *new_PythonObject(PyObject *ptr) {
+    auto pyocls = dyn_cast<ClassValue>(BuiltIns::PythonObject);
+    auto obj = new ObjectValue(pyocls);
+    // NOTE: If the name ptr is changed than it needs to be changed also in ~ObjectValue.
+    obj->set_attr("ptr", new t_cpp::CVoidStarValue(ptr));
+    return obj;
 }
 
-PythonObjectValue::~PythonObjectValue() {
-    Py_XDECREF(ptr);
+static PyObject *get_PyObject(Interpreter *vm, Value *v, Value *&err) {
+    auto ptr_v = mslib::get_attr(v, "ptr", vm, err);
+    if (err)
+        return nullptr;
+    auto cvoids = dyn_cast<t_cpp::CVoidStarValue>(ptr_v);
+    assert(cvoids && "ptr is not void*");
+    return static_cast<PyObject *>(cvoids->get_value());
+}
+
+Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr, Value *popul, Value *&err) {
+    auto cvs = dyn_cast<t_cpp::CVoidStarValue>(ptr);
+    assert(cvs);
+    auto pyv = static_cast<PyObject *>(cvs->get_value());
+    auto nobj = new_PythonObject(pyv);
+    if (err)
+        return nullptr;
+    if (get_bool(cf->get_arg("populate"))) {
+        python::populate(vm, cf, nobj, err);
+    }
+    return nobj;
 }
 
 static ustring get_py_exception(PyObject **exc_out) {
@@ -107,7 +131,7 @@ static ustring get_py_exception(PyObject **exc_out) {
 static Value *extract_py_exception(Interpreter *vm, CallFrame *cf, Value *&err) {
     PyObject *exc_obj = nullptr;
     auto msg = get_py_exception(&exc_obj);
-    Value *ms_exc_obj = new PythonObjectValue(exc_obj);
+    Value *ms_exc_obj = new_PythonObject(exc_obj);
     return mslib::call_constructor(vm, cf, "PythonException", {StringValue::get(msg), ms_exc_obj}, err);
 }
 
@@ -133,7 +157,9 @@ Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *popul,
         return nullptr;
     }
 
-    auto nobj = new PythonObjectValue(p_module);
+    auto nobj = new_PythonObject(p_module);
+    if (err)
+        return nullptr;
     if (get_bool(popul)) {
         python::populate(vm, cf, nobj, err);
     }
@@ -141,17 +167,18 @@ Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *popul,
 }
 
 Value *python::PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err) {
-    PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
-    assert(po && "This is not PythonObject");
+    auto ptr = get_PyObject(vm, ths, err);
+    if (err)
+        return nullptr;
     auto name_str = mslib::get_string(name);
-    PyObject *att = PyObject_GetAttrString(po->get_value(), name_str.c_str());
+    PyObject *att = PyObject_GetAttrString(ptr, name_str.c_str());
     if (!att) {
         auto exc = extract_py_exception(vm, cf, err);
         if (!err)
             err = exc; 
         return nullptr;
     }
-    return new PythonObjectValue(att);
+    return new_PythonObject(att);
 }
 
 static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) {
@@ -163,8 +190,8 @@ static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) 
         if (mv->get_value())
             Py_RETURN_TRUE;
         Py_RETURN_FALSE;
-    } else if (auto mv = dyn_cast<PythonObjectValue>(v)) {
-        return mv->get_value();
+    } else if (isa<ObjectValue>(v) && v->get_type() == BuiltIns::PythonObject) {
+        return get_PyObject(vm, v, err);
     } else if (auto mv = dyn_cast<StringValue>(v)) {
         return PyUnicode_FromString(mv->get_value().c_str());
     } else if (isa<NilValue>(v)) {
@@ -261,8 +288,9 @@ static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err
 }
 
 Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *call_args, Value *&err) {
-    PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
-    assert(po && "This is not PythonObject");
+    auto ptr = get_PyObject(vm, ths, err);
+    if (err)
+        return nullptr;
     auto args = mslib::get_list(call_args);
     
     PyObject *py_args = PyTuple_New(args.size());
@@ -273,7 +301,7 @@ Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *cal
             return nullptr;
         }
     }
-    auto rval = PyObject_CallObject(po->get_value(), py_args);
+    auto rval = PyObject_CallObject(ptr, py_args);
     Py_DECREF(py_args);
     if (!rval || PyErr_Occurred()) {
         auto exc = extract_py_exception(vm, cf, err);
@@ -281,20 +309,22 @@ Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *cal
             err = exc; 
         return nullptr;
     }
-    return new PythonObjectValue(rval);
+    return new_PythonObject(rval);
 }
 
 Value *python::to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) {
-    PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
-    assert(po && "This is not PythonObject");
-    return py2moss(vm, cf, po->get_value(), err);
+    auto ptr = get_PyObject(vm, ths, err);
+    if (err)
+        return nullptr;
+    return py2moss(vm, cf, ptr, err);
 }
 
 Value *python::populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) {
-    PythonObjectValue *po = dyn_cast<PythonObjectValue>(ths);
-    assert(po && "This is not PythonObject");
+    auto ptr = get_PyObject(vm, ths, err);
+    if (err)
+        return nullptr;
 
-    PyObject *dir_list = PyObject_Dir(po->get_value());
+    PyObject *dir_list = PyObject_Dir(ptr);
     if (!dir_list) {
         auto exc = extract_py_exception(vm, cf, err);
         if (!err)
@@ -305,27 +335,19 @@ Value *python::populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err)
     for (Py_ssize_t i = 0; i < len; ++i) {
         PyObject *item = PyList_GetItem(dir_list, i);  // Borrowed reference
         const char *name = PyUnicode_AsUTF8(item);
-        PyObject *att = PyObject_GetAttrString(po->get_value(), name);
+        PyObject *att = PyObject_GetAttrString(ptr, name);
         if (!att) {
             auto exc = extract_py_exception(vm, cf, err);
             if (!err)
                 err = exc; 
             return nullptr;
         }
-        ths->set_attr(name, new PythonObjectValue(att));
+        ths->set_attr(name, new_PythonObject(att));
+        if (err)
+            return nullptr;
     }
     Py_DECREF(dir_list);
     return nullptr;
-}
-
-Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr, Value *popul, Value *&err) {
-    auto cvs = dyn_cast<t_cpp::CVoidStarValue>(ptr);
-    assert(cvs);
-    auto nobj = new PythonObjectValue(static_cast<PyObject *>(cvs->get_value()));
-    if (get_bool(popul)) {
-        python::populate(vm, cf, nobj, err);
-    }
-    return nobj;
 }
 
 void python::init_constants(Interpreter *vm) {
@@ -349,25 +371,4 @@ void python::deinitialize_python() {
         PYTHON_INITIALIZED = false;
         Py_Finalize();
     }
-}
-
-std::ostream& PythonObjectValue::debug(std::ostream& os) const {
-    os << "Object : " << type->get_name() << " {"; 
-    if (!attrs || attrs->is_empty_sym_table()) {
-        os << "}";
-    }
-    else {
-        attrs->debug_sym_table(os, tab_depth);
-        os << "\n" << std::string(tab_depth*2, ' ') << "}";
-    }
-
-    return os;
-}
-
-template<>
-mslib::python::PythonObjectValue *moss::dyn_cast(Value* t) {
-    assert(t && "Passed nullptr to dyn_cast");
-    if (t->get_kind() == TypeKind::PYTHON_OBJ)
-        return dynamic_cast<mslib::python::PythonObjectValue *>(t);
-    return nullptr;
 }

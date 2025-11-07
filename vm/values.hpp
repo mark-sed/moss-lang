@@ -50,8 +50,6 @@ enum class TypeKind {
     ENUM_VALUE,
     SUPER_VALUE,
 
-    PYTHON_OBJ,
-
     // Values after this has to be CPP values as dyn_cast relies on this.
     CPP_CVOID, // This has to be the first cpp value
     CPP_CVOID_STAR,
@@ -81,7 +79,6 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
         case TypeKind::SUPER_VALUE: return "SUPER_VALUE";
-        case TypeKind::PYTHON_OBJ: return "PYTHON_OBJ";
         case TypeKind::CPP_CVOID: return "CPP_CVOID";
         case TypeKind::CPP_CVOID_STAR: return "CPP_CVOID_STAR";
         case TypeKind::CPP_CLONG: return "CPP_CLONG";
@@ -753,6 +750,8 @@ public:
         this->copy_attrs(cls->get_attrs());
     }
 
+    ~ObjectValue();
+
     virtual Value *clone() override {
         assert(isa<ClassValue>(this->type) && "type was modified?");
         auto cpy = new ObjectValue(dyn_cast<ClassValue>(this->type));
@@ -1242,12 +1241,6 @@ bool isa(Value* t) {
     return t->get_kind() == T::ClassType;
 }
 
-template<>
-bool isa<ObjectValue>(Value& t);
-
-template<>
-bool isa<ObjectValue>(Value* t);
-
 namespace t_cpp {
     class CppValue;
 }
@@ -1273,18 +1266,6 @@ T *dyn_cast(Value* t) {
 
 template<>
 t_cpp::CppValue *dyn_cast(Value* t);
-
-template<>
-ObjectValue *dyn_cast(Value* t);
-
-namespace mslib {
-    namespace python {
-        class PythonObjectValue;
-    }
-}
-
-template<>
-mslib::python::PythonObjectValue *dyn_cast(Value* t);
 
 }
 

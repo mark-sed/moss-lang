@@ -84,7 +84,7 @@ public:
     /// Stores a value into a register
     void store(opcode::Register reg, Value *v); 
     /// Loads value at specified register index 
-    /// If there was no value stored, then Nil is stored there and returned
+    /// If there was no value stored, then assert is raised.
     Value *load(opcode::Register reg);
 
     /// Sets a name for specific register

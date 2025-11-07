@@ -436,6 +436,20 @@ DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }
 
+ObjectValue::~ObjectValue() {
+    // Decrementing reference if value is PythonObject
+    if (type == BuiltIns::PythonObject && attrs) {
+        auto reg = attrs->get_name_register("ptr");
+        if (reg) {
+            auto v = attrs->load(*reg);
+            auto cvs = dyn_cast<t_cpp::CVoidStarValue>(v);
+            if (cvs) {
+                Py_XDECREF(cvs->get_value());
+            }
+        }
+    }
+}
+
 template<>
 bool moss::isa<t_cpp::CppValue>(Value& t) {
     return t.get_kind() >= TypeKind::CPP_CVOID;
@@ -452,24 +466,5 @@ t_cpp::CppValue *moss::dyn_cast(Value* t) {
     assert(t && "Passed nullptr to dyn_cast");
     if (t->get_kind() >= TypeKind::CPP_CVOID)
         return dynamic_cast<t_cpp::CppValue*>(t);
-    return nullptr;
-}
-
-template<>
-bool moss::isa<ObjectValue>(Value& t) {
-    return t.get_kind() == ObjectValue::ClassType || t.get_kind() == mslib::python::PythonObjectValue::ClassType;
-}
-
-template<>
-bool moss::isa<ObjectValue>(Value* t) {
-    assert(t && "Passed nullptr to isa");
-    return t->get_kind() == ObjectValue::ClassType || t->get_kind() == mslib::python::PythonObjectValue::ClassType;
-}
-
-template<>
-ObjectValue *moss::dyn_cast(Value* t) {
-    assert(t && "Passed nullptr to dyn_cast");
-    if (t->get_kind() == TypeKind::OBJECT || t->get_kind() == TypeKind::PYTHON_OBJ)
-        return dynamic_cast<ObjectValue*>(t);
     return nullptr;
 }

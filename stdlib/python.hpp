@@ -23,39 +23,6 @@ namespace mslib {
 /// This namespace hold methods of python module in mslib.
 namespace python {
 
-/// Moss version of PyObject, holds the pointer to it.
-/// This is needed to decrement the reference counter on value deletion.
-class PythonObjectValue : public ObjectValue {
-private:
-    PyObject *ptr;
-public:
-    static const TypeKind ClassType = TypeKind::PYTHON_OBJ;
-
-    PythonObjectValue(PyObject *ptr);
-    ~PythonObjectValue();
-
-    Value *clone() override {
-        Py_XINCREF(ptr);
-        return new PythonObjectValue(ptr);
-    }
-
-    PyObject *get_value() {
-        return this->ptr;
-    }
-
-    virtual inline bool is_modifiable() override { return true; }
-
-    virtual inline bool is_hashable() override { return true; }
-    virtual opcode::IntConst hash() override {
-        return std::hash<size_t>{}((size_t)ptr);
-    }
-
-    virtual opcode::StringConst as_string() const override {
-        return "<object of class PythonObject>";
-    }
-
-    virtual std::ostream& debug(std::ostream& os) const override;
-};
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
