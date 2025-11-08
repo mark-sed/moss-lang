@@ -73,7 +73,7 @@ space {
     ~plt.xticks(races)
     ~plt.grid(true)
     ~plt.savefig("docs/resources/ver_points.png")
-    ~plt.close.call()
+    ~plt.close()
 }
 
 md"![Generated image](docs/resources/ver_points.png)"

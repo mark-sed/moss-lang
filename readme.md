@@ -69,7 +69,7 @@ space {
     ~plt.xticks(races)
     ~plt.grid(true)
     ~plt.savefig("docs/resources/ver_points.png")
-    ~plt.close.call()
+    ~plt.close()
 }
 ```
 ![Generated image](docs/resources/ver_points.png)
@@ -137,6 +137,6 @@ build\\Release\\moss.exe --version
 ```
 
 -----
-This file was generated on Nov 04 2025 by 
+This file was generated on Nov 08 2025 by 
 [Moss](https://github.com/mark-sed/moss-lang) 0.7.0
 from [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).

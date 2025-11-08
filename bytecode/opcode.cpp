@@ -472,11 +472,21 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
     }
 #endif
 
+    auto is_this_obj = [](CallFrameArg a) {
+        return a.name == "this" && isa<ObjectValue>(a.value);
+    };
+
     std::vector<CallFrameArg> call_args;
     CallFrameArg *ths = nullptr;
     if (og_call_args.empty() || og_call_args.back().name != "this")
         call_args.assign(og_call_args.begin(), og_call_args.end());
     else {
+        // With nested access and call to () there might be 2 this args as access is not used for the function
+        if (og_call_args.size() > 1 && is_this_obj(og_call_args.back()) && is_this_obj(og_call_args[og_call_args.size()-2])) {
+            LOGMAX("Two this object args set popping the first");
+            og_call_args.erase(og_call_args.end()-2);
+        }
+
         // When class method is called then this is set to the class
         if (dyn_cast<ClassValue>(og_call_args.back().value)) {
             // In such case we use the last arg as this

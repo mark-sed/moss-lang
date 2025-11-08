@@ -78,8 +78,7 @@ class __PythonObject {
         return rval.to_moss()
     }
 
-    // TODO: Fix this bug, where the extra arg is needed
-    fun (())(...args, _=nil) {
+    fun (())(...args) {
         return this.call(<<args)
     }
 }

@@ -16,6 +16,10 @@ class FFHandle {
 
     @internal
     fun call(... args) {}
+
+    fun (())(... args) {
+        return this.call(<<args)
+    }
 }
 
 class CFFI {
