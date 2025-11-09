@@ -31,6 +31,8 @@
 using namespace moss;
 using namespace mslib;
 
+using ModuleRegistryT = std::unordered_map<std::string, mslib::mslib_dispatcher>;
+
 Value *mslib::get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
     auto v = obj->get_attr(name, vm);
     if (!v) {
@@ -1191,37 +1193,35 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return MSFile::write(vm, cf->get_arg("this"), cf->get_arg("content"), err);
         }},
     };
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> subprocess_registry = subprocess::get_registry();
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> cffi_registry = cffi::get_registry();
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> sys_registry = sys::get_registry();
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> time_registry = time::get_registry();
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> inspect_registry = inspect::get_registry();
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> python_registry = python::get_registry();
-    static const std::unordered_map<std::string, mslib::mslib_dispatcher> empty_registry{};
+
+    static const ModuleRegistryT subprocess_registry = subprocess::get_registry();
+    static const ModuleRegistryT cffi_registry = cffi::get_registry();
+    static const ModuleRegistryT sys_registry = sys::get_registry();
+    static const ModuleRegistryT time_registry = time::get_registry();
+    static const ModuleRegistryT inspect_registry = inspect::get_registry();
+    static const ModuleRegistryT python_registry = python::get_registry();
+    static const ModuleRegistryT empty_registry{};
+
+    static const std::unordered_map<ustring, ModuleRegistryT> registries_map{
+        {"libms", libms_registry},
+        {"subprocess", subprocess_registry},
+        {"cffi", cffi_registry},
+        {"sys", sys_registry},
+        {"time", time_registry},
+        {"inspect", inspect_registry},
+        {"python", python_registry},
+    };
 
     // Based on module name return correct function registry
-    if (module_name == "libms")
-        return libms_registry;
-    else if (module_name == "subprocess")
-        return subprocess_registry;
-    else if (module_name == "cffi")
-        return cffi_registry;
-    else if (module_name == "sys")
-        return sys_registry;
-    else if (module_name == "time")
-        return time_registry;
-    else if (module_name == "inspect")
-        return inspect_registry;
-    else if (module_name == "python")
-        return python_registry;
-    else {
-        // We want to raise exception, not to assert, this will make it so
-        // that the "internal" function will not be found.
-        // It could also be modified so that the exception reads specification
-        // that the module registry was not found, but it is pretty much the
-        // same. 
-        return empty_registry;
+    auto registry = registries_map.find(module_name);
+    if (registry != registries_map.end()) {
+        return registry->second;
     }
+    // We want to raise exception, not to assert, this will make it so
+    // that the "internal" function will not be found.
+    // It could also be modified so that the exception reads specification
+    // that the module registry was not found, but it is pretty much the same. 
+    return empty_registry;
 };
 
 void mslib::dispatch(Interpreter *vm, ustring module_name, ustring name, Value *&err) {

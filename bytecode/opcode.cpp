@@ -1536,6 +1536,16 @@ void Output::exec(Interpreter *vm) {
     auto target_format = clopts::get_note_format();
     if (!Interpreter::running_generator && Interpreter::is_generator(target_format)) {
         LOGMAX("Generator format selected so saving note for later call to generator");
+        // notebook output
+        if (vm->is_enable_code_output() && val_format == "txt") {
+            if (target_format == "html") {
+                Interpreter::add_generator_note(new NoteValue("html", StringValue::get("<div class=\"moss-output-wrapper\"><pre class=\"moss-output\"><code class=\"moss-output-code\">")));
+                Interpreter::add_generator_note(v);
+                Interpreter::add_generator_note(new NoteValue("html", StringValue::get("</code></pre></div>")));
+                return;
+            }
+        }
+
         Interpreter::add_generator_note(v);
         return;
     }
@@ -1564,10 +1574,6 @@ void Output::exec(Interpreter *vm) {
             if (ov.back() != '\n')
                 ov += "\n";
             ov += "```\n";
-        } else if (target_format == "html") {
-            if (ov.back() == '\n')
-                ov.pop_back();
-            ov = "<div class=\"moss-output-wrapper\"><pre class=\"moss-output\"><code class=\"moss-output-code\">" + ov + "</code></pre></div>";
         }
     }
     
