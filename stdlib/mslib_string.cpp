@@ -7,21 +7,27 @@
 using namespace moss;
 using namespace mslib;
 
+#ifdef __APPLE__
+#define SETLOCALE setlocale
+#else
+#define SETLOCALE std::setlocale
+#endif
+
 static inline ustring set_locale() {
     // Save current locale
-    char* old_locale = std::setlocale(LC_ALL, nullptr);
+    char* old_locale = SETLOCALE(LC_ALL, nullptr);
     // Copy it because setlocale returns pointer to internal storage
     std::string saved_locale = old_locale ? old_locale : "C";
 #ifdef __windows__
-    std::setlocale(LC_ALL, ".UTF-8");
+    SETLOCALE(LC_ALL, ".UTF-8");
 #else
-    std::setlocale(LC_ALL, "");
+    SETLOCALE(LC_ALL, "");
 #endif
     return saved_locale;
 }
 
 static inline void reset_locale(ustring prev) {
-    std::setlocale(LC_ALL, prev.c_str());
+    SETLOCALE(LC_ALL, prev.c_str());
 }
 
 Value *String::String_constructor(Interpreter *vm, Value *v, Value *&err) {

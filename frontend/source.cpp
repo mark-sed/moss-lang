@@ -69,8 +69,8 @@ std::optional<ustring> moss::get_file_path(ustring file) {
     // See if there is MOSSPATH and look there
     if (const char* value = std::getenv("MOSSPATH")) {
         std::vector<ustring> paths;
-        // On linux the convention for separator is :, on windows it is ;
-#ifdef __linux__
+        // On linux and mac the convention for separator is :, on windows it is ;
+#if defined(__linux__) || defined(__APPLE_)
         paths = utils::split_csv(value, ':');
 #elif defined(__windows__)
         paths = utils::split_csv(value, ';');
@@ -86,6 +86,10 @@ std::optional<ustring> moss::get_file_path(ustring file) {
 #ifdef __linux__
     if (std::filesystem::exists(std::filesystem::path("/lib/moss") / filep)) {
         return (std::filesystem::path("/lib/moss") / filep).string();
+    }
+#elif defined(__APPLE__)
+    if (std::filesystem::exists(std::filesystem::path("/usr/local/lib/moss") / filep)) {
+        return (std::filesystem::path("/usr/local/lib/moss") / filep).string();
     }
 #elif defined(__windows__)
     static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");

@@ -36,6 +36,8 @@ void BuiltIns::init_constant_variables(MemoryPool *gf, Interpreter *vm) {
     // Generators.html.STYLE_PATH
 #ifdef __linux__
     ustring style_path = "/lib/moss/mossy.css";
+#elif defined(__APPLE__)
+    ustring style_path = "/usr/local/lib/moss/mossy.css";
 #elif defined(__windows__)
     ustring style_path = moss::get_local_app_data_path()+"\\moss\\mossy.css";
 #endif
