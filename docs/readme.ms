@@ -97,8 +97,7 @@ md"""
 md"""
 ## 🛠️ Building Moss
 
-Moss can be built and run on Linux and Windows. On MacOS it should be possible,
-but is not tested yet.
+Moss can be built and run on Linux, MacOS and Windows
 
 ### 📦 Requirement
 * C++17 compatible compiler (gcc, clang),
@@ -129,6 +128,14 @@ __On Linux:__
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j $(nproc) --target moss libms
 sudo cmake --build build -j $(nproc) --target installation
+```
+
+__On MacOS:__
+
+On MacOS the base of the path is `/usr/local/`.
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target moss libms installation
 ```
 
 __On Windows:__

@@ -85,8 +85,7 @@ Moss also has built-in interoperability with C and any C-calling convention func
 
 ## 🛠️ Building Moss
 
-Moss can be built and run on Linux and Windows. On MacOS it should be possible,
-but is not tested yet.
+Moss can be built and run on Linux, MacOS and Windows
 
 ### 📦 Requirement
 * C++17 compatible compiler (gcc, clang),
@@ -119,6 +118,14 @@ cmake --build build -j $(nproc) --target moss libms
 sudo cmake --build build -j $(nproc) --target installation
 ```
 
+__On MacOS:__
+
+On MacOS the base of the path is `/usr/local/`.
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target moss libms installation
+```
+
 __On Windows:__
 
 Open `Developer Command Prompt` and navigate into cloned moss-lang directory. 
@@ -137,6 +144,6 @@ build\\Release\\moss.exe --version
 ```
 
 -----
-This file was generated on Nov 08 2025 by 
+This file was generated on Nov 12 2025 by 
 [Moss](https://github.com/mark-sed/moss-lang) 0.7.0
 from [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).
