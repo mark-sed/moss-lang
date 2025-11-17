@@ -1313,11 +1313,15 @@ end
 4C6F72656D
 4C6F72656D20497073756D0A4C6F72656D20497073756D0A
 Lorem Ipsum
-Lorem Ipsum\n""", "")
+Lorem Ipsum
+FFFF414243
+caught
+FFAA00\n""", "")
 
     ~rm(DATA_FILE, false)
     ~rm(".created_file_t.txt1", false)
     ~rm(".created_file_2.txt", false)
+    ~rm(".created_binary_f.bytes", false)
 }
 
 fun test_lib_args(name) {

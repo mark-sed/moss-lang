@@ -73,3 +73,28 @@ cnt_b = with_open(".created_file_2.txt", fun(x)=x.read(1000), "rb")
 for (b: cnt_b) {
     chr(b)
 }
+
+f = open(".created_binary_f.bytes", "wb")
+~f.write(Bytes("\xFF\xFFABC"))
+~f.close()
+
+with_open(".created_binary_f.bytes", fun(x)=x.read(), "rb")
+"\n"
+
+class MyBytes : Bytes {
+    fun MyBytes(s) {
+        ~super(s++"\x00")
+    }
+}
+
+f = open(".created_binary_f.bytes", "wb")
+try {
+    f.write(42)
+} catch (e:TypeError)
+    "caught\n"
+
+~f.write(MyBytes("\XFF\XAA"))
+~f.close()
+
+with_open(".created_binary_f.bytes", fun(f)=f.read(), "rb")
+"\n"

@@ -30,6 +30,14 @@ static bool str_to_ios_mode(const std::string& mode, std::ios_base::openmode &io
     return false;
 }
 
+static bool is_mode_binary(Interpreter *vm, Value *ths, Value *&err) {
+    auto mode_v = mslib::get_attr(ths, "mode", vm, err);
+    if (err)
+        return false;
+    auto mode_s = mslib::get_string(mode_v);
+    return mode_s.length() > 0 && mode_s.back() == 'b';
+}
+
 Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
     auto path = mslib::get_attr(ths, "path", vm, err);
     auto mode = mslib::get_attr(ths, "mode", vm, err);
@@ -79,7 +87,30 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
-    *(fsfs->get_fs()) << opcode::to_string(vm, content);
+    bool is_binary = is_mode_binary(vm, ths, err);
+    if (err)
+        return nullptr;
+    if (!is_binary)
+        *(fsfs->get_fs()) << opcode::to_string(vm, content);
+    else {
+        if (!opcode::is_type_eq_or_subtype(content->get_type(), BuiltIns::Bytes)) {
+            err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::EXPECTED_BYTES_IN_WRITE, content->get_type()->get_name().c_str()));
+            return nullptr;
+        }
+
+        auto bytes = dyn_cast<BytesValue>(content);
+        if (!bytes) {
+            // Something that extends bytes
+            auto bytes_v = mslib::get_attr(content, known_names::BUILT_IN_EXT_VALUE, vm, err);
+            if (err)
+                return nullptr;
+            bytes = dyn_cast<BytesValue>(bytes_v);
+            assert(bytes && "Not bytes in extended bytes .value");
+        }
+
+        fsfs->get_fs()->write(reinterpret_cast<const char*>(bytes->get_value().data()),
+           static_cast<std::streamsize>(bytes->get_value().size()));
+    }
     return BuiltIns::Nil;
 }
 
@@ -91,11 +122,9 @@ Value *MSFile::read(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
     auto file = fsfs->get_fs();
-    auto mode_v = mslib::get_attr(ths, "mode", vm, err);
+    bool is_binary = is_mode_binary(vm, ths, err);
     if (err)
         return nullptr;
-    auto mode_s = mslib::get_string(mode_v);
-    bool is_binary = mode_s.length() > 0 && mode_s.back() == 'b';
 
     if (size < 0) {
         // Read entire file
