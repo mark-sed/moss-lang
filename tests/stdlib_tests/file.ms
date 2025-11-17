@@ -64,3 +64,12 @@ try {
 } catch (e: EOFError)
     "end\n"
 ~f6.close()
+
+with_open(".created_file_2.txt", fun(x)=x.read(5), "rb")
+"\n"
+with_open(".created_file_2.txt", fun(x)=x.read(), "rb")
+"\n"
+cnt_b = with_open(".created_file_2.txt", fun(x)=x.read(1000), "rb")
+for (b: cnt_b) {
+    chr(b)
+}

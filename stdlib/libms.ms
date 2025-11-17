@@ -549,6 +549,20 @@ class __Dict {
     }
 }
 
+@internal_bind("Bytes")
+class __Bytes {
+    d"""
+    Represents linear sequence of bytes.
+    """
+
+    @internal
+    fun Bytes(s:String) {
+        d"""
+        Converts `s` into byte representation.
+        """
+    }
+}
+
 @internal_bind("Range")
 class __Range {
     d"""

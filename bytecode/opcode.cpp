@@ -1375,7 +1375,8 @@ void ImportAll::exec(Interpreter *vm) {
 // These are the built in classes where layout would clash
 static bool is_built_in_class(ClassValue *c) {
     return c == BuiltIns::Int || c == BuiltIns::Float || c == BuiltIns::Bool || c == BuiltIns::String ||
-        c == BuiltIns::Note || c == BuiltIns::NilType || c == BuiltIns::List || c == BuiltIns::Dict;
+        c == BuiltIns::Note || c == BuiltIns::NilType || c == BuiltIns::List || c == BuiltIns::Dict ||
+        c == BuiltIns::Bytes;
 }
 
 void PushParent::exec(Interpreter *vm) {

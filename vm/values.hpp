@@ -39,6 +39,7 @@ enum class TypeKind {
     STRING,
     LIST,
     DICT,
+    BYTES,
     NOTE,
     FUN,
     FUN_LIST,
@@ -69,6 +70,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::STRING: return "STRING";
         case TypeKind::LIST: return "LIST";
         case TypeKind::DICT: return "DICT";
+        case TypeKind::BYTES: return "BYTES";
         case TypeKind::NOTE: return "NOTE";
         case TypeKind::FUN: return "FUN";
         case TypeKind::FUN_LIST: return "FUN_LIST";
@@ -684,6 +686,49 @@ public:
         }
         --tab_depth;
         os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        return os;
+    }
+};
+
+/// Moss bytes value
+class BytesValue : public Value {
+protected:
+    const std::vector<uint8_t> value;
+    size_t iterator;
+public:
+    static const TypeKind ClassType = TypeKind::BYTES;
+
+    BytesValue(std::vector<uint8_t> value);
+
+    virtual Value *clone() override {
+        // Bytes is immutable and so return it without copying;
+        return this;
+    }
+
+    virtual inline bool is_hashable() override { return true; }
+    virtual opcode::IntConst hash() override {
+        return std::hash<ustring>{}(ustring(value.begin(), value.end()));
+    }
+    virtual inline bool is_iterable() override { return true; }
+
+    std::vector<uint8_t> get_value() { return this->value; }
+
+    virtual opcode::StringConst as_string() const override;
+
+    virtual Value *iter(Interpreter *vm) override {
+        (void)vm;
+        iterator = 0;
+        return this;
+    }
+
+    virtual Value *next(Interpreter *vm) override;
+
+    virtual opcode::StringConst dump() override {
+        return "b\"" + as_string() + "\"";
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "Bytes(\"" << as_string() << "\")";
         return os;
     }
 };

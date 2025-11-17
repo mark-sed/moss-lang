@@ -517,6 +517,10 @@ caught\ncaught\ncaught\n3\na\nint\ncst_cls3
 {"a": 42}\n{"a": 68}\n{1: true, "a": 68, true: true}\n""", "")
 }
 
+fun test_bytes(name) {
+    ~expect_pass("bytes.ms", name, """68656C6C6F\ntrue\n[b"", b"61"]\n""", "")
+}
+
 fun test_list_comprehension(name) {
     ~expect_pass("list_comprehension.ms", name, """[1, 2, 3]
 [[1, 4], [1, 5], [1, 6], [2, 4], [2, 5], [2, 6], [3, 4], [3, 5], [3, 6]]
@@ -1305,7 +1309,11 @@ Lorem Ipsum
 ---
 Lorem |Ipsum
 Lorem Ipsum
-end\n""", "")
+end
+4C6F72656D
+4C6F72656D20497073756D0A4C6F72656D20497073756D0A
+Lorem Ipsum
+Lorem Ipsum\n""", "")
 
     ~rm(DATA_FILE, false)
     ~rm(".created_file_t.txt1", false)
@@ -1664,6 +1672,7 @@ fun run_all_tests() {
     ~run_test("lists")
     ~run_test("list_comprehension")
     ~run_test("dicts")
+    ~run_test("bytes")
     ~run_test("enums")
     ~run_test("spaces")
     ~run_test("optional_typing")

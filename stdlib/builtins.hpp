@@ -66,9 +66,6 @@ namespace BuiltIns {
     /// Initializes constant variables in moss stdlib, such as args.
     void init_constant_variables(MemoryPool *gf, Interpreter *vm);
 
-    /// \return interned int or nullptr if it is not interned.
-    Value *get_interned_int(opcode::IntConst v);
-
     extern Value *Type;
     extern Value *Int;
     extern Value *Float;
@@ -78,6 +75,7 @@ namespace BuiltIns {
     extern Value *Note;
     extern Value *List;
     extern Value *Dict;
+    extern Value *Bytes;
     extern Value *Function;
     extern Value *FunctionList;
     extern Value *Function;

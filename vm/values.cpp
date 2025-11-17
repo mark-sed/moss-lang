@@ -225,6 +225,16 @@ Value *DictValue::next(Interpreter *vm) {
     return new ListValue(lst_vals);
 }
 
+Value *BytesValue::next(Interpreter *vm) {
+    (void)vm;
+    if (this->iterator >= this->value.size()) {
+        opcode::raise(mslib::create_stop_iteration());
+    }
+    auto val = this->value[iterator];
+    this->iterator++;
+    return IntValue::get(static_cast<opcode::IntConst>(val));
+}
+
 Value *FunValueList::next(Interpreter *vm) {
     (void)vm;
     if (this->iterator == this->funs.end()) {
@@ -386,6 +396,20 @@ std::list<ClassValue *> ClassValue::get_all_supers() {
     return sups;
 }
 
+opcode::StringConst BytesValue::as_string() const {
+    static const char* hex = "0123456789ABCDEF";
+
+    opcode::StringConst out;
+    out.reserve(value.size() * 2);
+
+    for (uint8_t b : value) {
+        out.push_back(hex[b >> 4]);   // high nibble
+        out.push_back(hex[b & 0x0F]); // low nibble
+    }
+
+    return out;
+}
+
 ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals), iterator(0) {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
@@ -393,6 +417,11 @@ ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", Built
 ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals(), iterator(0) {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
+}
+
+BytesValue::BytesValue(std::vector<uint8_t> value) : Value(ClassType, "Bytes", BuiltIns::Bytes), value(value), iterator(0) {
+    if(BuiltIns::Bytes->get_attrs())
+        this->attrs = BuiltIns::Bytes->get_attrs()->clone();
 }
 
 StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value), iterator(0) {

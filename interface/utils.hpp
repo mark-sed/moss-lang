@@ -112,6 +112,12 @@ inline std::string wstr2str(const std::wstring &wstr_text) {
     return std::string(buf.data());
 }
 
+inline void to_lower(ustring &s) {
+    for (auto &c: s) {
+        c = std::toupper(c);
+    }
+}
+
 }
 
 #endif//_UTILS_HPP_

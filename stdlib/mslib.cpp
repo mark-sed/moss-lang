@@ -462,6 +462,12 @@ Value *Note(Interpreter *vm, Value *format, Value *value) {
     return new NoteValue(format->as_string(), str_val);
 }
 
+Value *Bytes(Interpreter *vm, Value *s, Value *&err) {
+    auto str = mslib::get_string(s);
+    std::vector<uint8_t> bytes(str.begin(), str.end());
+    return new BytesValue(bytes);
+}
+
 Value *isinstance(Interpreter *vm, Value *obj, Value *types, Value *&err) {
     auto type_list = dyn_cast<ListValue>(types);
     bool is_class = true;
@@ -604,7 +610,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return bin(vm, args[0].value);
         }},
         {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             assert(cf->get_args().size() == 2);
             auto ths = cf->get_arg("this");
             auto bv = Bool(vm, cf->get_arg("v"), err);
@@ -612,6 +617,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return bv;
             }
             if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Bool)) {
+                ths->set_attr(known_names::BUILT_IN_EXT_VALUE, bv);
+                return ths;
+            }
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
+        }},
+        {"Bytes", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 2);
+            auto ths = cf->get_arg("this");
+            auto bv = Bytes(vm, cf->get_arg("s"), err);
+            if (ths->get_type() == BuiltIns::Bytes) {
+                return bv;
+            }
+            if (opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::Bytes)) {
                 ths->set_attr(known_names::BUILT_IN_EXT_VALUE, bv);
                 return ths;
             }

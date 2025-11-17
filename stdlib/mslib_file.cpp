@@ -85,25 +85,46 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
 
 Value *MSFile::read(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
     auto size = get_int(sizev);
-    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    auto fsv = mslib::get_attr(ths, known_names::FILE_FSTREAM_ATT, vm, err);
+    if (err)
+        return nullptr;
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     assert(fsfs && "fstream is not std::fstream");
     auto file = fsfs->get_fs();
+    auto mode_v = mslib::get_attr(ths, "mode", vm, err);
+    if (err)
+        return nullptr;
+    auto mode_s = mslib::get_string(mode_v);
+    bool is_binary = mode_s.length() > 0 && mode_s.back() == 'b';
+
     if (size < 0) {
         // Read entire file
         file->seekg(0, std::ios::end);
         std::streamsize length = file->tellg();
         file->seekg(0, std::ios::beg);
-
-        std::string content(length, '\0');
-        file->read(&content[0], length);
-        return StringValue::get(content);
+        
+        if (!is_binary) {
+            std::string content(length, '\0');
+            file->read(&content[0], length);
+            return StringValue::get(content);
+        } else {
+            std::vector<uint8_t> content(length);
+            file->read(reinterpret_cast<char*>(content.data()), length);
+            return new BytesValue(content);
+        }
     } else {
         // Read up to 'size' bytes
-        std::string content(size, '\0');
-        file->read(&content[0], size);
-        content.resize(file->gcount()); // Trim if fewer bytes were read
-        return StringValue::get(content);
+        if (!is_binary) {
+            std::string content(size, '\0');
+            file->read(&content[0], size);
+            content.resize(file->gcount()); // Trim if fewer bytes were read
+            return StringValue::get(content);
+        } else {
+            std::vector<uint8_t> content(size);
+            file->read(reinterpret_cast<char*>(content.data()), size);
+            content.resize(file->gcount()); // Trim if fewer bytes were read
+            return new BytesValue(content);
+        }
     }
 }
 

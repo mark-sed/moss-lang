@@ -57,6 +57,7 @@ void BuiltIns::init_built_ins(MemoryPool *gf, opcode::Register &reg) {
     store_glob_val(reg++, "Bool", BuiltIns::Bool, gf);
     store_glob_val(reg++, "List", BuiltIns::List, gf);
     store_glob_val(reg++, "Dict", BuiltIns::Dict, gf);
+    store_glob_val(reg++, "Bytes", BuiltIns::Bytes, gf);
     store_glob_val(reg++, "NilType", BuiltIns::NilType, gf);
     store_glob_val(reg++, "String", BuiltIns::String, gf);
     store_glob_val(reg++, "Note", BuiltIns::Note, gf);
@@ -111,6 +112,7 @@ Value *BuiltIns::String = new ClassValue("String");
 Value *BuiltIns::Note = new ClassValue("Note");
 Value *BuiltIns::List = new ClassValue("List");
 Value *BuiltIns::Dict = new ClassValue("Dict");
+Value *BuiltIns::Bytes = new ClassValue("Bytes");
 
 Value *BuiltIns::Function = new ClassValue("Function");
 Value *BuiltIns::FunctionList = new ClassValue("FunctionList");
