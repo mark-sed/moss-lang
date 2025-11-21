@@ -1,3 +1,4 @@
+
 # Syntax and constructs
 
 Moss syntax aims to be simple and easy to read, but at the same time tries
@@ -11,46 +12,73 @@ a `;` in their place).
 ## Variables
 
 First assignment to a variable is treated as its declaration.
-
-```cpp
-foo = "hi"
-foo // Will be outputted
+```moss
+greet = "Hi\n"
+```
+```moss
+greet // Will be outputted
+```
+_[Output]:_
+```
+Hi
 ```
 
 Variable can also be assigned a value and even multiple at once:
-```cpp
+```moss
 a = b = c = 42
 ```
 
-It is also possible to unpack values with assignment:
-```cpp
-fun foo() {
+It is also possible to unpack values with assignment. Number of elements has to
+match, or if one of the arguments contains `...` before it it will contain the
+rest.
+```moss
+fun get_list() {
     return [1, 2, 3, 4, 5]
 }
-
-e, f[0].a, g = foo()
-
-e // 1 
-f[0].a // 2
-g // [3, 4, 5]
+```
+```moss
+e, f, ...g = get_list()
+```
+```moss
+e ++ ", " ++ f ++ ", " ++ g ++ "\n"
+```
+_[Output]:_
+```
+1, 2, \[3, 4, 5\]
+```
+```moss
+h, ...i, j = get_list()
+```
+```moss
+h ++ ", " ++ i ++ ", " ++ j ++ "\n"
+```
+_[Output]:_
+```
+1, \[2, 3, 4\], 5
 ```
 
 If you want to access some global value that is overshadowed by a local
 name, you can do that using the global scope - `::`.
-```cpp
-x = 8
-
-fun foo(x) {
-    return ::x + x
+```moss
+num = 8
+```
+```moss
+fun add_num(num) {
+    return ::num + num
 }
+```
+```moss
+add_num(2)
+```
+_[Output]:_
+```
+10
 ```
 
 If you want to access non-local variable overshadowed by a local one you
 can use `$`.
-
-```cpp
-x = 8
-fun foo() {
+```moss
+fun non_local_x() {
     x = 4
     fun bar() {
         // Without $, this would create a new
@@ -58,22 +86,25 @@ fun foo() {
         // be overwritten
         $x = 5
     }
-    bar()
-    return x // 5
+    ~bar()
+    return x
 }
+```
+```moss
+non_local_x() // 5
+```
+_[Output]:_
+```
+5
 ```
 
 ## Comments
 
-Moss has line comments with Python/Bash syntax and block comments with C
-syntax.
-
-Line comments start from `//` until the end of the line (it has to be
-a new line not `;`).
+Moss uses C style comments. Line comments start from `//` until the end of the
+line (it has to be a new line not `;`).
 
 Block comments starts with `/*` and ends with first occurrence of `*/`.
-
-```c
+```cpp
 // Line comment; Ends with a new line
 
 /*
@@ -88,34 +119,36 @@ can appear only on the first line and moss treats it like a one line comment.
 
 ```py
 #!/usr/bin/moss
-"Hello, World!"
 ```
 
-## If statement
+## If statements
 
 If has to be followed by a code block or an expression. The if condition has to
 be a bool value and it will not implicitly convert other types to bool (to
 avoid unwanted conversions and resulting bugs).
-
-```py
+```moss
+condition = 4 < 42
+```
+```moss
 if (condition) {
     // Code
 }
-```
 
-```py
-if (condition) expression
+if (condition) "Smaller\n"
 ```
+```moss
+if (condition) "Smaller\n"
+else "Bigger\n"
 
-```py
-if (condition) expression
-else expression
 ```
-
-```py
-if (condition) {
+_[Output]:_
+```
+Smaller
+```
+```moss
+if (num < 0) {
     // Code
-} else if (condition) {
+} else if (num > 10) {
     // Code
 } else {
     // Code
@@ -125,169 +158,224 @@ if (condition) {
 ### Ternary if
 
 Ternary if uses C-style syntax.
-
-```c
-a = x ? 4 : 6
+```moss
+condition ? "Yes\n" : "No\n"
+```
+_[Output]:_
+```
+Yes
 ```
 
-## While and do-while statement
+## While and do-while loops
 
-While and do-while also don't perform any implicit conversions to bool.
-
-```c
-while (condition) {
-    // Code
+While and do-while, just like if, don't perform any implicit conversions to
+bool.
+```moss
+i = 0
+```
+```moss
+while (i < 2) {
+    "Ran while\n"
+    i += 1
 }
 ```
-
-```c
-while (condition) expr
+_[Output]:_
 ```
+Ran while
+```
+_[Output]:_
+```
+Ran while
+```
+```moss
+while (i == 0) "Will not run\n"
 
-```c
+```
+```moss
 do {
-    // Code
-} while (condition)
+    "Ran do while\n"
+} while (i == -42)
+```
+_[Output]:_
+```
+Ran do while
 ```
 
-```c
-do expr; while (condition)
-```
-
-## For statement
+## For loops
 
 For works as a foreach and iterates over elements. But the C-style for loop
 can be easily achieved using ranges.
-
-```py
-for(i : 1,3..11) i // Prints:  13579
+```moss
+str = ""
 ```
-
-```py
-for(s: "Hello there") {
-    // Code
+```moss
+for (i: 1,3..11) {
+    str ++= i ++ " "
 }
+```
+```moss
+str++"\n"
+```
+_[Output]:_
+```
+1 3 5 7 9 
+```
+```moss
+sum = 0
+```
+```moss
+for(s: [4,10,1,3]) {
+    sum += s
+}
+```
+```moss
+sum++"\n"
+```
+_[Output]:_
+```
+18
 ```
 
 ## Switch statement
 
 Switch does not fallthrough, but case can contain multiple values.
-
-```go
-switch(val) {
-    case 1, 0, 4: return true
-    case 8: return false
-    case 10: { 
-        x += 1
-        return nil
+```moss
+fun test_switch(val) {
+    x = 0
+    switch(val) {
+        case 1, 0, 4: return true
+        case 8: return false
+        case 10: { 
+            x += 1
+            return nil
+        }
+        case 11: return nil
+        default: raise ValueError(val)
     }
-    case 11: return nil
-    default: error()
 }
+```
+```moss
+test_switch(4)
+```
+_[Output]:_
+```
+true
 ```
 
 ## Imports
 
-Import can appear anywhere and is valid for the scope it appears in. Import can
-have alias.
-
-```py
-import Math
-import Statistics as st, Models as mod
-import Math.Models as mods
+Import can appear pretty much anywhere and this import is valid within the
+scope it appears in. The imported value can also be aliased using `as` keyword.
+```moss
+import time
+```
+```moss
+import time.localtime as lt, time.strftime as tsf
+```
+```moss
+import sys as S
 ```
 
-Imported can be also all of the symbols
-```py
-import Rng.*
+You can also import all of the symbols from the module and spill them into
+the current scope.
+```moss
+import sys.*
 ```
 
-Once import is encountered this module is run, but not as a "main".
+Once import is encountered this module is run.
 
 You can also import/spill global spaces, but the space name (or full scope) has
 to be prefixed with global scope specifier `::`, otherwise Moss would look for
 a module with this name.
-
-```cpp
-
+```moss
 space SomeSpace {
-    fun foo() { print("hi"); }
+    fun foo() { "hi from foo\n"; }
     space Space2 {
-        fun bar() { print("ok"); }
-        fun baz() { print("bye"); }
+        fun bar() { "hello from Space2 bar\n"; }
+        fun baz() { "bye from Space2 baz\n"; }
     }
 }
-
-import ::SomeSpace.*
-import ::SomeSpace.Space2.baz
-
-foo() // Foo is now accessible without scope
-baz() // Also does not require scope
-Space2.bar() // Requires scope for space2, since only baz was imported
 ```
-
+```moss
+import ::SomeSpace.*
+```
+```moss
+import ::SomeSpace.Space2.baz
+```
+```moss
+~foo()
+```
+_[Output]:_
+```
+hi from foo
+```
+```moss
+~baz()
+```
+_[Output]:_
+```
+bye from Space2 baz
+```
+```moss
+~Space2.bar()
+```
+_[Output]:_
+```
+hello from Space2 bar
+```
 
 ## Exception handling
 
-Exception can be raised using `raise` keyword and it can be any object.
+Exception can be raised using `raise` keyword and the raised value can be any
+object.
 
-```py
-fun bar() {
-    raise 42
-}
-```
+Although Moss will always raise only objects that extend class `Exception`.
 
-```py
-fun baz() {
-    raise KnownException("Oops")
-}
-```
-
-It can be caught using `try` and `catch` block and can be ended with finally
+Exceptions can be caught using `try` and `catch` block and can contain finally
 block, which is always executed.
-
-```java
-try {
-    someCall()
-} catch (e:KnownException) {
-    e.nicemsg()
-} catch (e) {
-    e
-} finally {
-    "This is always done"
+```moss
+fun some_fun(a) {
+    raise a
 }
-
+```
+```moss
+try {
+    some_fun(42)
+} catch (e:NameError) {
+    "Could not find function\n"
+} catch (e) {
+    e ++ " was raised\n"
+} finally {
+    "Finally is always done\n"
+}
+```
+_[Output]:_
+```
+42 was raised
+```
+_[Output]:_
+```
+Finally is always done
 ```
 
 ## Assert
 
-Assertion takes in a bool and if this bool is false it raises an assertion
-exception. Second argument can be string which will be part of the exception.
+Assertion takes a boolean value and if it is false, then AssertionError is
+raised. Second argument can be string which will be part of the exception.
+```moss
+x = 42
+```
+```moss
+try
+    assert(x < 0, "x should be negative")
+catch (e:AssertionError)
+    e
 
-Assertions are ignored when debug is turned off.
-
-```py
-assert(x > 0)
-assert(y < 0, "Input value should be negative.")
+md"""
+```
+_[Output]:_
+```
+AssertionError: x should be negative
 ```
 
-Assert does have a function syntax, but is in fact a keyword and cannot be
-overwritten.
-
-## Short-circuit evaluation
-
-`||` and `&&` are logical or and end respectivelly, but don't necessairly
-evaluate their second argument.
-
-These operators can be used to create an evaluation chain.
-
-```cpp
-fun foo() { return false; }
-
-foo() || exit(1) && print("success")
-```
-
-This will exit the program with return code 1.
-
-`||` can be thought of as the next evaluation after a false value and
-`&&` as the next one after a true value.
+Assert is a keyword and cannot be overwritten.

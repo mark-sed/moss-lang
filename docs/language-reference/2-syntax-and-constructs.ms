@@ -121,3 +121,155 @@ if (num < 0) {
 } else {
     // Code
 }
+
+md"""
+### Ternary if
+
+Ternary if uses C-style syntax.
+"""
+
+condition ? "Yes\n" : "No\n"
+
+md"""
+## While and do-while loops
+
+While and do-while, just like if, don't perform any implicit conversions to
+bool.
+"""
+
+i = 0
+while (i < 2) {
+    "Ran while\n"
+    i += 1
+}
+
+while (i == 0) "Will not run\n"
+
+do {
+    "Ran do while\n"
+} while (i == -42)
+
+md"""
+## For loops
+
+For works as a foreach and iterates over elements. But the C-style for loop
+can be easily achieved using ranges.
+"""
+
+str = ""
+for (i: 1,3..11) {
+    str ++= i ++ " "
+}
+str++"\n"
+
+sum = 0
+for(s: [4,10,1,3]) {
+    sum += s
+}
+sum++"\n"
+
+md"""
+## Switch statement
+
+Switch does not fallthrough, but case can contain multiple values.
+"""
+
+fun test_switch(val) {
+    x = 0
+    switch(val) {
+        case 1, 0, 4: return true
+        case 8: return false
+        case 10: { 
+            x += 1
+            return nil
+        }
+        case 11: return nil
+        default: raise ValueError(val)
+    }
+}
+
+test_switch(4)
+
+md"""
+## Imports
+
+Import can appear pretty much anywhere and this import is valid within the
+scope it appears in. The imported value can also be aliased using `as` keyword.
+"""
+
+import time
+import time.localtime as lt, time.strftime as tsf
+import sys as S
+
+md"""
+You can also import all of the symbols from the module and spill them into
+the current scope.
+"""
+
+import sys.*
+
+md"""
+Once import is encountered this module is run.
+
+You can also import/spill global spaces, but the space name (or full scope) has
+to be prefixed with global scope specifier `::`, otherwise Moss would look for
+a module with this name.
+"""
+
+space SomeSpace {
+    fun foo() { "hi from foo\n"; }
+    space Space2 {
+        fun bar() { "hello from Space2 bar\n"; }
+        fun baz() { "bye from Space2 baz\n"; }
+    }
+}
+
+import ::SomeSpace.*
+import ::SomeSpace.Space2.baz
+
+~foo()
+~baz()
+~Space2.bar()
+
+md"""
+## Exception handling
+
+Exception can be raised using `raise` keyword and the raised value can be any
+object.
+
+Although Moss will always raise only objects that extend class `Exception`.
+
+Exceptions can be caught using `try` and `catch` block and can contain finally
+block, which is always executed.
+"""
+
+fun some_fun(a) {
+    raise a
+}
+
+try {
+    some_fun(42)
+} catch (e:NameError) {
+    "Could not find function\n"
+} catch (e) {
+    e ++ " was raised\n"
+} finally {
+    "Finally is always done\n"
+}
+
+md"""
+## Assert
+
+Assertion takes a boolean value and if it is false, then AssertionError is
+raised. Second argument can be string which will be part of the exception.
+"""
+
+x = 42
+try
+    assert(x < 0, "x should be negative")
+catch (e:AssertionError)
+    e
+
+md"""
+Assert is a keyword and cannot be overwritten.
+"""
