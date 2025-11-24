@@ -1,117 +1,153 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "Moss",
-	"patterns": [
-		{
-			"include": "#comments"
-		},
-		{
-			"include": "#constant"
-		},
-		{
-			"include": "#numbers"
-		},
-		{
-			"include": "#type-primitive"
-		},
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#control"
-		},
-		{
-			"include": "#operators"
-		},
-		{
-			"include": "#strings"
-		},
-		{
-			"include": "#annotations"
-		}
-	],
-	"repository": {
-		"comments": {
-			"patterns": [{
-				"captures": {
-					"0": {
-						"name": "punctuation.definition.comment.moss"
-					}
-				},
-				"begin": "//",
-				"name": "comment.block.empty.moss",
-				"end": "\\n"
-			},
-			{
-				"captures": {
-					"0": {
-						"name": "punctuation.definition.comment.moss"
-					}
-				},
-				"begin": "/\\*",
-				"name": "comment.block.empty.moss",
-				"end": "\\*/"
-			}
-			]
-		},
-		"constant": {
-			"match": "\\b(true|false|nil)\\b",
-			"name": "constant.language.moss "
-		},
-		"operators": {
-			"patterns": [{
-				"match": "!=|<=|>=|==|<|>|=>",
-				"name": "keyword.operator.comparison.moss"
-			},
-			{
-				"match": "\\+=|-=|\\*=|/=|%=|\\^=|\\+\\+=|=",
-				"name": "keyword.operator.assignment.moss"
-			},
-			{
-				"match": "\\*|\\+|-|/|%|\\^|>>",
-				"name": "keyword.operator.moss"
-			}
-		]
-		},
-		"type-primitive": {
-			"name": "support.type.primitive.moss",
-			"match": "String|Int|Float|NilType|Bool|List|Dict"
-		},
-		"numbers": {
-			"patterns": [{
-				"name": "constant.numeric.moss",
-				"match": "(-?[0-9]+)"
-			}]
-		},
-		"keywords": {
-			"patterns": [{
-				"match": "\\b(import|as|in|or|and|xor|not|\\|\\||&&|~)\\b",
-				"name": "keyword.other"
-			}]
-		},
-		"control": {
-			"patterns": [{
-				"name": "keyword.control",
-				"match": "if|else|do|while|for|finally|try|catch|class|space|fun|return|raise|break|continue|new|assert|switch|case|default\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.moss",
-			"begin": "\"",
-			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.moss",
-					"match": "\\\\."
-				}
-			]
-		},
-		"annotations": {
-			"patterns": [{
-				"name": "meta.preprocessor.string",
-				"match": "(@[a-zA-Z_][a-zA-Z_0-9]*)"
-			}]
-		}
-	},
-	"scopeName": "source.moss"
+  "name": "Moss",
+  "scopeName": "source.moss",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#annotations"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.moss",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.moss",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.shebang.moss",
+          "match": "^#!.*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.moss",
+          "match": "\\b(import|as|if|else|while|do|for|switch|case|default|try|catch|finally|assert|break|continue|raise|return|enum|class|space|fun)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.moss",
+          "match": "\\b(nil|true|false|this|super)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.moss",
+          "match": "(::|\\$|\\.|and|or|not|xor|ir|&&|\\|\\||<=|>=|<|>|!=|==|<<|~|%|\\*|/|-|\\+|\\^|\\+\\+|=|%=`|\\*=`|/=`|-=`|\\+=`|\\^=`|\\+\\+=)"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.moss",
+          "match": "\\b(Int|Float|Bool|String|Note|NilType|List|Dict|Bytes|Range|Enumerate|Complex|Type|File|Exception|NameError|AttributeError|ModuleNotFoundError|TypeError|AssertionError|NotImplementedError|ParserError|SyntaxError|LookupError|IndexError|KeyError|StopIteration|MathError|DivisionByZeroError|OSError|FileNotFoundError|EOFError|OutputError|SystemExit)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.moss",
+          "match": "[-+]?(?:[0-9][0-9_]*\\.[0-9_]*|[0-9][0-9_]*\\.[0-9_]*[eE][+-]?[0-9_]+|[0-9][0-9_]*[eE][+-]?[0-9_]+)"
+        },
+        {
+          "name": "constant.numeric.integer.moss",
+          "match": "0[bB][01_]+|0[xX][0-9a-fA-F_]+|0[qQ][0-7_]+|[0-9][0-9_]*"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.triple.moss",
+          "begin": "([frdFRD]?)(\"\"\")",
+          "beginCaptures": {
+            "1": {
+              "name": "storage.type.string.prefix"
+            }
+          },
+          "end": "\"\"\"",
+          "patterns": [
+            {
+              "include": "#interpolation"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.moss",
+          "begin": "([rdf]?)(\")",
+          "beginCaptures": {
+            "1": {
+              "name": "storage.type.string.prefix"
+            }
+          },
+          "end": "\"",
+          "patterns": [
+            {
+              "include": "#interpolation"
+            }
+          ]
+        }
+      ]
+    },
+    "interpolation": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.moss",
+          "match": "\\\\[\\\\\"'abfnrtv]|\\\\x[0-9A-Fa-f]{2}|\\\\X[0-9A-Fa-f]{2}|\\\\q[0-7]{1,3}|\\\\Q[0-7]{1,3}|\\\\u[0-9A-Fa-f]{4}|\\\\U[0-9A-Fa-f]{8}|\\\\N\\{[A-Za-z0-9_ ]+\\}"
+        },
+        {
+          "name": "meta.interpolation.moss",
+          "begin": "\\{",
+          "end": "\\}",
+          "patterns": [
+            {
+              "include": "$self"
+            }
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "patterns": [
+        {
+          "name": "keyword.other.annotation.moss",
+          "match": "@[!]?[A-Za-z_][A-Za-z0-9_]*(?:([^)]*))?"
+        }
+      ]
+    }
+  }
 }
