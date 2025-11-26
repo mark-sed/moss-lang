@@ -146,6 +146,10 @@ public:
     void set_parent(IR *parent) {
         this->parent = parent;
     }
+
+    IR *get_parent() {
+        return this->parent;
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {

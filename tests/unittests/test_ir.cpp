@@ -135,4 +135,80 @@ fun(g) = true
     delete mod;
 }
 
+/** Check correct parent setup in IR */
+TEST(IR, IRParents){
+    ustring code = R"(
+class Cls {
+    fun foo(a, b) {
+        c = a + 1
+        if (b)
+            c += 2
+        return c
+    }
+
+    space Sp1 {
+        a = 4
+    }
+}
+
+if (true) {
+    "hello"
+} else {
+    "bye"
+}
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<ir::Module>(parser.parse());
+    EXPECT_FALSE(mod->get_parent());
+
+    // Convert list of IRs into vector for easy access
+    std::list<ir::IR *> body_list = mod->get_body();
+    std::vector<ir::IR *> body{ std::begin(body_list), std::end(body_list) };
+
+    auto cls = dyn_cast<ir::Class>(body[0]);
+    EXPECT_EQ(cls->get_parent(), nullptr);
+
+    auto body_cls_list = cls->get_body();
+    std::vector<ir::IR *> body_cls{ std::begin(body_cls_list), std::end(body_cls_list) };
+    auto foo = dyn_cast<ir::Function>(body_cls[0]);
+    EXPECT_EQ(foo->get_parent(), cls); // foo
+    auto body_foo_list = foo->get_body();
+
+    EXPECT_EQ(foo->get_args()[0]->get_parent(), foo);
+    std::vector<ir::IR *> body_foo{ std::begin(body_foo_list), std::end(body_foo_list) };
+    auto c = dyn_cast<ir::BinaryExpr>(body_foo[0]);
+    EXPECT_EQ(c->get_parent(), foo);
+    EXPECT_EQ(c->get_left()->get_parent(), c);
+    EXPECT_EQ(c->get_right()->get_parent(), c);
+
+    auto ifb = dyn_cast<ir::If>(body_foo[1]);
+    EXPECT_EQ(ifb->get_parent(), foo);
+    EXPECT_EQ(ifb->get_cond()->get_parent(), ifb);
+    auto ifc = dyn_cast<ir::BinaryExpr>(ifb->get_body().back());
+    EXPECT_EQ(ifc->get_parent(), ifb);
+    EXPECT_EQ(ifc->get_left()->get_parent(), ifc);
+    EXPECT_EQ(ifc->get_right()->get_parent(), ifc);
+
+    auto ret = dyn_cast<ir::Return>(body_foo[2]);
+    EXPECT_EQ(ret->get_parent(), foo);
+    EXPECT_EQ(ret->get_expr()->get_parent(), ret);
+
+    auto sp1 = dyn_cast<ir::Space>(body_cls[1]);
+    EXPECT_EQ(sp1->get_parent(), cls); // space Sp1
+    EXPECT_EQ(sp1->get_body().back()->get_parent(), sp1);
+
+    auto i = dyn_cast<ir::If>(body[1]);
+    EXPECT_EQ(i->get_parent(), nullptr);
+    EXPECT_EQ(i->get_body().back()->get_parent(), i);
+
+    auto e = i->get_else();
+    EXPECT_EQ(e->get_parent(), nullptr);
+    EXPECT_EQ(e->get_body().back()->get_parent(), e);
+
+    delete mod;
+}
+
 }
