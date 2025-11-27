@@ -192,6 +192,9 @@ if (true) {
     EXPECT_EQ(ifc->get_left()->get_parent(), ifc);
     EXPECT_EQ(ifc->get_right()->get_parent(), ifc);
 
+    EXPECT_EQ(ifb->get_outter_ir(ir::IRType::FUNCTION), foo);
+    EXPECT_EQ(ifb->get_outter_ir(ir::IRType::IF), nullptr);
+
     auto ret = dyn_cast<ir::Return>(body_foo[2]);
     EXPECT_EQ(ret->get_parent(), foo);
     EXPECT_EQ(ret->get_expr()->get_parent(), ret);
@@ -205,7 +208,7 @@ if (true) {
     EXPECT_EQ(i->get_body().back()->get_parent(), i);
 
     auto e = i->get_else();
-    EXPECT_EQ(e->get_parent(), nullptr);
+    EXPECT_EQ(e->get_parent(), i);
     EXPECT_EQ(e->get_body().back()->get_parent(), e);
 
     delete mod;

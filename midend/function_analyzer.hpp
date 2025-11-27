@@ -27,6 +27,7 @@ public:
     
     virtual void visit(class Function &fun) override;
     virtual void visit(class Lambda &lf) override;
+    virtual void visit(class Return &ret) override;
 };
 
 }

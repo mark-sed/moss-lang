@@ -210,6 +210,7 @@ enum DiagID : unsigned {
     GENERATOR_INCORR_ARGS,  ///< When generator has incorrect args
     UNKNOWN_BYTES_ENCODING, ///< When Bytes does not know the format
     EXPECTED_BYTES_IN_WRITE,///< When writing to a binary file something else then bytes
+    RETURN_OUTSIDE_FUN,     ///< Return outside of a function
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -399,6 +400,7 @@ static const char * DIAG_MSGS[] = {
     "Function ('%s') annotated as 'generator' has to take exactly 1 untyped argument or typed as 'List'",
     "Unknown encoding '%s' for conversion to bytes",
     "Bytes type is expected when writing to a binary file, but got '%s'",
+    "Return outside function",
 };
 
 /// \brief ID of diagnostic error

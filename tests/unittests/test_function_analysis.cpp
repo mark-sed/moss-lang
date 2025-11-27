@@ -103,5 +103,14 @@ R"(@generator("pt") fun pt2pta2() { a; })",
     testing::check_all_lines_err(lines, "MismatchedFunsAndAnnotations");
 }
 
+/// Tests for returns outside of functions
+TEST(FunctionAnalysis, ReturnsOutsideOfFunctions){
+    std::vector<ustring> lines = {
+R"(return 43)",
+R"(space Sp { a = 4; return a; })",
+R"(class A { return 4; })",
+};
+    testing::check_all_lines_err(lines, "ReturnsOutsideOfFunctions");
+}
 
 }

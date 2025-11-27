@@ -55,6 +55,13 @@ void FunctionAnalyzer::visit(Function &fun) {
         check_annotated_fun(fun, fun.get_args());
 }
 
+void FunctionAnalyzer::visit(Return &ret) {
+    auto fun = ret.get_outter_ir(IRType::FUNCTION);
+    if (!fun)
+        fun = ret.get_outter_ir(IRType::LAMBDA);
+    parser_assert(fun, parser.create_diag(ret.get_src_info(), diags::RETURN_OUTSIDE_FUN));
+}
+
 void FunctionAnalyzer::visit(Lambda &lf) {
     check_arguments(lf.get_args(), "lambda");
     parser_assert(!Parser::is_operator_fun(lf.get_name()) || lf.is_method(), parser.create_diag(lf.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, lf.get_name().c_str()));

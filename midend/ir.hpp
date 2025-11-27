@@ -150,6 +150,14 @@ public:
     IR *get_parent() {
         return this->parent;
     }
+
+    IR *get_outter_ir(IRType expected) {
+        auto p = parent;
+        while (p && p->get_type() != expected) {
+            p = p->get_parent();
+        }
+        return p;
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
@@ -492,6 +500,8 @@ public:
             i->set_parent(this);
         }
         cond->set_parent(this);
+        if (else_branch)
+            else_branch->set_parent(this);
     }
     ~If() {
         delete cond;
@@ -673,6 +683,11 @@ public:
         for (auto i: body) {
             i->set_parent(this);
         }
+        for (auto c: catches) {
+            c->set_parent(this);
+        }
+        if (finally_stmt)
+            finally_stmt->set_parent(this);
     }
     ~Try() {
         for (auto c : catches) {
