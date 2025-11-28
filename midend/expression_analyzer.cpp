@@ -50,3 +50,13 @@ void ExpressionAnalyzer::visit(Call &c) {
         check_call_arg(a, named_args);
     }
 }
+
+void ExpressionAnalyzer::visit(Break &b) {
+    auto loop = b.get_outter_ir({IRType::FOR_LOOP, IRType::WHILE, IRType::DO_WHILE});
+    parser_assert(loop, parser.create_diag(b.get_src_info(), diags::BREAK_OUTSIDE_OF_LOOP));
+}
+
+void ExpressionAnalyzer::visit(Continue &c) {
+    auto loop = c.get_outter_ir({IRType::FOR_LOOP, IRType::WHILE, IRType::DO_WHILE});
+    parser_assert(loop, parser.create_diag(c.get_src_info(), diags::CONTINUE_OUTSIDE_OF_LOOP));
+}

@@ -60,8 +60,6 @@ private:
     opcode::Register curr_creg; ///< Current free constant register
     opcode::Register curr_reg;  ///< Current free register
 
-    long cycle_depth; ///< How many loops we are currently inside of
-
     RegValue *emit(ir::BinaryExpr *expr);
     RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
@@ -137,8 +135,7 @@ private:
     }
 public:
     BytecodeGen(Bytecode *code, Parser *parser) : code(code), parser(parser), 
-                curr_creg(BC_RESERVED_CREGS), curr_reg(BC_RESERVED_REGS),
-                cycle_depth(0) {
+                curr_creg(BC_RESERVED_CREGS), curr_reg(BC_RESERVED_REGS) {
         assert(code && "Generator requires a non-null Bytecode");
     }
     ~BytecodeGen() {

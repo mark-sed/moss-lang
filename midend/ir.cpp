@@ -198,13 +198,13 @@ void Raise::accept(IRVisitor& visitor) {
     visitor.visit(*this);
 }
 
-//void Break::accept(IRVisitor& visitor) {
-//    visitor.visit(*this);
-//}
-//
-//void Continue::accept(IRVisitor& visitor) {
-//    visitor.visit(*this);
-//}
+void Break::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
+
+void Continue::accept(IRVisitor& visitor) {
+    visitor.visit(*this);
+}
 
 void Annotation::accept(IRVisitor& visitor) {
     visitor.visit(*this);

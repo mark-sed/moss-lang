@@ -60,6 +60,7 @@ void FunctionAnalyzer::visit(Return &ret) {
     if (!fun)
         fun = ret.get_outter_ir(IRType::LAMBDA);
     parser_assert(fun, parser.create_diag(ret.get_src_info(), diags::RETURN_OUTSIDE_FUN));
+    parser_assert(!fun->has_annotation(annots::GENERATOR) || isa<ir::NilLiteral>(ret.get_expr()), parser.create_diag(ret.get_src_info(), diags::RETURN_IN_GENERATOR));
 }
 
 void FunctionAnalyzer::visit(Lambda &lf) {

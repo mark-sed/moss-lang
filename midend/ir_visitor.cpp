@@ -199,6 +199,18 @@ void PassManager::visit(Raise &r) {
     r.get_exception()->accept(*this);
 }
 
+void PassManager::visit(Break &b) {
+    for (auto p: passes) {
+        b.accept(*p);
+    }
+}
+
+void PassManager::visit(Continue &c) {
+    for (auto p: passes) {
+        c.accept(*p);
+    }
+}
+
 void PassManager::visit(Return &ret) {
     for (auto p: passes) {
         ret.accept(*p);

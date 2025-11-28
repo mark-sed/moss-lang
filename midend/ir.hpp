@@ -158,6 +158,14 @@ public:
         }
         return p;
     }
+
+    IR *get_outter_ir(std::initializer_list<IRType> expected) {
+        auto p = parent;
+        while (p && std::find(expected.begin(), expected.end(),  p->get_type()) == expected.end()) {
+            p = p->get_parent();
+        }
+        return p;
+    }
 };
 
 inline std::ostream& operator<< (std::ostream& os, IR &ir) {
@@ -995,7 +1003,7 @@ public:
 
     Break(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
-    //void accept(IRVisitor& visitor) override;
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "break";
@@ -1009,7 +1017,7 @@ public:
 
     Continue(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
-    //void accept(IRVisitor& visitor) override;
+    void accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "continue";

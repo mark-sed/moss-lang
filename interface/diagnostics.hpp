@@ -211,6 +211,7 @@ enum DiagID : unsigned {
     UNKNOWN_BYTES_ENCODING, ///< When Bytes does not know the format
     EXPECTED_BYTES_IN_WRITE,///< When writing to a binary file something else then bytes
     RETURN_OUTSIDE_FUN,     ///< Return outside of a function
+    RETURN_IN_GENERATOR,    ///< When generator has non-nil return
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -401,6 +402,7 @@ static const char * DIAG_MSGS[] = {
     "Unknown encoding '%s' for conversion to bytes",
     "Bytes type is expected when writing to a binary file, but got '%s'",
     "Return outside function",
+    "Generator has to return nil",
 };
 
 /// \brief ID of diagnostic error

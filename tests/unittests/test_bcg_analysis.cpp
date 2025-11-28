@@ -66,24 +66,17 @@ void check_all_lines_ok_bcg(std::vector<ustring> lines, ustring test) {
     }
 }
 
-/// This tests that there cannot be break and continue outside of a loop.
-TEST(BCGenAnalysis, BreakAndContinueOutsideOfLoop){
-    std::vector<ustring> lines = {
-"break",
-"continue",
-"space F { break; }",
-"class X { fun X() { continue; }; }",
-};
-
-    check_all_lines_err_bcg(lines, "BreakAndContinueOutsideOfLoop");
-
-    std::vector<ustring> lines2 = {
-"for (x: [1,2,3]) break",
-"do { continue; } while(false)",
-"while (true) { break; }",
-};
-
-    check_all_lines_ok_bcg(lines2, "BreakAndContinueOutsideOfLoop");
-}
+/// This tests that 
+//TEST(BCGenAnalysis, ....){
+//    std::vector<ustring> lines = {
+//};
+//
+//    check_all_lines_err_bcg(lines, "");
+//
+//    std::vector<ustring> lines2 = {
+//};
+//
+//    check_all_lines_ok_bcg(lines2, "");
+//}
 
 }

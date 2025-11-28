@@ -28,6 +28,8 @@ public:
     virtual void visit(class BinaryExpr &be) override;
     virtual void visit(class UnaryExpr &be) override;
     virtual void visit(class Call &c) override;
+    virtual void visit(class Break &b) override;
+    virtual void visit(class Continue &b) override;
 };
 
 }

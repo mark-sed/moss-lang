@@ -46,4 +46,24 @@ TEST(ExpressionAnalysis, ArgAnalysis){
     testing::check_all_lines_err(lines, "ArgAnalysis");
 }
 
+/// This tests that there cannot be break and continue outside of a loop.
+TEST(ExpressionAnalysis, BreakAndContinueOutsideOfLoop){
+    std::vector<ustring> lines = {
+"break",
+"continue",
+"space F { break; }",
+"class X { fun X() { continue; }; }",
+};
+
+    testing::check_all_lines_err(lines, "BreakAndContinueOutsideOfLoop");
+
+    std::vector<ustring> lines2 = {
+"for (x: [1,2,3]) break",
+"do { continue; } while(false)",
+"while (true) { break; }",
+};
+
+    testing::check_all_lines_ok(lines2, "BreakAndContinueOutsideOfLoop");
+}
+
 }

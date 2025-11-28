@@ -113,4 +113,28 @@ R"(class A { return 4; })",
     testing::check_all_lines_err(lines, "ReturnsOutsideOfFunctions");
 }
 
+/// Tests for non-nil returns in generators
+TEST(FunctionAnalysis, NonNilReturnsInGenerators){
+    std::vector<ustring> lines = {
+R"(@generator("m") fun to_m(x) { return 3; })",
+R"(@generator("m") fun to_m(x) { if (x) return foo(); })",
+R"(@generator("m") fun to_m(x) { space X { switch(x) { case 4: return foo(); } } })",
+};
+    testing::check_all_lines_err(lines, "NonNilReturnsInGenerators");
+
+    ustring line_ok = R"(
+@generator("my")
+fun to_my(x) {
+    fun g() {
+        return 4
+    }
+    g()
+    return
+}
+)";
+
+
+    testing::check_line_ok(line_ok, "NonNilReturnsInGenerators");
+}
+
 }

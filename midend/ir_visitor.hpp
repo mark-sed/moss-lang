@@ -66,10 +66,10 @@ public:
     }
     virtual void visit(class Raise &) {
     }
-    //virtual void visit(class Break &) {
-    //}
-    //virtual void visit(class Continue &) {
-    //}
+    virtual void visit(class Break &) {
+    }
+    virtual void visit(class Continue &) {
+    }
     virtual void visit(class Annotation &) {
     }
     virtual void visit(class BinaryExpr &) {
@@ -117,6 +117,8 @@ public:
     virtual void visit(class Import &imp) override;
     virtual void visit(class Assert &a) override;
     virtual void visit(class Raise &r) override;
+    virtual void visit(class Break &b) override;
+    virtual void visit(class Continue &c) override;
     virtual void visit(class Annotation &a) override;
     virtual void visit(class BinaryExpr &be) override;
     virtual void visit(class UnaryExpr &ue) override;
