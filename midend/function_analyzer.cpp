@@ -41,6 +41,17 @@ void FunctionAnalyzer::check_annotated_fun(IR &fun, const std::vector<ir::Argume
         parser_assert(args.size() == 1, parser.create_diag(fun.get_src_info(),
                 diags::GENERATOR_INCORR_ARGS, fun.get_name().c_str()));
     }
+    // Don't use else if as we need to catch incorrect combination of annotations
+    if (fun.has_annotation(annots::MAIN)) {
+        parser_assert(!fun.get_parent(), parser.create_diag(fun.get_src_info(), diags::NON_GLOBAL_MAIN));
+        parser_assert(!has_main, parser.create_diag(fun.get_src_info(), diags::MULTIPLE_MAINS));
+        parser_assert(!fun.has_annotation(annots::GENERATOR), parser.create_diag(fun.get_src_info(),
+                diags::INCOMPATIBLE_ANNOTS, annots::MAIN, annots::GENERATOR, fun.get_name().c_str()));
+        parser_assert(!fun.has_annotation(annots::CONVERTER), parser.create_diag(fun.get_src_info(),
+                diags::INCOMPATIBLE_ANNOTS, annots::MAIN, annots::CONVERTER, fun.get_name().c_str()));
+        parser_assert(args.size() == 0, parser.create_diag(fun.get_src_info(), diags::MAIN_INCORR_ARGS, fun.get_name().c_str()));
+        this->has_main = true;
+    }
 }
 
 void FunctionAnalyzer::visit(Function &fun) {
@@ -50,7 +61,6 @@ void FunctionAnalyzer::visit(Function &fun) {
     parser_assert(!Parser::is_operator_fun(fun.get_name()) || fun.is_method(), parser.create_diag(fun.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, fun.get_name().c_str()));
     parser_assert(!fun.has_annotation(annots::CONVERTER) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::CONVERTER));
     parser_assert(!fun.has_annotation(annots::GENERATOR) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::GENERATOR));
-    parser_assert(!fun.has_annotation(annots::IF_MAIN) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::IF_MAIN));
     if (!fun.get_annotations().empty())
         check_annotated_fun(fun, fun.get_args());
 }
@@ -61,6 +71,7 @@ void FunctionAnalyzer::visit(Return &ret) {
         fun = ret.get_outter_ir(IRType::LAMBDA);
     parser_assert(fun, parser.create_diag(ret.get_src_info(), diags::RETURN_OUTSIDE_FUN));
     parser_assert(!fun->has_annotation(annots::GENERATOR) || isa<ir::NilLiteral>(ret.get_expr()), parser.create_diag(ret.get_src_info(), diags::RETURN_IN_GENERATOR));
+    parser_assert(!fun->has_annotation(annots::MAIN) || isa<ir::NilLiteral>(ret.get_expr()), parser.create_diag(ret.get_src_info(), diags::RETURN_IN_MAIN));
 }
 
 void FunctionAnalyzer::visit(Lambda &lf) {

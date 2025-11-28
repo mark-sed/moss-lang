@@ -208,10 +208,14 @@ enum DiagID : unsigned {
     INCOMPATIBLE_ANNOTS,    ///< When there are multiple incompatible annotations
     CONVERTER_INCORR_ARGS,  ///< When converter has incorrect args
     GENERATOR_INCORR_ARGS,  ///< When generator has incorrect args
+    MAIN_INCORR_ARGS,       ///< When main has incorrect args
     UNKNOWN_BYTES_ENCODING, ///< When Bytes does not know the format
     EXPECTED_BYTES_IN_WRITE,///< When writing to a binary file something else then bytes
     RETURN_OUTSIDE_FUN,     ///< Return outside of a function
     RETURN_IN_GENERATOR,    ///< When generator has non-nil return
+    RETURN_IN_MAIN,         ///< When main function returns non-nil value
+    NON_GLOBAL_MAIN,        ///< When function annotated as main is non-global
+    MULTIPLE_MAINS,         ///< When a module has more then 1 main annotated function
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -399,10 +403,14 @@ static const char * DIAG_MSGS[] = {
     "Incompatible annotations '%s' and '%s' (on '%s')",
     "Function ('%s') annotated as 'converter' has to take exactly 1 untyped argument or typed as '[String,Note]'",
     "Function ('%s') annotated as 'generator' has to take exactly 1 untyped argument or typed as 'List'",
+    "Function ('%s') annotated as 'main' has to take no arguments",
     "Unknown encoding '%s' for conversion to bytes",
     "Bytes type is expected when writing to a binary file, but got '%s'",
     "Return outside function",
     "Generator has to return nil",
+    "Function annotated as '@main' has to return nil",
+    "Function annotated as '@main' has to be global and only in module scope",
+    "Redefinition of '@main' within a module — only 1 function can be annotated as '@main'",
 };
 
 /// \brief ID of diagnostic error

@@ -204,7 +204,7 @@ class X {
 
     ustring code3 = R"(
 class S {
-    @if_main
+    @main
     fun main() {
         "main!\n"
     }

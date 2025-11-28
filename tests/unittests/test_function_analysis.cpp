@@ -133,8 +133,32 @@ fun to_my(x) {
 }
 )";
 
-
     testing::check_line_ok(line_ok, "NonNilReturnsInGenerators");
+}
+
+/// Tests main functions
+TEST(FunctionAnalysis, MainFunctions){
+    std::vector<ustring> lines = {
+R"(space { @main fun main() {} })",
+R"(if (true) { @main fun main() {} })",
+R"(@main fun main() { return 3; })",
+R"(@main fun main() {}; @main fun main2() {})",
+R"(@main fun main(a, b) { })",
+R"(@converter("a", "b") @main fun main() { })",
+R"(@converter("a", "b") @main fun main(x) { })",
+R"(@generator("a") @main fun main(x) { })",
+};
+    testing::check_all_lines_err(lines, "MainFunctions");
+
+    ustring line_ok = R"(
+@main
+fun main() {
+    return nil
+}
+)";
+
+
+    testing::check_line_ok(line_ok, "MainFunctions");
 }
 
 }

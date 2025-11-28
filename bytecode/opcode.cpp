@@ -1432,7 +1432,7 @@ void Annotate::exec(Interpreter *vm) {
         annots::INTERNAL,
         annots::STATIC_METHOD,
         annots::FORMATTER,
-        annots::IF_MAIN
+        annots::MAIN
     };
 
     auto *d = vm->load(dst);
