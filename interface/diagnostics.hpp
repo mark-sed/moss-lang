@@ -217,6 +217,7 @@ enum DiagID : unsigned {
     NON_GLOBAL_MAIN,        ///< When function annotated as main is non-global
     MULTIPLE_MAINS,         ///< When a module has more then 1 main annotated function
     LAMBDA_MAIN,            ///< When lambda is marked as main
+    DUPLICATE_CLASS_BASE,   ///< When extending twice with the same class
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -413,6 +414,7 @@ static const char * DIAG_MSGS[] = {
     "Function annotated as '@main' has to be global and only in module scope",
     "Redefinition of '@main' within a module — only 1 function can be annotated as '@main'",
     "Lambda function ('%s') cannot be marked as '@main'",
+    "Duplicate base class '%s'",
 };
 
 /// \brief ID of diagnostic error

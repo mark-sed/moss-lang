@@ -446,6 +446,7 @@ foo1\nfoo1
 10\n56\n61\n42
 42\n42 []\n42 []\n42 [1, 2, 3, 4]\n""", "")
     ~expect_fail("class MyIntString : Int, File, String {}", name, "", exec=true)
+    ~expect_fail("class A {}; class B : A, Exception, ::A {}", name, "", /*rx_err="Duplicate base class 'A'"*/ exec=true) // Duplicate name
 }
 
 fun test_attributes(name) {

@@ -1395,6 +1395,8 @@ void PushParent::exec(Interpreter *vm) {
         }
     }
     op_assert(cv != BuiltIns::NilType && cv != BuiltIns::Bool, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_EXTEND_WITH_BASE, cv->get_name().c_str())));
+    auto pl = vm->get_parent_list();
+    op_assert(std::find(pl.begin(), pl.end(), cv) == pl.end(), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::DUPLICATE_CLASS_BASE, cv->get_name().c_str())));
     vm->push_parent(cv);
 }
 
