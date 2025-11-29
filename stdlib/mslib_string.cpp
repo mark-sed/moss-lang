@@ -290,3 +290,14 @@ Value *String::index(Interpreter *vm, Value *ths, Value *value, Value *&err) {
     }
     return IntValue::get(pos);
 }
+
+Value *String::rindex(Interpreter *vm, Value *ths, Value *value, Value *&err) {
+    auto strv = mslib::get_string(ths);
+    ustring subst = mslib::get_string(value);
+
+    size_t pos = strv.rfind(subst);
+    if (pos == std::string::npos) {
+        return IntValue::get(-1);
+    }
+    return IntValue::get(pos);
+}

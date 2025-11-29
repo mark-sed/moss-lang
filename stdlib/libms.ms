@@ -239,6 +239,25 @@ class __String {
     fun reverse() = this[-1..-this.length()-1]
 
     @internal
+    fun rindex(value:String) {
+        d"""
+        Returns last index of `value` in this String.
+        """
+    }
+
+    fun rindex(value:String, start:Int, end:Int) {
+        d"""
+        Returns last index of `value` in this String.
+        If `start` is specified then finding starts from this index.
+        If `end` is specified then finding ends at this index.
+        """
+        inx = this[start..end].rindex(value)
+        if (inx <= -1)
+            return inx
+        return inx + start
+    }
+
+    @internal
     fun split(sep:[String,NilType]=nil, maxsplit:Int=-1) {
         d"""
         Returns a list of strings, using `sep` as the delimiter string.

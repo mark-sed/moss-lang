@@ -259,3 +259,65 @@ txt.index("sir", 0, 14)
 
 "žába!".capitalize()
 "\n"
+
+// Basic matches
+"hello".rindex("l")        // 3
+"\n"
+"hello".rindex("lo")       // 3
+"\n"
+"banana".rindex("ana")     // 3
+"\n"
+"abracadabra".rindex("a")  // 10
+"\n"
+
+// When substring appears only once
+"python".rindex("py")      // 0
+"\n"
+"python".rindex("on")      // 4
+"\n"
+
+// With start and end argument
+"hello world".rindex("o", 0, 5)     // 4
+"\n"
+"hello world".rindex("o", 5, 11)    // 7
+"\n"
+"mississippi".rindex("ss", 0, 5)    // 2
+"\n"
+"mississippi".rindex("ss", 3, 11)   // 5
+"\n"
+
+// Whole-range explicit indices
+"abcabcabc".rindex("abc", 0, 9)     // 6
+"\n"
+"abcabcabc".rindex("abc", 0, 6)     // 3
+"\n"
+
+// Single-character searches
+"test".rindex("t")         // 3
+"\n"
+"test".rindex("e")         // 1
+"\n"
+"test".rindex("s")         // 2
+"\n"
+
+// Searching empty string
+"hello".rindex("")         // 5  (empty string is found at len(s))
+"\n"
+"abc".rindex("", 0, 2)     // 2
+"\n"
+"abc".rindex("", 0, 3)     // 3
+"\n"
+
+// Edge cases
+"aaaa".rindex("aa")        // 2
+"\n"
+"aaaa".rindex("aaa")       // 1
+"\n"
+
+// Errors (-1)
+"hello".rindex("z")        // -1
+"\n"
+"hello".rindex("l", 0, 2)  // -1 (no 'l' in 'he')
+"\n"
+"abc".rindex("abcd")       // -1 (substring longer than string)
+"\n"

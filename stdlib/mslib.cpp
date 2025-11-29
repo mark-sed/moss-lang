@@ -1087,6 +1087,16 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
+        {"rindex", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto arg = cf->get_arg("this");
+            if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
+                return String::rindex(vm, arg, cf->get_arg("value"), err);
+            } else {
+                if (!err)
+                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"round", [](Interpreter* vm, CallFrame* cf, Value*&) {
             assert(cf->get_args().size() == 2);
             return round(vm, cf->get_arg("n"), cf->get_arg("ndigits"));

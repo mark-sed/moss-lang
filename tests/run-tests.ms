@@ -1246,7 +1246,8 @@ AABBCCD
 HHHEL23-O
 ČŘŽ
 7ýžč
-Žába!\n""", "")
+Žába!
+3\n3\n3\n10\n0\n4\n4\n7\n2\n5\n6\n3\n3\n1\n2\n5\n2\n3\n2\n1\n-1\n-1\n-1\n""", "")
 }
 
 fun test_lib_string_is(name) {
