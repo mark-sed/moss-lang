@@ -147,6 +147,8 @@ R"(@main fun main(a, b) { })",
 R"(@converter("a", "b") @main fun main() { })",
 R"(@converter("a", "b") @main fun main(x) { })",
 R"(@generator("a") @main fun main(x) { })",
+R"(@main fun() = 6)",
+R"(@main fun main() = nil)",
 };
     testing::check_all_lines_err(lines, "MainFunctions");
 
@@ -156,7 +158,6 @@ fun main() {
     return nil
 }
 )";
-
 
     testing::check_line_ok(line_ok, "MainFunctions");
 }

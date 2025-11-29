@@ -205,7 +205,11 @@ void opcode::output_generator_notes(Interpreter *vm) {
 }
 
 void End::exec(Interpreter *vm) {
-    (void)vm;
+    if (vm->main_to_run) {
+        LOGMAX("@main was found, runtime calling it");
+        runtime_call(vm, vm->main_to_run, {}, nullptr, true);
+        vm->main_to_run = nullptr;
+    }
 }
 
 void Load::exec(Interpreter *vm) {
@@ -1428,11 +1432,11 @@ std::vector<ustring> get_str_list_annot(Value *args, unsigned long arg_am, ustri
 }
 
 void Annotate::exec(Interpreter *vm) {
+    // Annotation to accept which are not processed here.
     static std::unordered_set<ustring> KNOWN_ANNOTS = {
         annots::INTERNAL,
         annots::STATIC_METHOD,
         annots::FORMATTER,
-        annots::MAIN
     };
 
     auto *d = vm->load(dst);
@@ -1481,7 +1485,12 @@ void Annotate::exec(Interpreter *vm) {
             d->get_type()->get_name().c_str())));
         auto args = get_str_list_annot(v, 1, name, vm);
         Interpreter::add_generator(args[0], fn);
-    } 
+    } else if (name == annots::MAIN) {
+        if (vm->is_main()) {
+            LOGMAX(*fn << " marked as @main, setting VM main to this.")
+            vm->main_to_run = fn;
+        }
+    }
     // Raise exception if annotation is not known.
     else if (KNOWN_ANNOTS.find(name) == KNOWN_ANNOTS.end()) {
         raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::UNKNOWN_ANNOTATION, name.c_str())));

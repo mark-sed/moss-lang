@@ -343,7 +343,7 @@ hi\nthere\ntrue\ncaught
 []\n[]
 [[[]], [[]], [[]]]
 [[1], [2, [3]], [1], [2, [3]]]
-[{\"a\": 2}, {\"a\": 2}]\n""", "")
+[{"a": 2}, {"a": 2}]\n""", "")
 }
 
 fun test_variables(name) {
@@ -797,6 +797,12 @@ fun test_import_calls(name) {
 mod1 ran!\nanon_space_value\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n""", "")
 }
 
+fun test_main_in_import(name) {
+    ~expect_pass("module_tests/module_with_main.ms", name, """imported_module_with_main
+module_with_main
+Running main in module with main\n""", "")
+}
+
 fun test_modules_and_spaces(name) {
     ~expect_pass("module_tests/space_user.ms", name, """spaced_module FooSpace\nspace_user FooSpace
 sm val1\nsm val2
@@ -1011,6 +1017,14 @@ fun test_implicit_formats(name) {
 """, "", args="-f html") //"
 }
 
+fun test_mains(name) {
+    ~expect_pass("main.ms", name, """Initialization of vars
+A = 42
+Initialization of vars after main def
+B = 1
+Running test main\n""", "")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -1082,9 +1096,9 @@ List(1) [
   ]
 ]\nEnum {}
 Class MyClass : A, B {
-  \"MyClass\": Fun(MyClass(n:[Int, Float]) @110),
-  \"NAME\": String(\"myclass\"),
-  \"get_n\": Fun(get_n(this) @119)
+  "MyClass": Fun(MyClass(n:[Int, Float]) @110),
+  "NAME": String("myclass"),
+  "get_n": Fun(get_n(this) @119)
 }\n""", "")
 }
 
@@ -1701,6 +1715,7 @@ fun run_all_tests() {
 
     ~run_test("basic_import")
     ~run_test("import_calls")
+    ~run_test("main_in_import")
     ~run_test("modules_and_spaces")
     ~run_test("space_imports")
     ~run_test("space_extending")
@@ -1719,6 +1734,7 @@ fun run_all_tests() {
     ~run_test("type_casting")
     ~run_test("warnings")
     ~run_test("implicit_formats")
+    ~run_test("mains")
 
     ~run_test("fibonacci")
     ~run_test("factorial")

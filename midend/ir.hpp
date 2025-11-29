@@ -269,7 +269,7 @@ public:
 
 class Space : public Construct {
 private:
-    static unsigned long annonymous_id;
+    static unsigned long anonymous_id;
     bool anonymous;
 public:
     static const IRType ClassType = IRType::SPACE;
@@ -277,7 +277,7 @@ public:
     Space(ustring name, SourceInfo src_info) : Construct(ClassType, name, src_info), anonymous(false) {
         if (name.empty()) {
             this->anonymous = true;
-            this->name = std::to_string(annonymous_id++) + "s";
+            this->name = std::to_string(anonymous_id++) + "s";
         }
     }
 
@@ -1361,16 +1361,18 @@ public:
 
 class Lambda : public Expression {
 private:
-    static unsigned long annonymous_id;
+    static unsigned long anonymous_id;
+    bool anonymous;
     FunctionInfo info;
     Expression *body;
 public:
     static const IRType ClassType = IRType::LAMBDA;
 
     Lambda(ustring name, std::vector<Argument *> args, Expression *body, SourceInfo src_info) 
-        : Expression(ClassType, name, src_info), info{args, false, false}, body(body) {
+        : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false}, body(body) {
         if (name.empty()) {
-            this->name = std::to_string(annonymous_id++) + "l";
+            anonymous = true;
+            this->name = std::to_string(anonymous_id++) + "l";
         }
         for (auto a: args) {
             a->set_parent(this);
@@ -1394,6 +1396,7 @@ public:
     void set_method(bool c) { this->info.method = c; }
     bool is_method() { return this->info.method; }
     bool is_staticmethod();
+    bool is_anonymous() { return this->anonymous; }
 
     std::vector<Argument *> get_args() { return this->info.args; }
     Expression *get_body() { return this->body; }
@@ -1639,7 +1642,7 @@ public:
 
 class List : public Expression {
 private:
-    static unsigned long annonymous_id;
+    static unsigned long anonymous_id;
     std::vector<Expression *> value;
     bool comprehension;
     Expression *result;
@@ -1667,7 +1670,7 @@ public:
             list_compr_var(nullptr), list_compr_for(nullptr) {
         assert((!else_result || (else_result && condition)) && "else without condition in list comprehension");
         assert(result && "comprehension without result");
-        this->compr_result_name = std::to_string(annonymous_id++) + "cl";
+        this->compr_result_name = std::to_string(anonymous_id++) + "cl";
         result->set_parent(this);
         for (auto a: assignments) {
             a->set_parent(this);

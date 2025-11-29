@@ -77,6 +77,10 @@ void FunctionAnalyzer::visit(Return &ret) {
 void FunctionAnalyzer::visit(Lambda &lf) {
     check_arguments(lf.get_args(), "lambda");
     parser_assert(!Parser::is_operator_fun(lf.get_name()) || lf.is_method(), parser.create_diag(lf.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, lf.get_name().c_str()));
+    auto lambda_name = lf.get_name();
+    if (lf.is_anonymous())
+        lambda_name = "<anonymous lambda function>";
+    parser_assert(!lf.has_annotation(annots::MAIN), parser.create_diag(lf.get_src_info(), diags::LAMBDA_MAIN, lambda_name.c_str()));
     if (!lf.get_annotations().empty())
         check_annotated_fun(lf, lf.get_args());
 }

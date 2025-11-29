@@ -223,6 +223,7 @@ private:
     opcode::Register init_global_frame();
 public:
     static bool running_generator; ///< When true it means that the currently run code is generator of the output
+    FunValue *main_to_run;         ///< Function annotated as @main (set only if this is main vm)
 
     Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();
