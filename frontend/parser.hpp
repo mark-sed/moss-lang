@@ -40,6 +40,7 @@ private:
     bool reading_by_lines;
     int multi_line_parsing;
     bool enable_code_output;
+    int parenth_depth;
 
     std::list<ir::IR *> parents;
     std::list<ir::Annotation *> outter_annots;
@@ -111,9 +112,9 @@ private:
     void put_back();
 
     bool check_ws(TokenType type);
-    bool match_ws(TokenType type);
-    Token *expect_ws(TokenType type, diags::Diagnostic msg);
-    Token *advance_ws();
+    //bool match_ws(TokenType type);
+    //Token *expect_ws(TokenType type, diags::Diagnostic msg);
+    //Token *advance_ws();
  
     /// Skip all tokens until a new declaration 
     /// (new line or semicolon tells this)
@@ -126,6 +127,8 @@ private:
     void skip_nls();
     /// Skip `max` new lines
     void skip_nls(unsigned max);
+    /// Skips all new lines until some other token if depth_parenth > 0
+    void skip_nls_in_parenth();
 
     ustring get_last_id(ir::Expression *e);
     bool is_id_or_member(ir::Expression *e);
@@ -165,8 +168,9 @@ public:
     }
 
     Parser(SourceFile &file) : src_file(file), scanner(new Scanner(file)), curr_token(0),
-                               lower_range_prec(false), reading_by_lines(false),
-                               multi_line_parsing(0), enable_code_output(false) {
+                               lower_range_prec(0), reading_by_lines(false),
+                               multi_line_parsing(0), enable_code_output(false),
+                               parenth_depth(0) {
         static_assert(sizeof(long long) * CHAR_BIT >= 64, "long long on this platform is less than 64bit, parsing will be incorrect");                            
     }
     ~Parser() {

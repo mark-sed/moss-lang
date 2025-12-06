@@ -178,7 +178,7 @@ bool Parser::check_ws(TokenType type) {
     return tokens[curr_token]->get_type() == type;
 }
 
-bool Parser::match_ws(TokenType type) {
+/*bool Parser::match_ws(TokenType type) {
     if (tokens[curr_token]->get_type() == type) {
         advance_ws();
         return true;
@@ -205,7 +205,7 @@ Token *Parser::advance_ws() {
         return tokens[curr_token];
     }
     return tokens[curr_token++];
-}
+}*/
 
 bool Parser::check(TokenType type) {
     int offset = 0;
@@ -239,11 +239,6 @@ Token *Parser::peek(int offset) {
     return tokens[curr_token+i];
 }
 
-Token *Parser::peek_ws(int offset) {
-    if (curr_token + offset > tokens.size()) return tokens.back();
-    return tokens[curr_token+offset];
-}
-
 bool Parser::match(TokenType type) {
     if (check(type)) {
         advance();
@@ -270,10 +265,17 @@ Token *Parser::advance() {
         scan_line();
     }
     else if (tokens[curr_token]->get_type() == TokenType::END_OF_FILE ||
-        (reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL)) {
+             (reading_by_lines && tokens[curr_token]->get_type() == TokenType::END_NL)) {
         return tokens[curr_token];
     }
-    return tokens[curr_token++];
+    auto t = tokens[curr_token++];
+    // Inc or dec parenth depth when found (, ), [ or ]
+    if (t->get_type() == TokenType::LEFT_PAREN || t->get_type() == TokenType::LEFT_SQUARE) {
+        ++parenth_depth;
+    } else if (t->get_type() == TokenType::RIGHT_PAREN || t->get_type() == TokenType::RIGHT_SQUARE) {
+        --parenth_depth;
+    }
+    return t;
 }
 
 void Parser::put_back() {
@@ -324,6 +326,15 @@ void Parser::skip_nls(unsigned max) {
     ++multi_line_parsing;
     while(max > 0 && match(TokenType::END_NL))
         --max; // Skipping empty new lines
+    --multi_line_parsing;
+}
+
+void Parser::skip_nls_in_parenth() {
+    if (parenth_depth == 0 || !check(TokenType::END_NL))
+        return;
+    ++multi_line_parsing;
+    while(match(TokenType::END_NL))
+        ; // Skipping empty new lines
     --multi_line_parsing;
 }
 
@@ -471,7 +482,8 @@ IR *Parser::declaration() {
     // In case we errored out inside of function call, reset range
     // precedence lowering
     lower_range_prec = 0;
-    // Multiline parsing cannot be zeroes in there as this might be called
+    parenth_depth = 0;
+    // Multiline parsing cannot be zeroed in here as this might be called
     // in multiline declaration
     assert(multi_line_parsing >= 0 && "Got out of multiline structures more than into them?");
     bool no_end_needed = false;
@@ -1397,6 +1409,7 @@ std::vector<ir::Expression *> Parser::expr_list(bool only_scope_or_id, bool allo
             }
             args.push_back(expr);
         }
+        skip_nls();
     } while (match(TokenType::COMMA) && expr);
 
     --lower_range_prec;
@@ -1442,10 +1455,12 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto args = expr_list(false, true, true);
             skip_nls();
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+            skip_nls_in_parenth();
             acc_srci.update_ends(curr_src_info());
             expr = new Call(expr, args, acc_srci);
         }
         else if (match(TokenType::DOT)) {
+            skip_nls_in_parenth();
             parser_assert(expr, create_diag(diags::NO_LHS_IN_ACCESS));
             if (match(TokenType::MUL)) {
                 parser_assert(allow_star, create_diag(diags::STAR_MEMBER_OUTSIDE_IMPORT)); 
@@ -1579,6 +1594,7 @@ Expression *Parser::fstring(FStringToken *fstr) {
 }
 
 Expression *Parser::constant() {
+    skip_nls_in_parenth();
     if (match(TokenType::LEFT_PAREN)) {
         bool prev_fun_args_state = lower_range_prec;
         lower_range_prec = 0; // This will allow for range in function call
@@ -1599,10 +1615,12 @@ Expression *Parser::constant() {
     }
     else if (match(TokenType::NON_LOCAL)) {
         auto id = expect(TokenType::ID, create_diag(diags::ID_EXPECTED));
+        skip_nls_in_parenth();
         return new Variable(id->get_value(), id->get_src_info(), true);
     }
     else if (check(TokenType::ID)) {
         auto id = advance();
+        skip_nls_in_parenth();
         return new Variable(id->get_value(), id->get_src_info());
     }
     else if (match(TokenType::THREE_DOTS)) {
@@ -1627,6 +1645,7 @@ Expression *Parser::constant() {
     }
     else if (check(TokenType::INT)) {
         auto val = advance();
+        skip_nls_in_parenth();
         // The value was parsed and checked, so no need to check for
         // correct conversion, but we need to check for under/overflow
         char *end;
@@ -1643,6 +1662,7 @@ Expression *Parser::constant() {
     }
     else if (check(TokenType::FLOAT)) {
         auto val = advance();
+        skip_nls_in_parenth();
         try {
             return new FloatLiteral(std::stod(val->get_value()), curr_src_info());
 #ifndef NDEBUG 
@@ -1673,26 +1693,33 @@ Expression *Parser::constant() {
     }
     else if (check(TokenType::STRING)) {
         auto val = advance();
+        skip_nls_in_parenth();
         return new StringLiteral(unescapeString(val->get_value()), curr_src_info());
     }
     else if (check(TokenType::FSTRING)) {
         auto val = advance();
+        skip_nls_in_parenth();
         FStringToken *fstrtok = dynamic_cast<FStringToken *>(val);
         return fstring(fstrtok);
     }
     else if (match(TokenType::TRUE)) {
+        skip_nls_in_parenth();
         return new BoolLiteral(true, curr_src_info());
     }
     else if (match(TokenType::FALSE)) {
+        skip_nls_in_parenth();
         return new BoolLiteral(false, curr_src_info());
     }
     else if (match(TokenType::NIL)) {
+        skip_nls_in_parenth();
         return new NilLiteral(curr_src_info());
     }
     else if (match(TokenType::THIS)) {
+        skip_nls_in_parenth();
         return new ThisLiteral(curr_src_info());
     }
     else if (match(TokenType::SUPER)) {
+        skip_nls_in_parenth();
         return new SuperLiteral(curr_src_info());
     }
     // lambda
@@ -1722,6 +1749,7 @@ Expression *Parser::constant() {
         skip_nls();
         // Lets extract first expr and then check if this is a list comprehension
         auto first = ternary_if();
+        skip_nls_in_parenth();
         if (first) {
             if (check({TokenType::COLON, TokenType::IF})) {
                 skip_nls();

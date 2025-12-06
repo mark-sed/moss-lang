@@ -1744,4 +1744,84 @@ for(a, b, ...c, ...d : g) {}
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+/** Test that new lines and ws is accepted inside of () and [] */
+TEST(Parsing, SpacesInParenthesis){
+    ustring code = R"(
+a = 4 
+
+(
+    a
+    +
+    a
+    -
+    1
+    *9
+)
+"\n"
+
+[
+ {"a":
+    1},
+
+ {:}
+ , true
+]
+"\n"
+
+~print([
+ {"a":
+    1},
+
+ {:}
+ , true
+])
+
+(a > 4 ?
+    "yes\n"
+    :
+    "no\n")
+
+if (a <= 4 &&
+    id(print) == 
+        id(print)) {
+    "yes\n"
+}
+
+(a
+ .foo()
+ .
+ hoo().
+ goo
+ .
+ x
+)
+
+import (mod.
+         foo
+         .
+         goo
+        )
+
+"sdf"[a
+ .foo(1,
+    2,
+    3
+  )
+ .
+ hoo().
+ goo
+ .x
+]
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<Module>(parser.parse());
+
+    ASSERT_TRUE(mod) << "New lines or spaces were not accepted!";
+
+    delete mod;
+}
+
 }
