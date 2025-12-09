@@ -2772,7 +2772,7 @@ void BuildSpace::exec(Interpreter *vm) {
     // first, but only from the top frame, so that a function does not
     // extend a global space.
     auto existing_v = vm->get_top_frame()->load_name(name, vm);
-    if (existing_v && isa<SpaceValue>(existing_v)) {
+    if (!anonymous && existing_v && isa<SpaceValue>(existing_v)) {
         LOGMAX("BuildSpace detected existing space so pushing its frame");
         // Extending so just push spaces frame and return.
         auto spc_ex = dyn_cast<SpaceValue>(existing_v);

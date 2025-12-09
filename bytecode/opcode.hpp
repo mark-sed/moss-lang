@@ -2121,7 +2121,7 @@ public:
 
     static const OpCodes ClassType = OpCodes::BUILD_SPACE;
 
-    BuildSpace(Register dst, StringConst name, bool anonymous=false)
+    BuildSpace(Register dst, StringConst name, bool anonymous)
         : OpCode(ClassType, "BUILD_SPACE"), dst(dst), name(name), anonymous(anonymous) {}
     
     void exec(Interpreter *vm) override;

@@ -1001,9 +1001,11 @@ fun filter(func, iterable) {
     return result
 }
 
-enum ValType {
-    MISSING,
-    NONE
+space {
+    enum ValType {
+        MISSING,
+        NONE
+    }
 }
 
 // TODO: Can be optimized

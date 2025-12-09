@@ -729,7 +729,9 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::BUILD_SPACE: {
                 auto reg1 = read_register();
                 auto str = read_string();
-                bc->push_back(new BuildSpace(reg1, str));
+                // Anonymous spaces have name starting with number.
+                bool anonymous = !str.empty() && std::isalnum(str[0]);
+                bc->push_back(new BuildSpace(reg1, str, anonymous));
             } break;
             case opcode::OpCodes::CREATE_RANGE: {
                 auto reg1 = read_register();
