@@ -140,8 +140,10 @@ moss_compile(inspect)
 moss_compile(python)
 moss_compile(sys)
 moss_compile(time)
+moss_compile(parsing_utils)
 moss_compile(md_parser)
 moss_compile(html_parser)
+moss_compile(csv_parser)
 
 copy_lib_file("mossy.css")
 
@@ -154,8 +156,10 @@ add_custom_target(
     DEPENDS build_python
     DEPENDS build_sys
     DEPENDS build_time
+    DEPENDS build_parsing_utils
     DEPENDS build_md_parser
     DEPENDS build_html_parser
+    DEPENDS build_csv_parser
     DEPENDS copy_mossy.css
 )
 

@@ -2,6 +2,7 @@ d"""
 Module for parsing markdown for conversions to other formats.
 """
 
+import parsing_utils
 import html_parser
 
 class MDToken {
@@ -235,11 +236,10 @@ class MDHLine : MDToken {
     }
 }
 
-class MDParser {
+class MDParser : parsing_utils.TextualParser {
 
     fun MDParser(text:String, allow_strikethrough:Bool=true) {
-        this.text = text
-        this.i = 0
+        ~super(text)
         this.allow_strikethrough = allow_strikethrough
         if (this.allow_strikethrough)
             this.ESCAPE_LIST = "`*_[]()#+-.!>\\~"
@@ -247,37 +247,12 @@ class MDParser {
             this.ESCAPE_LIST = "`*_[]()#+-.!>\\"
     }
 
-    fun check_adv(v:String) {
-        if (this.i >= this.text.length())
-            return false
-        if (this.text[this.i] == v) {
-            this.i += 1
-            return true
-        }
-        return false
-    }
-
-    fun check(v:String) {
-        if (this.i >= this.text.length())
-            return false
-        if (this.text[this.i] == v) {
-            return true
-        }
-        return false
-    }
-
     fun compact_spaces() {
         while((this.i+1 < this.text.length()) && (this.check(" ") || this.check("\t")) && (this.text[this.i+1] == " " || this.text[this.i+1] == "\t")) {
             this.i += 1
         }
     }
-
-    fun skip_ws() {
-        while (this.check_adv(" ") || this.check_adv("\t")) {
-            // Skip spaces
-        }
-    }
-
+    
     fun link() {
         fun cancel(image:Bool, text=nil, url=nil, title=nil) {
             result = image ? [MDText("!")] : []

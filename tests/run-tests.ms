@@ -1593,6 +1593,15 @@ fun test_lib_md_parser_to_html(name) {
 <p>The END.</p>\n""", "")
 }
 
+fun test_lib_csv_parser_value_parsing(name) {
+    ~expect_pass(f"stdlib_tests/csv_parser_tests/value_parsing.ms", name, """true\n""", "")
+}
+
+fun test_lib_csv_parser_non_numeric_parsing(name) {
+    ~expect_pass(f"stdlib_tests/csv_parser_tests/non_numeric_parsing.ms", name, """\
+[["id", "name", "age", "country_code"], [42.000000, "Marek", 29.000000, "CZ"], [22.000000, "Jon", 55.000000, "US"]]\n""", "")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1812,6 +1821,10 @@ fun run_all_tests() {
     ~run_test("lib_md_parser_markdown_parsing")
     ~run_test("lib_md_parser_to_txt")
     ~run_test("lib_md_parser_to_html")
+
+    // csv_parser
+    ~run_test("lib_csv_parser_value_parsing")
+    ~run_test("lib_csv_parser_non_numeric_parsing")
 
     // gc tests
     ~run_test("gc_local_vars")
