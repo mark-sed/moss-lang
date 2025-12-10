@@ -32,7 +32,7 @@ std::vector<ustring> utils::split_csv(ustring csv, char delim) {
 }
 
 ustring utils::sanitize(const ustring &text) {
-    const ustring ESC_CHARS("\t\n\v\a\b\f\r\\");
+    const ustring ESC_CHARS("\t\n\v\a\b\f\r\\\"");
     ustring sanitized;
     for (ustring::size_type i = 0; i < text.size(); i++) {
         if (ESC_CHARS.find(text[i]) == ustring::npos){
@@ -50,6 +50,8 @@ ustring utils::sanitize(const ustring &text) {
                 case '\v': sanitized.push_back('v');
                 break;
                 case '\\': sanitized.push_back('\\');
+                break;
+                case '"': sanitized.push_back('"');
                 break;
                 default: sanitized += std::to_string(static_cast<int>(text[i]));
                 break;

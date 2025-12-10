@@ -28,6 +28,16 @@ class TextualParser {
         return false
     }
 
+    fun check_adv_str(v:String) {
+        if (this.i + v.length() >= this.text.length())
+            return false
+        if (this.text[this.i..this.i+v.length()] == v) {
+            this.i += v.length()
+            return true
+        }
+        return false
+    }
+
     fun skip_ws() {
         while (this.check_adv(" ") || this.check_adv("\t")) {
             // Skip spaces

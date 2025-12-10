@@ -143,7 +143,7 @@ public:
 
     virtual opcode::StringConst as_string() const = 0;
     virtual opcode::StringConst dump() {
-        return utils::sanitize(as_string());
+        return as_string();
     }
     /// Converts numeric type to float. The type has to be checked if it is
     /// numeric otherwise assert is raised or 0.0 returned

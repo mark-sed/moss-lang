@@ -1509,37 +1509,37 @@ done\n""", "")
 }
 
 fun test_lib_python_module_imports(name) {
-    ~expect_pass(f"stdlib_tests/python_tests/py_module_imports.ms", name, """caught
+    ~expect_pass("stdlib_tests/python_tests/py_module_imports.ms", name, """caught
 <object of class PythonObject>\n42\ntrue\n""", "")
 }
 
 fun test_lib_python_attrs_calls(name) {
-    ~expect_pass(f"stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>
+    ~expect_pass("stdlib_tests/python_tests/py_attrs_calls.ms", name, """<object of class PythonObject>
 -1.000000\n-1.000000\n1.000000\n0.000000
 PythonException: module 'random' has no attribute 'NONEXISTENT_FUN'\n<object of class PythonObject>\n<object of class PythonObject>
 20\n""", "")
 }
 
 fun test_lib_python_type_conversions(name) {
-    ~expect_pass(f"stdlib_tests/python_tests/py_type_conversions.ms", name, """24\ntrue\n2.000000\nlit 😎\nnil
+    ~expect_pass("stdlib_tests/python_tests/py_type_conversions.ms", name, """24\ntrue\n2.000000\nlit 😎\nnil
 [1, 2, True, [], None]\n[]\n[[[42]]]\n[1, 2, [true, false], 3, 4, [nil]]
 {1, 2, 3, 4, 5}\n[33, 11, 22]\n""", "")
 }
 
 fun test_lib_sys_platform(name) {
-    ~expect_pass(f"stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
+    ~expect_pass("stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
 
 fun test_lib_sys_interpreter_info(name) {
-    ~expect_pass(f"stdlib_tests/sys_tests/interpreter_info.ms", name, "", "")
+    ~expect_pass("stdlib_tests/sys_tests/interpreter_info.ms", name, "", "")
 }
 
 fun test_lib_sys_environment(name) {
-    ~expect_pass(f"stdlib_tests/sys_tests/environment.ms", name, "caught\ndoes not exist\n", "")
+    ~expect_pass("stdlib_tests/sys_tests/environment.ms", name, "caught\ndoes not exist\n", "")
 }
 
 fun test_lib_time_clock_time(name) {
-    ~expect_pass(f"stdlib_tests/time_tests/clock_time.ms", name, """time.StructTime(tm_year=2025, tm_mon=8, tm_mday=5, tm_hour=16, tm_min=55, tm_sec=36, tm_wday=1, tm_yday=217, tm_isdst=1, tm_zone="", tm_gmtoff=nil)
+    ~expect_pass("stdlib_tests/time_tests/clock_time.ms", name, """time.StructTime(tm_year=2025, tm_mon=8, tm_mday=5, tm_hour=16, tm_min=55, tm_sec=36, tm_wday=1, tm_yday=217, tm_isdst=1, tm_zone="", tm_gmtoff=nil)
 2025-8-5_17:26:15\ntrue\ntrue
 On some august day it was: 2025-08-05 16:55:36\n""", "")
 }
@@ -1551,7 +1551,7 @@ fun test_lib_md_parser_markdown_parsing(name) {
 }
 
 fun test_lib_md_parser_to_txt(name) {
-    ~expect_pass(f"stdlib_tests/md_parser_tests/to_txt.ms", name, """Title
+    ~expect_pass("stdlib_tests/md_parser_tests/to_txt.ms", name, """Title
 Some text after title with bold. link.com is a link.
 
 * Table value 1
@@ -1577,7 +1577,7 @@ The END.\n""", "")
 }
 
 fun test_lib_md_parser_to_html(name) {
-    ~expect_pass(f"stdlib_tests/md_parser_tests/to_html.ms", name, """<h1>Title</h1>
+    ~expect_pass("stdlib_tests/md_parser_tests/to_html.ms", name, """<h1>Title</h1>
 <p>Some text after title <b>with bold</b> &amp; some bad values &quot;&lt;&gt;&quot;. <a href="link.com" title="">also a link</a> is a <i>link</i>.</p>
 <p></p>
 <ul><li><p>Table value 1</p></li><ul><li><p>Inner value 2</p></li></ul><li><p>Table value 2</p></li></ul>
@@ -1594,12 +1594,35 @@ fun test_lib_md_parser_to_html(name) {
 }
 
 fun test_lib_csv_parser_value_parsing(name) {
-    ~expect_pass(f"stdlib_tests/csv_parser_tests/value_parsing.ms", name, """true\n""", "")
+    ~expect_pass("stdlib_tests/csv_parser_tests/value_parsing.ms", name, """true
+[["id", "name", "age", "country_code"], ["42", "Gabriel \\"Gabi\\"", "29", "CZ"], ["22", "Jon \\"Snow\\"", "55", "US"], ["0", "Lorem\\nIpsum", "0", "NA"]]
+[]
+[["a", " b", " c"], ["", "", ""], [], ["hi", "there", "maam"], [], [], ["1", "2", "3"]]
+[["a"], ["1"], ["2"], ["3"]]
+[["a", "1", "2", "3", "4"]]\n""", "")
 }
 
 fun test_lib_csv_parser_non_numeric_parsing(name) {
-    ~expect_pass(f"stdlib_tests/csv_parser_tests/non_numeric_parsing.ms", name, """\
+    ~expect_pass("stdlib_tests/csv_parser_tests/non_numeric_parsing.ms", name, """\
 [["id", "name", "age", "country_code"], [42.000000, "Marek", 29.000000, "CZ"], [22.000000, "Jon", 55.000000, "US"]]\n""", "")
+}
+
+fun test_lib_csv_parser_strict_dialect(name) {
+    ~expect_pass("stdlib_tests/csv_parser_tests/strict_dialect.ms", name, """CSVError:6:7: Unterminated quote ('"').
+CSVError:4:5: Varying number of values in records (from 3 to 2).
+CSVError: Delimiter ('Dialects.delimiter') must be 1 character long (';;' is 2).
+CSVError: Quote character ('Dialects.quote_char') must be 1 character long ('' is 0).
+CSVError: Escape character ('Dialects.escape_char') must be 1 character long ('?!?!' is 4).\n""", "")
+}
+
+fun test_lib_csv_parser_dialects(name) {
+    ~expect_pass("stdlib_tests/csv_parser_tests/dialects.ms", name, """[["a", "b", "c"], ["a", "3", "\\""], ["d", "3", "Peter \\"\\"Song\\"\\" "]]
+[["name", "age", "year"], ["peter", "24", "2025"], ["some guy", "50", "2005"]]
+[["a", "b", "c"], ["hello\\nthere", "some", "value"], ["2", "3", "4"]]\n""", "")
+
+    ~expect_pass(f"stdlib_tests/csv_parser_tests/excel_dialect.ms {::TEST_DIR}/stdlib_tests/csv_parser_tests/excel_data.csv {::TEST_DIR}/stdlib_tests/csv_parser_tests/excel_data_tabs.csv", name,
+"""[["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]
+[["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]\n""", "")
 }
 
 fun test_gc_local_vars(name) {
@@ -1825,6 +1848,8 @@ fun run_all_tests() {
     // csv_parser
     ~run_test("lib_csv_parser_value_parsing")
     ~run_test("lib_csv_parser_non_numeric_parsing")
+    ~run_test("lib_csv_parser_strict_dialect")
+    ~run_test("lib_csv_parser_dialects")
 
     // gc tests
     ~run_test("gc_local_vars")

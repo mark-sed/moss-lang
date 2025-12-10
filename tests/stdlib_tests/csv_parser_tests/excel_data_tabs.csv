@@ -1,0 +1,4 @@
+Test	Version	Machine	Score min	Score max
+io	1	Linux	1.21	4.03
+pso	1	Linux	0.73	24.44
+ackermann	1	Linux	1.21	8.18
