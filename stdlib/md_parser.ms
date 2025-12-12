@@ -236,6 +236,38 @@ class MDHLine : MDToken {
     }
 }
 
+class MDTable : MDToken {
+    enum CELL_ALIGNMENT {
+        DEFAULT
+        LEFT
+        CENTER
+        RIGHT
+    }
+
+    fun MDTable(table:List, has_header=false, alignments:List=[]) {
+        ~super(table, MDToken.TokenType.TABLE)
+        this.alignments = alignments
+        this.has_header = has_header
+    }
+
+    fun to_txt() {
+        t = ""
+        for (r: this.value) {
+            t ++= "|"
+            for (e: r) {
+                for (me: e)
+                    t ++= me.to_txt() ++ "|"
+            }
+            t ++= "\n"
+        }
+        return t
+    }
+
+    fun __String() {
+        return this.to_txt()
+    }
+}
+
 class MDParser : parsing_utils.TextualParser {
 
     fun MDParser(text:String, allow_strikethrough:Bool=true) {
@@ -571,6 +603,69 @@ class MDParser : parsing_utils.TextualParser {
         return result
     }
 
+    fun table_row() {
+        // TODO: Add support for escaping pipes.
+        line_start = this.i
+        j = 0
+        bar_count = 0
+        // Find trimmed line start and end
+        while (this.i + j < this.text.length() && this.text[this.i + j] != "\n") {
+            c = this.text[this.i + j]
+            if (c == " " || c == "\t") {
+                if (bar_count <= 0) // trimming spaces
+                    line_start += 1
+            }
+            else if (c == "|")
+                bar_count += 1
+            else if (bar_count <= 0) {
+                // Not a table - we found something else on the start than | or ws.
+                return nil
+            }
+            j += 1
+        }
+        if (bar_count <= 2) // There has to be at least 3 bars
+            return nil
+        line = this.text[line_start..this.i+j]
+        cells = []
+        // Start from 1 since we know on 0 is |
+        start = 1
+        for (a : 2..line.length()) {
+            if (line[a] == "|") {
+                cell_str = line[start..a]
+                cell_parser = MDParser(cell_str, this.allow_strikethrough)
+                v = cell_parser.parse()
+                ~cells.append(v)
+                start = a + 1
+            }
+        }
+        // Check that start is over length or that all the symbols after it
+        // are white spaces.
+        if (start < line.length()) {
+            if (not all(line[start..line.length()], fun(x)=x==" " || x == "\t"))
+                return nil
+        }
+        this.i += j + 1
+        return cells
+    }
+
+    fun table() {
+        t = []
+        do {
+            row = this.table_row()
+            if (row != nil)
+                ~t.append(row)
+        } while (row != nil)
+        if (t.empty())
+            return [false, nil]
+        // TODO: Detect header
+        //if (t.length() > 1) {
+        //    possible_header = t[1]
+        //    for (c: possible_header) {
+        //    }
+        //}
+        return [true, MDTable(t)]
+    }
+
     fun parse() {
         tokens = []
 
@@ -586,7 +681,16 @@ class MDParser : parsing_utils.TextualParser {
         while (this.i < this.text.length()) {
             c = this.text[this.i]
             ol_num = this.get_ol_number(this.text, this.i)
-            if (this.check("#")) {
+            // Detect table only after new line
+            parsed_table = false
+            table = nil
+            if (this.i > 0 && this.text[this.i-1] == "\n") {
+                // TODO: Use just nil or table
+                parsed_table, table = this.table()
+            }
+            if (parsed_table) {
+                ~tokens.append(table)
+            } else if (this.check("#")) {
                 ~tokens.append(this.heading())
             } else if (this.check(">")) {
                 ~tokens.append(this.block_quotes())
