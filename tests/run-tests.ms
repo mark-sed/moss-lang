@@ -1620,9 +1620,23 @@ fun test_lib_csv_parser_dialects(name) {
 [["name", "age", "year"], ["peter", "24", "2025"], ["some guy", "50", "2005"]]
 [["a", "b", "c"], ["hello\\nthere", "some", "value"], ["2", "3", "4"]]\n""", "")
 
-    ~expect_pass(f"stdlib_tests/csv_parser_tests/excel_dialect.ms {::TEST_DIR}/stdlib_tests/csv_parser_tests/excel_data.csv {::TEST_DIR}/stdlib_tests/csv_parser_tests/excel_data_tabs.csv", name,
+    // This tests \r\n parsing in excel csv's. These files have to be generated because of git's
+    // new line normalization.
+    COMMA_FILE = f".excel_data_test_moss_comma.generated.csv"
+    COMMA_TEXT = """Test,Version,Machine,Score min,Score max\r\nio,1,Linux,1.21,4.03\r\npso,1,Linux,0.73,24.44\r\nackermann,1,Linux,1.21,8.18"""
+
+    TAB_FILE = ".excel_data_test_moss_tab.generated.csv"
+    TAB_TEXT = "Test\tVersion\tMachine\tScore min\tScore max\r\nio\t1\tLinux\t1.21\t4.03\r\npso\t1\tLinux\t0.73\t24.44\r\nackermann\t1\tLinux\t1.21\t8.18"
+
+    ~with_open(COMMA_FILE, fun(f)=f.write(COMMA_TEXT), "w")
+    ~with_open(TAB_FILE, fun(f)=f.write(TAB_TEXT), "w")
+
+    ~expect_pass(f"stdlib_tests/csv_parser_tests/excel_dialect.ms {COMMA_FILE} {TAB_FILE}", name,
 """[["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]
 [["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]\n""", "")
+
+    ~rm(COMMA_FILE, false)
+    ~rm(TAB_FILE, false)
 }
 
 fun test_gc_local_vars(name) {
