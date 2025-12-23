@@ -248,11 +248,40 @@ fun list_reader(f:File, dialect:Dialects.Dialect=Dialects.DEFAULT) {
     return parser.parse()
 }
 
+fun dict_reader(s:String, header:[NilType,List]=nil, dialect:Dialects.Dialect=Dialects.DEFAULT) {
+    d"""
+    Parses passed in csv string `s` and returns it as a list of dict values.
+    Names (keys) for columns will be read in the first line unless `header`
+    is specified (List of Strings).
+    """
+    parser = CSVParser(s, dialect)
+    lst = parser.parse()
+    if (lst.empty())
+        return {:}
+    start = 0
+    if (header == nil) {
+        header = lst[0]
+        start = 1
+    }
+    res = []
+    for (i : start..lst.length()) {
+        l = lst[i]
+        dct = {:}
+        assert(l.length() == header.length(), "Header size does not match amount of values")
+        for (j: 0..l.length()) {
+            dct[header[j]] = l[j]
+        }
+        ~res.append(dct)
+    }
+    return res
+}
+
 fun dict_reader(f:File, header:[NilType,List]=nil, dialect:Dialects.Dialect=Dialects.DEFAULT) {
     d"""
     Reads passed in csv file `f` and returns it as a list of dict values.
     Names (keys) for columns will be read in the first line unless `header`
     is specified (List of Strings).
     """
-
+    s = f.read()
+    return ::dict_reader(String(s), header, dialect)
 }

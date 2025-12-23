@@ -1670,6 +1670,12 @@ fun test_lib_csv_parser_dialects(name) {
     ~rm(TAB_FILE, false)
 }
 
+fun test_lib_csv_parser_dict_reader(name) {
+    ~expect_pass("stdlib_tests/csv_parser_tests/dict_reader.ms", name, """true
+true
+{:}\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/csv_parser_tests/example.csv")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1895,6 +1901,7 @@ fun run_all_tests() {
     ~run_test("lib_csv_parser_non_numeric_parsing")
     ~run_test("lib_csv_parser_strict_dialect")
     ~run_test("lib_csv_parser_dialects")
+    ~run_test("lib_csv_parser_dict_reader")
 
     // gc tests
     ~run_test("gc_local_vars")
