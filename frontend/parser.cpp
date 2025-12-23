@@ -648,8 +648,8 @@ IR *Parser::declaration() {
             } while (match(TokenType::COMMA) && expr);
             iterator = new Multivar(vars, rest_index, curr_src_info());
         }
-        parser_assert(is_id_or_member(iterator) || isa<Multivar>(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
         parser_assert(iterator, create_diag(diags::EXPR_EXPECTED));
+        parser_assert(is_id_or_member(iterator) || isa<Multivar>(iterator), create_diag(diags::MEMBER_OR_ID_EXPECTED));
         expect(TokenType::COLON, create_diag(diags::FOR_MISSING_COLON));
         auto collection = expression();
         parser_assert(collection, create_diag(diags::EXPR_EXPECTED));
@@ -1237,8 +1237,8 @@ Expression *Parser::membership() {
 }
 
 Expression *Parser::list_of_vars(Expression *first, Expression *second, int rest_index) {
-    parser_assert(is_id_or_member(first), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
-    parser_assert(is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+    parser_assert(first && is_id_or_member(first), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+    parser_assert(second && is_id_or_member(second), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
     std::vector<ir::Expression *> vars = {first, second};
     Expression *expr = nullptr;
     ++lower_range_prec;
@@ -1253,7 +1253,7 @@ Expression *Parser::list_of_vars(Expression *first, Expression *second, int rest
         if (expr) {
             if (auto be = dyn_cast<BinaryExpr>(expr)) {
                 if (be->get_op().get_kind() == OperatorKind::OP_SET) {
-                    parser_assert(is_id_or_member(be->get_left()), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
+                    parser_assert(be->get_left() && is_id_or_member(be->get_left()), create_diag(diags::EXPR_CANNOT_BE_ASSIGN_TO));
                     vars.push_back(be->get_left());
                     expr = be->get_right();
                     be->set_left(nullptr);
