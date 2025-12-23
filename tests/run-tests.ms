@@ -13,6 +13,7 @@ import time
 MOSS_PATH = "moss"
 TEST_DIR = ""
 EXTRA_FLAGS = ""
+COMPILE_ALL = false
 PLATFORM = sys.platform()
 
 if (PLATFORM == sys.Platform.Linux) {
@@ -54,6 +55,10 @@ fun parse_args(args) {
                 ~print_help()
                 exit(256)
             }
+            case "--compile-all": {
+                ~print(f"{C_GRAY}Compiling all tests!{C_OFF}")
+                ::COMPILE_ALL = true
+            }
             default: {
                 ~print("Unknown argument: " ++ a)
                 exit(1)
@@ -85,7 +90,12 @@ fun rm(path:String, relative_path:Bool=true) {
         ~subprocess.system(f"rm -f {full_path}")
 }
 
-fun run(test:String, name:String, args:String="", use_repl:Bool=false, exec:Bool=false) {
+fun run(test:String,
+        name:String,
+        args:String="",
+        prog_args:String="",
+        use_repl:Bool=false,
+        exec:Bool=false) {
     path = ::TEST_DIR++test
     // For Windows replace slashes
     if (::PLATFORM == sys.Platform.Windows) {
@@ -97,26 +107,39 @@ fun run(test:String, name:String, args:String="", use_repl:Bool=false, exec:Bool
             test = test.replace("\"", "\\\"")
             // New lines are also an issue so replace them with ;
             test = test.replace("\n", ";")
+            assert(prog_args.empty(), "Program arguments cannot be passed in EXEC mode!")
             return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} -e \"{test}\"")
         }
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} -e '{test}'")
     }
-    if (use_repl)
+    if (use_repl) {
+        assert(prog_args.empty(), "Program arguments cannot be passed in REPL mode!")
         return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} --use-repl-mode < {path}")
-    return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path}")
+    }
+    if (::COMPILE_ALL) {
+        test_root_name = test[0..test.length()-3]
+        cfile = test_root_name++".msb"
+        ~compile(test, cfile, name, compile_only=true);
+        cpath = ::TEST_DIR++cfile
+        result = subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {cpath} {prog_args}")
+        ~rm(cfile)
+        return result
+    }
+    return subprocess.run(f"{::MOSS_PATH} {args} {::EXTRA_FLAGS} {path} {prog_args}")
 }
 
 fun compile(test:String,
             output_msb:String,
             name:String,
             args:String="",
+            prog_args:String="",
             compile_only:Bool=true) {
     path = ::TEST_DIR++test
     // For Windows replace slashes
     if (::PLATFORM == sys.Platform.Windows)
         path = path.replace("/", "\\")
     com_onl = compile_only ? "--compile-only" : ""
-    return subprocess.run(f"{::MOSS_PATH} -o {::TEST_DIR++output_msb} {com_onl} {args} {::EXTRA_FLAGS} {path}")
+    return subprocess.run(f"{::MOSS_PATH} -o {::TEST_DIR++output_msb} {com_onl} {args} {::EXTRA_FLAGS} {path} {prog_args}")
 }
 
 fun expect_str_eq_file(txt:String, file:String, name:String) {
@@ -147,6 +170,7 @@ fun expect_pass(test:String,
                 expected_out:[String,File]=nil,
                 expected_err:[String,File]=nil,
                 args:String="",
+                prog_args:String="",
                 use_repl:Bool=false,
                 exec:Bool=false,
                 compile_and_run:Bool=false,
@@ -154,9 +178,9 @@ fun expect_pass(test:String,
                 output_msb:[String,NilType]=nil) {
     if (compile_and_run or compile_only) {
         assert(output_msb != nil, "Did not set output msb file for compile")
-        result = compile(test, output_msb, name, args, compile_only)
+        result = compile(test, output_msb, name, args, prog_args, compile_only)
     } else
-        result = run(test, name, args, use_repl, exec)
+        result = run(test, name, args, prog_args, use_repl, exec)
     // Normalize \r\n on windows to \n
     if (::PLATFORM == sys.Platform.Windows) {
         result.stdout = result.stdout.replace("\r", "")
@@ -209,6 +233,7 @@ fun expect_fail(test:String,
                 expected_out:[String,File]=nil,
                 expected_err:[String,File]=nil,
                 args:String="",
+                prog_args:String="",
                 retcode_expected:Int=nil,
                 exec:Bool=false,
                 compile_and_run:Bool=false,
@@ -216,9 +241,9 @@ fun expect_fail(test:String,
                 output_msb:[String,NilType]=nil) {
     if (compile_and_run or compile_only) {
         assert(output_msb != nil, "Did not set output msb file for compile")
-        result = compile(test, output_msb, name, args, compile_only)
+        result = compile(test, output_msb, name, args, prog_args, compile_only)
     } else
-        result = run(test, name, args, false, exec)
+        result = run(test, name, args, prog_args, false, exec)
     // Normalize \r\n on windows to \n
     if (::PLATFORM == sys.Platform.Windows) {
         result.stdout = result.stdout.replace("\r", "")
@@ -281,6 +306,8 @@ fun test_empty(name) {
 }
 
 fun test_bc_read_write(name) {
+    if (::COMPILE_ALL)
+        return
     // Run and generate bc_read_write.msb
     ~expect_pass("bc_rw_output.ms", name, "Hello, World!\n", "", compile_and_run=true, output_msb="bc_read_write")
     // Run compile code
@@ -667,7 +694,7 @@ A32B3:B32D:txt3\n""", "", args="-f D")
 }
 
 fun test_generators(name) {
-    ~expect_pass("generators.ms continue", name, """<!DOCTYPE html>
+    ~expect_pass("generators.ms", name, """<!DOCTYPE html>
 <html>
 <body>
 <h1> Moss generated html</h1>
@@ -680,19 +707,19 @@ fun test_generators(name) {
 </p>
 <p>But works!</p>
 </body>
-</html>\n""", "", args="-f html")
+</html>\n""", "", args="-f html", prog_args="continue")
 
-    ~expect_pass("generators.ms exit0", name, """<!DOCTYPE html>
+    ~expect_pass("generators.ms", name, """<!DOCTYPE html>
 <html>
 <body>
 <h1> Moss generated html</h1>
 <p>Hello, World!</p>
 </body>
-</html>\n""", "", args="-f html")
+</html>\n""", "", args="-f html", prog_args="exit0")
 
     // If exit with failure then we dont want to generate any output document as
     // it will be inclomplete anyway and there might be missing resources.
-    ~expect_fail("generators.ms exit1", name, args="-f html")
+    ~expect_fail("generators.ms", name, args="-f html", prog_args="exit1")
 }
 
 fun test_strings(name) {
@@ -918,6 +945,9 @@ fun test_type_casting(name) {
 }
 
 fun test_warnings(name) {
+    // Warnings are from parser
+    if (::COMPILE_ALL)
+        return
     out_expr = """start
 -9223372036854775807
 9223372036854775807
@@ -1155,8 +1185,8 @@ fun test_lib_ranges(name) {
 }
 
 fun test_lib_input(name) {
-    ~expect_pass(f"stdlib_tests/input.ms < {::TEST_DIR}/stdlib_tests/input.ms", name, "> // input function test\n// this file is also read\n5//\n", "")
-    ~expect_pass(f"stdlib_tests/input_eof.ms < {::TEST_DIR}/empty.ms", name, "caught eof\n", "")
+    ~expect_pass(f"stdlib_tests/input.ms", name, "> // input function test\n// this file is also read\n5//\n", "", prog_args=f"< {::TEST_DIR}/stdlib_tests/input.ms")
+    ~expect_pass(f"stdlib_tests/input_eof.ms", name, "caught eof\n", "", prog_args=f"< {::TEST_DIR}/empty.ms")
 }
 
 fun test_lib_copy(name) {
@@ -1341,9 +1371,9 @@ FFAA00\n""", "")
 }
 
 fun test_lib_args(name) {
-    ~expect_pass("stdlib_tests/args.ms 1 2", name, "[\"1\", \"2\"]", "")
+    ~expect_pass("stdlib_tests/args.ms", name, "[\"1\", \"2\"]", "", prog_args="1 2")
     ~expect_pass("stdlib_tests/args.ms", name, "[]", "")
-    ~expect_pass("stdlib_tests/args.ms true someval  8  + -", name, "[\"true\", \"someval\", \"8\", \"+\", \"-\"]", "")
+    ~expect_pass("stdlib_tests/args.ms", name, "[\"true\", \"someval\", \"8\", \"+\", \"-\"]", "", prog_args="true someval  8  + -")
 }
 
 fun test_lib_types(name) {
@@ -1397,7 +1427,7 @@ fun test_lib_iterable_funs(name) {
 }
 
 fun test_lib_inspect_inspect(name) {
-    ~expect_pass("stdlib_tests/inspect_tests/inspect.ms", name, """foo(a:[Int], b:[Bool], c=nil)
+    ~expect_pass("stdlib_tests/inspect_tests/inspecting.ms", name, """foo(a:[Int], b:[Bool], c=nil)
 foo2(a="hello", ... other)
 caught
 Animal(name:[String], age:[Int, Float]=0)
@@ -1491,7 +1521,7 @@ fun test_lib_subprocess_system_and_run(name) {
 }
 
 fun test_lib_cffi_clib(name) {
-    ~expect_pass(f"stdlib_tests/cffi_tests/clib.ms {::TEST_DIR}/stdlib_tests/cffi_tests/clib.so", name, """<object of class CFFI>
+    ~expect_pass(f"stdlib_tests/cffi_tests/clib.ms", name, """<object of class CFFI>
 <C++ value of type void*>
 <object of class FFHandle>
 Hello from C!
@@ -1505,7 +1535,7 @@ Hello from C!
 45.000000
 Hello from moss to C!
 CLIB
-done\n""", "")
+done\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.so")
 }
 
 fun test_lib_python_module_imports(name) {
@@ -1546,7 +1576,7 @@ On some august day it was: 2025-08-05 16:55:36\n""", "")
 
 fun test_lib_md_parser_markdown_parsing(name) {
     exp_out = open(f"{::TEST_DIR}/stdlib_tests/md_parser_tests/markdown_parsing_expected_out.txt", "r")
-    ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms {::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md", name, exp_out, "")
+    ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms", name, exp_out, "", prog_args=f"{::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md")
     ~exp_out.close()
 }
 
@@ -1631,9 +1661,10 @@ fun test_lib_csv_parser_dialects(name) {
     ~with_open(COMMA_FILE, fun(f)=f.write(COMMA_TEXT), "w")
     ~with_open(TAB_FILE, fun(f)=f.write(TAB_TEXT), "w")
 
-    ~expect_pass(f"stdlib_tests/csv_parser_tests/excel_dialect.ms {COMMA_FILE} {TAB_FILE}", name,
+    ~expect_pass(f"stdlib_tests/csv_parser_tests/excel_dialect.ms", name,
 """[["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]
-[["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]\n""", "")
+[["Test", "Version", "Machine", "Score min", "Score max"], ["io", "1", "Linux", "1.21", "4.03"], ["pso", "1", "Linux", "0.73", "24.44"], ["ackermann", "1", "Linux", "1.21", "8.18"]]\n""",
+    "", prog_args=f"{COMMA_FILE} {TAB_FILE}")
 
     ~rm(COMMA_FILE, false)
     ~rm(TAB_FILE, false)

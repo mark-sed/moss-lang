@@ -147,6 +147,9 @@ int main(int argc, const char *argv[]) {
     if (input_is_msb) {
         LOGMAX("Reading bytecode");
         auto ibf = new BytecodeFile(args::get(clopts::file_name));
+        std::filesystem::path main_f_path = ibf->get_name();
+        global_controls::pwd = main_f_path.parent_path();
+        LOGMAX("Setting pwd to: " << global_controls::pwd);
         input_file = ibf;
         BytecodeReader bcreader(*ibf);
         bc = bcreader.read();
