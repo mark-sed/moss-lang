@@ -2773,7 +2773,7 @@ void BuildSpace::exec(Interpreter *vm) {
     // extend a global space.
     auto existing_v = vm->get_top_frame()->load_name(name, vm);
     if (!anonymous && existing_v && isa<SpaceValue>(existing_v)) {
-        LOGMAX("BuildSpace detected existing space so pushing its frame");
+        LOGMAX("BuildSpace detected existing space so pushing its frame: " << name);
         // Extending so just push spaces frame and return.
         auto spc_ex = dyn_cast<SpaceValue>(existing_v);
         assert(spc_ex->get_attrs() && "Space does not have frame set");
