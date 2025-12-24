@@ -252,6 +252,7 @@ class MDTable : MDToken {
 
     fun to_txt() {
         t = ""
+        header = true
         for (r: this.value) {
             t ++= "|"
             for (e: r) {
@@ -259,6 +260,20 @@ class MDTable : MDToken {
                     t ++= me.to_txt() ++ "|"
             }
             t ++= "\n"
+            if (header && this.has_header) {
+                header = false
+                t ++= "|"
+                for (aln: this.alignments) {
+                    switch(aln) {
+                        case CELL_ALIGNMENT.DEFAULT: t ++= "---"
+                        case CELL_ALIGNMENT.LEFT:    t ++= ":---"
+                        case CELL_ALIGNMENT.CENTER:  t ++= ":---:"
+                        case CELL_ALIGNMENT.RIGHT:   t ++= "---:"
+                    }
+                    t ++= "|"
+                }
+                t ++= "\n"
+            }
         }
         return t
     }
@@ -534,18 +549,21 @@ class MDParser : parsing_utils.TextualParser {
     //@static_method
     fun get_ol_number(text, i) {
         val = ""
-        ok = true
+        ok = false
         for (j, c : Enumerate(text[i..text.length()], i)) {
             if (ord(c) >= 48 && ord(c) <= 57) {
                 val ++= c
             } else if (c == ".") {
                 if (j+1 >= text.length() || text[j+1] != " ")
                     return nil
+                ok = true
                 break
             } else {
                 return nil
             }
         }
+        if (not ok)
+            return nil
         return Int(val)
     }
 
@@ -631,9 +649,11 @@ class MDParser : parsing_utils.TextualParser {
         start = 1
         for (a : 2..line.length()) {
             if (line[a] == "|") {
-                cell_str = line[start..a]
+                cell_str = line[start..a].strip()
                 cell_parser = MDParser(cell_str, this.allow_strikethrough)
                 v = cell_parser.parse()
+                if (v.empty())
+                    ~v.append(MDParagraph([]))
                 ~cells.append(v)
                 start = a + 1
             }
@@ -657,12 +677,51 @@ class MDParser : parsing_utils.TextualParser {
         } while (row != nil)
         if (t.empty())
             return [false, nil]
-        // TODO: Detect header
-        //if (t.length() > 1) {
-        //    possible_header = t[1]
-        //    for (c: possible_header) {
-        //    }
-        //}
+        // Detect header
+        has_header = false
+        if (t.length() > 1) {
+            possible_header = t[1]
+            alignments = []
+            has_header = true
+            for (c: possible_header) {
+                if (c.length() == 1) {
+                    if (c[0].type == MDToken.TokenType.PARAGRAPH) {
+                        text = c[0].value
+                        if (text.length() != 1 || text[0].type != MDToken.TokenType.TEXT) {
+                            has_header = false
+                            break
+                        }
+                        v = text[0].value
+                        if (v.length() < 4) {
+                            has_header = false
+                            break
+                        }
+                        if (v[0] == ":" && v[-1] == ":" && all(v[1..v.length()-1], fun(c)=c=="-")) {
+                            ~alignments.append(MDTable.CELL_ALIGNMENT.CENTER)
+                        } else if (v[0] == ":" && all(v[1..v.length()], fun(c)=c=="-")) {
+                            ~alignments.append(MDTable.CELL_ALIGNMENT.LEFT)
+                        } else if (v[-1] == ":" && all(v[0..v.length()-1], fun(c)=c=="-")) {
+                            ~alignments.append(MDTable.CELL_ALIGNMENT.RIGHT)
+                        } else {
+                            has_header = false
+                            break
+                        }
+                    } else if (c[0].type == MDToken.TokenType.HLINE) {
+                        ~alignments.append(MDTable.CELL_ALIGNMENT.DEFAULT)
+                    } else {
+                        has_header = false
+                        break
+                    }
+                } else {
+                    has_header = false
+                    break
+                }
+            }
+        }
+        if (has_header) {
+            ~t.pop(1)
+            return [true, MDTable(t, true, alignments)]
+        }
         return [true, MDTable(t)]
     }
 

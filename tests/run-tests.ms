@@ -1603,6 +1603,12 @@ for (l: parsed) {
     l.to_txt()
 }
 
+
+|A|B|C|
+|1|2|3|
+|0.5|1.0|3|
+
+
 The END.\n""", "")
 }
 
@@ -1621,6 +1627,43 @@ fun test_lib_md_parser_to_html(name) {
 }
 </code></pre>
 <p>The END.</p>\n""", "")
+}
+
+fun test_lib_md_parser_tables(name) {
+    ~expect_pass("stdlib_tests/md_parser_tests/tables.ms", name, """HEADING
+PARAGRAPH
+TABLE
+PARAGRAPH
+TABLE
+PARAGRAPH
+TABLE
+PARAGRAPH
+TABLE
+Title
+
+|A|B|C|D|
+|1||0|3|
+||3|3|0|
+|a|b|0||
+
+
+|T1|T2|
+
+
+|Item|In Stock|Price|
+|:---|:---:|---:|
+|Someone|True|23.99|
+|Other 24|True|23.99|
+|Coders|False|19.99|
+|Non coders|False|42.99|
+
+
+|Month|Savings|
+|---|---|
+|January|$250|
+|February|$80|
+|March|$420|
+\n""", "")
 }
 
 fun test_lib_csv_parser_value_parsing(name) {
@@ -1895,6 +1938,7 @@ fun run_all_tests() {
     ~run_test("lib_md_parser_markdown_parsing")
     ~run_test("lib_md_parser_to_txt")
     ~run_test("lib_md_parser_to_html")
+    ~run_test("lib_md_parser_tables")
 
     // csv_parser
     ~run_test("lib_csv_parser_value_parsing")
