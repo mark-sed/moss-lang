@@ -1626,6 +1626,20 @@ fun test_lib_md_parser_to_html(name) {
     l.to_txt()
 }
 </code></pre>
+<p></p>
+<table>
+<tr>
+<th style="text-align: left;">Item</th>
+<th style="text-align: center;">In Stock</th>
+<th style="text-align: right;">Price</th>
+</tr>
+<tr>
+<td style="text-align: left;">Someone</td>
+<td style="text-align: center;">True</td>
+<td style="text-align: right;">23.99</td>
+</tr>
+</table>
+<p></p>
 <p>The END.</p>\n""", "")
 }
 

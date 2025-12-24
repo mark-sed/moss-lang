@@ -24,6 +24,11 @@ for (l: parsed) {
     l.to_txt()
 }
 ```
+
+| Item              | In Stock | Price |
+| :---------------- | :------: | ----: |
+| Someone           |   True   | 23.99 |
+
 The END.
 """
 

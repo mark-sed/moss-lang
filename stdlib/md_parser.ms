@@ -29,7 +29,7 @@ class MDToken {
     }
 
     fun to_html() {
-        assert(false, "Called to_html to pure MDToken")
+        assert(false, "Called to_html to pure MDToken or to_html is not overriden")
         return this.value
     }
 
@@ -276,6 +276,38 @@ class MDTable : MDToken {
             }
         }
         return t
+    }
+
+    fun to_html() {
+        lst = []
+        for (row: this.value) {
+            vs = []
+            for (cell: row) {
+                cs = []
+                for (v: cell) {
+                    if (v.type == MDToken.TokenType.PARAGRAPH) {
+                        ~cs.append("".join([x.to_html() : x = v.value]))
+                    } else
+                        ~cs.append(v.to_html())
+                }
+                ~vs.append(cs)
+            }
+            ~lst.append(vs)
+        }
+        if (this.alignments != nil) {
+            align = []
+            for (aln: this.alignments) {
+                switch(aln) {
+                    case CELL_ALIGNMENT.DEFAULT: ~align.append(html_parser.HTMLTable.CELL_ALIGNMENT.DEFAULT)
+                    case CELL_ALIGNMENT.LEFT:    ~align.append(html_parser.HTMLTable.CELL_ALIGNMENT.LEFT)
+                    case CELL_ALIGNMENT.CENTER:  ~align.append(html_parser.HTMLTable.CELL_ALIGNMENT.CENTER)
+                    case CELL_ALIGNMENT.RIGHT:   ~align.append(html_parser.HTMLTable.CELL_ALIGNMENT.RIGHT)
+                    default: assert(false, "Missing alignment case")
+                }
+            }
+            return html_parser.HTMLTable(lst, alignments=align)
+        } 
+        return html_parser.HTMLTable(lst)
     }
 
     fun __String() {

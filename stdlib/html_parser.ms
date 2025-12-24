@@ -14,6 +14,7 @@ class HTMLToken {
         LIST
         CODE_BLOCK
         HORIZONTAL_RULE
+        TABLE
     }
 
     fun HTMLToken(value, type:TokenType) {
@@ -169,5 +170,52 @@ class HTMLHorizontalRule : HTMLToken {
 
     fun __String() {
         return "<hr>"
+    }
+}
+
+class HTMLTable : HTMLToken {
+    enum CELL_ALIGNMENT {
+        DEFAULT
+        LEFT
+        CENTER
+        RIGHT
+    }
+    
+    fun HTMLTable(value, has_header:Bool=true, alignments:[List,NilType]=nil, caption:[String,NilType]=nil) {
+        ~super(value, HTMLToken.TokenType.TABLE)
+        this.has_header = has_header
+        this.alignments = alignments
+        this.caption = caption
+    }
+
+    fun __String() {
+        t = "<table>\n"
+        if (this.caption != nil) {
+            t ++= f"<caption>{this.caption}</caption>\n"
+        }
+        header_row = this.has_header
+        for (row: this.value) {
+            t ++= "<tr>\n"
+            for (c, cell: Enumerate(row)) {
+                for (v: cell) {
+                    align = ""
+                    if (this.alignments != nil && c < this.alignments.length() && this.alignments[c] != CELL_ALIGNMENT.DEFAULT) {
+                        switch(this.alignments[c]) {
+                            case CELL_ALIGNMENT.CENTER: align = " style=\"text-align: center;\""
+                            case CELL_ALIGNMENT.LEFT: align = " style=\"text-align: left;\""
+                            case CELL_ALIGNMENT.RIGHT: align = " style=\"text-align: right;\""
+                        }
+                    }
+                    if (header_row)
+                        t ++= f"<th{align}>{v}</th>\n"
+                    else
+                        t ++= f"<td{align}>{v}</td>\n"
+                }
+            }
+            header_row = false
+            t ++= "</tr>\n"
+        }
+        t ++= "</table>"
+        return t
     }
 }
