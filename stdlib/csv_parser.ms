@@ -257,6 +257,25 @@ class CSVParser : parsing_utils.TextualParser {
     }
 }
 
+class CSVWriter {
+
+    fun CSVWriter(file:File, dialect:Dialects.Dialect=Dialects.DEFAULT) {
+        this.file = file
+        this.dialect = dialect
+    }
+
+    fun write_row(row:List) {
+        ~this.file.write(f"{this.dialect.delimiter}".join([String(x) : x = row]) ++ this.dialect.line_terminator)
+    }
+
+    fun write_rows(rows:List) {
+        txt = f"{this.dialect.line_terminator}".join([f"{this.dialect.delimiter}".join([String(x) : x = row]) : row = rows])
+        if (not rows.empty())
+            txt ++= this.dialect.line_terminator
+        ~this.file.write(txt)
+    }
+}
+
 fun list_reader(s:String, dialect:Dialects.Dialect=Dialects.DEFAULT) {
     d"""
     Reads csv String `s` and returns it as a List of Lists, where the elements

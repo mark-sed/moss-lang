@@ -1776,6 +1776,18 @@ A,B,C,D
     // TODO: add test for html
 }
 
+fun test_lib_csv_parser_csv_writer(name) {
+    FILE1 = f"{::TEST_DIR}/.csvtest_created1.csv"
+    FILE2 = f"{::TEST_DIR}/.csvtest_created2.csv"
+
+    ~expect_pass("stdlib_tests/csv_parser_tests/csv_writer.ms", name, """\
+[["Name", "Year", "Age"], ["Marty", "1990", "21"], ["Tom", "1999", "17"], ["Misha", "2012", "19"]]
+true\n""", "", prog_args=f"{FILE1} {FILE2}")
+
+    ~rm(FILE1, false)
+    ~rm(FILE2, false)
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -2004,6 +2016,7 @@ fun run_all_tests() {
     ~run_test("lib_csv_parser_dialects")
     ~run_test("lib_csv_parser_dict_reader")
     ~run_test("lib_csv_parser_converters")
+    ~run_test("lib_csv_parser_csv_writer")
 
     // gc tests
     ~run_test("gc_local_vars")
