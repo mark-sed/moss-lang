@@ -1439,7 +1439,7 @@ These can be easily overridden by custom converters in user scope.
 @converter("txt", "md")
 @converter("txt", "markdown")
 fun txt2md(n) {
-    d"Converter from text format to other markdown format."
+    d"Converter from text format to markdown format."
 
     if (type(n) != String)
         return n
@@ -1464,6 +1464,16 @@ fun txt2md(n) {
         ["~", "\\~"]
     ]
     return Note(n.multi_replace(markdown_escapes), "md")
+}
+
+@converter("csv", "md")
+@converter("csv", "markdown")
+fun csv2md(n) {
+    d"Converter from csv format to markdown format (table)."
+
+    import csv_parser
+    parser = csv_parser.CSVParser(n)
+    return parser.to_md()
 }
 
 @converter("txt", "html")
@@ -1496,6 +1506,15 @@ fun md2html(txt) {
     parsed = md_parser.parse_md(txt)
     converted = [l.to_html() : l = parsed]
     return "\n".join([String(x) : x = converted])
+}
+
+@converter("csv", "html")
+fun csv2html(txt) {
+    d"Converter from csv to html format (table)."
+
+    import csv_parser
+    parser = csv_parser.CSVParser(txt)
+    return parser.to_html()
 }
 
 }

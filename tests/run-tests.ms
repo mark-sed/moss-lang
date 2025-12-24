@@ -1739,6 +1739,43 @@ true
 {:}\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/csv_parser_tests/example.csv")
 }
 
+fun test_lib_csv_parser_converters(name) {
+    ~expect_pass("stdlib_tests/csv_parser_tests/csv_converters.ms", name, """|A|B|C|D|
+|1|2|3|4|
+|5|6|7|8|
+<table>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+</table>\n""", "")
+
+    ~expect_pass("""csv\"\"\"
+A,B,C,D
+1,2,3,4
+5,6,7,8
+\"\"\"""",  name, 
+"""|A|B|C|D|
+|1|2|3|4|
+|5|6|7|8|\n""", exec=true, args="-f md")
+
+    // TODO: add test for html
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -1966,6 +2003,7 @@ fun run_all_tests() {
     ~run_test("lib_csv_parser_strict_dialect")
     ~run_test("lib_csv_parser_dialects")
     ~run_test("lib_csv_parser_dict_reader")
+    ~run_test("lib_csv_parser_converters")
 
     // gc tests
     ~run_test("gc_local_vars")

@@ -7,6 +7,8 @@ custom quality of life features.
 
 import parsing_utils
 import sys
+import html_parser
+import md_parser
 
 class CSVError : Exception {
     d"""
@@ -133,6 +135,32 @@ class CSVParser : parsing_utils.TextualParser {
     fun CSVParser(text:String, dialect:Dialects.Dialect=Dialects.DEFAULT) {
         ~super(text)
         this.dialect = dialect
+    }
+
+    fun to_html() {
+        parsed = this.parse()
+        tbl = []
+        for (row: parsed) {
+            t = []
+            for (cell: row) {
+                ~t.append(cell)
+            }
+            ~tbl.append(t)
+        }
+        return html_parser.HTMLTable(tbl)
+    }
+
+    fun to_md() {
+        parsed = this.parse()
+        tbl = []
+        for (row: parsed) {
+            t = []
+            for (cell: row) {
+                ~t.append([md_parser.MDParagraph([md_parser.MDText(cell)])])
+            }
+            ~tbl.append(t)
+        }
+        return md_parser.MDTable(tbl)
     }
 
     fun parse() {
