@@ -1639,6 +1639,8 @@ PARAGRAPH
 TABLE
 PARAGRAPH
 TABLE
+PARAGRAPH
+TABLE
 Title
 
 |A|B|C|D|
@@ -1663,6 +1665,10 @@ Title
 |January|$250|
 |February|$80|
 |March|$420|
+
+
+|||
+|||
 \n""", "")
 }
 
