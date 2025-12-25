@@ -52,3 +52,52 @@ e = E() // "B"
 "\n"
 
 ~E.b_call(e)
+
+@sealed
+class C {
+
+}
+
+try
+    class B : C {
+
+    }
+catch (e:TypeError) {
+    "Caught\n"
+}
+
+
+try
+    class D: NilType {}
+catch (e:TypeError)
+    "Caught\n"
+
+try
+    class D: Bool {}
+catch (e:TypeError)
+    "Caught\n"
+
+try
+    class D: Enum {}
+catch (e:TypeError)
+    "Caught\n"
+
+try
+    class D: Function {}
+catch (e:TypeError)
+    "Caught\n"
+
+try
+    class D: FunctionList {}
+catch (e:TypeError)
+    "Caught\n"
+
+try
+    class D: Space {}
+catch (e:TypeError)
+    "Caught\n"
+
+try
+    class D: Module {}
+catch (e:TypeError)
+    "Caught\n"

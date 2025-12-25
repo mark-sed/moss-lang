@@ -21,8 +21,8 @@ class MemoryPool;
 class Interpreter;
 
 /// Names of annotations.
-/// @note When adding new annotation that name needs to be added to Annotation opcode,
-///       so that it does not raise an exception.
+/// @note When adding new annotation that name needs to be added to Annotation
+///       opcode, so that it does not raise an exception.
 namespace annots {
     inline constexpr char INTERNAL[] = "internal";
     inline constexpr char INTERNAL_BIND[] = "internal_bind";
@@ -31,6 +31,7 @@ namespace annots {
     inline constexpr char FORMATTER[] = "formatter";
     inline constexpr char STATIC_METHOD[] = "static_method";
     inline constexpr char MAIN[] = "main";
+    inline constexpr char SEALED[] = "sealed";
 
     inline constexpr char ENABLE_CODE_OUTPUT[] = "enable_code_output";
     inline constexpr char DISABLE_CODE_OUTPUT[] = "disable_code_output";

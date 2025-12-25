@@ -501,7 +501,8 @@ caught\n""", "")
 
 fun test_inheritance(name) {
     ~expect_pass("inheritance.ms", name, """A\n<object of class A>\nB\n<object of class B>\nB
-<object of class C>\nA\n<object of class D>\nb_call\na_call\na_call\nB\nb_call\n""", "")
+<object of class C>\nA\n<object of class D>\nb_call\na_call\na_call\nB\nb_call
+Caught\nCaught\nCaught\nCaught\nCaught\nCaught\nCaught\nCaught\n""", "")
     // Cannot call without argument as MyValue is extended and does not have constructor without argument
     ~expect_fail("class MyValue { fun MyValue(x) { this.x = x; };}; class TheirValue : MyValue {}; tv = TheirValue()", name, exec=true)
     // Cannot extend NilType, nil is a true singleton value

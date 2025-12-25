@@ -1383,18 +1383,25 @@ static bool is_built_in_class(ClassValue *c) {
         c == BuiltIns::Bytes;
 }
 
+static bool class_can_be_extended(ClassValue *c) {
+    return c != BuiltIns::NilType && c != BuiltIns::Bool && c != BuiltIns::Enum &&
+        c != BuiltIns::Function && c != BuiltIns::FunctionList && c != BuiltIns::Module &&
+        c != BuiltIns::Space;
+}
+
 void PushParent::exec(Interpreter *vm) {
     auto v = vm->load(parent);
     assert(v && "Non existent class");
     auto cv = dyn_cast<ClassValue>(v);
     assert(cv && "Pushed parent is not a class");
+    op_assert(!cv->has_annotation(annots::SEALED), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_EXTEND_SEALED_CLASS, cv->get_name().c_str())));
     if (is_built_in_class(cv)) {
         for (auto p: vm->get_parent_list()) {
             op_assert(!is_built_in_class(p), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(),
                 diags::PARENT_CONFLICT, p->get_name().c_str(), cv->get_name().c_str())));
         }
     }
-    op_assert(cv != BuiltIns::NilType && cv != BuiltIns::Bool, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_EXTEND_WITH_BASE, cv->get_name().c_str())));
+    op_assert(class_can_be_extended(cv), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_EXTEND_WITH_BASE, cv->get_name().c_str())));
     auto pl = vm->get_parent_list();
     op_assert(std::find(pl.begin(), pl.end(), cv) == pl.end(), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::DUPLICATE_CLASS_BASE, cv->get_name().c_str())));
     vm->push_parent(cv);
@@ -1439,6 +1446,7 @@ void Annotate::exec(Interpreter *vm) {
         annots::INTERNAL,
         annots::STATIC_METHOD,
         annots::FORMATTER,
+        annots::SEALED,
     };
 
     auto *d = vm->load(dst);

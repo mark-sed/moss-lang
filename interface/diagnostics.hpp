@@ -218,6 +218,7 @@ enum DiagID : unsigned {
     MULTIPLE_MAINS,         ///< When a module has more then 1 main annotated function
     LAMBDA_MAIN,            ///< When lambda is marked as main
     DUPLICATE_CLASS_BASE,   ///< When extending twice with the same class
+    CANNOT_EXTEND_SEALED_CLASS, ///< When extending @sealed class
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -415,6 +416,7 @@ static const char * DIAG_MSGS[] = {
     "Redefinition of '@main' within a module — only 1 function can be annotated as '@main'",
     "Lambda function ('%s') cannot be marked as '@main'",
     "Duplicate base class '%s'",
+    "Class '%s' is marked as '@sealed' and cannot be extended",
 };
 
 /// \brief ID of diagnostic error

@@ -16,7 +16,7 @@ class MDToken {
         LIST
         CODE_BLOCK
         HLINE
-        TABLE // TODO: Implement table
+        TABLE
     }
 
     fun MDToken(value, type:TokenType) {
