@@ -68,6 +68,7 @@ set(SOURCES
     stdlib/cffi.cpp
     stdlib/inspect.cpp
     stdlib/python.cpp
+    stdlib/re.cpp
     stdlib/subprocess.cpp
     stdlib/sys.cpp
     stdlib/time.cpp
@@ -138,6 +139,7 @@ moss_compile(cffi)
 moss_compile(subprocess)
 moss_compile(inspect)
 moss_compile(python)
+moss_compile(re)
 moss_compile(sys)
 moss_compile(time)
 moss_compile(parsing_utils)
@@ -154,6 +156,7 @@ add_custom_target(
     DEPENDS build_inspect
     DEPENDS build_subprocess
     DEPENDS build_python
+    DEPENDS build_re
     DEPENDS build_sys
     DEPENDS build_time
     DEPENDS build_parsing_utils

@@ -11,6 +11,7 @@
 #include "subprocess.hpp"
 #include "inspect.hpp"
 #include "python.hpp"
+#include "re.hpp"
 #include "sys.hpp"
 #include "cffi.hpp"
 #include "time.hpp"
@@ -1229,6 +1230,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
     static const ModuleRegistryT time_registry = time::get_registry();
     static const ModuleRegistryT inspect_registry = inspect::get_registry();
     static const ModuleRegistryT python_registry = python::get_registry();
+    static const ModuleRegistryT re_registry = re::get_registry();
     static const ModuleRegistryT empty_registry{};
 
     static const std::unordered_map<ustring, ModuleRegistryT> registries_map{
@@ -1239,6 +1241,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"time", time_registry},
         {"inspect", inspect_registry},
         {"python", python_registry},
+        {"re", re_registry},
     };
 
     // Based on module name return correct function registry

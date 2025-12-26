@@ -1575,6 +1575,18 @@ fun test_lib_time_clock_time(name) {
 On some august day it was: 2025-08-05 16:55:36\n""", "")
 }
 
+fun test_lib_re_match_search(name) {
+    ~expect_pass("stdlib_tests/re_tests/match_search.ms", name, """<object of class Pattern>
+<C++ value of type std::regex>
+HELLO
+<object of class Match>
+["HELLO"]
+["abc-123", "abc-123", "abc", "123"]
+nil
+["123"]
+123\n""", "")
+}
+
 fun test_lib_md_parser_markdown_parsing(name) {
     exp_out = open(f"{::TEST_DIR}/stdlib_tests/md_parser_tests/markdown_parsing_expected_out.txt", "r")
     ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms", name, exp_out, "", prog_args=f"{::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md")
@@ -2003,6 +2015,9 @@ fun run_all_tests() {
 
     // time
     ~run_test("lib_time_clock_time")
+
+    // re
+    ~run_test("lib_re_match_search")
 
     // md_parser
     ~run_test("lib_md_parser_markdown_parsing")

@@ -53,6 +53,7 @@ namespace known_names {
     inline constexpr char SUBSC_OPERATOR[] = "__setitem";
 
     inline constexpr char FILE_FSTREAM_ATT[] = "__fstream";
+    inline constexpr char REGEX_ATT[] = "__regex";
 }
 
 /// This namespace contains values (pointers) for all the built-in types
@@ -129,6 +130,7 @@ namespace BuiltIns {
 
         extern Value *FStream;
         extern Value *Ffi_cif;
+        extern Value *Regex;
     }
 }
 }

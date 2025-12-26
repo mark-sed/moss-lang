@@ -12,6 +12,7 @@
 
 #include "values.hpp"
 #include <ffi.h>
+#include <regex>
 
 namespace moss {
 namespace t_cpp {
@@ -186,6 +187,26 @@ namespace t_cpp {
         virtual Value *clone() override {
             // TODO: Maybe copy the value
             return new FStreamValue(fs);
+        }
+    };
+
+    /// C++'s std::regex as a moss value
+    class RegexValue : public CppValue {
+    private:
+        std::regex *re;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_FSTREAM;
+    
+        RegexValue(std::regex *re) 
+            : CppValue(ClassType, "std::regex", BuiltIns::Cpp::Regex), re(re) {}
+        ~RegexValue() {
+            delete re;
+        }
+
+        std::regex *get_re() { return this->re; }
+    
+        virtual Value *clone() override {
+            return new RegexValue(re);
         }
     };
 
