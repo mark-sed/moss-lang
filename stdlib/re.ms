@@ -3,7 +3,26 @@ Module for working with regular expressions.
 """
 
 class REFlags {
+    enum Grammars {
+        ECMAScript
+        basic
+        extended
+        awk
+        grep
+        egrep
+    }
 
+    fun REFlags(grammar:Grammars=Grammars.ECMAScript,
+                icase:Bool=false,
+                nosubs:Bool=false,
+                optimize:Bool=false,
+                collate:Bool=false) {
+        this.grammar = grammar
+        this.icase = icase
+        this.nosubs = nosubs
+        this.optimize = optimize
+        this.collate = collate
+    }
 }
 
 DEFAULT_FLAGS = REFlags()

@@ -27,12 +27,29 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& re::get_registry
     return registry;
 }
 
+std::regex_constants::syntax_option_type extract_syntax_flags(Interpreter *vm, Value *vflags, Value *&err) {
+    using namespace std::regex_constants;
+    syntax_option_type flags = syntax_option_type{};
+
+    //auto grammar_v = mslib::get_attr(vflags, "grammar", vm, err);
+    //if (err)
+    //    return flags;
+
+    auto icase_v = mslib::get_attr(vflags, "icase", vm, err);
+    if (err)
+        return flags;
+    if (icase_v == BuiltIns::True)
+        flags |= std::regex_constants::icase;
+
+    return flags;
+}
+
 Value *re::Pattern(Interpreter *vm, CallFrame *, Value *ths, Value *pattern, Value *flags, Value *&err) {
     ths->set_attr("flags", flags);
     ths->set_attr("pattern", pattern);
     auto patt = mslib::get_string(pattern);
     // TODO: Pass in compiletime flags
-    auto regex = new std::regex(patt);
+    auto regex = new std::regex(patt, extract_syntax_flags(vm, flags, err));
     ths->set_attr(known_names::REGEX_ATT, new t_cpp::RegexValue(regex));
     return ths;
 }
