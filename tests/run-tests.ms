@@ -9,6 +9,7 @@ __VERSION = "0.1.0"
 import subprocess
 import sys
 import time
+import re
 
 MOSS_PATH = "moss"
 TEST_DIR = ""
@@ -169,6 +170,8 @@ fun expect_pass(test:String,
                 name:String,
                 expected_out:[String,File]=nil,
                 expected_err:[String,File]=nil,
+                rx_out:[String,NilType]=nil,
+                rx_err:[String,NilType]=nil,
                 args:String="",
                 prog_args:String="",
                 use_repl:Bool=false,
@@ -215,12 +218,30 @@ fun expect_pass(test:String,
             failed = true;
         }
     }
+    if (rx_out != nil) {
+        if (re.search(rx_out, result.stdout) == nil) {
+            msg ++= " Stdout did not match regex."
+            failed = true;
+        }
+    }
+    if (rx_err != nil) {
+        if (re.search(rx_err, result.stderr) == nil) {
+            msg ++= " Stderr did not match regex."
+            failed = true;
+        }
+    }
     if (failed) {
         ~fail(name, msg)
         ~print(f"Command:\n--------\n{result.command}")
-        ~print(f"Expected output:\n--------\n{expected_out}")
+        if (expected_out != nil)
+            ~print(f"Expected output:\n--------\n{expected_out}")
+        else
+            ~print(f"Expected regex output:\n--------\n{rx_out}")
         ~print(f"Output:\n--------\n{result.stdout}")
-        ~print(f"Expected error:\n--------\n{expected_err}")
+        if (expected_err != nil)
+            ~print(f"Expected error:\n--------\n{expected_err}")
+        else
+            ~print(f"Expected regex error:\n--------\n{rx_err}")
         ~print(f"Error output:\n--------\n{result.stderr}")
         ~print(f"Return code: {result.return_code}")
         return false
@@ -232,6 +253,8 @@ fun expect_fail(test:String,
                 name:String,
                 expected_out:[String,File]=nil,
                 expected_err:[String,File]=nil,
+                rx_out:[String,NilType]=nil,
+                rx_err:[String,NilType]=nil,
                 args:String="",
                 prog_args:String="",
                 retcode_expected:Int=nil,
@@ -283,12 +306,30 @@ fun expect_fail(test:String,
             failed = true;
         }
     }
+    if (rx_out != nil) {
+        if (re.search(rx_out, result.stdout) == nil) {
+            msg ++= " Stdout did not match regex."
+            failed = true;
+        }
+    }
+    if (rx_err != nil) {
+        if (re.search(rx_err, result.stderr) == nil) {
+            msg ++= " Stderr did not match regex."
+            failed = true;
+        }
+    }
     if (failed) {
         ~fail(name, msg)
         ~print(f"Command:\n--------\n{result.command}")
-        ~print(f"Expected output:\n--------\n{expected_out}")
+        if (expected_out != nil)
+            ~print(f"Expected output:\n--------\n{expected_out}")
+        else
+            ~print(f"Expected regex output:\n--------\n{rx_out}")
         ~print(f"Output:\n--------\n{result.stdout}")
-        ~print(f"Expected error:\n--------\n{expected_err}")
+        if (expected_err != nil)
+            ~print(f"Expected error:\n--------\n{expected_err}")
+        else
+            ~print(f"Expected regex error:\n--------\n{rx_err}")
         ~print(f"Error output:\n--------\n{result.stderr}")
         ~print(f"Return code: {result.return_code}")
         return false
@@ -319,7 +360,7 @@ fun test_bc_read_write(name) {
         compile_only=true, output_msb="test.msb", args="--use-color=0")
 
     // Check header
-    ~expect_pass("bc_read_write.msb", name, args="--print-bc-header", /*, rx_out="Bytecode header:\n  id:        0xff00002a\n  checksum:  0x0\n  version:   \(0x[0-9A-Za-z]*\) [0-9]+\.[0-9]+\.[0-9]+\n  timestamp: \([0-9]+\) .*\n"*/)
+    ~expect_pass("bc_read_write.msb", name, args="--print-bc-header", rx_out="Bytecode header:\n  id:        0xff00002a\n  checksum:  0x0\n  version:   \\(0x[0-9A-Za-z]*\\) [0-9]+\\.[0-9]+\\.[0-9]+\n  timestamp: \\([0-9]+\\) .*\n")
 
     // Textual output
     ~expect_pass("bc_rw_output.ms", name, "Hello, World!\n", "", compile_and_run=true, output_msb="bc_read_write.txt", args="-S")
@@ -349,8 +390,8 @@ fun test_note_options(name) {
     ~rm(OUTF)
 
     // Invalid combination
-    ~expect_fail("simple_notes.ms", name, "", /*rx_err="Invalid combination of arguments",*/ args=f"-q -O {::TEST_DIR}{OUTF}")
-    ~expect_fail("simple_notes.ms", name, "", /*rx_err="Invalid combination of arguments",*/ args=f"-q -p")
+    ~expect_fail("simple_notes.ms", name, "", rx_err=".*Invalid combination of arguments.*", args=f"-q -O {::TEST_DIR}{OUTF}")
+    ~expect_fail("simple_notes.ms", name, "", rx_err=".*Invalid combination of arguments.*", args=f"-q -p")
     ~rm(OUTF)
 }
 
@@ -422,7 +463,7 @@ Caught true!\nother\nCaught 3!\nfinally end\nin f\nfinally end\nCaught: 8
 foo_int is not internal\n54a\ninner\ninner\noutter\ninner\ninner\noutter\n55\nend\n55
 55\nend\n55\nend\nend\n55\nmodule end\n3\n""", "")
 
-    ~expect_fail(r"""try { raise 42; } catch (e) { raise e; }""", name, "", /*rx_err="42"*/ exec=true)
+    ~expect_fail(r"""try { raise 42; } catch (e) { raise e; }""", name, "", rx_err="42", exec=true)
 }
 
 fun test_finally(name) {
@@ -433,8 +474,8 @@ caught: 3\ncaught: true\ncaught: -1\nfinally 3 done\nfinally 2 done\nfinally 1 d
 finally 1\nfinally 2\n2
 catch\nFinally\ncaught 3\nfinally 3\ncatch2\nfinally2\n""", "")
 
-    ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", name, "", /*rx_err="4"*/ exec=true)
-    ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", name, "", /*rx_err="4"*/ exec=true)
+    ~expect_fail(r"""try { } catch (e) { } finally { raise 4; }""", name, "", rx_err="4", exec=true)
+    ~expect_fail(r"""try { raise 1; } catch (e) { } finally { raise 4; }""", name, "", rx_err="4", exec=true)
     ~expect_fail(r"""
         try {
             raise 4
@@ -443,7 +484,7 @@ catch\nFinally\ncaught 3\nfinally 3\ncatch2\nfinally2\n""", "")
         } finally {
             "Finally\n"
         }
-        """, name, "Finally\n", exec=true)
+        """, name, "Finally\n", rx_err="4", exec=true)
 }
 
 fun test_cycles_and_exceptions(name) {
@@ -473,7 +514,7 @@ foo1\nfoo1
 10\n56\n61\n42
 42\n42 []\n42 []\n42 [1, 2, 3, 4]\n""", "")
     ~expect_fail("class MyIntString : Int, File, String {}", name, "", exec=true)
-    ~expect_fail("class A {}; class B : A, Exception, ::A {}", name, "", /*rx_err="Duplicate base class 'A'"*/ exec=true) // Duplicate name
+    ~expect_fail("class A {}; class B : A, Exception, ::A {}", name, "", rx_err="Duplicate base class 'A'", exec=true) // Duplicate name
 }
 
 fun test_attributes(name) {
@@ -632,7 +673,7 @@ fun test_compound_assignment(name) {
 }
 
 fun test_calls(name) {
-    ~expect_pass("calls.ms", name/*, rx_out="called.*.*\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\nhi\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\n"*/)
+    ~expect_pass("calls.ms", name, rx_out="called.*.*\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\nhi\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\n")
 }
 
 fun test_continues_and_breaks(name) {
@@ -682,7 +723,7 @@ fun toyy(x) {
     return "yy"++x
 }
 "hi\n"
-""", name, "", /*rx_err="Recursive converter"*/ exec=true, args="-f yy")
+""", name, "", rx_err="Recursive converter", exec=true, args="-f yy")
 }
 
 fun test_converters_pipeline(name) {
@@ -739,15 +780,15 @@ true
 > 🐉中ñ
 """, "")
 
-    ~expect_fail(r""" "\xA" """, name, "", /*rx_err="Short hexadecimal"*/ exec=true)
-    ~expect_fail(r""" "\Q01" """, name, "", /*rx_err="Short octal"*/ exec=true)
-    ~expect_fail(r""" "\uA32" """, name, "", /*rx_err="Short 16-bit unicode"*/ exec=true)
-    ~expect_fail(r""" "\UA32845" """, name, "", /*rx_err="Short 32-bit unicode"*/ exec=true)
+    ~expect_fail(r""" "\xA" """, name, "", rx_err="Short hexadecimal", exec=true)
+    ~expect_fail(r""" "\Q01" """, name, "", rx_err="Short octal", exec=true)
+    ~expect_fail(r""" "\uA32" """, name, "", rx_err="Short 16-bit unicode", exec=true)
+    ~expect_fail(r""" "\UA32845" """, name, "", rx_err="Short 32-bit unicode", exec=true)
 
-    ~expect_fail(r""" "\xAG" """, name, "", /*rx_err="Incorrect hexadecimal"*/ exec=true)
-    ~expect_fail(r""" "\q080" """, name, "", /*rx_err="Incorrect octal"*/ exec=true)
-    ~expect_fail(r""" "\u08Y3" """, name, "", /*rx_err="Incorrect 16-bit unicode"*/ exec=true)
-    ~expect_fail(r""" "\U081336AZ" """, name, "", /*rx_err="Incorrect 32-bit unicode"*/ exec=true)
+    ~expect_fail(r""" "\xAG" """, name, "", rx_err="Incorrect hexadecimal", exec=true)
+    ~expect_fail(r""" "\q080" """, name, "", rx_err="Incorrect octal", exec=true)
+    ~expect_fail(r""" "\u08Y3" """, name, "", rx_err="Incorrect 16-bit unicode", exec=true)
+    ~expect_fail(r""" "\U081336AZ" """, name, "", rx_err="Incorrect 32-bit unicode", exec=true)
 }
 
 fun test_fstrings(name) {
@@ -816,7 +857,7 @@ greet.ms
 Ending module.ms\n""")
     }
     // Check that import spill stays in its scope
-    ~expect_fail("module_tests/local_import.ms", name, "Hello, from greet.ms\ngreet.ms\n"/*, rx_err="'NAME' is not defined"*/)
+    ~expect_fail("module_tests/local_import.ms", name, "Hello, from greet.ms\ngreet.ms\n", rx_err="'NAME' is not defined")
     
     ~rm("module_tests/greet_compiled.msb")
 }
@@ -865,7 +906,7 @@ fun test_exceptions_catch(name) {
 Assertion error\nType error\nAttribute error\nName error
 Division by zero error\nFloat division by zero error\nDBZ\nFDBZ
 Attribute error\nAttribute error\n""", "")
-    ~expect_fail("some_name", name, "", /*rx_err="Name 'some_name' is not defined"*/ exec=true, retcode_expected=1)
+    ~expect_fail("some_name", name, "", rx_err="Name 'some_name' is not defined", exec=true, retcode_expected=1)
 }
 
 fun test_runtime_errors(name) {
@@ -1838,11 +1879,11 @@ gc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
 }
 
 fun test_repl_output(name) {
-    ~expect_pass("repl_output.ms", name, /*rx_err=".*moss> moss> moss> 5\nmoss> hi\n.*\n.*\n.*<object of class Cls1>\nmoss> 5\nmoss> moss> moss> moss> moss> moss>",*/ use_repl=true)
+    ~expect_pass("repl_output.ms", name, rx_out=".*moss> moss> moss> 5\nmoss> hi\n.*\n.*\n.*<object of class Cls1>\nmoss> 5\nmoss> moss> moss> moss> moss> moss>", use_repl=true)
 }
 
 fun test_repl_exceptions(name) {
-    ~expect_pass("repl_exceptions.ms", name, /*rx_err="Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo\(a\) at <repl>\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*",*/ use_repl=true)
+    ~expect_pass("repl_exceptions.ms", name, rx_err="Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo\\(a\\) at <repl>\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*", use_repl=true)
 }
 
 /*

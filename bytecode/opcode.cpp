@@ -1987,6 +1987,10 @@ bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
         diags::DiagID did = diags::DiagID::UNKNOWN;
         auto op_fun = lookup_method(vm, ob1, "==", {s2, ob1}, did);
         if (!op_fun) {
+            // If there is no == function check for nil compare.
+            if (isa<NilValue>(s2)) {
+                return false;
+            }
             if (did == diags::DiagID::UNKNOWN) {
                 raise(mslib::create_type_error(
                     diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
