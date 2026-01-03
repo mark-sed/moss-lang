@@ -31,15 +31,64 @@ std::regex_constants::syntax_option_type extract_syntax_flags(Interpreter *vm, V
     using namespace std::regex_constants;
     syntax_option_type flags = syntax_option_type{};
 
-    //auto grammar_v = mslib::get_attr(vflags, "grammar", vm, err);
-    //if (err)
-    //    return flags;
+    auto grammar_v = mslib::get_attr(vflags, "grammar", vm, err);
+    if (err)
+        return flags;
+    auto grammar_enum = dyn_cast<EnumValue>(grammar_v);
+    if (!grammar_enum) {
+        // This should not really ever happen as compile is the same as instantiation
+        // and grammar is typechecked in the function call.
+        err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "enum REFlags.Grammars", grammar_v->get_type()->get_name().c_str()));
+        return flags;
+    }
+    auto gname = grammar_enum->get_name();
+    auto grammar_const = ECMAScript;
+    if (gname == "ECMAScript") {
+        grammar_const = ECMAScript;
+    } else if (gname == "basic") {
+        grammar_const = basic;
+    } else if (gname == "extended") {
+        grammar_const = extended;
+    } else if (gname == "awk") {
+        grammar_const = awk;
+    } else if (gname == "grep") {
+        grammar_const = grep;
+    } else if (gname == "egrep") {
+        grammar_const = egrep;
+    } else {
+        assert(false && "Extra name in enum Grammars");
+    }
+    flags |= grammar_const;
 
     auto icase_v = mslib::get_attr(vflags, "icase", vm, err);
     if (err)
         return flags;
     if (icase_v == BuiltIns::True)
         flags |= std::regex_constants::icase;
+
+    auto nosubs_v = mslib::get_attr(vflags, "nosubs", vm, err);
+    if (err)
+        return flags;
+    if (nosubs_v == BuiltIns::True)
+        flags |= std::regex_constants::nosubs;
+
+    auto optimize_v = mslib::get_attr(vflags, "optimize", vm, err);
+    if (err)
+        return flags;
+    if (optimize_v == BuiltIns::True)
+        flags |= std::regex_constants::optimize;
+
+    auto collate_v = mslib::get_attr(vflags, "collate", vm, err);
+    if (err)
+        return flags;
+    if (collate_v == BuiltIns::True)
+        flags |= std::regex_constants::collate;
+
+    auto multiline_v = mslib::get_attr(vflags, "multiline", vm, err);
+    if (err)
+        return flags;
+    if (multiline_v == BuiltIns::True)
+        flags |= std::regex_constants::multiline;
 
     return flags;
 }
@@ -48,8 +97,14 @@ Value *re::Pattern(Interpreter *vm, CallFrame *, Value *ths, Value *pattern, Val
     ths->set_attr("flags", flags);
     ths->set_attr("pattern", pattern);
     auto patt = mslib::get_string(pattern);
-    // TODO: Pass in compiletime flags
-    auto regex = new std::regex(patt, extract_syntax_flags(vm, flags, err));
+    std::regex *regex = nullptr;
+    try {
+        regex = new std::regex(patt, extract_syntax_flags(vm, flags, err));
+    } catch (std::regex_error err) {
+        // throw moss error
+        outs << "REGEX ERROR!\n";
+        regex = new std::regex(patt);
+    }
     ths->set_attr(known_names::REGEX_ATT, new t_cpp::RegexValue(regex));
     return ths;
 }

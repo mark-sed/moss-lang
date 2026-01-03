@@ -16,12 +16,14 @@ class REFlags {
                 icase:Bool=false,
                 nosubs:Bool=false,
                 optimize:Bool=false,
-                collate:Bool=false) {
+                collate:Bool=false,
+                multiline:Bool=false) {
         this.grammar = grammar
         this.icase = icase
         this.nosubs = nosubs
         this.optimize = optimize
         this.collate = collate
+        this.multiline = multiline
     }
 }
 
