@@ -220,6 +220,7 @@ StringConst to_string(Interpreter *vm, Value *v);
 bool is_type_eq_or_subtype(Value *t1, Value *t2);
 
 bool eq(Value *s1, Value *s2, Interpreter *vm);
+bool neq(Value *s1, Value *s2, Interpreter *vm);
 
 void output_generator_notes(Interpreter *vm);
 

@@ -2029,36 +2029,39 @@ void Eq3::exec(Interpreter *vm) {
         isa<NilValue>(s) || isa<StringValue>(s) || isa<ListValue>(s);
 }*/
 
-static Value *neq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
-    Value *res = nullptr;
-    if (isa<ObjectValue>(s1) || isa<ObjectValue>(s2)) {
-        call_operator(vm, "!=", s1, s2, dst);
+bool opcode::neq(Value *s1, Value *s2, Interpreter *vm) {
+    if (auto ob1 = dyn_cast<ObjectValue>(s1)) {
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        auto op_fun = lookup_method(vm, ob1, "!=", {s2, ob1}, did);
+        if (!op_fun) {
+            return !eq(s1, s2, vm);    
+        }
+        auto rv = runtime_method_call(vm, op_fun, {s2, s1});
+        BoolValue *boolrv = dyn_cast<BoolValue>(rv);
+        op_assert(boolrv, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_BOOL_FROM_NEQ,
+            ob1->get_type()->get_name().c_str(), rv->get_type()->get_name().c_str())));
+        return boolrv->get_value();
     }
     else {
         // TODO: Perhaps this should call can_eq??
         auto eqRes = eq(s1, s2, vm);
-        auto neqRes = BoolValue::get(!eqRes);
-        return neqRes;
+        return !eqRes;
     }
-    return res;
 }
 
 void Neq::exec(Interpreter *vm) {
-    auto res = neq(vm->load(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = neq(vm->load(src1), vm->load(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Neq2::exec(Interpreter *vm) {
-    auto res = neq(vm->load_const(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = neq(vm->load_const(src1), vm->load(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Neq3::exec(Interpreter *vm) {
-    auto res = neq(vm->load(src1), vm->load_const(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = neq(vm->load(src1), vm->load_const(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 static Value *bt(Value *s1, Value *s2, Register dst, Interpreter *vm) {

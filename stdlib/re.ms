@@ -17,13 +17,41 @@ class REFlags {
                 nosubs:Bool=false,
                 optimize:Bool=false,
                 collate:Bool=false,
-                multiline:Bool=false) {
+                multiline:Bool=false,
+                match_default:Bool=false,
+                match_not_bol:Bool=false,
+                match_not_eol:Bool=false,
+                match_not_bow:Bool=false,
+                match_not_eow:Bool=false,
+                match_any:Bool=false,
+                match_not_null:Bool=false,
+                match_continuous:Bool=false,
+                match_prev_avail:Bool=false,
+                format_default:Bool=false,
+                format_sed:Bool=false,
+                format_no_copy:Bool=false,
+                format_first_only:Bool=false) {
+        // Syntax flags
         this.grammar = grammar
         this.icase = icase
         this.nosubs = nosubs
         this.optimize = optimize
         this.collate = collate
         this.multiline = multiline
+        // Runtime flags
+        this.match_default = match_default
+        this.match_not_bol = match_not_bol
+        this.match_not_eol = match_not_eol
+        this.match_not_bow = match_not_bow
+        this.match_not_eow = match_not_eow
+        this.match_any = match_any
+        this.match_not_null = match_not_null
+        this.match_continuous = match_continuous
+        this.match_prev_avail = match_prev_avail
+        this.format_default = format_default
+        this.format_sed = format_sed
+        this.format_no_copy = format_no_copy
+        this.format_first_only = format_first_only
     }
 }
 

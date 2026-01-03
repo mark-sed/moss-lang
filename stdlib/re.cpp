@@ -93,6 +93,91 @@ std::regex_constants::syntax_option_type extract_syntax_flags(Interpreter *vm, V
     return flags;
 }
 
+std::regex_constants::match_flag_type extract_runtime_flags(Interpreter *vm, Value *vflags, Value *&err) {
+    using namespace std::regex_constants;
+    match_flag_type flags = match_flag_type{};
+
+    auto match_default_v = mslib::get_attr(vflags, "match_default", vm, err);
+    if (err)
+        return flags;
+    if (match_default_v == BuiltIns::True)
+        flags |= std::regex_constants::match_default;
+
+    auto match_not_bol_v = mslib::get_attr(vflags, "match_not_bol", vm, err);
+    if (err)
+        return flags;
+    if (match_not_bol_v == BuiltIns::True)
+        flags |= std::regex_constants::match_not_bol;
+
+    auto match_not_eol_v = mslib::get_attr(vflags, "match_not_eol", vm, err);
+    if (err)
+        return flags;
+    if (match_not_eol_v == BuiltIns::True)
+        flags |= std::regex_constants::match_not_eol;
+
+    auto match_not_bow_v = mslib::get_attr(vflags, "match_not_bow", vm, err);
+    if (err)
+        return flags;
+    if (match_not_bow_v == BuiltIns::True)
+        flags |= std::regex_constants::match_not_bow;
+
+    auto match_not_eow_v = mslib::get_attr(vflags, "match_not_eow", vm, err);
+    if (err)
+        return flags;
+    if (match_not_eow_v == BuiltIns::True)
+        flags |= std::regex_constants::match_not_eow;
+
+    auto match_any_v = mslib::get_attr(vflags, "match_any", vm, err);
+    if (err)
+        return flags;
+    if (match_any_v == BuiltIns::True)
+        flags |= std::regex_constants::match_any;
+
+    auto match_not_null_v = mslib::get_attr(vflags, "match_not_null", vm, err);
+    if (err)
+        return flags;
+    if (match_not_null_v == BuiltIns::True)
+        flags |= std::regex_constants::match_not_null;
+
+    auto match_continuous_v = mslib::get_attr(vflags, "match_continuous", vm, err);
+    if (err)
+        return flags;
+    if (match_continuous_v == BuiltIns::True)
+        flags |= std::regex_constants::match_continuous;
+
+    auto match_prev_avail_v = mslib::get_attr(vflags, "match_prev_avail", vm, err);
+    if (err)
+        return flags;
+    if (match_prev_avail_v == BuiltIns::True)
+        flags |= std::regex_constants::match_prev_avail;
+
+    auto format_default_v = mslib::get_attr(vflags, "format_default", vm, err);
+    if (err)
+        return flags;
+    if (format_default_v == BuiltIns::True)
+        flags |= std::regex_constants::format_default;
+
+    auto format_sed_v = mslib::get_attr(vflags, "format_sed", vm, err);
+    if (err)
+        return flags;
+    if (format_sed_v == BuiltIns::True)
+        flags |= std::regex_constants::format_sed;
+
+    auto format_no_copy_v = mslib::get_attr(vflags, "format_no_copy", vm, err);
+    if (err)
+        return flags;
+    if (format_no_copy_v == BuiltIns::True)
+        flags |= std::regex_constants::format_no_copy;
+
+    auto format_first_only_v = mslib::get_attr(vflags, "format_first_only", vm, err);
+    if (err)
+        return flags;
+    if (format_first_only_v == BuiltIns::True)
+        flags |= std::regex_constants::format_first_only;
+
+    return flags;
+}
+
 Value *re::Pattern(Interpreter *vm, CallFrame *, Value *ths, Value *pattern, Value *flags, Value *&err) {
     ths->set_attr("flags", flags);
     ths->set_attr("pattern", pattern);
@@ -112,18 +197,23 @@ Value *re::Pattern(Interpreter *vm, CallFrame *, Value *ths, Value *pattern, Val
 
 Value *re::match_or_search(bool match, Interpreter *vm, CallFrame *cf, Value *ths, Value *text, Value *&err) {
     auto regex = mslib::get_attr(ths, known_names::REGEX_ATT, vm, err);
+    if (err)
+        return nullptr;
     t_cpp::RegexValue *rv = dyn_cast<t_cpp::RegexValue>(regex);
     // TODO: Raise error
     assert(rv && "__regex is not RegexValue");
     auto ts = mslib::get_string(text);
     std::smatch m;
+    auto flags = mslib::get_attr(ths, "flags", vm, err);
+    if (err)
+        return nullptr;
 
     bool matched = false;
-    // TODO: Pass in flags
+    // TODO: CHECK error
     if (match) {
-        matched = std::regex_match(ts, m, *rv->get_re());
+        matched = std::regex_match(ts, m, *rv->get_re(), extract_runtime_flags(vm, flags, err));
     } else {
-        matched = std::regex_search(ts, m, *rv->get_re());
+        matched = std::regex_search(ts, m, *rv->get_re(), extract_runtime_flags(vm, flags, err));
     }
     if (matched) {
         auto patt = mslib::get_attr(ths, "pattern", vm, err);

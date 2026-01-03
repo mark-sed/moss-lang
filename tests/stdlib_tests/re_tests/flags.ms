@@ -55,3 +55,28 @@ m
 m = re.match(r"a\?b", "a?b", re.REFlags(grammar=re.REFlags.Grammars.grep))
 m
 "\n"
+
+text_words = "abc123 xyz"
+
+assert(re.search("abc", "abc123", re.REFlags(match_default=true)) != nil)
+
+assert(re.search(r"^abc", "abc123", re.REFlags(match_not_bol=true)) == nil)
+assert(re.search(r"^abc", "abc123", re.REFlags(match_default=true)) != nil)
+
+assert(re.search(r"123$", "abc123", re.REFlags(match_not_eol=true)) == nil)
+assert(re.search(r"123$", "abc123", re.REFlags(match_default=true)) != nil)
+
+assert(re.search(r"\babc\b", text_words, re.REFlags(match_not_bow=true)) == nil)
+assert(re.search(r"\b123\b", text_words, re.REFlags(match_not_eow=true)) == nil)
+
+assert(re.search(r"\babc\b", "abc123", re.REFlags(match_default=true)) == nil)
+
+assert(re.search(r"abc", text_words, re.REFlags(match_any=true)) != nil)
+
+assert(re.search(r".*", text_words, re.REFlags(match_not_null=true)) != nil)
+
+
+assert(re.search(r"abc", "abc123", re.REFlags(match_continuous=true)) != nil)
+assert(re.search(r"123", "abc123", re.REFlags(match_continuous=true)) == nil)
+
+assert(re.search(r"abc", "abc123", re.REFlags(match_prev_avail=true)) != nil)
