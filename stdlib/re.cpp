@@ -23,6 +23,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& re::get_registry
             assert(args.size() == 2);
             return match_or_search(false, vm, cf, cf->get_arg("this"), cf->get_arg("text"), err);
         }},
+        {"replace", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 4);
+            return replace(vm, cf, cf->get_arg("this"), cf->get_arg("repl"),
+                           cf->get_arg("text"), cf->get_arg("count"), err);
+        }},
     };
     return registry;
 }
@@ -227,4 +233,48 @@ Value *re::match_or_search(bool match, Interpreter *vm, CallFrame *cf, Value *th
         return mslib::call_constructor(vm, cf, "Match", {ths, text, new ListValue(groups)}, err);
     }
     return nullptr;
+}
+
+Value *re::replace(Interpreter *vm, CallFrame *cf, Value *ths, Value *repl, Value *text, Value *count, Value *&err) {
+    auto regex = mslib::get_attr(ths, known_names::REGEX_ATT, vm, err);
+    if (err)
+        return nullptr;
+    t_cpp::RegexValue *rv = dyn_cast<t_cpp::RegexValue>(regex);
+    assert(rv && "__regex is not RegexValue");
+    auto flags = mslib::get_attr(ths, "flags", vm, err);
+    if (err)
+        return nullptr;
+    
+    auto repl_str = mslib::get_string(repl);
+    auto text_str = mslib::get_string(text);
+    auto count_i = mslib::get_int(count);
+
+    // Replace all occurrences
+    if (count_i <= 0) {
+        auto result = std::regex_replace(text_str, *rv->get_re(), repl_str);
+        return StringValue::get(result);
+    }
+    
+    std::string result;
+    result.reserve(text_str.size());
+
+    std::string::const_iterator search_start = text_str.begin();
+    std::smatch match;
+    int replaced = 0;
+
+    while (replaced < count_i &&
+           std::regex_search(search_start, text_str.cend(), match, *rv->get_re())) {
+        // Append text before the match
+        result.append(search_start, match.prefix().second);
+        // Append replacement
+        result.append(match.format(repl_str));
+        // Move past this match
+        search_start = match.suffix().first;
+        ++replaced;
+    }
+
+    // Append the rest of the string
+    result.append(search_start, text_str.cend());
+
+    return StringValue::get(result);
 }

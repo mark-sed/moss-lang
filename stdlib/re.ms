@@ -70,6 +70,9 @@ class Pattern {
 
     @internal
     fun search(text:String) {}
+
+    @internal
+    fun replace(repl:String, text:String, count:Int=0) {}
 }
 
 class Match {
@@ -116,4 +119,19 @@ fun search(pattern:String, text:String, flags:REFlags=DEFAULT_FLAGS) {
     """
     r = compile(pattern, flags)
     return r.search(text)
+}
+
+fun replace(pattern:String, repl:String, text:String, count:Int=0, flags:REFlags=DEFAULT_FLAGS) {
+    d"""
+    Replaces instances of regex `patter` in string `text`.
+    If count is positive non-zero value then this amount of occurences will be
+    replaced, otherwise all instances.
+    If you wish to do reference replacement you must use `$`:
+    ```
+    re.replace(r"(ab)(cd)", r"$2$1", "abcd") // cdab
+    ```
+    To use `$` literal use `$$`.
+    """
+    r = compile(pattern, flags)
+    return r.replace(repl, text, count)
 }

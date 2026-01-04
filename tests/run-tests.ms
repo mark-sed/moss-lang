@@ -1645,6 +1645,21 @@ nil
 <object of class Match>\n""", "")
 }
 
+fun test_lib_re_replace(name) {
+    ~expect_pass("stdlib_tests/re_tests/replace.ms", name, """bxnxnx
+bxnana
+abc#def#
+abc#def456
+cdab
+a b c 
+Xdef
+123X
+
+XbXbXbX
+abc
+b123\n""", "")
+}
+
 fun test_lib_md_parser_markdown_parsing(name) {
     exp_out = open(f"{::TEST_DIR}/stdlib_tests/md_parser_tests/markdown_parsing_expected_out.txt", "r")
     ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms", name, exp_out, "", prog_args=f"{::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md")
@@ -2077,6 +2092,7 @@ fun run_all_tests() {
     // re
     ~run_test("lib_re_match_search")
     ~run_test("lib_re_flags")
+    ~run_test("lib_re_replace")
 
     // md_parser
     ~run_test("lib_md_parser_markdown_parsing")

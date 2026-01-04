@@ -27,6 +27,8 @@ Value *Pattern(Interpreter *vm, CallFrame *cf, Value *ths, Value *pattern, Value
 
 Value *match_or_search(bool match, Interpreter *vm, CallFrame *cf, Value *ths, Value *text, Value *&err);
 
+Value *replace(Interpreter *vm, CallFrame *cf, Value *ths, Value *repl, Value *text, Value *count, Value *&err);
+
 
 }
 }
