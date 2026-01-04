@@ -140,6 +140,7 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         gf->store_name(glob_reg, "moss");
         ++glob_reg;
     }
+    init_global_module_values(glob_reg);
     assert(glob_reg < BC_RESERVED_REGS && "More registers used that is reserved");
 }
 
@@ -176,6 +177,25 @@ opcode::Register Interpreter::get_free_reg(MemoryPool *fr) {
 
 size_t Interpreter::get_code_size() { 
     return this->code->size();
+}
+
+static inline void store_glob_val(opcode::Register reg, ustring name, Value *v, MemoryPool *gf) {
+    gf->store(reg, v);
+    gf->store_name(reg, name);
+}
+
+void Interpreter::init_global_module_values(opcode::Register &reg) {
+    auto gf = get_global_frame();
+    // Constants specific to a module
+    ustring fname = "";
+    if (get_src_file())
+        fname = get_src_file()->get_path();
+    store_glob_val(reg++, "__FILE", StringValue::get(fname), gf);
+
+    ustring mname = "";
+    if (get_src_file())
+        fname = get_src_file()->get_module_name();
+    store_glob_val(reg++, "__NAME", StringValue::get(fname), gf);
 }
 
 opcode::Register Interpreter::init_global_frame() {

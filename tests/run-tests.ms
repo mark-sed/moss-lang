@@ -1447,7 +1447,7 @@ fun test_lib_attrs(name) {
 ["MyValue", "__Bool", "__Float", "__Int", "__String", "foo"]
 ["NAME", "TheirValue"]
 []
-["MyValue", "SomeClas", "TheirValue", "moss", "mv", "tv"]
+["MyValue", "SomeClas", "TheirValue", "__FILE", "__NAME", "moss", "mv", "tv"]
 true, true, false, true, false, true, true, true
 a, 42, scf, caught
 -7, scf, scf, caught
@@ -1456,7 +1456,8 @@ caught, caught, caught, caught
 }
 
 fun test_lib_globals(name) {
-    ~expect_pass("stdlib_tests/globals.ms", name, "", "")
+    ~expect_pass("stdlib_tests/globals.ms", name, """globals.ms\nempty_module.ms
+globals\nempty_module\n""", "")
 }
 
 fun test_lib_enumerate(name) {

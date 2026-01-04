@@ -221,6 +221,7 @@ private:
     
     void init_const_frame();
     opcode::Register init_global_frame();
+    void init_global_module_values(opcode::Register &reg);
 public:
     static bool running_generator; ///< When true it means that the currently run code is generator of the output
     FunValue *main_to_run;         ///< Function annotated as @main (set only if this is main vm)
