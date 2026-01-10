@@ -595,6 +595,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
+        {"atan", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::atan(cf->get_args()[0].value->as_float()));
+        }},
         {"attrs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() <= 1);
