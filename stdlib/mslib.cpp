@@ -10,6 +10,7 @@
 #include "mslib_dict.hpp"
 #include "subprocess.hpp"
 #include "inspect.hpp"
+#include "math.hpp"
 #include "python.hpp"
 #include "re.hpp"
 #include "sys.hpp"
@@ -594,9 +595,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
             }
-        }},
-        {"atan", [](Interpreter*, CallFrame* cf, Value*&) {
-            return FloatValue::get(std::atan(cf->get_args()[0].value->as_float()));
         }},
         {"attrs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
@@ -1234,6 +1232,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
     static const ModuleRegistryT inspect_registry = inspect::get_registry();
     static const ModuleRegistryT python_registry = python::get_registry();
     static const ModuleRegistryT re_registry = re::get_registry();
+    static const ModuleRegistryT math_registry = math::get_registry();
     static const ModuleRegistryT empty_registry{};
 
     static const std::unordered_map<ustring, ModuleRegistryT> registries_map{
@@ -1245,6 +1244,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"inspect", inspect_registry},
         {"python", python_registry},
         {"re", re_registry},
+        {"math", math_registry},
     };
 
     // Based on module name return correct function registry

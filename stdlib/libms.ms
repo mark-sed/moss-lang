@@ -1371,13 +1371,6 @@ space Math {
     }
 
     @internal
-    fun atan(x:[Int,Float]) {
-        d"""
-        Returns arctangent of `x`.
-        """
-    }
-
-    @internal
     fun cos(x:[Int,Float]) {
         d"""
         Returns cosine of `x`.

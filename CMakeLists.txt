@@ -65,6 +65,7 @@ set(SOURCES
     stdlib/mslib_list.cpp
     stdlib/mslib_string.cpp
     stdlib/mslib.cpp
+    stdlib/math.cpp
     stdlib/cffi.cpp
     stdlib/inspect.cpp
     stdlib/python.cpp
@@ -135,6 +136,7 @@ endfunction()
 # Standard moss library modules and files.
 # Any module/file added here has to be added to libms target bellow (as `build_name`/`copy_name`).
 moss_compile(libms)
+moss_compile(math)
 moss_compile(cffi)
 moss_compile(subprocess)
 moss_compile(inspect)
@@ -152,6 +154,7 @@ copy_lib_file("mossy.css")
 add_custom_target(
     libms
     DEPENDS build_libms
+    DEPENDS build_math
     DEPENDS build_cffi
     DEPENDS build_inspect
     DEPENDS build_subprocess

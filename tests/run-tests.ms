@@ -1599,6 +1599,18 @@ fun test_lib_python_type_conversions(name) {
 {1, 2, 3, 4, 5}\n[33, 11, 22]\n""", "")
 }
 
+fun test_lib_math_generals(name) {
+    ~expect_pass("stdlib_tests/math_tests/generals.ms", name, """-1.000000\n5.000000
+inf\n""", "")
+}
+
+fun test_lib_math_goniometrics(name) {
+    ~expect_pass("stdlib_tests/math_tests/goniometrics.ms", name, """0.000000
+0.785398\n-0.785398\n0.463648\n1.107149\n1.471128\n-1.471128
+true\ntrue\ntrue
+0.000000\n1.570796\n3.141593\n-1.570796\n0.785398\n-0.785398\n2.356194\n-2.356194\n0.588003\n0.000000\n0.000000\ntrue\n""", "")
+}
+
 fun test_lib_sys_platform(name) {
     ~expect_pass("stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
@@ -2078,6 +2090,10 @@ fun run_all_tests() {
     ~run_test("lib_python_module_imports")
     ~run_test("lib_python_attrs_calls")
     ~run_test("lib_python_type_conversions")
+
+    // math
+    ~run_test("lib_math_generals")
+    ~run_test("lib_math_goniometrics")
 
     // inspect
     ~run_test("lib_inspect_inspect")
