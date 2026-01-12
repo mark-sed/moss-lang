@@ -166,7 +166,7 @@ void error::warning(diags::Diagnostic msg) {
     if (clopts::get_warning_level() == clopts::WarningLevel::WL_ALL) {
         errs << format_error(msg);
     } else if (clopts::get_warning_level() == clopts::WarningLevel::WL_ERROR) {
-        LOGMAX("-W error set so existing with warning");
+        LOGMAX("-W error set so exiting with warning");
         errs << format_error(msg, true);
         std::exit(error::ErrorCode::RUNTIME);
     }

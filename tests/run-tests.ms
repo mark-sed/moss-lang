@@ -1863,14 +1863,10 @@ fun test_lib_csv_parser_converters(name) {
 </tr>
 </table>\n""", "")
 
-    ~expect_pass("""csv\"\"\"
-A,B,C,D
-1,2,3,4
-5,6,7,8
-\"\"\"""",  name, 
+    ~expect_pass("stdlib_tests/csv_parser_tests/csv_note.ms",  name, 
 """|A|B|C|D|
 |1|2|3|4|
-|5|6|7|8|\n""", exec=true, args="-f md")
+|5|6|7|8|\n""", args="-f md")
 
     // TODO: add test for html
 }

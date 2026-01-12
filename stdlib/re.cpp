@@ -93,8 +93,13 @@ std::regex_constants::syntax_option_type extract_syntax_flags(Interpreter *vm, V
     auto multiline_v = mslib::get_attr(vflags, "multiline", vm, err);
     if (err)
         return flags;
-    if (multiline_v == BuiltIns::True)
+    if (multiline_v == BuiltIns::True) {
+#ifndef __windows__
         flags |= std::regex_constants::multiline;
+#else
+    // TODO: Output warning if set
+#endif
+    }
 
     return flags;
 }

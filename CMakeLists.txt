@@ -100,6 +100,15 @@ add_executable(
     ${SOURCES}
 )
 
+if (WIN32)
+    add_custom_command(TARGET moss POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:moss>
+            $<TARGET_FILE_DIR:moss>
+        COMMAND_EXPAND_LISTS
+    )
+endif()
+
 # Function to copy file from stdlib into lib directory
 function(copy_lib_file filename)
   set(OUTPUT_FILE ${LIBMS_PATH}/${filename})
