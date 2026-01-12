@@ -38,7 +38,6 @@ using ModuleRegistryT = std::unordered_map<std::string, mslib::mslib_dispatcher>
 Value *mslib::get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
     auto v = obj->get_attr(name, vm);
     if (!v) {
-        // TODO: Perhaps this should be a special version of this error?
         err = create_attribute_error(diags::Diagnostic(*vm->get_src_file(), diags::ATTRIB_NOT_DEFINED, obj->get_type()->get_name().c_str(), name.c_str()));
     }
     return v;
@@ -255,8 +254,9 @@ Value *input(Interpreter *vm, Value *prompt, Value *&err) {
         err = create_eof_error(diags::Diagnostic(*vm->get_src_file(), diags::EOF_INPUT));
         return nullptr;
     } else if (std::cin.fail()) {
-        // TODO: Handle
-        assert(false && "error in input");
+        // Such error should be very rare, but could theoretically happen.
+        err = create_os_error(diags::Diagnostic(*vm->get_src_file(), diags::INPUT_ERROR));
+        return nullptr;
     }
     return StringValue::get(line);
 }
@@ -375,15 +375,22 @@ Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     if (isa<IntValue>(v))
         return v;
     if (auto sv = dyn_cast<StringValue>(v)) {
-        assert(base_int && "TODO: Raise type exception as base is not int");
+        if (!base_int) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INT_BASE_NOT_INT, base->get_type()->get_name().c_str()));
+            return nullptr;
+        }
         char *pend;
         errno = 0;
         auto vi = std::strtoll(sv->get_value().c_str(), &pend, base_int->get_value());
-        if (*pend != '\0')
-            assert(false && "TODO: Raise error value is not int");
+        if (*pend != '\0') {
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::COULD_NOT_PARSE_INT, v->as_string().c_str(), base_int->get_value()));
+            return nullptr;
+        }
         if (errno != 0) {
             LOGMAX("Errno error: " << strerror(errno));
-            assert(false && "TODO: Raise conversion error");
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INT_PARSE_CONVERSION_ERR, v->as_string().c_str(), base_int->get_value(), strerror(errno)));
+            errno = 0;
+            return nullptr;
         }
         return IntValue::get(vi);
     }
@@ -393,7 +400,7 @@ Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     assert(!base && "v should be String if base is not null");
     auto rval = call_type_converter(vm, v, "Int", known_names::TO_INT_METHOD, err);
     if (!err && rval && !isa<IntValue>(rval)) {
-        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE, "Int", rval->get_type()->get_name().c_str()));
+        err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_FUN_RETURN_TYPE, (v->get_type()->get_name() + "." + ustring(known_names::TO_INT_METHOD)).c_str(), "Int", rval->get_type()->get_name().c_str()));
     }
     return rval;
 }
@@ -407,11 +414,14 @@ Value *Float(Interpreter *vm, Value *v, Value *&err) {
         char *pend;
         errno = 0;
         double vf = std::strtod(sv->get_value().c_str(), &pend);
-        if (*pend != '\0')
-            assert(false && "TODO: Raise error value is not int");
+        if (*pend != '\0') {
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::COULD_NOT_PARSE_FLOAT, sv->get_value().c_str()));
+            return nullptr;
+        }
         if (errno != 0) {
-            LOGMAX("Errno error: " << strerror(errno));
-            assert(false && "TODO: Raise conversion error");
+            // vf will be inf or -inf, but errno will be set anyway.
+            LOGMAX("Float errno set, but that is accepted: " << strerror(errno));
+            errno = 0;
         }
         return FloatValue::get(vf);
     }

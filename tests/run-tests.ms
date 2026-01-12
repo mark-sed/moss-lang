@@ -1181,7 +1181,8 @@ fun test_lib_print(name) {
 
 fun test_lib_type_constructors(name) {
     ~expect_pass("stdlib_tests/type_constructors.ms", name, """56\n56\n42\n10\n0\n22\n100\n0\n-8
-0.000000\n2.500000\n50.000000\n15.000000
+caught\ncaught\ncaught\ncaught
+0.000000\n2.500000\n50.000000\n15.000000\ncaught
 false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
 Hi\n55\n<class String>\nnil
 nil

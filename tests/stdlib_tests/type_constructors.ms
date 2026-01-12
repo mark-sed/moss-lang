@@ -11,12 +11,43 @@ v9 = Int(base=10, v="-8")
 v++"\n"++v2++"\n"++v3++"\n"++v4++"\n"
 v5++"\n"++v6++"\n"++v7++"\n"++v8++"\n"++v9++"\n"
 
+try
+    Int("45", "sdf")
+catch(e: TypeError)
+    "caught\n"
+
+try
+    Int("sfd")
+catch (e:ValueError)
+    "caught\n"
+
+try
+    Int("9223372036854775808")
+catch (e:ValueError)
+    "caught\n"
+
+class Foo {
+    fun __Int() {
+        return "sfd"
+    }
+}
+
+try
+    Int(Foo())
+catch (e:TypeError)
+    "caught\n"
+
 f1 = Float()
 f2 = Float("2.5")
 f3 = Float(50)
 f4 = Float(0xF)
 
 f1 ++ "\n" ++ f2 ++ "\n" ++ f3 ++"\n" ++ f4 ++ "\n"
+
+try
+    Float("1.adg")
+catch (e:ValueError)
+    "caught\n"
 
 Bool()
 "\n"

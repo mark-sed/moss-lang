@@ -220,6 +220,12 @@ enum DiagID : unsigned {
     LAMBDA_MAIN,            ///< When lambda is marked as main
     DUPLICATE_CLASS_BASE,   ///< When extending twice with the same class
     CANNOT_EXTEND_SEALED_CLASS, ///< When extending @sealed class
+    INT_BASE_NOT_INT,       ///< When base in call to Int is not an Int
+    COULD_NOT_PARSE_INT,    ///< When Int could not be parsed
+    INT_PARSE_CONVERSION_ERR, ///< When there is overflow or underflow in parsing of int
+    UNEXPECTED_FUN_RETURN_TYPE, ///< When __Int returns something else than Int
+    COULD_NOT_PARSE_FLOAT,  ///< When float could not be parsed
+    INPUT_ERROR,            ///< When there is some system error when reading from stdin
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -419,6 +425,12 @@ static const char * DIAG_MSGS[] = {
     "Lambda function ('%s') cannot be marked as '@main'",
     "Duplicate base class '%s'",
     "Class '%s' is marked as '@sealed' and cannot be extended",
+    "Base in call to `Int` has to be an Int value, but `%s` was passed in",
+    "Value '%s' could not be parsed as an Int of base '%ld'",
+    "Value '%s' could not be parsed as an Int of base '%ld' — %s",
+    "Unexpected return type in call to '%s' — expected '%s', but got '%s'",
+    "Value '%s' could not be parsed as a Float",
+    "Reading from standard input has failed",
 };
 
 /// \brief ID of diagnostic error
