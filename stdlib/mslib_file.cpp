@@ -48,7 +48,8 @@ Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
     }
     std::fstream *fs = new std::fstream(path->as_string(), ios_mode);
     if (!fs->is_open()) {
-        // TODO: Give more precise error, if file cannot be open or cannot be found
+        // fstream does not give more information on the failure, possible workaround could be to try open it here using
+        // open and getting the error, or enabling exceptions for fstream, but it is probably not worth it. 
         err = create_file_not_found_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_OPEN_FILE, path->as_string().c_str()));
         return BuiltIns::Nil;
     }
@@ -57,24 +58,28 @@ Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
 }
 
 Value *MSFile::close(Interpreter *vm, Value *ths, Value *&err) {
-    // TODO: Check if file is open
     auto fstrm_v = mslib::get_attr(ths, known_names::FILE_FSTREAM_ATT, vm, err);
     auto fstrm = dyn_cast<t_cpp::FStreamValue>(fstrm_v);
-    assert(fstrm && "Not FStream value");
-    fstrm->get_fs()->close();
-    ths->set_attr(known_names::FILE_FSTREAM_ATT, BuiltIns::Nil);
+    // When file is not open don't close it, just exit
+    if (fstrm) {
+        fstrm->get_fs()->close();
+        ths->set_attr(known_names::FILE_FSTREAM_ATT, BuiltIns::Nil);
+    }
     return BuiltIns::Nil;
 }
 
 Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
-    // TODO: Generate exceptions on errors
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
-    assert(fsfs && "fstream is not std::fstream");
+    if (!fsfs) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
     auto lines = new ListValue();
     ustring line;
     std::fstream *fstrm = fsfs->get_fs();
+    assert(fstrm && "ptr in fs is nullptr");
     while(std::getline(*fstrm, line)) {
         lines->push(StringValue::get(line));
     }
@@ -82,11 +87,13 @@ Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
 }
 
 Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
-    // TODO: Generate exceptions on errors
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
-    assert(fsfs && "fstream is not std::fstream");
+    if (!fsfs) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
     bool is_binary = is_mode_binary(vm, ths, err);
     if (err)
         return nullptr;
@@ -120,7 +127,10 @@ Value *MSFile::read(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
     if (err)
         return nullptr;
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
-    assert(fsfs && "fstream is not std::fstream");
+    if (!fsfs) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
     auto file = fsfs->get_fs();
     bool is_binary = is_mode_binary(vm, ths, err);
     if (err)
@@ -161,7 +171,10 @@ Value *MSFile::readln(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
     auto size = get_int(sizev);
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
-    assert(fsfs && "fstream is not std::fstream");
+    if (!fsfs) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
     auto file = fsfs->get_fs();
     std::string line;
 

@@ -96,5 +96,29 @@ try {
 ~f.write(MyBytes("\XFF\XAA"))
 ~f.close()
 
+try 
+    f.readlines()
+catch (e:ValueError) {
+    "caught\n"
+}
+
+try 
+    f.write("hi")
+catch (e:ValueError) {
+    "caught\n"
+}
+
+try 
+    f.read()
+catch (e:ValueError) {
+    "caught\n"
+}
+
+try 
+    f.readln()
+catch (e:ValueError) {
+    "caught\n"
+}
+
 with_open(".created_binary_f.bytes", fun(f)=f.read(), "rb")
 "\n"

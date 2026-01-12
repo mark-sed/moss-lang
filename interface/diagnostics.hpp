@@ -226,6 +226,7 @@ enum DiagID : unsigned {
     UNEXPECTED_FUN_RETURN_TYPE, ///< When __Int returns something else than Int
     COULD_NOT_PARSE_FLOAT,  ///< When float could not be parsed
     INPUT_ERROR,            ///< When there is some system error when reading from stdin
+    OPERATION_ON_CLOSED_FILE, ///< When trying to work with closed file
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -431,6 +432,7 @@ static const char * DIAG_MSGS[] = {
     "Unexpected return type in call to '%s' — expected '%s', but got '%s'",
     "Value '%s' could not be parsed as a Float",
     "Reading from standard input has failed",
+    "I/O operation on closed file",
 };
 
 /// \brief ID of diagnostic error

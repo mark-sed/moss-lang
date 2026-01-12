@@ -1405,6 +1405,10 @@ Lorem Ipsum
 Lorem Ipsum
 FFFF414243
 caught
+caught
+caught
+caught
+caught
 FFAA00\n""", "")
 
     ~rm(DATA_FILE, false)
