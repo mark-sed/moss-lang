@@ -1,7 +1,7 @@
 #include "ir_pipeline.hpp"
-#include "method_analyzer.hpp"
-#include "function_analyzer.hpp"
-#include "expression_analyzer.hpp"
+#include "analysis/method_analyzer.hpp"
+#include "analysis/function_analyzer.hpp"
+#include "analysis/expression_analyzer.hpp"
 #include "ir.hpp"
 
 using namespace moss;

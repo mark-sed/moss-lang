@@ -3,7 +3,7 @@
 #include "ir.hpp"
 #include "ir_pipeline.hpp"
 #include "ir_visitor.hpp"
-#include "method_analyzer.hpp"
+#include "analysis/method_analyzer.hpp"
 #include "commons.hpp"
 #include "parser.hpp"
 #include "source.hpp"

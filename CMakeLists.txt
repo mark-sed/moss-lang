@@ -57,9 +57,9 @@ set(SOURCES
     midend/ir.cpp
     midend/ir_pipeline.cpp
     midend/ir_visitor.cpp
-    midend/expression_analyzer.cpp
-    midend/function_analyzer.cpp
-    midend/method_analyzer.cpp
+    midend/analysis/expression_analyzer.cpp
+    midend/analysis/function_analyzer.cpp
+    midend/analysis/method_analyzer.cpp
     stdlib/mslib_dict.cpp
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp
