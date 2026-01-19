@@ -54,7 +54,7 @@ void FunctionAnalyzer::check_annotated_fun(IR &fun, const std::vector<ir::Argume
     }
 }
 
-void FunctionAnalyzer::visit(Function &fun) {
+IR *FunctionAnalyzer::visit(Function &fun) {
     check_arguments(fun.get_args(), fun.get_name());
     // Method analyzer was already run and methods are marked, report any
     // operator function that are not methods.
@@ -63,18 +63,20 @@ void FunctionAnalyzer::visit(Function &fun) {
     parser_assert(!fun.has_annotation(annots::GENERATOR) || !fun.is_method(), parser.create_diag(fun.get_src_info(), diags::DISALLOWED_METHOD_ANNOT, fun.get_name().c_str(), annots::GENERATOR));
     if (!fun.get_annotations().empty())
         check_annotated_fun(fun, fun.get_args());
+    return &fun;
 }
 
-void FunctionAnalyzer::visit(Return &ret) {
+IR *FunctionAnalyzer::visit(Return &ret) {
     auto fun = ret.get_outter_ir(IRType::FUNCTION);
     if (!fun)
         fun = ret.get_outter_ir(IRType::LAMBDA);
     parser_assert(fun, parser.create_diag(ret.get_src_info(), diags::RETURN_OUTSIDE_FUN));
     parser_assert(!fun->has_annotation(annots::GENERATOR) || isa<ir::NilLiteral>(ret.get_expr()), parser.create_diag(ret.get_src_info(), diags::RETURN_IN_GENERATOR));
     parser_assert(!fun->has_annotation(annots::MAIN) || isa<ir::NilLiteral>(ret.get_expr()), parser.create_diag(ret.get_src_info(), diags::RETURN_IN_MAIN));
+    return &ret;
 }
 
-void FunctionAnalyzer::visit(Lambda &lf) {
+IR *FunctionAnalyzer::visit(Lambda &lf) {
     check_arguments(lf.get_args(), "lambda");
     parser_assert(!Parser::is_operator_fun(lf.get_name()) || lf.is_method(), parser.create_diag(lf.get_src_info(), diags::OP_FUN_OUTSIDE_CLASS, lf.get_name().c_str()));
     auto lambda_name = lf.get_name();
@@ -83,4 +85,5 @@ void FunctionAnalyzer::visit(Lambda &lf) {
     parser_assert(!lf.has_annotation(annots::MAIN), parser.create_diag(lf.get_src_info(), diags::LAMBDA_MAIN, lambda_name.c_str()));
     if (!lf.get_annotations().empty())
         check_annotated_fun(lf, lf.get_args());
+    return &lf;
 }

@@ -78,11 +78,11 @@ enum IRType {
     THIS_LITERAL,
     SUPER_LITERAL,
     OPERATOR_LITERAL,
-    INT_LITERAL,
+    INT_LITERAL, // This order is used for is_constant
     FLOAT_LITERAL,
     BOOL_LITERAL,
     STRING_LITERAL,
-    NIL_LITERAL, // End of Expression IDs
+    NIL_LITERAL, // End of Expression IDs and is_constant
 
     END_OF_FILE,
 };
@@ -103,8 +103,8 @@ protected:
         : ir_type(ir_type), name(name), documentation(), src_info(src_info), parent(nullptr) {}
 public:
     virtual ~IR() {}
-    virtual void accept(IRVisitor& visitor) {
-        (void)visitor;
+    virtual IR *accept(IRVisitor& visitor) {
+        return this;
     };
 
     IRType get_type() { return ir_type; }
@@ -210,7 +210,7 @@ public:
         return this->body.empty();
     }
 
-    std::list<IR *> get_body() { return this->body; }
+    std::list<IR *>& get_body() { return this->body; }
     void set_body(std::list<IR *> b) { 
         this->body = b;
         for (auto i: body) {
@@ -241,6 +241,10 @@ protected:
 public:
     static const IRType ClassType = IRType::EXPRESSION;
 
+    bool is_constant() {
+        return ir_type >= IRType::INT_LITERAL && ir_type <= IRType::NIL_LITERAL;
+    }
+
     virtual void add_annotation(Annotation *ann) override {
         (void)ann;
         assert(false && "Adding annotation to an expression");
@@ -259,7 +263,7 @@ public:
         }
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
@@ -281,7 +285,7 @@ public:
         }
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     bool is_anonymous() {
         return this->anonymous;
@@ -314,7 +318,7 @@ public:
             delete p;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     std::vector<Expression *> get_parents() { return this->parents; }
     virtual bool can_be_annotated() override { return true; }
@@ -365,7 +369,9 @@ public:
             delete default_value;
     }
 
-    std::vector<Expression *> get_types() { return this->types; }
+    IR *accept(IRVisitor& visitor) override;
+
+    std::vector<Expression *> &get_types() { return this->types; }
     Expression *get_type(unsigned index) { 
         assert(index < types.size() && "Out of bounds access");
         return types[index];
@@ -373,6 +379,7 @@ public:
     size_t types_size() { return types.size(); }
     bool is_typed() { return !types.empty(); }
     Expression *get_default_value() { return this->default_value; }
+    void set_default_value(Expression *e) { this->default_value = e; }
     bool has_default_value() { return this->default_value != nullptr; }
     bool is_vararg() { return this->vararg; }
 
@@ -433,9 +440,9 @@ public:
             delete a;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
-    const std::vector<Argument *>& get_args() { return this->info.args; }
+    std::vector<Argument *>& get_args() { return this->info.args; }
     void set_constructor(bool c) { this->info.constructor = c; }
     bool is_constructor() { return this->info.constructor; }
     void set_method(bool c) { this->info.method = c; }
@@ -481,7 +488,7 @@ public:
         }
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "else {\n";
@@ -517,10 +524,12 @@ public:
             delete else_branch;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     Expression *get_cond() { return this->cond; }
+    void set_cond(Expression *cnd) { this->cond = cnd; }
     Else *get_else() { return this->else_branch; }
+    void set_else(Else *e) { this->else_branch = e; }
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "if (" << *cond << ") {\n";
@@ -559,10 +568,10 @@ public:
         }
     }
 
-    std::vector<Expression *> get_values() { return values; }
+    std::vector<Expression *>& get_values() { return values; }
     bool is_default_case() { return default_case; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         if (!default_case) {
@@ -609,8 +618,9 @@ public:
     }
 
     Expression *get_cond() { return this->cond; }
+    void set_cond(Expression *e) { this->cond = e; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "switch (" << *cond << ") {\n";
@@ -641,8 +651,9 @@ public:
     }
 
     Argument *get_arg() { return arg; }
+    void set_arg(Argument *arg) { this->arg = arg; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "catch (" << *arg << ") {\n";
@@ -665,7 +676,7 @@ public:
         }
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "finally {\n";
@@ -707,8 +718,9 @@ public:
 
     std::vector<Catch *>& get_catches() { return catches; }
     Finally *get_finally() { return finally_stmt; }
+    void set_finally(Finally *f) { this->finally_stmt = f; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "try {\n";
@@ -745,8 +757,9 @@ public:
     }
 
     Expression *get_cond() { return this->cond; }
+    void set_cond(Expression *c) { this->cond = c; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "while (" << *cond << ") {\n";
@@ -778,8 +791,9 @@ public:
     }
 
     Expression *get_cond() { return this->cond; }
+    void set_cond(Expression *c) { this->cond = c; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "do {\n";
@@ -814,9 +828,11 @@ public:
     }
 
     Expression *get_iterator() { return this->iterator; }
+    void set_iterator(Expression *i) { this->iterator = i; }
     Expression *get_collection() { return this->collection; }
+    void set_collection(Expression *c) { this->collection = c; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "for (" << *iterator << ": " << *collection << ") {\n";
@@ -855,7 +871,7 @@ public:
         this->values = values;
     }
 
-    //void accept(IRVisitor& visitor) override;
+    //IR *accept(IRVisitor& visitor) override;
 
     std::vector<ustring> get_values() {
         return this->values;
@@ -881,7 +897,7 @@ public:
             delete name;
     }
 
-    std::vector<Expression *> get_names() { return names; }
+    std::vector<Expression *> &get_names() { return names; }
     std::vector<ustring> get_aliases() { return aliases; }
 
     Expression *get_name(unsigned index) {
@@ -894,7 +910,7 @@ public:
         return aliases[index];
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "import ";
@@ -933,9 +949,11 @@ public:
     }
 
     Expression *get_cond() { return this->cond; }
+    void set_cond(Expression *c) { this->cond = c; }
     Expression *get_msg() { return this->msg; }
+    void set_msg(Expression *m) { this->msg = m; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "assert(" << *cond;
@@ -962,7 +980,7 @@ public:
         delete exception;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "raise " << *exception;
@@ -970,6 +988,7 @@ public:
     }
 
     Expression *get_exception() { return this->exception; }
+    void set_exception(Expression *e) { this->exception = e; }
 };
 
 class Return : public Statement {
@@ -987,7 +1006,7 @@ public:
         delete expr;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "return " << *expr;
@@ -995,6 +1014,7 @@ public:
     }
 
     Expression *get_expr() { return this->expr; }
+    void set_expr(Expression *e) { this->expr = e; }
 };
 
 class Break : public Statement {
@@ -1003,7 +1023,7 @@ public:
 
     Break(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "break";
@@ -1017,7 +1037,7 @@ public:
 
     Continue(SourceInfo src_info) : Statement(ClassType, "break", src_info) {}
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "continue";
@@ -1041,7 +1061,7 @@ public:
         delete value;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (inner ? "@!" : "@") << name;
@@ -1051,6 +1071,7 @@ public:
     }
 
     Expression *get_value() { return this->value; }
+    void set_value(Expression *v) { this->value = v; }
     bool is_inner() { return this->inner; }
     void set_is_module_annotation(bool ma) { this->module_annotation = ma; }
     bool is_module_annotation() { return this->module_annotation; }
@@ -1212,7 +1233,7 @@ public:
         return left->as_string() + op.as_string() + right->as_string();
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << *left << " " << op << " " << *right << ")";
@@ -1241,9 +1262,10 @@ public:
     }
 
     Expression *get_expr() { return this->expr; }
+    void set_expr(Expression *e) { this->expr = e; }
     Operator get_op() { return this->op; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << op << " " << *expr << ")";
@@ -1261,7 +1283,7 @@ public:
 
     bool is_non_local() { return this->non_local; }
 
-    //void accept(IRVisitor& visitor) override;
+    //IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << (non_local ? "$" : "") << name;
@@ -1287,10 +1309,10 @@ public:
             delete v;
     }
 
-    std::vector<ir::Expression *> get_vars() { return this->vars; }
+    std::vector<ir::Expression *> &get_vars() { return this->vars; }
     int get_rest_index() { return this->rest_index; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         bool first = true;
@@ -1316,7 +1338,7 @@ public:
 
     AllSymbols(SourceInfo src_info) : Expression(ClassType, "*", src_info) {}
 
-    //void accept(IRVisitor& visitor) override;
+    //IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "*";
@@ -1348,10 +1370,13 @@ public:
     }
 
     Expression *get_condition() { return condition; }
+    void set_condition(Expression *c) { this->condition = c; }
     Expression *get_value_true() { return value_true; }
+    void set_value_true(Expression *vt) { this->value_true = vt; }
     Expression *get_value_false() { return value_false; }
+    void set_value_false(Expression *vf) { this->value_false = vf; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(" << *condition << " ? " << *value_true << " : " << *value_false << ")";
@@ -1385,7 +1410,7 @@ public:
         delete body;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual void add_annotation(Annotation *ann) override {
         annotations.push_back(ann);
@@ -1398,8 +1423,9 @@ public:
     bool is_staticmethod();
     bool is_anonymous() { return this->anonymous; }
 
-    std::vector<Argument *> get_args() { return this->info.args; }
+    std::vector<Argument *> &get_args() { return this->info.args; }
     Expression *get_body() { return this->body; }
+    void set_body(Expression *b) { this->body = b; }
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(fun " << name << "(";
@@ -1444,10 +1470,13 @@ public:
     }
 
     Expression *get_start() { return start; }
+    void set_start(Expression *start) { this->start = start; }
     Expression *get_end() { return end; }
+    void set_end(Expression *end) { this->end = end; }
     Expression *get_second() { return second; }
+    void set_second(Expression *second) { this->second = second; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         if (second)
@@ -1479,9 +1508,10 @@ public:
     }
 
     Expression *get_fun() { return this->fun; }
-    std::vector<Expression *> get_args() { return this->args; }
+    void set_fun(Expression *f) { this->fun = f; }
+    std::vector<Expression *> &get_args() { return this->args; }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << *fun << "(";
@@ -1703,7 +1733,7 @@ public:
 
     std::list<IR *> as_for();
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "[";
@@ -1743,12 +1773,15 @@ public:
         return os;
     }
 
-    std::vector<Expression *> get_value() { return this->value; }
+    std::vector<Expression *> &get_value() { return this->value; }
     bool is_comprehension() { return this->comprehension; }
     Expression *get_result() { return this->result; };
+    void set_result(Expression *r) { this->result = r; }
     Expression *get_else_result() { return this->else_result; };
+    void set_else_result(Expression *re) { this->else_result = re; }
     Expression *get_condition() { return this->condition; };
-    std::vector<Expression *> get_assignments() { return this->assignments; };
+    void set_condition(Expression *c) { this->condition = c; }
+    std::vector<Expression *> &get_assignments() { return this->assignments; };
     ustring get_compr_result_name() {
         assert(comprehension && "extracting list result variable name from non comprehended list");
         return this->compr_result_name;
@@ -1779,7 +1812,7 @@ public:
             delete i;
     }
 
-    void accept(IRVisitor& visitor) override;
+    IR *accept(IRVisitor& visitor) override;
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "{";
@@ -1797,8 +1830,8 @@ public:
         return os;
     }
 
-    std::vector<Expression *> get_keys() { return this->keys; }
-    std::vector<Expression *> get_values() { return this->values; }
+    std::vector<Expression *> &get_keys() { return this->keys; }
+    std::vector<Expression *> &get_values() { return this->values; }
 };
 
 }

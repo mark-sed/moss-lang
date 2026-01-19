@@ -118,126 +118,130 @@ bool Lambda::is_staticmethod() {
     return false;
 }
 
-void Function::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Argument::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Lambda::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Function::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Class::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Lambda::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Module::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Class::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Space::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Module::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Return::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Space::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void If::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Return::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Else::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *If::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Switch::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Else::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Case::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Switch::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Catch::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Case::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Finally::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Catch::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Try::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Finally::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void While::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Try::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void DoWhile::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *While::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void ForLoop::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *DoWhile::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-//void Enum::accept(IRVisitor& visitor) {
-//    visitor.visit(*this);
+IR *ForLoop::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
+}
+
+//IR *Enum::accept(IRVisitor& visitor) {
+//    return visitor.visit(*this);
 //}
 
-void Import::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Import::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Assert::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Assert::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Raise::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Raise::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Break::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Break::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Continue::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Continue::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Annotation::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Annotation::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void BinaryExpr::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *BinaryExpr::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void UnaryExpr::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *UnaryExpr::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Multivar::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Multivar::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void TernaryIf::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *TernaryIf::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Range::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Range::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Call::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Call::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void List::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *List::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }
 
-void Dict::accept(IRVisitor& visitor) {
-    visitor.visit(*this);
+IR *Dict::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
 }

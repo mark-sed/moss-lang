@@ -23,7 +23,7 @@ void MethodAnalyzer::check_constructor(Function &method, Class &cls) {
     }
 }
 
-void MethodAnalyzer::visit(Class &cls) {
+IR *MethodAnalyzer::visit(Class &cls) {
     for (auto i : cls.get_body()) {
         if (auto f = dyn_cast<Function>(i)) {
             check_constructor(*f, cls);
@@ -35,15 +35,18 @@ void MethodAnalyzer::visit(Class &cls) {
             l->set_method(true);
         }
     }
+    return &cls;
 }
 
-void MethodAnalyzer::visit(Function &fun) {
+IR *MethodAnalyzer::visit(Function &fun) {
     this->in_constructor = fun.is_constructor();
+    return &fun;
 }
 
-void MethodAnalyzer::visit(Return &ret) {
+IR *MethodAnalyzer::visit(Return &ret) {
     if (in_constructor) {
         auto rval = ret.get_expr();
         parser_assert(!rval || isa<NilLiteral>(rval), parser.create_diag(ret.get_src_info(), diags::NON_NIL_RETURN_IN_CONSTR)); 
     }
+    return &ret;
 }

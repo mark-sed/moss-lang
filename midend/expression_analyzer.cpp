@@ -5,7 +5,8 @@
 using namespace moss;
 using namespace ir;
 
-void ExpressionAnalyzer::visit(BinaryExpr &be) {
+IR *ExpressionAnalyzer::visit(BinaryExpr &be) {
+    auto left = be.get_left();
     auto right = be.get_right();
     auto opk = be.get_op().get_kind();
     if (opk == OperatorKind::OP_ACCESS) {
@@ -16,9 +17,10 @@ void ExpressionAnalyzer::visit(BinaryExpr &be) {
         // Appearance of AllSymbol is guarded in parser, that it can be only in import.
         parser_assert(!incorr, parser.create_diag(be.get_src_info(), diags::INCORRECT_ACCESS_SYNATAX));
     }
+    return &be;
 }
 
-void ExpressionAnalyzer::visit(UnaryExpr &ue) {
+IR *ExpressionAnalyzer::visit(UnaryExpr &ue) {
     //auto opk = ue.get_op().get_kind();
     
     // This was uncommented because space import might be non-local.
@@ -30,6 +32,7 @@ void ExpressionAnalyzer::visit(UnaryExpr &ue) {
     //            parser_assert(!v->is_non_local(), parser.create_diag(ue.get_src_info(), diags::NON_LOCAL_AFTER_GLOBAL));
     //    }
     //}
+    return &ue;
 }
 
 void ExpressionAnalyzer::check_call_arg(Expression *arg, std::unordered_set<ustring> &named_args) {
@@ -44,19 +47,22 @@ void ExpressionAnalyzer::check_call_arg(Expression *arg, std::unordered_set<ustr
     }
 }
 
-void ExpressionAnalyzer::visit(Call &c) {
+IR *ExpressionAnalyzer::visit(Call &c) {
     std::unordered_set<ustring> named_args{};
     for (auto a: c.get_args()) {
         check_call_arg(a, named_args);
     }
+    return &c;
 }
 
-void ExpressionAnalyzer::visit(Break &b) {
+IR *ExpressionAnalyzer::visit(Break &b) {
     auto loop = b.get_outter_ir({IRType::FOR_LOOP, IRType::WHILE, IRType::DO_WHILE});
     parser_assert(loop, parser.create_diag(b.get_src_info(), diags::BREAK_OUTSIDE_OF_LOOP));
+    return &b;
 }
 
-void ExpressionAnalyzer::visit(Continue &c) {
+IR *ExpressionAnalyzer::visit(Continue &c) {
     auto loop = c.get_outter_ir({IRType::FOR_LOOP, IRType::WHILE, IRType::DO_WHILE});
     parser_assert(loop, parser.create_diag(c.get_src_info(), diags::CONTINUE_OUTSIDE_OF_LOOP));
+    return &c;
 }

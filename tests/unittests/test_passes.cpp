@@ -17,120 +17,148 @@ public:
 
     AllIRsVisitor(Parser &parser) : IRVisitor(parser) {}
     
-    virtual void visit(Module &i) override {
+    virtual IR *visit(Module &i) override {
         out << "Module " << i.get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Space &i) override {
+    virtual IR *visit(Space &i) override {
         out << "Space " << i.get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Class &i) override {
+    virtual IR *visit(Class &i) override {
         out << "Class " << i.get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Function &i) override {
+    virtual IR *visit(Function &i) override {
         out << "Function " << i.get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Lambda &i) override {
+    virtual IR *visit(Lambda &i) override {
         out << "Lambda " << i.get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Return &i) override {
+    virtual IR *visit(Return &i) override {
         out << "Return " << i.get_expr()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Else &) override {
+    virtual IR *visit(Else &i) override {
         out << "Else\n";
+        return &i;
     }
 
-    virtual void visit(If &i) override {
+    virtual IR *visit(If &i) override {
         out << "If " << i.get_cond()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Switch &i) override {
+    virtual IR *visit(Switch &i) override {
         out << "Switch " << i.get_cond()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Case &) override {
+    virtual IR *visit(Case &i) override {
         out << "Case\n";
+        return &i;
     }
 
-    virtual void visit(Catch &i) override {
+    virtual IR *visit(Catch &i) override {
         out << "Catch " << i.get_arg()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Finally &i) override {
+    virtual IR *visit(Finally &i) override {
         out << "Finally\n";
+        return &i;
     }
 
-    virtual void visit(Try &) override {
+    virtual IR *visit(Try &i) override {
         out << "Try\n";
+        return &i;
     }
 
-    virtual void visit(While &i) override {
+    virtual IR *visit(While &i) override {
         out << "While " << i.get_cond()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(DoWhile &i) override {
+    virtual IR *visit(DoWhile &i) override {
         out << "DoWhile " << i.get_cond()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(ForLoop &i) override {
+    virtual IR *visit(ForLoop &i) override {
         out << "ForLoop " << i.get_iterator()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Import &i) override {
+    virtual IR *visit(Import &i) override {
         out << "Import " << i.get_name(0)->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Assert &i) override {
+    virtual IR *visit(Assert &i) override {
         out << "Assert " << i.get_cond()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Raise &i) override {
+    virtual IR *visit(Raise &i) override {
         out << "Raise " << i.get_exception()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Annotation &i) override {
+    virtual IR *visit(Annotation &i) override {
         out << "Annotation " << i.get_value()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(BinaryExpr &i) override {
+    virtual IR *visit(BinaryExpr &i) override {
         out << "BinExp " << i.get_left()->get_name() << i.get_op() << i.get_right()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(UnaryExpr &i) override {
+    virtual IR *visit(UnaryExpr &i) override {
         out << "UnExp " << i.get_op() << i.get_expr()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Multivar &i) override {
+    virtual IR *visit(Multivar &i) override {
         out << "Multivar\n";
+        return &i;
     }
 
-    virtual void visit(TernaryIf &i) override {
+    virtual IR *visit(TernaryIf &i) override {
         out << "TernIf " << i.get_condition()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Range &i) override {
+    virtual IR *visit(Range &i) override {
         out << "Range " << i.get_start()->get_name() << "\n";
+        return &i;
     }
 
-    virtual void visit(Call &i) override {
+    virtual IR *visit(Call &i) override {
         out << "Call " << i.get_args().size() << "\n";
+        return &i;
     }
 
-    virtual void visit(List &i) override {
+    virtual IR *visit(List &i) override {
         out << "List\n";
+        return &i;
     }
 
-    virtual void visit(Dict &i) override {
+    virtual IR *visit(Dict &i) override {
         out << "Dict\n";
+        return &i;
     }
 
     /*
-    virtual void visit( &i) override {
+    virtual IR *visit( &i) override {
         out << " " << i.get_name() << "\n";
     }
     */

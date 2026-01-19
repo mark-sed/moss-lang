@@ -25,11 +25,11 @@ private:
 public:
     ExpressionAnalyzer(Parser &parser) : IRVisitor(parser) {}
     
-    virtual void visit(class BinaryExpr &be) override;
-    virtual void visit(class UnaryExpr &be) override;
-    virtual void visit(class Call &c) override;
-    virtual void visit(class Break &b) override;
-    virtual void visit(class Continue &b) override;
+    virtual IR *visit(class BinaryExpr &be) override;
+    virtual IR *visit(class UnaryExpr &be) override;
+    virtual IR *visit(class Call &c) override;
+    virtual IR *visit(class Break &b) override;
+    virtual IR *visit(class Continue &b) override;
 };
 
 }

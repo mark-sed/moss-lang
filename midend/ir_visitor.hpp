@@ -26,68 +26,38 @@ protected:
     Parser &parser;
     class IR *currently_visiting;
 public:
-    virtual void visit(class Module &) {
-    }
-    virtual void visit(class Space &) {
-    }
-    virtual void visit(class Class &) {
-    }
-    virtual void visit(class Function &) {
-    }
-    virtual void visit(class Lambda &) {
-    }
-    virtual void visit(class Return &) {
-    }
-    virtual void visit(class Else &) {
-    }
-    virtual void visit(class If &) {
-    }
-    virtual void visit(class Switch &) {
-    }
-    virtual void visit(class Case &) {
-    }
-    virtual void visit(class Catch &) {
-    }
-    virtual void visit(class Finally &) {
-    }
-    virtual void visit(class Try &) {
-    }
-    virtual void visit(class While &) {
-    }
-    virtual void visit(class DoWhile &) {
-    }
-    virtual void visit(class ForLoop &) {
-    }
-    //virtual void visit(class Enum &) {
-    //}
-    virtual void visit(class Import &) {
-    }
-    virtual void visit(class Assert &) {
-    }
-    virtual void visit(class Raise &) {
-    }
-    virtual void visit(class Break &) {
-    }
-    virtual void visit(class Continue &) {
-    }
-    virtual void visit(class Annotation &) {
-    }
-    virtual void visit(class BinaryExpr &) {
-    }
-    virtual void visit(class UnaryExpr &) {
-    }
-    virtual void visit(class Multivar &) {
-    }
-    virtual void visit(class TernaryIf &) {
-    }
-    virtual void visit(class Range &) {
-    }
-    virtual void visit(class Call &) {
-    }
-    virtual void visit(class List &) {
-    }
-    virtual void visit(class Dict &) {
-    }
+    virtual IR *visit(class Module &i);
+    virtual IR *visit(class Space &i);
+    virtual IR *visit(class Class &i);
+    virtual IR *visit(class Argument &i);
+    virtual IR *visit(class Function &i);
+    virtual IR *visit(class Lambda &i);
+    virtual IR *visit(class Return &i);
+    virtual IR *visit(class Else &i);
+    virtual IR *visit(class If &i);
+    virtual IR *visit(class Switch &i);
+    virtual IR *visit(class Case &i);
+    virtual IR *visit(class Catch &i);
+    virtual IR *visit(class Finally &i);
+    virtual IR *visit(class Try &i);
+    virtual IR *visit(class While &i);
+    virtual IR *visit(class DoWhile &i);
+    virtual IR *visit(class ForLoop &i);
+    //virtual IR *visit(class Enum &i);
+    virtual IR *visit(class Import &i);
+    virtual IR *visit(class Assert &i);
+    virtual IR *visit(class Raise &i);
+    virtual IR *visit(class Break &i);
+    virtual IR *visit(class Continue &i);
+    virtual IR *visit(class Annotation &i);
+    virtual IR *visit(class BinaryExpr &i);
+    virtual IR *visit(class UnaryExpr &i);
+    virtual IR *visit(class Multivar &i);
+    virtual IR *visit(class TernaryIf &i);
+    virtual IR *visit(class Range &i);
+    virtual IR *visit(class Call &i);
+    virtual IR *visit(class List &i);
+    virtual IR *visit(class Dict &i);
 
     IRVisitor(Parser &parser);
     virtual ~IRVisitor() {};
@@ -97,37 +67,44 @@ public:
 class PassManager : public IRVisitor {
 private:
     std::list<IRVisitor *> passes;
+protected:
+    template <typename T, typename Container>
+    void visit_body(Container& nodes);
+
+    template <typename T, typename Setter>
+    T* visit_child(T* old_child, Setter set_func, const char* err_msg = "Child cannot be removed", bool allow_null=false);
 public:
-    virtual void visit(class Module &mod) override;
-    virtual void visit(class Space &spc) override;
-    virtual void visit(class Class &cls) override;
-    virtual void visit(class Function &fun) override;
-    virtual void visit(class Lambda &fun) override;
-    virtual void visit(class Return &ret) override;
-    virtual void visit(class Else &els) override;
-    virtual void visit(class If &i) override;
-    virtual void visit(class Switch &swt) override;
-    virtual void visit(class Case &cs) override;
-    virtual void visit(class Catch &ct) override;
-    virtual void visit(class Finally &fnl) override;
-    virtual void visit(class Try &tr) override;
-    virtual void visit(class While &whl) override;
-    virtual void visit(class DoWhile &dwhl) override;
-    virtual void visit(class ForLoop &frl) override;
-    virtual void visit(class Import &imp) override;
-    virtual void visit(class Assert &a) override;
-    virtual void visit(class Raise &r) override;
-    virtual void visit(class Break &b) override;
-    virtual void visit(class Continue &c) override;
-    virtual void visit(class Annotation &a) override;
-    virtual void visit(class BinaryExpr &be) override;
-    virtual void visit(class UnaryExpr &ue) override;
-    virtual void visit(class Multivar &mv) override;
-    virtual void visit(class TernaryIf &ti) override;
-    virtual void visit(class Range &r) override;
-    virtual void visit(class Call &cl) override;
-    virtual void visit(class List &lst) override;
-    virtual void visit(class Dict &dct) override;
+    virtual IR *visit(class Module &mod) override;
+    virtual IR *visit(class Space &spc) override;
+    virtual IR *visit(class Class &cls) override;
+    virtual IR *visit(class Argument &a) override;
+    virtual IR *visit(class Function &fun) override;
+    virtual IR *visit(class Lambda &fun) override;
+    virtual IR *visit(class Return &ret) override;
+    virtual IR *visit(class Else &els) override;
+    virtual IR *visit(class If &i) override;
+    virtual IR *visit(class Switch &swt) override;
+    virtual IR *visit(class Case &cs) override;
+    virtual IR *visit(class Catch &ct) override;
+    virtual IR *visit(class Finally &fnl) override;
+    virtual IR *visit(class Try &tr) override;
+    virtual IR *visit(class While &whl) override;
+    virtual IR *visit(class DoWhile &dwhl) override;
+    virtual IR *visit(class ForLoop &frl) override;
+    virtual IR *visit(class Import &imp) override;
+    virtual IR *visit(class Assert &a) override;
+    virtual IR *visit(class Raise &r) override;
+    virtual IR *visit(class Break &b) override;
+    virtual IR *visit(class Continue &c) override;
+    virtual IR *visit(class Annotation &a) override;
+    virtual IR *visit(class BinaryExpr &be) override;
+    virtual IR *visit(class UnaryExpr &ue) override;
+    virtual IR *visit(class Multivar &mv) override;
+    virtual IR *visit(class TernaryIf &ti) override;
+    virtual IR *visit(class Range &r) override;
+    virtual IR *visit(class Call &cl) override;
+    virtual IR *visit(class List &lst) override;
+    virtual IR *visit(class Dict &dct) override;
 
     /// Adds a new pass to the manager to run
     void add_pass(IRVisitor *p);

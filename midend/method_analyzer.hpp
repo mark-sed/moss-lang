@@ -28,9 +28,9 @@ private:
 public:
     MethodAnalyzer(Parser &parser) : IRVisitor(parser) {}
     
-    virtual void visit(class Class &cls) override;
-    virtual void visit(class Function &fun) override;
-    virtual void visit(class Return &ret) override;
+    virtual IR *visit(class Class &cls) override;
+    virtual IR *visit(class Function &fun) override;
+    virtual IR *visit(class Return &ret) override;
 };
 
 }
