@@ -156,12 +156,6 @@ public:
         out << "Dict\n";
         return &i;
     }
-
-    /*
-    virtual IR *visit( &i) override {
-        out << " " << i.get_name() << "\n";
-    }
-    */
 };
 
 /// Tests correct IR visiting
@@ -226,6 +220,7 @@ for (i: a..10) {
 
     ustring expected_out = "Module <one-liner>\n"
 "Annotation <string-literal>\n"
+"Annotation <string-literal>\n"
 "Import FooModule\n"
 "Space Spc\n"
 "Space Names\n"
@@ -234,25 +229,40 @@ for (i: a..10) {
 "Function Cls2\n"
 "Lambda get_a\n"
 "BinExp <this-literal>.a\n"
+"BinExp <this-literal>.a\n"
+"Lambda get_a\n"
 "Function foo\n"
 "Space M\n"
 "If a\n"
 "Else\n"
 "If b\n"
 "Else\n"
+"Else\n"
+"If b\n"
+"Else\n"
+"If a\n"
 "Return M\n"
+"Return M\n"
+"Lambda lmb\n"
 "Lambda lmb\n"
 "If <bool-literal>\n"
 "Else\n"
+"Else\n"
+"If <bool-literal>\n"
+"BinExp a=<int-literal>\n"
 "BinExp a=<int-literal>\n"
 "Switch a\n"
 "Case\n"
 "If a\n"
+"If a\n"
 "Try\n"
+"BinExp a=a\n"
 "BinExp a=a\n"
 "Catch e\n"
 "Catch e2\n"
 "Finally\n"
+"Case\n"
+"Switch a\n"
 "While a\n"
 "DoWhile a\n"
 "ForLoop <multivar>\n"
@@ -260,18 +270,28 @@ for (i: a..10) {
 "ForLoop j\n"
 "Raise <unary-expression>\n"
 "UnExp -j\n"
+"UnExp -j\n"
 "Assert a\n"
 "BinExp <multivar>=a\n"
 "Multivar\n"
+"BinExp <multivar>=a\n"
+"TernIf k\n"
 "TernIf k\n"
 "ForLoop i\n"
 "Range a\n"
+"Range a\n"
+"Range <int-literal>\n"
 "Range <int-literal>\n"
 "List\n"
 "Call 0\n"
+"Call 0\n"
 "Call 2\n"
+"Call 2\n"
+"List\n"
 "Dict\n"
 "List\n"
+"List\n"
+"Dict\n"
 ;
 
     SourceFile sf(code, SourceFile::SourceType::STRING);

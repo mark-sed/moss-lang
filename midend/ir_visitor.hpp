@@ -73,6 +73,9 @@ protected:
 
     template <typename T, typename Setter>
     T* visit_child(T* old_child, Setter set_func, const char* err_msg = "Child cannot be removed", bool allow_null=false);
+
+    template <typename T>
+    IR* try_replace(T& node);
 public:
     virtual IR *visit(class Module &mod) override;
     virtual IR *visit(class Space &spc) override;

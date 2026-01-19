@@ -22,6 +22,7 @@ public:
     ConstantFoldingPass(Parser &parser) : IRVisitor(parser) {}
     
     virtual IR *visit(class BinaryExpr &be) override;
+    //irtual IR *visit(class UnaryExpr &ue) override;
 };
 
 }

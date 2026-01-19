@@ -60,6 +60,7 @@ set(SOURCES
     midend/analysis/expression_analyzer.cpp
     midend/analysis/function_analyzer.cpp
     midend/analysis/method_analyzer.cpp
+    midend/transforms/constant_folding.cpp
     stdlib/mslib_dict.cpp
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp
@@ -229,6 +230,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/test_bytecode_rw.cpp
         tests/unittests/test_bytecode.cpp
         tests/unittests/test_clopts.cpp
+        tests/unittests/test_constant_folding.cpp
         tests/unittests/test_ir.cpp # Has to be before function_analysis to not affect lambda numbering
         tests/unittests/test_expression_analysis.cpp
         tests/unittests/test_function_analysis.cpp

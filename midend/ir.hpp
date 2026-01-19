@@ -103,7 +103,7 @@ protected:
         : ir_type(ir_type), name(name), documentation(), src_info(src_info), parent(nullptr) {}
 public:
     virtual ~IR() {}
-    virtual IR *accept(IRVisitor& visitor) {
+    virtual IR *accept(IRVisitor &) {
         return this;
     };
 

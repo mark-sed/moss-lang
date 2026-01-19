@@ -66,6 +66,16 @@ T* PassManager::visit_child(T* old_child, Setter set_func, const char* err_msg, 
     return new_child;
 }
 
+template <typename T>
+IR* PassManager::try_replace(T& node) {
+    for (auto p : passes) {
+        IR* replaced = p->visit(node);
+        if (replaced != &node)
+            return replaced->accept(*this);
+    }
+    return &node;
+}
+
 IR *PassManager::visit(Module &mod) {
     for (auto p: passes) {
         IR *replaced = mod.accept(*p);
@@ -115,26 +125,18 @@ IR *PassManager::visit(Function &fun) {
 }
 
 IR *PassManager::visit(Else &els) {
-    for (auto p : passes) {
-        IR* replaced = els.accept(*p);
-        if (replaced != &els) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(els);
+    if (self != &els)
+        return self;
 
     visit_body<IR>(els.get_body());
-    return &els;
+    return try_replace(els);
 }
 
 IR* PassManager::visit(If &i) {
-    // Run all passes on the If node itself
-    for (auto p : passes) {
-        IR* replaced = i.accept(*p);
-        if (replaced != &i) {
-            // Pass wants to replace or delete this If
-            return replaced; // can be nullptr
-        }
-    }
+    IR* self = try_replace(i);
+    if (self != &i)
+        return self;
 
     visit_child(i.get_cond(), [&i](Expression *new_i) { i.set_cond(new_i); }, "If cond cannot be removed");
 
@@ -146,33 +148,27 @@ IR* PassManager::visit(If &i) {
         visit_child(i.get_else(), [&i](Else *new_i) { i.set_else(new_i); }, "", true);
     }
 
-    return &i;
+    return try_replace(i);
 }
 
 IR *PassManager::visit(Switch &swt) {
-    for (auto p : passes) {
-        IR* replaced = swt.accept(*p);
-        if (replaced != &swt) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(swt);
+    if (self != &swt)
+        return self;
 
     visit_child(swt.get_cond(), [&swt](Expression *new_i) { swt.set_cond(new_i); }, "Switch condition cannot be removed");
     visit_body<IR>(swt.get_body());
-    return &swt;
+    return try_replace(swt);
 }
 
 IR *PassManager::visit(Case &cs) {
-    for (auto p : passes) {
-        IR* replaced = cs.accept(*p);
-        if (replaced != &cs) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(cs);
+    if (self != &cs)
+        return self;
 
     visit_body<Expression>(cs.get_values());
     visit_body<IR>(cs.get_body());
-    return &cs;
+    return try_replace(cs);
 }
 
 IR *PassManager::visit(Catch &ct) {
@@ -277,78 +273,52 @@ IR *PassManager::visit(Raise &r) {
 }
 
 IR *PassManager::visit(Break &b) {
-    for (auto p : passes) {
-        IR* replaced = b.accept(*p);
-        if (replaced != &b) {
-            return replaced;
-        }
-    }
-
-    return &b;
+    return try_replace(b);
 }
 
 IR *PassManager::visit(Continue &c) {
-    for (auto p : passes) {
-        IR* replaced = c.accept(*p);
-        if (replaced != &c) {
-            return replaced;
-        }
-    }
-
-    return &c;
+    return try_replace(c);
 }
 
 IR *PassManager::visit(Return &ret) {
-    for (auto p : passes) {
-        IR* replaced = ret.accept(*p);
-        if (replaced != &ret) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(ret);
+    if (self != &ret)
+        return self;
 
     visit_child(ret.get_expr(), [&ret](Expression *new_i) { ret.set_expr(new_i); }, "Return expr cannot be removed");
 
-    return &ret;
+    return try_replace(ret);
 }
 
 IR *PassManager::visit(Annotation &a) {
-    for (auto p : passes) {
-        IR* replaced = a.accept(*p);
-        if (replaced != &a) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(a);
+    if (self != &a)
+        return self;
 
     visit_child(a.get_value(), [&a](Expression *new_i) { a.set_value(new_i); }, "Annotation value cannot be removed");
 
-    return &a;
+    return try_replace(a);
 }
 
 IR *PassManager::visit(BinaryExpr &be) {
-    for (auto p : passes) {
-        IR* replaced = be.accept(*p);
-        if (replaced != &be) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(be);
+    if (self != &be)
+        return self;
 
     visit_child(be.get_left(), [&be](Expression *new_i) { be.set_left(new_i); }, "BE left cannot be removed");
     visit_child(be.get_right(), [&be](Expression *new_i) { be.set_right(new_i); }, "BE right cannot be removed");
 
-    return &be;
+    return try_replace(be);
 }
 
 IR *PassManager::visit(UnaryExpr &ue) {
-    for (auto p : passes) {
-        IR* replaced = ue.accept(*p);
-        if (replaced != &ue) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(ue);
+    if (self != &ue)
+        return self;
 
     visit_child(ue.get_expr(), [&ue](Expression *new_i) { ue.set_expr(new_i); }, "UE value cannot be removed");
 
-    return &ue;
+    return try_replace(ue);
 }
 
 IR *PassManager::visit(Multivar &mv) {
@@ -363,71 +333,56 @@ IR *PassManager::visit(Multivar &mv) {
 }
 
 IR *PassManager::visit(TernaryIf &ti) {
-    for (auto p : passes) {
-        IR* replaced = ti.accept(*p);
-        if (replaced != &ti) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(ti);
+    if (self != &ti)
+        return self;
 
     visit_child(ti.get_condition(), [&ti](Expression *new_i) { ti.set_condition(new_i); }, "TernIf cond cannot be removed");
     visit_child(ti.get_value_true(), [&ti](Expression *new_i) { ti.set_value_true(new_i); }, "TernIf true cannot be removed");
     visit_child(ti.get_value_false(), [&ti](Expression *new_i) { ti.set_value_false(new_i); }, "TernIf false cannot be removed");
 
-    return &ti;
+    return try_replace(ti);
 }
 
 IR *PassManager::visit(Lambda &fun) {
-    for (auto p : passes) {
-        IR* replaced = fun.accept(*p);
-        if (replaced != &fun) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(fun);
+    if (self != &fun)
+        return self;
 
     visit_body<Argument>(fun.get_args());
     visit_child(fun.get_body(), [&fun](Expression *new_i) { fun.set_body(new_i); }, "Lambda body cannot be removed");
 
-    return &fun;
+    return try_replace(fun);
 }
 
 IR *PassManager::visit(Range &r) {
-    for (auto p : passes) {
-        IR* replaced = r.accept(*p);
-        if (replaced != &r) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(r);
+    if (self != &r)
+        return self;
 
     visit_child(r.get_start(), [&r](Expression *new_i) { r.set_start(new_i); }, "Range start cannot be removed");
     if (r.get_second())
         visit_child(r.get_second(), [&r](Expression *new_i) { r.set_second(new_i); }, "Range second cannot be removed");
     visit_child(r.get_end(), [&r](Expression *new_i) { r.set_end(new_i); }, "Range end cannot be removed");
 
-    return &r;
+    return try_replace(r);
 }
 
 IR *PassManager::visit(Call &cl) {
-    for (auto p : passes) {
-        IR* replaced = cl.accept(*p);
-        if (replaced != &cl) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(cl);
+    if (self != &cl)
+        return self;
 
     visit_child(cl.get_fun(), [&cl](Expression *new_i) { cl.set_fun(new_i); }, "Call fun cannot be removed");
     visit_body<Expression>(cl.get_args());
 
-    return &cl;
+    return try_replace(cl);
 }
 
 IR *PassManager::visit(List &lst) {
-    for (auto p : passes) {
-        IR* replaced = lst.accept(*p);
-        if (replaced != &lst) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(lst);
+    if (self != &lst)
+        return self;
 
     visit_body<Expression>(lst.get_value());
 
@@ -442,21 +397,18 @@ IR *PassManager::visit(List &lst) {
         visit_body<Expression>(lst.get_assignments());
     }
 
-    return &lst;
+    return try_replace(lst);
 }
 
 IR *PassManager::visit(Dict &dct) {
-    for (auto p : passes) {
-        IR* replaced = dct.accept(*p);
-        if (replaced != &dct) {
-            return replaced;
-        }
-    }
+    IR* self = try_replace(dct);
+    if (self != &dct)
+        return self;
 
     visit_body<Expression>(dct.get_keys());
     visit_body<Expression>(dct.get_values());
 
-    return &dct;
+    return try_replace(dct);
 }
 
 void PassManager::add_pass(IRVisitor *p) { 

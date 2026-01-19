@@ -2,6 +2,7 @@
 #include "analysis/method_analyzer.hpp"
 #include "analysis/function_analyzer.hpp"
 #include "analysis/expression_analyzer.hpp"
+#include "transforms/constant_folding.hpp"
 #include "ir.hpp"
 
 using namespace moss;
@@ -12,6 +13,9 @@ IRPipeline::IRPipeline(Parser &parser) : pm(parser), parser(parser) {
     add_pass(new MethodAnalyzer(parser)); // Method analyzer has to be run before function analyzer (it uses method tag).
     add_pass(new FunctionAnalyzer(parser));
     add_pass(new ExpressionAnalyzer(parser));
+
+    // Transforms
+    add_pass(new ConstantFoldingPass(parser));
 }
 
 IRPipeline::~IRPipeline() {
