@@ -21,9 +21,16 @@ IR *ConstantFoldingPass::visit(BinaryExpr &be) {
     auto lt = left->get_type();
     auto rt = right->get_type();
 
-    // Fold Int and Float
+    // Nil is not folded since only == and != would be used and writing such
+    // expressions is very unlikely and the time lost here checking for it is
+    // not worth it.
+
+    // TODO: Concat
+    // TODO: Move EQ to its own if and early return for differing types
+
     if ((lt == IRType::INT_LITERAL || lt == IRType::FLOAT_LITERAL) &&
             (rt == IRType::FLOAT_LITERAL || rt == IRType::INT_LITERAL)) {
+        // Fold Int and Float
         bool lhs_float = lt == IRType::FLOAT_LITERAL;
         bool rhs_float = rt == IRType::FLOAT_LITERAL;
         bool float_op = true;
@@ -119,10 +126,62 @@ IR *ConstantFoldingPass::visit(BinaryExpr &be) {
                     return new BoolLiteral(lf <= rf, left->get_src_info());
                 return new BoolLiteral(li <= ri, left->get_src_info());
             }
+            case OperatorKind::OP_EQ: {
+                if (float_op)
+                    return new BoolLiteral(lf == rf, left->get_src_info());
+                return new BoolLiteral(li == ri, left->get_src_info());
+            }
+            case OperatorKind::OP_NEQ: {
+                if (float_op)
+                    return new BoolLiteral(lf != rf, left->get_src_info());
+                return new BoolLiteral(li != ri, left->get_src_info());
+            }
             default:
                 break;
         }
+    } else if (lt == IRType::BOOL_LITERAL && rt == IRType::BOOL_LITERAL) {
+        opcode::BoolConst lb = dyn_cast<BoolLiteral>(left)->get_value();
+        opcode::BoolConst rb = dyn_cast<BoolLiteral>(right)->get_value();
+        
+        switch(opk) {
+            case OperatorKind::OP_AND:
+            case OperatorKind::OP_SHORT_C_AND:
+                return new BoolLiteral(lb && rb, left->get_src_info());
+            case OperatorKind::OP_OR:
+            case OperatorKind::OP_SHORT_C_OR:
+                return new BoolLiteral(lb || rb, left->get_src_info());
+            case OperatorKind::OP_XOR:
+                return new BoolLiteral(lb ^ rb, left->get_src_info());
+            case OperatorKind::OP_EQ:
+                return new BoolLiteral(lb == rb, left->get_src_info());
+            case OperatorKind::OP_NEQ:
+                return new BoolLiteral(lb != rb, left->get_src_info());
+            default: break;
+        }
+    } else if (lt == IRType::STRING_LITERAL && rt == IRType::STRING_LITERAL) {
+        opcode::StringConst ls = dyn_cast<StringLiteral>(left)->get_value();
+        opcode::StringConst rs = dyn_cast<StringLiteral>(right)->get_value();
+
+        switch(opk) {
+            case OperatorKind::OP_BT:
+                return new BoolLiteral(ls > rs, left->get_src_info());
+            case OperatorKind::OP_LT:
+                return new BoolLiteral(ls < rs, left->get_src_info());
+            case OperatorKind::OP_BEQ:
+                return new BoolLiteral(ls >= rs, left->get_src_info());
+            case OperatorKind::OP_LEQ:
+                return new BoolLiteral(ls <= rs, left->get_src_info());
+            case OperatorKind::OP_EQ:
+                return new BoolLiteral(ls == rs, left->get_src_info());
+            case OperatorKind::OP_NEQ:
+                return new BoolLiteral(ls != rs, left->get_src_info());
+            case OperatorKind::OP_IN:
+                return new BoolLiteral(rs.find(ls) != ustring::npos, left->get_src_info());
+            default: break;
+        }   
     }
+    // TODO: String multiplication
+    // TODO: String subscription
 
     return &be;
 }

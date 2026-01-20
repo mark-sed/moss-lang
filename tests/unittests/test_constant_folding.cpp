@@ -72,6 +72,12 @@ lf = 2.0 >= 0.1
 m = 10 <= 2
 mf = 10.1 <= 12.2
 
+n = 10 == 11
+nf = 10.0 == 10
+
+o = 1 == 23
+of = 0.0 == 0.000
+
 /// Complex
 
 c1 = 1 + 2 * 3 + 4 / 2.0 ^ 1 - 3
@@ -108,6 +114,10 @@ for (i : 0..2*2) {
 (lf = true)
 (m = false)
 (mf = true)
+(n = false)
+(nf = true)
+(o = false)
+(of = true)
 (c1 = 6)
 fun foo() {
 return 12.2
@@ -115,6 +125,90 @@ return 12.2
 for (i: (0..4)) {
 i
 }
+<IR: <end-of-file>>
+)";
+
+    EXPECT_EQ(process_and_fold(code), expected);
+}
+
+/// Test Bool folding
+TEST(ConstantFolding, BoolFolding){
+    ustring code = R"(b1 = true and true and true
+b2 = true and false and true
+
+b3 = true or false or false
+b4 = false or false or false or false or false
+
+b5 = true xor true xor true
+b6 = false xor false
+
+b7 = true == true == true
+b8 = false == true
+
+b9 = true != true
+b10 = false != true
+
+b11 = 4 == 4 == true
+
+fun foo(a=true or false) {
+    return true and true
+}
+)";
+
+    ustring expected = R"((b1 = true)
+(b2 = false)
+(b3 = true)
+(b4 = false)
+(b5 = true)
+(b6 = false)
+(b7 = true)
+(b8 = false)
+(b9 = false)
+(b10 = true)
+(b11 = true)
+fun foo(a=true) {
+return true
+}
+<IR: <end-of-file>>
+)";
+
+    EXPECT_EQ(process_and_fold(code), expected);
+}
+
+/// Test String folding
+TEST(ConstantFolding, StringFolding){
+    ustring code = R"(s1 = "Hi, " == "there"
+
+s3 = "h" != "h"
+s4 = "" != "sdfs"
+
+s5 = "abc" < "bcd"
+s6 = "aabc" < "aaabc"
+
+s7 = "abc" > "bcd"
+s8 = "aabc" > "aaabc"
+
+s9 = "a" >= "a"
+s10 = "ab" >= "a"
+
+s11 = "" <= ""
+
+s12 = "abc" in "--abc--"
+s13 = "H" in "hello"
+)";
+
+    ustring expected = R"((s1 = false)
+(s3 = false)
+(s4 = true)
+(s5 = true)
+(s6 = false)
+(s7 = false)
+(s8 = true)
+(s9 = true)
+(s10 = true)
+(s11 = true)
+(s12 = true)
+(s13 = false)
 <IR: <end-of-file>>
 )";
 
