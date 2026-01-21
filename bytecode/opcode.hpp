@@ -233,6 +233,16 @@ Value *runtime_constructor_call(Interpreter *vm, FunValue *funV, std::initialize
 
 opcode::IntConst hash_obj(ObjectValue *obj, Interpreter *vm);
 
+/// \brief Returns character in string `s` at index `i` as string.
+/// This function takes index `i` and returns character as string from `s` at
+/// this index. This works like moss' subscript so `i` can be negative.
+/// \note This does not check bounds.
+ustring str_index(StringConst s, IntConst i);
+/// \brief Check if index `i` is out of bounds in string `s`.
+/// This checks that index `i` is present in `s` using moss' subscript rules,
+/// so `i` may be negative. 
+bool is_oob(StringConst s, opcode::IntConst i);
+
 /// Base Opcode class
 class OpCode {
 protected:

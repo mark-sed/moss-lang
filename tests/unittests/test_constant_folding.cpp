@@ -153,6 +153,11 @@ b11 = 4 == 4 == true
 fun foo(a=true or false) {
     return true and true
 }
+
+e1 = 24 == "hi"
+e2 = true == 4.5
+e3 = 24 != nil
+e5 = "" == 0
 )";
 
     ustring expected = R"((b1 = true)
@@ -169,6 +174,10 @@ fun foo(a=true or false) {
 fun foo(a=true) {
 return true
 }
+(e1 = false)
+(e2 = false)
+(e3 = true)
+(e5 = false)
 <IR: <end-of-file>>
 )";
 
@@ -195,6 +204,21 @@ s11 = "" <= ""
 
 s12 = "abc" in "--abc--"
 s13 = "H" in "hello"
+
+c1 = "H" ++ "i" ++ "," ++ " " ++ "Moss" ++ " " ++ "user."
+c2 = "ID: " ++ 42 ++ ", Len: " ++ 0.5 ++ ", Active: " ++ true ++ ", owner: " ++ nil 
+
+sm1 = "" * 1000
+sm2 = "-" * 0
+sm3 = "a" * (1+3)
+sm4 = "ha" * 5
+sm5 = "hello" * 1
+
+ss1 = "Hello"[0]
+ss2 = "Moss"[1]
+//ss3 = "Language"[-1]
+ss4 = "some"[100]
+ss5 = (("hello marek")[6])
 )";
 
     ustring expected = R"((s1 = false)
@@ -209,6 +233,17 @@ s13 = "H" in "hello"
 (s11 = true)
 (s12 = true)
 (s13 = false)
+(c1 = "Hi, Moss user.")
+(c2 = "ID: 42, Len: 0.500000, Active: true, owner: nil")
+(sm1 = "")
+(sm2 = "")
+(sm3 = "aaaa")
+(sm4 = "hahahahaha")
+(sm5 = "hello")
+(ss1 = "H")
+(ss2 = "o")
+(ss4 = ("some" [] 100))
+(ss5 = "m")
 <IR: <end-of-file>>
 )";
 

@@ -1542,6 +1542,10 @@ public:
         return os;
     }
 
+    virtual ustring as_string() override {
+        return std::to_string(value);
+    }
+
     opcode::IntConst get_value() { return this->value; }
 };
 
@@ -1556,6 +1560,10 @@ public:
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << value;
         return os;
+    }
+
+    virtual ustring as_string() override {
+        return std::to_string(value);
     }
 
     opcode::FloatConst get_value() { return this->value; }
@@ -1574,6 +1582,10 @@ public:
         return os;
     }
 
+    virtual ustring as_string() override {
+        return value ? "true" : "false";
+    }
+
     opcode::BoolConst get_value() { return this->value; }
 }; 
 
@@ -1590,6 +1602,10 @@ public:
         return os;
     }
 
+    virtual ustring as_string() override {
+        return value;
+    }
+
     opcode::StringConst get_value() { return this->value; }
 };
 
@@ -1602,6 +1618,10 @@ public:
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "nil";
         return os;
+    }
+
+    virtual ustring as_string() override {
+        return "nil";
     }
 };
 

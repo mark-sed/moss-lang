@@ -1823,7 +1823,7 @@ static Value *mul(Value *s1, Value *s2, Register dst, Interpreter *vm) {
         } else {
             ustring result;
             result.reserve(ss1.size() * i1);
-            for (int i = 0; i < i1; ++i)
+            for (opcode::IntConst i = 0; i < i1; ++i)
                 result += ss1;
             res = StringValue::get(result);
         }
@@ -2436,18 +2436,24 @@ static void extract_range(Value *r, opcode::IntConst &start, opcode::IntConst &e
     step = step_i->get_value();
 }
 
-static inline ustring str_index(StringValue *s, IntConst i) {
-    auto st = s->get_value();
+ustring opcode::str_index(StringConst s, IntConst i) {
     if (i < 0) {
-        return ustring(1, st[st.size()+i]);
+        return ustring(1, s[s.size()+i]);
     }
-    return ustring(1, st[i]);
+    return ustring(1, s[i]);
+}
+
+static inline ustring str_index(StringValue *s, IntConst i) {
+    return opcode::str_index(s->get_value(), i);
+}
+
+bool opcode::is_oob(StringConst s, IntConst i) {
+    return (i < 0 && static_cast<unsigned long>(i*-1) > s.size()) || 
+              (i > 0 && static_cast<unsigned long>(i) >= s.size());
 }
 
 static inline bool is_oob(StringValue *s, IntConst i) {
-    ustring st = s->get_value();
-    return (i < 0 && static_cast<unsigned long>(i*-1) > st.size()) || 
-              (i > 0 && static_cast<unsigned long>(i) >= st.size());
+    return opcode::is_oob(s->get_value(), i);
 }
 
 static inline bool is_oob(ListValue *s, IntConst i) {
