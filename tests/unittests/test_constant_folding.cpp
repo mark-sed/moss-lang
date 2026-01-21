@@ -89,6 +89,11 @@ fun foo() {
 for (i : 0..2*2) {
     i
 }
+
+a1 = -1
+a2 = -42 - -8 + -8
+a3 = -0.5
+a4 = -9.1 - -0.1 + -1
 )";
 
     ustring expected = R"((a = 42)
@@ -125,6 +130,10 @@ return 12.2
 for (i: (0..4)) {
 i
 }
+(a1 = -1)
+(a2 = -42)
+(a3 = -0.5)
+(a4 = -10)
 <IR: <end-of-file>>
 )";
 
@@ -158,6 +167,11 @@ e1 = 24 == "hi"
 e2 = true == 4.5
 e3 = 24 != nil
 e5 = "" == 0
+
+ub1 = not true
+ub2 = not false
+ub3 = not true or not false
+ub4 = not (1 > 4)
 )";
 
     ustring expected = R"((b1 = true)
@@ -178,6 +192,10 @@ return true
 (e2 = false)
 (e3 = true)
 (e5 = false)
+(ub1 = false)
+(ub2 = true)
+(ub3 = true)
+(ub4 = true)
 <IR: <end-of-file>>
 )";
 
@@ -245,6 +263,22 @@ ss5 = (("hello marek")[6])
 (ss4 = ("some" [] 100))
 (ss5 = "m")
 <IR: <end-of-file>>
+)";
+
+    EXPECT_EQ(process_and_fold(code), expected);
+}
+
+/// Test folding of silent constants (removing them)
+TEST(ConstantFolding, SilentConstants){
+    ustring code = R"(~42
+~"Hello" ++ " There"
+~(-1 + 5 + -6.1)
+~true
+~(1 >= 4)
+~nil
+)";
+
+    ustring expected = R"(<IR: <end-of-file>>
 )";
 
     EXPECT_EQ(process_and_fold(code), expected);

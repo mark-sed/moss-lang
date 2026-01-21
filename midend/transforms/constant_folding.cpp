@@ -202,7 +202,6 @@ IR *ConstantFoldingPass::visit(BinaryExpr &be) {
         if (!opcode::is_oob(ls, ri)) {
             return new StringLiteral(opcode::str_index(ls, ri), new_src_i);
         }
-        // TODO: Handle range subsc
     } else if (opk == OperatorKind::OP_EQ && lt != rt) {
         // Varying types (if not int and float which is checked above) always
         // are not equal.
@@ -212,4 +211,33 @@ IR *ConstantFoldingPass::visit(BinaryExpr &be) {
     }
 
     return &be;
+}
+
+IR *ConstantFoldingPass::visit(UnaryExpr &ue) {
+    auto expr = ue.get_expr();
+    
+    if (!expr->is_constant())
+        return &ue;
+    
+    auto opk = ue.get_op().get_kind();
+    auto type = expr->get_type();
+    auto new_src_i = expr->get_src_info();
+
+    // If silent operator is used on a constant it can be deleted as it does
+    // nothing.
+    if (opk == OperatorKind::OP_SILENT)
+        return nullptr;
+
+    if (type == IRType::INT_LITERAL && opk == OperatorKind::OP_MINUS) {
+        // - int
+        return new IntLiteral(-(dyn_cast<IntLiteral>(expr)->get_value()), new_src_i);
+    } else if (type == IRType::FLOAT_LITERAL && opk == OperatorKind::OP_MINUS) {
+        // - float
+        return new FloatLiteral(-(dyn_cast<FloatLiteral>(expr)->get_value()), new_src_i);
+    } else if (type == IRType::BOOL_LITERAL && opk == OperatorKind::OP_NOT) {
+        // not bool
+        return new BoolLiteral(!(dyn_cast<BoolLiteral>(expr)->get_value()), new_src_i);
+    }
+
+    return &ue;
 }

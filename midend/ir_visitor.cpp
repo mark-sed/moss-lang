@@ -70,6 +70,8 @@ template <typename T>
 IR* PassManager::try_replace(T& node) {
     for (auto p : passes) {
         IR* replaced = p->visit(node);
+        if (!replaced)
+            return replaced;
         if (replaced != &node)
             return replaced->accept(*this);
     }
