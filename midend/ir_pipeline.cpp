@@ -3,6 +3,7 @@
 #include "analysis/function_analyzer.hpp"
 #include "analysis/expression_analyzer.hpp"
 #include "transforms/constant_folding.hpp"
+#include "transforms/dead_code_elimination.hpp"
 #include "ir.hpp"
 
 using namespace moss;
@@ -15,6 +16,9 @@ IRPipeline::IRPipeline(Parser &parser) : pm(parser), parser(parser) {
     add_pass(new ExpressionAnalyzer(parser));
 
     // Transforms
+    LOGMAX("Running DeadCodeElimination pass");
+    add_pass(new DeadCodeEliminationPass(parser));
+    LOGMAX("Running ConstantFolding pass");
     add_pass(new ConstantFoldingPass(parser));
 }
 
