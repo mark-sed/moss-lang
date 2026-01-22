@@ -265,6 +265,8 @@ for (i: a..10) {
 "Switch a\n"
 "While a\n"
 "DoWhile a\n"
+"DoWhile a\n"
+"While a\n"
 "ForLoop <multivar>\n"
 "Multivar\n"
 "ForLoop j\n"

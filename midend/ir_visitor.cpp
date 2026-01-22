@@ -207,25 +207,24 @@ IR *PassManager::visit(Try &tr) {
 }
 
 IR *PassManager::visit(While &whl) {
-    for (auto p : passes) {
-        IR* replaced = whl.accept(*p);
-        assert (replaced == &whl && "Pass attempted to replace While node");
-    }
+    IR* self = try_replace(whl);
+    if (self != &whl)
+        return self;
 
     visit_child(whl.get_cond(), [&whl](Expression *new_i) { whl.set_cond(new_i); }, "While cond cannot be removed");
     visit_body<IR>(whl.get_body());
-    return &whl;
+    return try_replace(whl);
 }
 
 IR *PassManager::visit(DoWhile &dwhl) {
-    for (auto p : passes) {
-        IR* replaced = dwhl.accept(*p);
-        assert (replaced == &dwhl && "Pass attempted to replace DoWhile node");
-    }
+    IR* self = try_replace(dwhl);
+    if (self != &dwhl)
+        return self;
+
 
     visit_body<IR>(dwhl.get_body());
     visit_child(dwhl.get_cond(), [&dwhl](Expression *new_i) { dwhl.set_cond(new_i); }, "DoWhile cond cannot be removed");
-    return &dwhl;
+    return try_replace(dwhl);
 }
 
 IR *PassManager::visit(ForLoop &frl) {

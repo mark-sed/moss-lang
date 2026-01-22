@@ -211,11 +211,16 @@ public:
     }
 
     std::list<IR *>& get_body() { return this->body; }
+
     void set_body(std::list<IR *> b) { 
         this->body = b;
         for (auto i: body) {
             i->set_parent(this);
         }
+    }
+
+    void move_body(std::list<IR*>&& b) {
+        body = std::move(b);
     }
 };
 

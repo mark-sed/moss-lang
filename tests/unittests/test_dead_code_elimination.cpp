@@ -4,6 +4,7 @@
 #include "ir_pipeline.hpp"
 #include "ir_visitor.hpp"
 #include "transforms/dead_code_elimination.hpp"
+#include "transforms/constant_folding.hpp"
 #include "commons.hpp"
 #include "parser.hpp"
 #include "source.hpp"
@@ -22,8 +23,9 @@ ustring process_and_dce(ustring code) {
     assert(mod && "failed parsing");
     ir::IRPipeline irp(parser);
     irp.get_pm().clear_passes();
-    auto aip = new DeadCodeEliminationPass(parser);
-    irp.add_pass(aip);
+    irp.add_pass(new DeadCodeEliminationPass(parser));
+    irp.add_pass(new ConstantFoldingPass(parser));
+    irp.add_pass(new DeadBranchEliminationPass(parser));
     auto err = irp.run(mod);
     assert(!err && "failed pipeline");
 
@@ -203,6 +205,70 @@ while(true) {
     // Check that no "check"s were deleted, these are possible deletions
     EXPECT_EQ(count_substrings(proc_ir, "check"), count_substrings(code, "check")) << "Parsed: " << proc_ir;
     EXPECT_EQ(count_substrings(proc_ir, "dead code"), 0) << "Parsed: " << proc_ir;
+}
+
+/// Test deletion of dead branches and constructs
+TEST(DeadBranchElimination, IfsAndWhiles){
+    ustring code = R"(
+if (false) {
+    "dead code"
+}
+
+while(false) {
+    "dead code"
+}
+
+if (true) {
+    "check"
+} else {
+    "dead code"
+}
+
+if (false) {
+    "dead code"
+} else {
+    "check"
+}
+
+fun foo() {
+    if (false) {
+        "dead"
+        if (true) {}
+    } else {
+        if (true) {
+            "check"
+        } else {
+            "dead"
+        }
+    }
+}
+
+while(1 < 0) {
+    "dead code"
+}
+
+if (true and true and false) {
+    "dead code"
+}
+)";
+
+    ustring expected = R"(if (true) {
+"check"
+}
+if (true) {
+"check"
+}
+fun foo() {
+if (true) {
+if (true) {
+"check"
+}
+}
+}
+<IR: <end-of-file>>
+)";
+
+    EXPECT_EQ(process_and_dce(code), expected);
 }
 
 }

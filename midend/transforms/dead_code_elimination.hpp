@@ -16,7 +16,9 @@
 namespace moss {
 namespace ir {
 
-/// Does constant folding transformation of IR.
+/// \brief Does dead code elimination in IR.
+/// Removes code after known taken returns in functions and code in blocks
+/// after breaks and continues.
 class DeadCodeEliminationPass : public IRVisitor {
 public:
     DeadCodeEliminationPass(Parser &parser) : IRVisitor(parser) {}
@@ -32,6 +34,22 @@ public:
     virtual IR *visit(class Finally &f) override;
     virtual IR *visit(class Try &t) override;
 };
+
+/// \brief Does dead branch elimination in IR.
+/// Removes constructs that are known to not be executed, such as:
+/// ```
+/// if (false) {}
+/// ```
+class DeadBranchEliminationPass : public IRVisitor {
+public:
+    DeadBranchEliminationPass(Parser &parser) : IRVisitor(parser) {}
+    
+    virtual IR *visit(class While &whl) override;
+    // TODO: DoWhile where if false just the block is kept.
+    // TODO: ForLoop with empty string, list, dict or range
+    virtual IR *visit(class If &i) override;
+};
+
 
 }
 }

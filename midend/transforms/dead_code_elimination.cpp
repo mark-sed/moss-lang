@@ -83,3 +83,42 @@ IR *DeadCodeEliminationPass::visit(Try &t) {
     eliminate_code_after_break_continue(t.get_body());
     return &t;
 }
+
+IR *DeadBranchEliminationPass::visit(While &whl) {
+    if (auto c = dyn_cast<ir::BoolLiteral>(whl.get_cond())) {
+        if (!c->get_value()) // while(false) can be deleted
+            return nullptr;
+    }
+    return &whl;
+}
+
+IR *DeadBranchEliminationPass::visit(If &i) {
+    auto c = dyn_cast<ir::BoolLiteral>(i.get_cond());
+    if (!c)
+        return &i;
+    if (c->get_value()) {
+        // if(true) -> delete else if exists
+        if (auto e = i.get_else()) {
+            delete e;
+            i.set_else(nullptr);
+        }
+    } else {
+        // if (false) -> delete if, but keep else
+        auto e = i.get_else();
+        if (!e) {
+            // No else, just delete this whole
+            return nullptr;
+        } else {
+            // Switch bodies (to delete in constructor) and condition to true
+            i.set_cond(new BoolLiteral(true, c->get_src_info()));
+            delete c;
+            std::list<IR*> else_body = std::move(e->get_body());
+            e->get_body().clear();
+            i.move_body(std::move(else_body));
+            i.set_else(nullptr);
+            delete e;
+        }
+    }
+
+    return &i;
+}

@@ -20,6 +20,8 @@ IRPipeline::IRPipeline(Parser &parser) : pm(parser), parser(parser) {
     add_pass(new DeadCodeEliminationPass(parser));
     LOGMAX("Running ConstantFolding pass");
     add_pass(new ConstantFoldingPass(parser));
+    LOGMAX("Running DeadBranchElimination pass");
+    add_pass(new DeadBranchEliminationPass(parser));
 }
 
 IRPipeline::~IRPipeline() {
