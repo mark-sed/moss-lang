@@ -12,3 +12,23 @@ math.inf
 
 math.nan
 "\n"
+
+// abs
+math.abs(Complex(3, 4))        // 5.0
+"\n"
+math.abs(Complex(-3, -4))      // 5.0
+"\n"
+math.abs(Complex(0, 0))        // 0.0
+"\n"
+math.abs(Complex(5, 0))        // 5.0
+"\n"
+math.abs(Complex(0, -7))       // 7.0
+"\n"
+math.abs(Complex(1, 1))        // 1.4142135623730951
+"\n"
+math.abs(Complex(-2, 2))       // 2.8284271247461903
+"\n"
+math.abs(Complex(1e154, 1e154))  // 1.414213562373095e+154
+"\n"
+math.abs(Complex(0, 1e308))      // 1e+308
+"\n"
