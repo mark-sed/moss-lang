@@ -29,6 +29,7 @@
 #include <regex>
 #include <cctype>
 #include <cwctype>
+#include <complex>
 
 using namespace moss;
 using namespace mslib;
@@ -480,6 +481,38 @@ Value *Bytes(Interpreter *vm, Value *s, Value *&err) {
     return new BytesValue(bytes);
 }
 
+Value *Complex_exp(Interpreter *vm, CallFrame *cf, Value *ths, Value *other, Value *&err) {
+    // TODO: When raising Int part to Int save the value as Int, not Float.
+    auto rv = mslib::get_attr(ths, "real", vm, err);
+    if (err)
+        return nullptr;
+    auto iv = mslib::get_attr(ths, "imag", vm, err);
+    if (err)
+        return nullptr;
+    auto r = mslib::get_number(rv);
+    auto i = mslib::get_number(iv);
+    std::complex<opcode::FloatConst> z(r, i);
+    std::complex<opcode::FloatConst> ex;
+    if (isa<IntValue>(other) || isa<FloatValue>(other)) {
+        ex = std::pow(z, other->as_float());
+    } else {
+        auto otrv = mslib::get_attr(other, "real", vm, err);
+        if (err)
+            return nullptr;
+        auto otiv = mslib::get_attr(other, "imag", vm, err);
+        if (err)
+            return nullptr;
+        auto otr = mslib::get_number(otrv);
+        auto oti = mslib::get_number(otiv);
+        std::complex<opcode::FloatConst> p(otr, oti);
+        ex = std::pow(z, p);
+    }
+    auto mrv = FloatValue::get(ex.real());
+    auto miv = FloatValue::get(ex.imag());
+    auto res = mslib::call_constructor(vm, cf, "Complex", {mrv, miv}, err);
+    return res;
+}
+
 Value *isinstance(Interpreter *vm, Value *obj, Value *types, Value *&err) {
     auto type_list = dyn_cast<ListValue>(types);
     bool is_class = true;
@@ -583,6 +616,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 } 
             }
             return ths->next(vm);
+        }},
+        {"^", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            auto ths = cf->get_arg("this");
+            assert(args.size() == 2 && "incorrect number of args");
+            if (ths->get_type()->get_name() == "Complex") {
+                return Complex_exp(vm, cf, ths, cf->get_arg("other"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
         }},
         {"abs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;

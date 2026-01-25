@@ -82,3 +82,31 @@ try {
 ~print(-Complex(2, 1) + 5)                // (3.0-1.0i)
 ~print(Complex(1, -1) * 2)                // (2.0-2.0i)
 ~print(Complex(6, 8) / 2)                 // (3.0+4.0i)
+
+Complex(1, 2) ^ 3        // Complex(-11, -2)
+"\n"
+Complex(2, 0) ^ 4        // Complex(16, 0)
+"\n"
+Complex(0, 1) ^ 2        // Complex(-1, 0)
+"\n"
+Complex(1, 1) ^ 0        // Complex(1, 0)
+"\n"
+
+Complex(1, 2) ^ 0.5      // Complex(1.272019649514069, 0.7861513777574233)
+"\n"
+Complex(4, 0) ^ 0.5      // Complex(2, 0)
+"\n"
+Complex(0, 1) ^ 0.5      // Complex(0.7071067811865476, 0.7071067811865475)
+"\n"
+
+Complex(1, 2) ^ Complex(1, 0)   // Complex(1, 2)
+"\n"
+Complex(1, 2) ^ Complex(0, 1)   // Complex(0.2291401859804338, 0.2381701151216756)
+"\n"
+Complex(2, 0) ^ Complex(1, 1)   // Complex(1.5384778027279442, 1.2779225526272695)
+"\n"
+
+Complex(0, 1) ^ 3        // Complex(0, -1)
+"\n"
+Complex(1, 0) ^ 2.5      // Complex(1, 0)
+"\n"

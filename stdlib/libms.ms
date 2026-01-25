@@ -730,6 +730,10 @@ class Complex {
         return ::Complex(r, i)
     }
 
+    @internal
+    fun (^)(other:[Int,Float,Complex]) {
+    }
+
     fun __String() {
         return this.real ++ (this.imag >= 0 ? "+" : "") ++ this.imag ++ "i"
     }
