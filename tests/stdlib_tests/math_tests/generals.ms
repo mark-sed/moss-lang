@@ -9,3 +9,6 @@ math.sqrt(25)
 // Constants
 math.inf
 "\n"
+
+math.nan
+"\n"

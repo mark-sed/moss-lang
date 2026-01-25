@@ -7,6 +7,15 @@ using namespace math;
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& math::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+        {"cosh", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::cosh(cf->get_args()[0].value->as_float()));
+        }},
+        {"sinh", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::sinh(cf->get_args()[0].value->as_float()));
+        }},
+        {"tanh", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::tanh(cf->get_args()[0].value->as_float()));
+        }},
         {"atan", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::atan(cf->get_args()[0].value->as_float()));
         }},

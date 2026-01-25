@@ -1606,7 +1606,7 @@ fun test_lib_python_type_conversions(name) {
 
 fun test_lib_math_generals(name) {
     ~expect_pass("stdlib_tests/math_tests/generals.ms", name, """-1.000000\n5.000000
-inf\n""", "")
+inf\nnan\n""", "")
 }
 
 fun test_lib_math_goniometrics(name) {
@@ -1614,6 +1614,18 @@ fun test_lib_math_goniometrics(name) {
 0.785398\n-0.785398\n0.463648\n1.107149\n1.471128\n-1.471128
 true\ntrue\ntrue
 0.000000\n1.570796\n3.141593\n-1.570796\n0.785398\n-0.785398\n2.356194\n-2.356194\n0.588003\n0.000000\n0.000000\ntrue\n""", "")
+}
+
+fun test_lib_math_hyperbolics(name) {
+    ~expect_pass("stdlib_tests/math_tests/hyperbolics.ms", name, """242582597.704895
+242582597.704895
+inf
+242582597.704895
+-242582597.704895
+inf\n-inf
+1.000000\n-1.000000\n1.000000\n-1.000000
+inf\ninf\nnan\ninf\n-inf\nnan
+1.000000\n-1.000000\nnan\n-nan\n-nan\n-nan\n""", "")
 }
 
 fun test_lib_sys_platform(name) {
@@ -2095,6 +2107,7 @@ fun run_all_tests() {
     // math
     ~run_test("lib_math_generals")
     ~run_test("lib_math_goniometrics")
+    ~run_test("lib_math_hyperbolics")
 
     // inspect
     ~run_test("lib_inspect_inspect")
