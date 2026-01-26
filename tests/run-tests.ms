@@ -1913,6 +1913,15 @@ true\n""", "", prog_args=f"{FILE1} {FILE2}")
     ~rm(FILE2, false)
 }
 
+
+fun test_lib_json_parser_basics(name) {
+    ~expect_pass("stdlib_tests/json_parser_tests/basics.ms", name, """{:}
+{:}
+caught
+caught
+caught\n""", "")
+}
+
 fun test_gc_local_vars(name) {
     ~expect_pass("gc_tests/local_vars.ms", name, "done\n", """gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: STRING(String)
@@ -2152,6 +2161,9 @@ fun run_all_tests() {
     ~run_test("lib_csv_parser_dict_reader")
     ~run_test("lib_csv_parser_converters")
     ~run_test("lib_csv_parser_csv_writer")
+
+    // json_parser
+    ~run_test("lib_json_parser_basics")
 
     // gc tests
     ~run_test("gc_local_vars")
