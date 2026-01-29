@@ -1958,6 +1958,64 @@ gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
 }
 
+fun test_gc_external_module_user(name) {
+    ~expect_pass("gc_tests/external_module_user.ms", name, """YEP<class Mod1Cls>
+ModSpace
+::ModSpace
+NewName
+::NewName
+NewNameMod2
+::NewNameMod2
+mod2fun
+hi 42
+hi 42
+YEP<class Mod1Cls>
+mod2\n""", 
+"""gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting: LIST(List)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: MODULE(external_module)
+gc.cpp::sweep: Deleting: CLASS(Mod1Cls)
+gc.cpp::sweep: Deleting: FUN(foo)
+gc.cpp::sweep: Deleting: SPACE(ModSpace)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: FUN(get_name)
+gc.cpp::sweep: Deleting: FUN(mod1fun)
+gc.cpp::sweep: Deleting: FUN(get_list)
+gc.cpp::sweep: Deleting: FUN(get_mod2)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: MODULE(external_module)
+gc.cpp::sweep: Deleting: CLASS(Mod1Cls)
+gc.cpp::sweep: Deleting: FUN(foo)
+gc.cpp::sweep: Deleting: SPACE(ModSpace)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: FUN(get_name)
+gc.cpp::sweep: Deleting: FUN(mod1fun)
+gc.cpp::sweep: Deleting: FUN(get_list)
+gc.cpp::sweep: Deleting: FUN(get_mod2)
+gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
+}
+
+
 fun test_repl_output(name) {
     ~expect_pass("repl_output.ms", name, rx_out=".*moss> moss> moss> 5\nmoss> hi\n.*\n.*\n.*<object of class Cls1>\nmoss> 5\nmoss> moss> moss> moss> moss> moss>", use_repl=true)
 }
@@ -2169,6 +2227,7 @@ fun run_all_tests() {
     ~run_test("gc_local_vars")
     ~run_test("gc_recursion")
     ~run_test("gc_global_dependency")
+    ~run_test("gc_external_module_user")
 
     //repl tests
     ~run_test("repl_output")

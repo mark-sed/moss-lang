@@ -104,7 +104,7 @@ FunValue * Interpreter::get_generator(ustring format) {
 }
 
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
-        : code(code), src_file(src_file), bci(0),
+        : code(code), src_file(src_file), vms_module(nullptr), bci(0),
           exit_code(0), bci_modified(false), stop(false), main(main),
           main_to_run(nullptr) {
     if (main && !gc) {

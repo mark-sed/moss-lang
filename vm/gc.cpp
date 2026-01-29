@@ -14,7 +14,6 @@ void TracingGC::push_currently_imported_module(ModuleValue *m) {
 }
 
 void TracingGC::pop_currently_imported_module() {
-    // FIXME: CALL TO THIS IN OPCODE IS DISABLED UNTIL FIXED
     currently_imported_modules.pop_back();
 }
 
@@ -84,6 +83,7 @@ void TracingGC::blacken_value(Value *v) {
     //LOGMAX("Blacken: " << *v);
     // Every value has a type
     mark_value(v->get_type());
+    mark_value(v->get_owner());
     // Values might have annotation
     for (auto [_, a]: v->get_annotations()) {
         mark_value(a);
@@ -138,6 +138,11 @@ void TracingGC::blacken_value(Value *v) {
     }
     else if (auto subv = dyn_cast<SuperValue>(v)) {
         mark_value(subv->get_instance());
+    }
+    else if (auto spcv = dyn_cast<SpaceValue>(v)) {
+        for (auto o: spcv->get_extra_owners()) {
+            mark_value(o);
+        }
     }
 }
 

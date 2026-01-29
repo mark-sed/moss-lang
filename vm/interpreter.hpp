@@ -192,6 +192,7 @@ private:
     friend class gcs::TracingGC;
     Bytecode *code;
     File *src_file;
+    ModuleValue *vms_module;
     
     std::list<MemoryPool *> const_pools; ///< Constant's frame stack
     std::list<MemoryPool *> frames;      ///< Frame stack
@@ -428,6 +429,14 @@ public:
     void set_bci(opcode::Address v) { 
         this->bci = v;
         this->bci_modified = true; 
+    }
+
+    void set_vms_module(ModuleValue *mod) {
+        this->vms_module = mod;
+    }
+
+    ModuleValue *get_vms_module() {
+        return this->vms_module;
     }
 
     /// \brief Handler for an exception

@@ -34,9 +34,9 @@ opcode::IntConst moss::hash(Value *v, Interpreter *vm) {
     return v->hash();
 }
 
-Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs) 
+Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs, ModuleValue *owner) 
         : marked(false), kind(kind), type(type), name(name), 
-          attrs(attrs), annotations{} {
+          attrs(attrs), annotations{}, owner(owner) {
 #ifndef NDEBUG
     ++allocated;
 #endif

@@ -1152,7 +1152,7 @@ void PushUnpacked::exec(Interpreter *vm) {
 }
 
 void CreateFun::exec(Interpreter *vm) {
-    FunValue *funval = new FunValue(name, arg_names, vm);
+    FunValue *funval = new FunValue(name, arg_names, vm, vm->get_vms_module());
     // Check if this is in class frame and if the names match, set this as constructor
     Value *pown = vm->get_top_frame()->get_pool_owner();
     if (pown && isa<ClassValue>(pown)) {
@@ -1351,17 +1351,15 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
     // We need to create the module value before running it so that gc can
     // access its values while its running
     auto gen_mod = new ModuleValue(name, mod_i->get_global_frame(), mod_i);
+    mod_i->set_vms_module(gen_mod);
     vm->push_currently_imported_module(gen_mod);
     mod_i->run();
     if (mod_i->get_exit_code() != 0) {
         LOGMAX("Import exited, delegating exit code");
         vm->set_exit_code(mod_i->get_exit_code());
     }
-    // FIXME: Temporary fix to not delete a module who's value might be accessed
-    //        and function from this module called! UNCOMMENT ONCE FIXED!!!!
-    LOGMAX("NOT POPPING IMPORTED MODULE AS THE GC MARKING IS NOT CORRECT YET.")
-    //assert(vm->top_currently_imported_module() == gen_mod && "Currently generated incorrectly popped?");
-    //vm->pop_currently_imported_module();
+    assert(vm->top_currently_imported_module() == gen_mod && "Currently generated incorrectly popped?");
+    vm->pop_currently_imported_module();
     return gen_mod;
 }
 
@@ -1411,7 +1409,7 @@ void PushParent::exec(Interpreter *vm) {
 }
 
 void BuildClass::exec(Interpreter *vm) {
-    auto cls = new ClassValue(name, vm->get_parent_list());
+    auto cls = new ClassValue(name, vm->get_parent_list(), vm->get_vms_module());
     vm->store(dst, cls);
     vm->store_name(dst, name);
     vm->clear_parent_list();
@@ -2802,8 +2800,13 @@ void BuildSpace::exec(Interpreter *vm) {
         auto spc_ex = dyn_cast<SpaceValue>(existing_v);
         assert(spc_ex->get_attrs() && "Space does not have frame set");
         vm->push_frame(spc_ex->get_attrs());
+        // When space is extended the new Module which extends it needs to be
+        // pushed to its list of extra owners for gc to not collect this module
+        // if the space is in use.
+        if (vm->get_vms_module())
+            spc_ex->push_extra_owner(vm->get_vms_module());
     } else {
-        auto spc = new SpaceValue(name, vm, anonymous);
+        auto spc = new SpaceValue(name, vm, anonymous, vm->get_vms_module());
         vm->store(dst, spc);
         vm->store_name(dst, name);
         if (anonymous)

@@ -29,6 +29,7 @@ namespace moss {
 
 class MemoryPool;
 class Interpreter;
+class ModuleValue;
 
 /// \note Add any new that have object methods to has_methods
 enum class TypeKind {
@@ -104,8 +105,9 @@ protected:
     
     MemoryPool *attrs;
     std::map<ustring, Value *> annotations;
+    ModuleValue *owner; ///< Owner module for GC to know value is relying on its module.
 
-    Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs=nullptr);
+    Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs=nullptr, ModuleValue *owner=nullptr);
 
     static int tab_depth;
 public:
@@ -180,6 +182,10 @@ public:
         return annotations[name];
     }
  
+    ModuleValue *get_owner() {
+        return this->owner;
+    }
+
     /// Returns register in which is attribute stored 
     /// If this attribute is not set, then nullptr is returned
     /// \param name Attribute name
@@ -740,11 +746,11 @@ public:
     static const TypeKind ClassType = TypeKind::CLASS;
 
     // If this is called by Type then Type is nullptr, so set type to this
-    ClassValue(ustring name) : Value(ClassType, name, BuiltIns::Type ? BuiltIns::Type : this) {}
-    ClassValue(ustring name, std::list<ClassValue *> supers) 
-        : Value(ClassType, name,  BuiltIns::Type ? BuiltIns::Type : this), supers(supers) {}
-    ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers) 
-        : Value(ClassType, name, (BuiltIns::Type ? BuiltIns::Type : this), frm), supers(supers) {}
+    ClassValue(ustring name, ModuleValue *owner=nullptr) : Value(ClassType, name, BuiltIns::Type ? BuiltIns::Type : this, nullptr, owner) {}
+    ClassValue(ustring name, std::list<ClassValue *> supers, ModuleValue *owner=nullptr) 
+        : Value(ClassType, name,  BuiltIns::Type ? BuiltIns::Type : this, nullptr, owner), supers(supers) {}
+    ClassValue(ustring name, MemoryPool *frm, std::list<ClassValue *> supers, ModuleValue *owner=nullptr) 
+        : Value(ClassType, name, (BuiltIns::Type ? BuiltIns::Type : this), frm, owner), supers(supers) {}
     ~ClassValue() {}
 
     virtual Value *clone() override {
@@ -792,6 +798,8 @@ public:
     static const TypeKind ClassType = TypeKind::OBJECT;
 
     ObjectValue(ClassValue *cls) : Value(ClassType, "<object>", cls) {
+        // Note that ObjectValue does not need to set owner since it is already
+        // done by it's type (class) and that is being marked by GC already.
         this->copy_attrs(cls->get_attrs());
     }
 
@@ -821,21 +829,18 @@ public:
 class SpaceValue : public Value {
 private:
     Interpreter *owner_vm;
+    std::list<ModuleValue *> extra_owners; // Since space can be extended its functions may reside in multiple modules.
     bool anonymous;
 public:
     static const TypeKind ClassType = TypeKind::SPACE;
 
-    SpaceValue(ustring name, Interpreter *owner_vm, bool anonymous=false)
-        : Value(ClassType, name, BuiltIns::Space), owner_vm(owner_vm), anonymous(anonymous) {}
-    SpaceValue(ustring name, MemoryPool *frm, Interpreter *owner_vm, bool anonymous=false)
-        : Value(ClassType, name, BuiltIns::Space, frm), owner_vm(owner_vm), anonymous(anonymous) {}
+    SpaceValue(ustring name, Interpreter *owner_vm, bool anonymous=false, ModuleValue *owner=nullptr)
+        : Value(ClassType, name, BuiltIns::Space, nullptr, owner), owner_vm(owner_vm), anonymous(anonymous) {}
+    SpaceValue(ustring name, MemoryPool *frm, Interpreter *owner_vm, bool anonymous=false, ModuleValue *owner=nullptr)
+        : Value(ClassType, name, BuiltIns::Space, frm, owner), owner_vm(owner_vm), anonymous(anonymous) {}
     ~SpaceValue() {}
 
     virtual Value *clone() override {
-        /*auto cpy = new SpaceValue(this->name, owner_vm, anonymous);
-        cpy->set_attrs(this->attrs);
-        cpy->annotations = this->annotations;
-        return cpy;*/
         return this;
     }
     
@@ -850,6 +855,14 @@ public:
 
     virtual opcode::StringConst as_string() const override {
         return "<space " + name + ">";
+    }
+
+    void push_extra_owner(ModuleValue *m) {
+        this->extra_owners.push_back(m);
+    }
+
+    const std::list<ModuleValue *> &get_extra_owners() {
+        return this->extra_owners;
     }
 
     virtual std::ostream& debug(std::ostream& os) const override;
@@ -868,10 +881,6 @@ public:
     ~ModuleValue();
 
     virtual Value *clone() override {
-        /*auto cpy = new ModuleValue(this->name, this->vm);
-        cpy->set_attrs(this->attrs);
-        cpy->annotations = this->annotations;
-        return cpy;*/
         return this;
     }
 
@@ -948,8 +957,8 @@ private:
 public:
     static const TypeKind ClassType = TypeKind::FUN;
 
-    FunValue(opcode::StringConst name, opcode::StringConst arg_names, Interpreter *vm) 
-            : Value(ClassType, name, BuiltIns::Function), 
+    FunValue(opcode::StringConst name, opcode::StringConst arg_names, Interpreter *vm, ModuleValue *owner=nullptr)
+            : Value(ClassType, name, BuiltIns::Function, nullptr, owner), 
               args(), closures(), vm(vm), body_addr(0), constructee(nullptr) {
         auto names = utils::split_csv(arg_names, ',');
         for (auto n: names) {
@@ -960,8 +969,9 @@ public:
     FunValue(opcode::StringConst name,
              std::vector<FunValueArg *> args,
              Interpreter *vm,
-             opcode::Address body_addr) 
-            : Value(ClassType, name, BuiltIns::Function), args(args), vm(vm),
+             opcode::Address body_addr,
+             ModuleValue *owner=nullptr) 
+            : Value(ClassType, name, BuiltIns::Function, nullptr, owner), args(args), vm(vm),
               body_addr(body_addr), constructee(nullptr) {}
 
     ~FunValue();
