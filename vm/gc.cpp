@@ -14,6 +14,7 @@ void TracingGC::push_currently_imported_module(ModuleValue *m) {
 }
 
 void TracingGC::pop_currently_imported_module() {
+    // FIXME: CALL TO THIS IN OPCODE IS DISABLED UNTIL FIXED
     currently_imported_modules.pop_back();
 }
 

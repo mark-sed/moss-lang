@@ -1357,8 +1357,11 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
         LOGMAX("Import exited, delegating exit code");
         vm->set_exit_code(mod_i->get_exit_code());
     }
-    assert(vm->top_currently_imported_module() == gen_mod && "Currently generated incorrectly popped?");
-    vm->pop_currently_imported_module();
+    // FIXME: Temporary fix to not delete a module who's value might be accessed
+    //        and function from this module called! UNCOMMENT ONCE FIXED!!!!
+    LOGMAX("NOT POPPING IMPORTED MODULE AS THE GC MARKING IS NOT CORRECT YET.")
+    //assert(vm->top_currently_imported_module() == gen_mod && "Currently generated incorrectly popped?");
+    //vm->pop_currently_imported_module();
     return gen_mod;
 }
 
