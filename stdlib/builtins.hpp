@@ -84,6 +84,8 @@ namespace BuiltIns {
     extern Value *Module;
     extern Value *Space;
     extern Value *Enum;
+
+    extern Value *ListIterator;
     
     extern Value *super;
     

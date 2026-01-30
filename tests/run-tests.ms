@@ -454,7 +454,8 @@ fun test_switches(name) {
 fun test_fors(name) {
     ~expect_pass("fors.ms", name, """Hello\nhi\nhi\n123\n2688\nno __next\n12345\n12345\n1234\n1234\n-10-8-6-4-2\n13579\n13579
 Pos: [], Vel: []\ndone\ncaught
-Some md header\nSome more\n""", "")
+Some md header\nSome more
+1-1|1-2|1-3|2-1|2-2|2-3|3-1|3-2|3-3|\n""", "")
 }
 
 fun test_try_catch(name) {
@@ -1244,7 +1245,7 @@ fun test_lib_lists(name) {
 [1, 2, 3]\n[1, 2, 3, 4, [true, nil]]\n[1, 2, 3, 4, [true, nil], 9, [], true]
 [1, true, 2, false]\nfalse\ntrue\n[1, 2]\n[1, 2, 3, 4, 5, 6]\n5\n3\n[1, 2, 4, 6]
 [4, 3, 2, 1]\n[]\n[false, true]\n[3, 2, 1]
-[1, 2, 3]\n1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]
+1\n[1, 2, 3, 4, [3, 4, 5, []]]\n[]\n[]
 false\ntrue\nfalse\nfalse\ntrue
 [1, 2, 3, 4, 5]\n[1, 2, 3, 4, 5, 6]\n[[5, 2, 3]]\n[[5, 2, 3]]
 2\n2\n0\n1\n3\n0

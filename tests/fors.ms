@@ -144,3 +144,10 @@ for (i : md"# Some more") {
     i
 }
 "\n"
+
+l = [1,2,3]
+for (a: l)
+    for (b: l) {
+        a++"-"++b++"|"
+    }
+"\n"

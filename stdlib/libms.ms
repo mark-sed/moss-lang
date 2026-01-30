@@ -433,6 +433,12 @@ class __List {
 
     @internal
     fun __iter() {}
+}
+
+@internal_bind("ListIterator")
+class __ListIterator {
+    //@internal
+    //fun ListIterator(value:List) {}
 
     @internal
     fun __next() {}

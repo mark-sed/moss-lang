@@ -52,6 +52,12 @@ enum class TypeKind {
     ENUM_VALUE,
     SUPER_VALUE,
 
+    LIST_ITER,
+    DICT_ITER,
+    STRING_ITER,
+    BYTES_ITER,
+    FUN_LIST_LITER,
+
     // Values after this has to be CPP values as dyn_cast relies on this.
     CPP_CVOID, // This has to be the first cpp value
     CPP_CVOID_STAR,
@@ -82,6 +88,13 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::ENUM: return "ENUM";
         case TypeKind::ENUM_VALUE: return "ENUM_VALUE";
         case TypeKind::SUPER_VALUE: return "SUPER_VALUE";
+
+        case TypeKind::LIST_ITER: return "LIST_ITER";
+        case TypeKind::DICT_ITER: return "DICT_ITER";
+        case TypeKind::STRING_ITER: return "STRING_ITER";
+        case TypeKind::BYTES_ITER: return "BYTES_ITER";
+        case TypeKind::FUN_LIST_LITER: return "FUN_LIST_LITER";
+
         case TypeKind::CPP_CVOID: return "CPP_CVOID";
         case TypeKind::CPP_CVOID_STAR: return "CPP_CVOID_STAR";
         case TypeKind::CPP_CLONG: return "CPP_CLONG";
@@ -524,8 +537,11 @@ public:
     }
 };
 
+class ListIterator;
+
 class ListValue : public Value {
 private:
+    friend class ListIterator;
     std::vector<Value *> vals;
     size_t iterator;
 public:
@@ -569,13 +585,8 @@ public:
         return ss.str();
     }
 
-    virtual Value *iter(Interpreter *vm) override {
-        (void)vm;
-        iterator = 0;
-        return this;
-    }
+    virtual Value *iter(Interpreter *vm) override;
 
-    virtual Value *next(Interpreter *vm) override;
     virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
     virtual std::ostream& debug(std::ostream& os) const override {
@@ -598,6 +609,38 @@ public:
         os << "\n" << std::string(tab_depth*2, ' ') << "]";
         return os;
     }
+};
+
+class ListIterator : public Value {
+private:
+    ListValue &value;
+    size_t iterator;
+public:
+    static const TypeKind ClassType = TypeKind::LIST_ITER;
+
+    ListIterator(ListValue &value);
+
+    virtual Value *clone() override {
+        return new ListIterator(value);
+    }
+
+    /// When mutable, then the value can change
+    virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; } // iter cannot be called on this.
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "ListIterator(" << value << ")";
+        return os;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::stringstream ss;
+        ss << "<ListIterator of List " << std::hex << static_cast<const void*>(&value) << ">";
+        return ss.str();
+    }
+
+    virtual Value *iter(Interpreter *) override { return this; }
+    virtual Value *next(Interpreter *vm) override;
 };
 
 class DictValue : public Value {

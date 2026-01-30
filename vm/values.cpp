@@ -57,7 +57,6 @@ Value *Value::iter(Interpreter *vm) {
 }
 
 Value *Value::next(Interpreter *vm) {
-    assert(!this->is_iterable() && "Value is marked as iterable but does not override next");
     opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE, this->get_type()->get_name().c_str())));
     return nullptr;
 }
@@ -198,12 +197,16 @@ Value *StringValue::next(Interpreter *vm) {
     return StringValue::get(ustring(1, chr));
 }
 
-Value *ListValue::next(Interpreter *vm) {
+Value *ListValue::iter(Interpreter *vm) {
+    return new ListIterator(*this);
+}
+
+Value *ListIterator::next(Interpreter *vm) {
     (void)vm;
-    if (this->iterator >= this->vals.size()) {
+    if (this->iterator >= value.vals.size()) {
         opcode::raise(mslib::create_stop_iteration());
     }
-    auto val = this->vals[iterator];
+    auto val = value.vals[iterator];
     this->iterator++;
     return val;
 }
@@ -417,6 +420,11 @@ ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", Built
 ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals(), iterator(0) {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
+}
+
+ListIterator::ListIterator(ListValue &value) : Value(ClassType, "ListIterator", BuiltIns::ListIterator), value(value), iterator(0) {
+    if(BuiltIns::ListIterator->get_attrs())
+        this->attrs = BuiltIns::ListIterator->get_attrs()->clone();
 }
 
 BytesValue::BytesValue(std::vector<uint8_t> value) : Value(ClassType, "Bytes", BuiltIns::Bytes), value(value), iterator(0) {

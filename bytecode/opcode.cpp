@@ -2982,8 +2982,11 @@ void Iter::exec(Interpreter *vm) {
         if (iterf) {
             LOGMAX("Calling object iterator");
             auto new_iter = runtime_method_call(vm, iterf, {coll});
-            if (!isa<ObjectValue>(new_iter))
-                new_iter->iter(vm);
+            if (!isa<ObjectValue>(new_iter)) {
+                // If non-object value was returned then call iter on it as well
+                // to get its iterator
+                new_iter = new_iter->iter(vm);
+            }
             vm->store(iterator, new_iter);
         } else {
             // If it cannot be called, then don't call 
