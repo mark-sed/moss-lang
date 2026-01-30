@@ -1005,34 +1005,11 @@ inf
     ~expect_fail("warnings.ms", name, args="-W error")
 
     // -W all outputs errors to stderr and continues
-    // FIXME: This test relies on the path "tests/warnings", which is bad and does not work on Windows
-    ~expect_pass("warnings.ms", name, out_expr, """\
-warning: tests/warnings.ms:4:10:
-      | Value '9223372036854775808' cannot fit into Int. [WDx1]
-      | 
-    4 | incor = -9223372036854775808 
-      |          ^^^^^^^^^^^^^^^^^^^
-warning: tests/warnings.ms:5:10:
-      | Value '9223372036854775808' cannot fit into Int. [WDx1]
-      | 
-    5 | incor2 = 9223372036854775808 
-      |          ^^^^^^^^^^^^^^^^^^^
-warning: tests/warnings.ms:11:10:
-      | Value '1e500' is too big or too close to 0 to fit into Float. [WDx2]
-      | 
-   11 | fincor = 1e500 
-      |          ^^^^^
-warning: tests/warnings.ms:14:12:
-      | Value '2.5e-500' is too big or too close to 0 to fit into Float. [WDx2]
-      | 
-   14 | fincor2 = -2.5e-500 
-      |            ^^^^^^^^
-warning: tests/warnings.ms:17:2:
-      | Value '1e500' is too big or too close to 0 to fit into Float. [WDx2]
-      | 
-   17 | -1e500 
-      |  ^^^^^
-""", args="-W all")
+    ~expect_pass("warnings.ms", name, out_expr, rx_err=r"""[\s\S]*Value '9223372036854775808' cannot fit into Int\.[\s\S]*\
+Value '9223372036854775808' cannot fit into Int\.[\s\S]*\
+Value '1e500' is too big or too close to 0 to fit into Float\.[\s\S]*\
+Value '2\.5e-500' is too big or too close to 0 to fit into Float\.[\s\S]*\
+Value '1e500' is too big or too close to 0 to fit into Float\.[\s\S]*""", args="-W all")
 }
 
 fun test_implicit_formats(name) {
