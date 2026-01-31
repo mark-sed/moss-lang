@@ -167,3 +167,12 @@ for (kv: {:}) {
 for (kv: {"a": 1, "b": 2}) {
     assert(kv == ["a", 1] || kv == ["b", 2])
 }
+
+d = {"a": 1, "b": 2, "c": 3}
+dr = {:}
+for (k, v: d) {
+    for (k2, v2: d) {
+        dr[k ++ k2] = v ++ v2
+    }
+}
+assert(dr == {"bc": "23", "ca": "31", "ba": "21", "aa": "11", "bb": "22", "cc": "33", "cb": "32", "ab": "12", "ac": "13"}, "Dict iterator skipped element/s")

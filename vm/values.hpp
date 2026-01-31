@@ -454,9 +454,10 @@ public:
 
 /// Moss string value
 class StringValue : public Value {
+private:
+    friend class StringIterator;
 protected:
     opcode::StringConst value;
-    size_t iterator;
     
     StringValue(opcode::StringConst value);
 public:
@@ -483,13 +484,7 @@ public:
         return value;
     }
 
-    virtual Value *iter(Interpreter *vm) override {
-        (void)vm;
-        iterator = 0;
-        return this;
-    }
-
-    virtual Value *next(Interpreter *vm) override;
+    virtual Value *iter(Interpreter *vm) override;
 
     virtual void *get_data_pointer() override {
         static const char * cstr_value = value.c_str();
@@ -504,6 +499,38 @@ public:
         os << "String(\"" << utils::sanitize(value) << "\")";
         return os;
     }
+};
+
+class StringIterator : public Value {
+private:
+    StringValue &value;
+    size_t iterator;
+public:
+    static const TypeKind ClassType = TypeKind::STRING_ITER;
+
+    StringIterator(StringValue &value);
+
+    virtual Value *clone() override {
+        return new StringIterator(value);
+    }
+
+    /// When mutable, then the value can change
+    virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; } // iter cannot be called on this.
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "StringIterator(" << value << ")";
+        return os;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::stringstream ss;
+        ss << "<StringIterator of String " << std::hex << static_cast<const void*>(&value) << ">";
+        return ss.str();
+    }
+
+    virtual Value *iter(Interpreter *) override { return this; }
+    virtual Value *next(Interpreter *vm) override;
 };
 
 /// Moss nil value (holds only one value)
@@ -643,11 +670,12 @@ public:
     virtual Value *next(Interpreter *vm) override;
 };
 
+class DictIterator;
+
 class DictValue : public Value {
 private:
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;    
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>>::iterator iterator;
-    size_t keys_iterator;
+    friend class DictIterator;
+    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;
 public:
     static const TypeKind ClassType = TypeKind::DICT;
 
@@ -704,14 +732,8 @@ public:
         return ss.str();
     }
 
-    virtual Value *iter(Interpreter *vm) override {
-        (void)vm;
-        iterator = vals.begin();
-        keys_iterator = 0;
-        return this;
-    }
+    virtual Value *iter(Interpreter *vm) override;
 
-    virtual Value *next(Interpreter *vm) override;
     virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
     virtual std::ostream& debug(std::ostream& os) const override {
@@ -737,6 +759,39 @@ public:
         os << "\n" << std::string(tab_depth*2, ' ') << "}";
         return os;
     }
+};
+
+class DictIterator : public Value {
+private:
+    DictValue &value;
+    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>>::iterator iterator;
+    size_t keys_iterator;
+public:
+    static const TypeKind ClassType = TypeKind::DICT_ITER;
+
+    DictIterator(DictValue &value);
+
+    virtual Value *clone() override {
+        return new DictIterator(value);
+    }
+
+    /// When mutable, then the value can change
+    virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; } // iter cannot be called on this.
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "DictIterator(" << value << ")";
+        return os;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::stringstream ss;
+        ss << "<DictIterator of Dict " << std::hex << static_cast<const void*>(&value) << ">";
+        return ss.str();
+    }
+
+    virtual Value *iter(Interpreter *) override { return this; }
+    virtual Value *next(Interpreter *vm) override;
 };
 
 /// Moss bytes value

@@ -779,6 +779,7 @@ true
 Ω
 Ω
 > 🐉中ñ
+aa|ab|ac|ad|ba|bb|bc|bd|ca|cb|cc|cd|da|db|dc|dd|
 """, "")
 
     ~expect_fail(r""" "\xA" """, name, "", rx_err="Short hexadecimal", exec=true)
@@ -1202,7 +1203,7 @@ Caught: FileNotFoundError: \n""", "")
 
 fun test_lib_ranges(name) {
     ~expect_pass("stdlib_tests/ranges.ms", name, """1\n3\n5\n100\n99\n98\n-2\n3\n8\n0\n1\n2
-0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n""", "")
+0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n11|12|13|21|22|23|31|32|33|\n""", "")
 }
 
 fun test_lib_input(name) {
@@ -1276,7 +1277,7 @@ h i !
 0q10\n0q52\n-0q10
 hello moss\nbonono\nxxx\nbba\nx11222111\ncdcdab\nhelloworld\nbrcdbr\nunchanged
 repeat\nhello\ncafe\nHello\n✅A✅\n❌ Value
-abc\na
+<class StringIterator>
 abCDEFGHIaabC
 caught
 caught

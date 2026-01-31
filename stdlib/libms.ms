@@ -299,6 +299,15 @@ class __String {
     fun __next() {}
 }
 
+@internal_bind("StringIterator")
+class __StringIterator {
+    //@internal
+    //fun StringIterator(value:String) {}
+
+    @internal
+    fun __next() {}
+}
+
 @internal_bind("Note")
 class __Note : String {
     d"""
@@ -574,6 +583,15 @@ class __Dict {
     }
 }
 
+@internal_bind("DictIterator")
+class __DictIterator {
+    //@internal
+    //fun DictIterator(value:Dict) {}
+
+    @internal
+    fun __next() {}
+}
+
 @internal_bind("Bytes")
 class __Bytes {
     d"""
@@ -627,8 +645,7 @@ class __Range {
     }
 
     fun __iter() {
-        this.i = this.start
-        return this
+        return this.start, this.start+this.step..this.end
     }
 
     fun __next() {

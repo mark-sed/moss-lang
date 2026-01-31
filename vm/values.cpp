@@ -187,12 +187,16 @@ Value *ObjectValue::next(Interpreter *vm) {
     return retv;
 }
 
-Value *StringValue::next(Interpreter *vm) {
+Value *StringValue::iter(Interpreter *vm) {
+    return new StringIterator(*this);
+}
+
+Value *StringIterator::next(Interpreter *vm) {
     (void)vm;
-    if (this->iterator >= this->value.size()) {
+    if (this->iterator >= this->value.value.size()) {
         opcode::raise(mslib::create_stop_iteration());
     }
-    auto chr = this->value[iterator];
+    auto chr = this->value.value[iterator];
     this->iterator++;
     return StringValue::get(ustring(1, chr));
 }
@@ -211,9 +215,13 @@ Value *ListIterator::next(Interpreter *vm) {
     return val;
 }
 
-Value *DictValue::next(Interpreter *vm) {
+Value *DictValue::iter(Interpreter *vm) {
+    return new DictIterator(*this);
+}
+
+Value *DictIterator::next(Interpreter *vm) {
     (void)vm;
-    if (this->iterator == this->vals.end()) {
+    if (this->iterator == this->value.vals.end()) {
         opcode::raise(mslib::create_stop_iteration());
     }
     auto item = iterator->second;
@@ -417,7 +425,7 @@ ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", Built
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
 }
-ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals(), iterator(0) {
+ListValue::ListValue() : Value(ClassType, "List", BuiltIns::List), vals() {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
 }
@@ -432,9 +440,14 @@ BytesValue::BytesValue(std::vector<uint8_t> value) : Value(ClassType, "Bytes", B
         this->attrs = BuiltIns::Bytes->get_attrs()->clone();
 }
 
-StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value), iterator(0) {
+StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {
     if(BuiltIns::String->get_attrs())
         this->attrs = BuiltIns::String->get_attrs()->clone();
+}
+
+StringIterator::StringIterator(StringValue &value) : Value(ClassType, "StringIterator", BuiltIns::StringIterator), value(value), iterator(0) {
+    if(BuiltIns::StringIterator->get_attrs())
+        this->attrs = BuiltIns::StringIterator->get_attrs()->clone();
 }
 
 NoteValue::NoteValue(opcode::StringConst format, StringValue *value) 
@@ -464,13 +477,18 @@ IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::I
 }
 
 DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals)
-        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals), iterator(vals.begin()), keys_iterator(0) {
+        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }
 DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
+}
+
+DictIterator::DictIterator(DictValue &value) : Value(ClassType, "DictIterator", BuiltIns::DictIterator), value(value), iterator(value.vals.begin()), keys_iterator(0) {
+    if(BuiltIns::DictIterator->get_attrs())
+        this->attrs = BuiltIns::DictIterator->get_attrs()->clone();
 }
 
 ObjectValue::~ObjectValue() {

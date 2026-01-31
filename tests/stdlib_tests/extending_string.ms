@@ -20,12 +20,12 @@ class MyString : String {
 class MyString2 : String {
 
     fun __iter() {
-        ~super.__iter()
+        this.i = super.__iter()
         return this
     }
 
     fun __next() {
-        return super.__next()
+        return this.i.__next()
     }
     
 }

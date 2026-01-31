@@ -86,6 +86,8 @@ namespace BuiltIns {
     extern Value *Enum;
 
     extern Value *ListIterator;
+    extern Value *DictIterator;
+    extern Value *StringIterator;
     
     extern Value *super;
     

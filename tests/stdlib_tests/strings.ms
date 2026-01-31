@@ -151,9 +151,7 @@ oct(-8)
 "\n"
 "✅ Value\n".replace("✅", "❌")
 
-"abc".__iter()
-"\n"
-"abc".__next()
+type("abc".__iter())
 "\n"
 
 """ABCDEFGHIAabC
