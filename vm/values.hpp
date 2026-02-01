@@ -56,7 +56,7 @@ enum class TypeKind {
     DICT_ITER,
     STRING_ITER,
     BYTES_ITER,
-    FUN_LIST_LITER,
+    FUN_LIST_ITER,
 
     // Values after this has to be CPP values as dyn_cast relies on this.
     CPP_CVOID, // This has to be the first cpp value
@@ -93,7 +93,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::DICT_ITER: return "DICT_ITER";
         case TypeKind::STRING_ITER: return "STRING_ITER";
         case TypeKind::BYTES_ITER: return "BYTES_ITER";
-        case TypeKind::FUN_LIST_LITER: return "FUN_LIST_LITER";
+        case TypeKind::FUN_LIST_ITER: return "FUN_LIST_ITER";
 
         case TypeKind::CPP_CVOID: return "CPP_CVOID";
         case TypeKind::CPP_CVOID_STAR: return "CPP_CVOID_STAR";
@@ -794,11 +794,14 @@ public:
     virtual Value *next(Interpreter *vm) override;
 };
 
+class BytesIterator;
+
 /// Moss bytes value
 class BytesValue : public Value {
+private:
+    friend class BytesIterator;
 protected:
     const std::vector<uint8_t> value;
-    size_t iterator;
 public:
     static const TypeKind ClassType = TypeKind::BYTES;
 
@@ -819,13 +822,7 @@ public:
 
     virtual opcode::StringConst as_string() const override;
 
-    virtual Value *iter(Interpreter *vm) override {
-        (void)vm;
-        iterator = 0;
-        return this;
-    }
-
-    virtual Value *next(Interpreter *vm) override;
+    virtual Value *iter(Interpreter *vm) override;
 
     virtual opcode::StringConst dump() override {
         return "b\"" + as_string() + "\"";
@@ -835,6 +832,38 @@ public:
         os << "Bytes(\"" << as_string() << "\")";
         return os;
     }
+};
+
+class BytesIterator : public Value {
+private:
+    BytesValue &value;
+    size_t iterator;
+public:
+    static const TypeKind ClassType = TypeKind::BYTES_ITER;
+
+    BytesIterator(BytesValue &value);
+
+    virtual Value *clone() override {
+        return new BytesIterator(value);
+    }
+
+    /// When mutable, then the value can change
+    virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; } // iter cannot be called on this.
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "BytesIterator(" << value << ")";
+        return os;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::stringstream ss;
+        ss << "<BytesIterator of Bytes " << std::hex << static_cast<const void*>(&value) << ">";
+        return ss.str();
+    }
+
+    virtual Value *iter(Interpreter *) override { return this; }
+    virtual Value *next(Interpreter *vm) override;
 };
 
 class ClassValue : public Value {
@@ -1213,17 +1242,19 @@ public:
     }
 };
 
+class FunctionListIterator;
+
 class FunValueList : public Value {
 private:
+    friend class FunctionListIterator;
     std::vector<FunValue *> funs;
-    std::vector<FunValue *>::iterator iterator;
 public:
     static const TypeKind ClassType = TypeKind::FUN_LIST;
 
-    FunValueList(FunValue *f) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), iterator(funs.begin()) {
+    FunValueList(FunValue *f) : Value(ClassType, "FunctionList", BuiltIns::FunctionList) {
         funs.push_back(f);
     }
-    FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs), iterator(funs.begin()) {}
+    FunValueList(std::vector<FunValue *> funs) : Value(ClassType, "FunctionList", BuiltIns::FunctionList), funs(funs) {}
     
     virtual Value *clone() override {
         return this;
@@ -1241,13 +1272,7 @@ public:
         return funs.back();
     }
 
-    virtual Value *next(Interpreter *vm) override;
-
-    virtual Value *iter(Interpreter *vm) override {
-        (void)vm;
-        iterator = funs.begin();
-        return this;
-    }
+    virtual Value *iter(Interpreter *vm) override;
 
     virtual opcode::StringConst as_string() const override {
         assert(!funs.empty() && "sanity check");
@@ -1269,6 +1294,38 @@ public:
         os << ")";
         return os;
     }
+};
+
+class FunctionListIterator : public Value {
+private:
+    FunValueList &value;
+    std::vector<FunValue *>::iterator iterator;
+public:
+    static const TypeKind ClassType = TypeKind::FUN_LIST_ITER;
+
+    FunctionListIterator(FunValueList &value);
+
+    virtual Value *clone() override {
+        return new FunctionListIterator(value);
+    }
+
+    /// When mutable, then the value can change
+    virtual inline bool is_hashable() override { return false; }
+    virtual inline bool is_iterable() override { return true; } // iter cannot be called on this.
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        os << "FunctionListIterator(" << value << ")";
+        return os;
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::stringstream ss;
+        ss << "<FunctionListIterator of Function " << std::hex << static_cast<const void*>(&value) << ">";
+        return ss.str();
+    }
+
+    virtual Value *iter(Interpreter *) override { return this; }
+    virtual Value *next(Interpreter *vm) override;
 };
 
 class EnumTypeValue;

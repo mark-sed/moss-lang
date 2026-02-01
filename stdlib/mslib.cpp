@@ -589,6 +589,22 @@ Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(std::wint
     return String::isfun(vm, arg, fn, err);
 }
 
+template<class IT, class VT>
+Value *create_iterator(Interpreter* vm, CallFrame* cf, Value *type, Value*& err) {
+    assert(cf->get_args().size() == 2);
+    auto ths = cf->get_arg("this");
+    auto val = cf->get_arg("value");
+    if (ths->get_type() == type) {
+        return new IT(*dyn_cast<VT>(val));
+    }
+    if (opcode::is_type_eq_or_subtype(ths->get_type(), type)) {
+        ths->set_attr(known_names::BUILT_IN_EXT_VALUE, new IT(*dyn_cast<VT>(val)));
+        return ths;
+    }
+    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+    return nullptr;
+}
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry::get_registry(ustring module_name) {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> libms_registry = {
         {known_names::OBJECT_ITERATOR, [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
@@ -692,6 +708,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"BytesIterator", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return create_iterator<BytesIterator, BytesValue>(vm, cf, BuiltIns::BytesIterator, err);
         }},
         {"capitalize", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 1);
@@ -808,6 +827,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
         }},
+        {"DictIterator", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return create_iterator<DictIterator, DictValue>(vm, cf, BuiltIns::DictIterator, err);
+        }},
         {"divmod", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             auto args = cf->get_args();
             assert(args.size() == 2);
@@ -827,6 +849,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"FunctionListIterator", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return create_iterator<FunctionListIterator, FunValueList>(vm, cf, BuiltIns::FunctionListIterator, err);
         }},
         {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             auto arg = cf->get_arg("this");
@@ -991,6 +1016,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"ListIterator", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return create_iterator<ListIterator, ListValue>(vm, cf, BuiltIns::ListIterator, err);
         }},
         {"locals", [](Interpreter* vm, CallFrame* cf, Value*&) {
             auto args = cf->get_args();
@@ -1218,6 +1246,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"StringIterator", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return create_iterator<StringIterator, StringValue>(vm, cf, BuiltIns::StringIterator, err);
         }},
         {"strip", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 1);

@@ -236,19 +236,25 @@ Value *DictIterator::next(Interpreter *vm) {
     return new ListValue(lst_vals);
 }
 
-Value *BytesValue::next(Interpreter *vm) {
-    (void)vm;
-    if (this->iterator >= this->value.size()) {
+Value *BytesValue::iter(Interpreter *) {
+    return new BytesIterator(*this);
+}
+
+Value *BytesIterator::next(Interpreter *) {
+    if (this->iterator >= this->value.value.size()) {
         opcode::raise(mslib::create_stop_iteration());
     }
-    auto val = this->value[iterator];
+    auto val = this->value.value[iterator];
     this->iterator++;
     return IntValue::get(static_cast<opcode::IntConst>(val));
 }
 
-Value *FunValueList::next(Interpreter *vm) {
-    (void)vm;
-    if (this->iterator == this->funs.end()) {
+Value *FunValueList::iter(Interpreter *vm) {
+    return new FunctionListIterator(*this);
+}
+
+Value *FunctionListIterator::next(Interpreter *) {
+    if (this->iterator == this->value.funs.end()) {
         opcode::raise(mslib::create_stop_iteration());
     }
     auto item = *iterator;
@@ -435,9 +441,14 @@ ListIterator::ListIterator(ListValue &value) : Value(ClassType, "ListIterator", 
         this->attrs = BuiltIns::ListIterator->get_attrs()->clone();
 }
 
-BytesValue::BytesValue(std::vector<uint8_t> value) : Value(ClassType, "Bytes", BuiltIns::Bytes), value(value), iterator(0) {
+BytesValue::BytesValue(std::vector<uint8_t> value) : Value(ClassType, "Bytes", BuiltIns::Bytes), value(value) {
     if(BuiltIns::Bytes->get_attrs())
         this->attrs = BuiltIns::Bytes->get_attrs()->clone();
+}
+
+BytesIterator::BytesIterator(BytesValue &value) : Value(ClassType, "BytesIterator", BuiltIns::BytesIterator), value(value), iterator(0) {
+    if(BuiltIns::BytesIterator->get_attrs())
+        this->attrs = BuiltIns::BytesIterator->get_attrs()->clone();
 }
 
 StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {
@@ -489,6 +500,11 @@ DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
 DictIterator::DictIterator(DictValue &value) : Value(ClassType, "DictIterator", BuiltIns::DictIterator), value(value), iterator(value.vals.begin()), keys_iterator(0) {
     if(BuiltIns::DictIterator->get_attrs())
         this->attrs = BuiltIns::DictIterator->get_attrs()->clone();
+}
+
+FunctionListIterator::FunctionListIterator(FunValueList &value) : Value(ClassType, "FunctionListIterator", BuiltIns::FunctionListIterator), value(value), iterator(value.funs.begin()) {
+    if(BuiltIns::FunctionListIterator->get_attrs())
+        this->attrs = BuiltIns::FunctionListIterator->get_attrs()->clone();
 }
 
 ObjectValue::~ObjectValue() {

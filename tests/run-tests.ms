@@ -438,6 +438,15 @@ fun test_annotations(name) {
     ~expect_pass("annotations.ms", name, "caught\ncaught\ncaught\n", "")
 }
 
+fun test_iterators(name) {
+    ~expect_pass("iterators.ms", name, """foo(a:[Int])+foo(a:[Int])|foo(a:[Int])+foo(a:[String])|foo(a:[Int])+foo(a)|foo(a:[String])+foo(a:[Int])|foo(a:[String])+foo(a:[String])|foo(a:[String])+foo(a)|foo(a)+foo(a:[Int])|foo(a)+foo(a:[String])|foo(a)+foo(a)|
+<class ListIterator>\n<class ListIterator>\n<class BytesIterator>\n<class BytesIterator>
+<class DictIterator>\n<class DictIterator>\n<class StringIterator>\n<class StringIterator>
+<class BytesIterator>\n97\n<class ListIterator>\n[0]\n<class StringIterator>\na
+<class DictIterator>\n["a", 1]\n<class FunctionListIterator>\nfoo(a:[Int])\n""", "")
+}
+
+
 fun test_ifs(name) {
     ~expect_pass("ifs.ms", name, """0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
 very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n""", "")
@@ -589,7 +598,8 @@ caught\ncaught\ncaught\n3\na\nint\ncst_cls3
 }
 
 fun test_bytes(name) {
-    ~expect_pass("bytes.ms", name, """68656C6C6F\ntrue\n[b"", b"61"]\n""", "")
+    ~expect_pass("bytes.ms", name, """68656C6C6F\ntrue\n[b"", b"61"]
+mm|mo|ms|ms|om|oo|os|os|sm|so|ss|ss|sm|so|ss|ss|\n""", "")
 }
 
 fun test_list_comprehension(name) {
@@ -1449,7 +1459,8 @@ globals\nempty_module\n""", "")
 
 fun test_lib_enumerate(name) {
     ~expect_pass("stdlib_tests/enumerate.ms", name, """0. 1\n1. 2\n2. 3\n[0, 1][1, 2][2, 3]
-[100, 9][101, 8][102, 7][103, 6][104, 5]\n""", "")
+[100, 9][101, 8][102, 7][103, 6][104, 5]
+0a0a|0a1b|0a2c|1b0a|1b1b|1b2c|2c0a|2c1b|2c2c|\n""", "")
 }
 
 fun test_lib_iterable_funs(name) {
@@ -2080,6 +2091,7 @@ fun run_all_tests() {
     ~run_test("multivar")
     ~run_test("function_overwriting")
     ~run_test("annotations")
+    ~run_test("iterators")
 
     ~run_test("basic_import")
     ~run_test("import_calls")

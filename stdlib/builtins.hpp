@@ -88,6 +88,8 @@ namespace BuiltIns {
     extern Value *ListIterator;
     extern Value *DictIterator;
     extern Value *StringIterator;
+    extern Value *BytesIterator;
+    extern Value *FunctionListIterator;
     
     extern Value *super;
     

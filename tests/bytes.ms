@@ -5,3 +5,11 @@ Bytes("hello")
 [Bytes(""), Bytes("a")]
 "\n"
 Bytes("")
+
+b = Bytes("moss")
+for (c: b) {
+    for (k: b) {
+        chr(c)++chr(k)++"|"
+    }
+}
+"\n"

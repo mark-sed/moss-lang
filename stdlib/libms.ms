@@ -294,18 +294,20 @@ class __String {
 
     @internal
     fun __iter() {}
-    
-    @internal
-    fun __next() {}
 }
 
 @internal_bind("StringIterator")
 class __StringIterator {
-    //@internal
-    //fun StringIterator(value:String) {}
+    d"Iterator for String objects."
+
+    @internal
+    fun StringIterator(value:String) {}
 
     @internal
     fun __next() {}
+
+    @internal
+    fun __iter() {}
 }
 
 @internal_bind("Note")
@@ -446,11 +448,16 @@ class __List {
 
 @internal_bind("ListIterator")
 class __ListIterator {
-    //@internal
-    //fun ListIterator(value:List) {}
+    d"Iterator for List object"
+    
+    @internal
+    fun ListIterator(value:List) {}
 
     @internal
     fun __next() {}
+
+    @internal
+    fun __iter() {}
 }
 
 @internal_bind("Dict")
@@ -581,15 +588,23 @@ class __Dict {
         d"Removes item at key `key` from the dictionary."
         ~this.pop(key)
     }
+
+    @internal
+    fun __iter() {}
 }
 
 @internal_bind("DictIterator")
 class __DictIterator {
-    //@internal
-    //fun DictIterator(value:Dict) {}
+    d"Iterator for Dict object."
+    
+    @internal
+    fun DictIterator(value:Dict) {}
 
     @internal
     fun __next() {}
+
+    @internal
+    fun __iter() {}
 }
 
 @internal_bind("Bytes")
@@ -604,6 +619,38 @@ class __Bytes {
         Converts `s` into byte representation.
         """
     }
+    // TODO: Constructor for Int (size) and list
+
+    @internal
+    fun __iter() {}
+}
+
+@internal_bind("BytesIterator")
+class __BytesIterator {
+    d"Iterator for Bytes object."
+    
+    @internal
+    fun BytesIterator(value:Bytes) {}
+
+    @internal
+    fun __next() {}
+
+    @internal
+    fun __iter() {}
+}
+
+@internal_bind("FunctionListIterator")
+class __FunctionListIterator {
+    d"Iterator for FunctionList."
+    
+    @internal
+    fun FunctionListIterator(value:FunctionList) {}
+
+    @internal
+    fun __next() {}
+
+    @internal
+    fun __iter() {}
 }
 
 @internal_bind("Range")
@@ -667,12 +714,12 @@ class Enumerate {
         d"Creates an enumeration from iterable with starting index `start`."
         this.iterable = iterable
         this.start = start
+        this.i = start
+        this.iter = iterable.__iter()
     }
 
     fun __iter() {
-        this.i = this.start
-        this.iter = this.iterable.__iter()
-        return this
+        return Enumerate(this.iterable, this.start)
     }
 
     fun __next() {
