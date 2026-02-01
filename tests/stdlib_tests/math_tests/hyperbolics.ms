@@ -29,26 +29,26 @@ cosh(inf)      // inf
 "\n"
 cosh(-inf)     // inf
 "\n"
-cosh(nan)      // nan
+isnan(cosh(nan))      // nan
 "\n"
 
 sinh(inf)      // inf
 "\n"
 sinh(-inf)     // -inf
 "\n"
-sinh(nan)      // nan
+isnan(sinh(nan))      // nan
 "\n"
 
 tanh(inf)      // 1.0
 "\n"
 tanh(-inf)     // -1.0
 "\n"
-tanh(nan)      // nan
+isnan(tanh(nan))      // nan
 "\n"
 
-tanh(0.0 * inf)  // nan
+isnan(tanh(0.0 * inf))  // nan
 "\n"
-sinh(0.0 * inf)  // nan
+isnan(sinh(0.0 * inf))  // nan
 "\n"
-cosh(0.0 * inf)  // nan
+isnan(cosh(0.0 * inf))  // nan
 "\n"

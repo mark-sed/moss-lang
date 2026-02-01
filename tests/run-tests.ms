@@ -1600,7 +1600,8 @@ fun test_lib_python_type_conversions(name) {
 fun test_lib_math_generals(name) {
     ~expect_pass("stdlib_tests/math_tests/generals.ms", name, """-1.000000\n5.000000
 inf\nnan
-5.000000\n5.000000\n0.000000\n5.000000\n7.000000\n1.414214\n2.828427\ninf\ninf\n""", "")
+5.000000\n5.000000\n0.000000\n5.000000\n7.000000\n1.414214\n2.828427\ninf\ninf
+true\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue\nfalse\nfalse\n""", "")
 }
 
 fun test_lib_math_goniometrics(name) {
@@ -1627,8 +1628,8 @@ inf
 -242582597.704895
 inf\n-inf
 1.000000\n-1.000000\n1.000000\n-1.000000
-inf\ninf\nnan\ninf\n-inf\nnan
-1.000000\n-1.000000\nnan\n-nan\n-nan\n-nan\n""", "")
+inf\ninf\ntrue\ninf\n-inf\ntrue
+1.000000\n-1.000000\ntrue\ntrue\ntrue\ntrue\n""", "")
 }
 
 fun test_lib_sys_platform(name) {

@@ -7,6 +7,16 @@ import ::Math.*
 inf = Float("inf")
 nan = Float("nan")
 
+fun isinf(f:Float) {
+    d"Returns true if `f` is inf or -inf"
+    return abs(f) == inf
+}
+
+@internal
+fun isnan(f:Float) {
+    d"Returns true if `f` is nan or -nan."
+}
+
 fun abs(x:Complex) {
     a = x.real
     b = x.imag
