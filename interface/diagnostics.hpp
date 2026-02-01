@@ -227,6 +227,7 @@ enum DiagID : unsigned {
     COULD_NOT_PARSE_FLOAT,  ///< When float could not be parsed
     INPUT_ERROR,            ///< When there is some system error when reading from stdin
     OPERATION_ON_CLOSED_FILE, ///< When trying to work with closed file
+    GCD_OR_LCM_EXPECTS_INTS, ///< When gcd or lcm received List with non-int value 
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -433,6 +434,7 @@ static const char * DIAG_MSGS[] = {
     "Value '%s' could not be parsed as a Float",
     "Reading from standard input has failed",
     "I/O operation on closed file",
+    "Function %s as an argument expects a List of Ints, but value at index %zu is of type '%s'",
 };
 
 /// \brief ID of diagnostic error

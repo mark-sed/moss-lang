@@ -1632,6 +1632,11 @@ inf\ninf\ntrue\ninf\n-inf\ntrue
 1.000000\n-1.000000\ntrue\ntrue\ntrue\ntrue\n""", "")
 }
 
+fun test_lib_math_arithmetics(name) {
+    ~expect_pass("stdlib_tests/math_tests/arithmetics.ms", name, """0\n42\n0\n5\n5\n6\n6\n6\n6\n6\n1\n6\n0\n10\ncaught
+0\n0\n-42\n0\n0\n0\n24\n24\n24\n24\n24\n60\n0\n1\n1001\ncaught\n""", "")
+}
+
 fun test_lib_sys_platform(name) {
     ~expect_pass("stdlib_tests/sys_tests/platform.ms", name, "true\ntrue\n", "")
 }
@@ -2180,6 +2185,7 @@ fun run_all_tests() {
     ~run_test("lib_math_generals")
     ~run_test("lib_math_goniometrics")
     ~run_test("lib_math_hyperbolics")
+    ~run_test("lib_math_arithmetics")
 
     // inspect
     ~run_test("lib_inspect_inspect")

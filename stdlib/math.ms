@@ -78,3 +78,21 @@ fun tan(x:Complex) {
     i = sinh(2*xi) / d
     return Complex(r, i)
 }
+
+@internal
+fun gcd(... ints) {
+    d"""
+    Returns Greatest Common Divisor of passed in Integers.
+    If `ints` are not all Integers then TypeError is raised.
+    If `ints` or all values are 0, then 0 is returned.
+    """
+}
+
+@internal
+fun lcm(... ints) {
+    d"""
+    Returns Least Common Multiple of passed in Integers.
+    If `ints` are not all Integers then TypeError is raised.
+    If `ints` or all values are 0, then 0 is returned.
+    """
+}
