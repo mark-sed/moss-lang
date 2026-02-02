@@ -51,6 +51,12 @@ ustring utils::sanitize(const ustring &text) {
                 break;
                 case '\\': sanitized.push_back('\\');
                 break;
+                case '\a': sanitized.push_back('a');
+                break;
+                case '\b': sanitized.push_back('b');
+                break;
+                case '\f': sanitized.push_back('f');
+                break;
                 case '"': sanitized.push_back('"');
                 break;
                 default: sanitized += std::to_string(static_cast<int>(text[i]));
