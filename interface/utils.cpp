@@ -32,37 +32,28 @@ std::vector<ustring> utils::split_csv(ustring csv, char delim) {
 }
 
 ustring utils::sanitize(const ustring &text) {
-    const ustring ESC_CHARS("\t\n\v\a\b\f\r\\\"");
-    ustring sanitized;
-    for (ustring::size_type i = 0; i < text.size(); i++) {
-        if (ESC_CHARS.find(text[i]) == ustring::npos){
-            sanitized.push_back(text[i]);
-        }
-        else{
-            sanitized.push_back('\\');
-            switch(text[i]){
-                case '\n': sanitized.push_back('n');
-                break;
-                case '\t': sanitized.push_back('t');
-                break;
-                case '\r': sanitized.push_back('r');
-                break;
-                case '\v': sanitized.push_back('v');
-                break;
-                case '\\': sanitized.push_back('\\');
-                break;
-                case '\a': sanitized.push_back('a');
-                break;
-                case '\b': sanitized.push_back('b');
-                break;
-                case '\f': sanitized.push_back('f');
-                break;
-                case '"': sanitized.push_back('"');
-                break;
-                default: sanitized += std::to_string(static_cast<int>(text[i]));
-                break;
+    std::ostringstream oss;
+    for (unsigned char c : text) {
+        if (c < 0x20) { // ASCII control characters
+            switch (c) {
+                case '\n': oss << "\\n"; break;
+                case '\t': oss << "\\t"; break;
+                case '\r': oss << "\\r"; break;
+                case '\b': oss << "\\b"; break;
+                case '\f': oss << "\\f"; break;
+                case '\v': oss << "\\v"; break;
+                case '\a': oss << "\\a"; break;
+                default:
+                    oss << "\\x" << std::hex << std::uppercase
+                        << std::setw(2) << std::setfill('0') << (int)c;
             }
+        } else if (c == '\"') {
+            oss << "\\\"";
+        } else if (c == '\\') {
+            oss << "\\\\";
+        } else {
+            oss << c; // printable ASCII or UTF-8 bytes
         }
     }
-    return sanitized;
+    return oss.str();
 }

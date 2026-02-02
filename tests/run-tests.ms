@@ -790,7 +790,8 @@ true
 Ω
 > 🐉中ñ
 aa|ab|ac|ad|ba|bb|bc|bd|ca|cb|cc|cd|da|db|dc|dd|
-["\\t\\n\\v\\a\\b\\f\\r\\\\"]\n""", "")
+["\\t\\n\\v\\a\\b\\f\\r\\\\"]
+["\\b\\x06ě\\x00\\x01\\x02\\x1F "]\n""", "")
 
     ~expect_fail(r""" "\xA" """, name, "", rx_err="Short hexadecimal", exec=true)
     ~expect_fail(r""" "\Q01" """, name, "", rx_err="Short octal", exec=true)
