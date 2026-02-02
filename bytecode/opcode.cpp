@@ -805,7 +805,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         LOGMAX(*cf);
     } else if (!cf->get_args().empty() && cf->get_args().back().name == "this" && isa<SuperValue>(cf->get_args().back().value)) {
         LOGMAX("Super value used as this, passing in 'this' from current frame");
-        auto ths_super = vm->load_name("this");
+        auto sv = dyn_cast<SuperValue>(cf->get_args().back().value);
+        auto ths_super = sv->get_instance();
         assert(ths_super && "Calling method of super, but this is not present");
         cf->get_args().back().value = ths_super;
         LOGMAX("This for super call set to: " << *ths_super);

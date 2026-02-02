@@ -208,3 +208,24 @@ try {
     subc.super
 } catch (e:AttributeError)
     "caught\n"
+
+class Mod1Cls {
+    fun foo() {
+        return "hi"
+    }
+}
+
+class ClassExt : Mod1Cls {
+    fun get_sup() {
+        return super
+    }
+}
+
+fun get_mod() {
+    return ClassExt()
+}
+
+get_mod().get_sup()
+"\n"
+get_mod().get_sup().foo()
+"\n"
