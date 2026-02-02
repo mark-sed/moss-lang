@@ -1087,6 +1087,33 @@ B = 1
 Running test main\n""", "")
 }
 
+fun test_attribute_errors(name) {
+    ~expect_pass("attribute_errors.ms", name, rx_out=r""".*'Module math'.*[\s\S]*\
+.*'Object of type Exception'.*[\s\S]*\
+.*'Enum Foo'.*[\s\S]*\
+.*'Foo F'.*[\s\S]*\
+.*'Function print'.*[\s\S]*\
+.*'List'.*[\s\S]*\
+.*'String'.*[\s\S]*\
+.*'Int'.*[\s\S]*\
+.*'Float'.*[\s\S]*\
+.*'Bool'.*[\s\S]*\
+.*'NilType'.*[\s\S]*\
+.*'FunctionList'.*[\s\S]*\
+.*'Object of type Complex'.*[\s\S]*\
+.*'Object of type Range'.*[\s\S]*\
+.*'Dict'.*[\s\S]*\
+.*'super of class Foo'.*[\s\S]*\
+.*'Object of type ListIterator'.*[\s\S]*\
+.*'Object of type DictIterator'.*[\s\S]*\
+.*'Object of type StringIterator'.*[\s\S]*\
+.*'Object of type BytesIterator'.*[\s\S]*\
+.*'Object of type FunctionListIterator'.*[\s\S]*\
+.*'Type Exception'.*[\s\S]*\
+.*'Space Foo'.*[\s\S]*\
+.*'Object of type Note'.*[\s\S]*""", expected_err="")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -2121,6 +2148,7 @@ fun run_all_tests() {
     ~run_test("warnings")
     ~run_test("implicit_formats")
     ~run_test("mains")
+    ~run_test("attribute_errors")
 
     ~run_test("fibonacci")
     ~run_test("factorial")

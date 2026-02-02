@@ -63,9 +63,16 @@ bool opcode::is_type_eq_or_subtype(Value *t1, Value *t2) {
 }
 
 ustring get_type_or_name(Value *v) {
-    if (isa<ObjectValue>(v))
-        return (ustring("object of type ")+v->get_type()->get_name());
-    return v->get_type()->get_name()+" "+v->get_name();
+    if (isa<ModuleValue>(v) || isa<ClassValue>(v) || isa<EnumTypeValue>(v)
+            || isa<EnumValue>(v) || isa<FunValue>(v) || isa<SpaceValue>(v))
+        return v->get_type()->get_name()+" "+v->get_name();
+    if (isa<IntValue>(v) || isa<FloatValue>(v) || isa<BoolValue>(v)
+            || isa<NilValue>(v) || isa<StringValue>(v) || isa<ListValue>(v)
+            || isa<DictValue>(v) || isa<BytesValue>(v) || isa<FunValueList>(v))
+        return v->get_type()->get_name();
+    if (auto s = dyn_cast<SuperValue>(v))
+        return (ustring("super of class ")+s->get_instance()->get_type()->get_name());
+    return (ustring("Object of type ")+v->get_type()->get_name());
 }
 
 /// \brief Does a call to a function in the code
