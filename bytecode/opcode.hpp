@@ -179,14 +179,14 @@ enum OpCodes : opcode_t {
     BUILD_ENUM, //        %dst, %vals, %name
     BUILD_SPACE,  //      %dst, "name"
 
-    CREATE_RANGE, //      %dst, %start, %step, %end
-    CREATE_RANGE2, //     %dst, #start, %step, %end
-    CREATE_RANGE3, //     %dst, %start, #step, %end
-    CREATE_RANGE4, //     %dst, %start, %step, #end
-    CREATE_RANGE5, //     %dst, #start, #step, %end
-    CREATE_RANGE6, //     %dst, #start, %step, #end
-    CREATE_RANGE7, //     %dst, %start, #step, #end
-    CREATE_RANGE8, //     %dst, #start, #step, #end
+    CREATE_RANGE, //      %dst, %start, %next, %end
+    CREATE_RANGE2, //     %dst, #start, %next, %end
+    CREATE_RANGE3, //     %dst, %start, #next, %end
+    CREATE_RANGE4, //     %dst, %start, %next, #end
+    CREATE_RANGE5, //     %dst, #start, #next, %end
+    CREATE_RANGE6, //     %dst, #start, %next, #end
+    CREATE_RANGE7, //     %dst, %start, #next, #end
+    CREATE_RANGE8, //     %dst, #start, #next, #end
 
     SWITCH, //    %src, %listvals, %listaddr, addr_def
     FOR, //       %i, %iterator, addr
@@ -2152,24 +2152,24 @@ class CreateRange : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE;
 
-    CreateRange(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << start << ", %" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", %" << next << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2177,24 +2177,24 @@ class CreateRange2 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE2;
 
-    CreateRange2(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE2"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange2(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE2"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", #" << start << ", %" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", %" << next << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange2>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2202,24 +2202,24 @@ class CreateRange3 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE3;
 
-    CreateRange3(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE3"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange3(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE3"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << start << ", #" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", #" << next << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange3>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2227,24 +2227,24 @@ class CreateRange4 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE4;
 
-    CreateRange4(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE4"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange4(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE4"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << start << ", %" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", %" << next << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange4>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2252,24 +2252,24 @@ class CreateRange5 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE5;
 
-    CreateRange5(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE5"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange5(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE5"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", #" << start << ", #" << step << ", %" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", #" << next << ", %" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange5>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2277,24 +2277,24 @@ class CreateRange6 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE6;
 
-    CreateRange6(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE6"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange6(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE6"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", #" << start << ", %" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", %" << next << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange6>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2302,24 +2302,24 @@ class CreateRange7 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE7;
 
-    CreateRange7(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE7"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange7(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE7"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", %" << start << ", #" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", %" << start << ", #" << next << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange7>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 
@@ -2327,24 +2327,24 @@ class CreateRange8 : public OpCode {
 public:
     Register dst;
     Register start;
-    Register step;
+    Register next;
     Register end;
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE8;
 
-    CreateRange8(Register dst, Register start, Register step, Register end) :
-        OpCode(ClassType, "CREATE_RANGE8"), dst(dst), start(start), step(step), end(end) {}
+    CreateRange8(Register dst, Register start, Register next, Register end) :
+        OpCode(ClassType, "CREATE_RANGE8"), dst(dst), start(start), next(next), end(end) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << dst << ", #" << start << ", #" << step << ", #" << end;
+        os << mnem << "  %" << dst << ", #" << start << ", #" << next << ", #" << end;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CreateRange8>(other);
         if (!casted) return false;
-        return casted->dst == dst && casted->start == start && casted->step == step && casted->end == end;
+        return casted->dst == dst && casted->start == start && casted->next == next && casted->end == end;
     }
 };
 

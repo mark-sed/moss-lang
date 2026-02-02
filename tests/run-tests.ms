@@ -1240,7 +1240,8 @@ Caught: FileNotFoundError: \n""", "")
 
 fun test_lib_ranges(name) {
     ~expect_pass("stdlib_tests/ranges.ms", name, """1\n3\n5\n100\n99\n98\n-2\n3\n8\n0\n1\n2
-0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n11|12|13|21|22|23|31|32|33|\n""", "")
+0\n1\n2\nend\nend\nend\n0\n1\n2\n0\n-1\n-2\n11|12|13|21|22|23|31|32|33|
+caught\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_input(name) {

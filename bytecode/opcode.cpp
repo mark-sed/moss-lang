@@ -2824,17 +2824,30 @@ void BuildSpace::exec(Interpreter *vm) {
     }
 }
 
-static void range(Value *start, Value *step, Value *end, Register dst, Interpreter *vm) {
+static void range(Value *start, Value *next, Value *end, Register dst, Interpreter *vm) {
+    // Check type correctness
+    if (!isa<IntValue>(start)) {
+        raise(mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_INT_IN_RANGE, "start", start->get_type()->get_name().c_str())));
+    }
+    if (!isa<IntValue>(end)) {
+        raise(mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_INT_IN_RANGE, "end", end->get_type()->get_name().c_str())));
+    }
+    if (!isa<IntValue>(next) && !isa<NilValue>(next)) {
+        raise(mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_INT_IN_RANGE, "next", next->get_type()->get_name().c_str())));
+    }
     diags::DiagID did = diags::DiagID::UNKNOWN;
     FunValue *constr;
     ClassValue *range_cls = dyn_cast<ClassValue>(BuiltIns::Range);
-    assert(range_cls && "Range is not a class type");
-    // We cannot call range if step is nil with this value as it won't match the type
-    if (isa<NilValue>(step)) {
-        constr = opcode::lookup_method(vm, range_cls, range_cls->get_name(), {start, end}, did);
-    } else {
-        constr = opcode::lookup_method(vm, range_cls, range_cls->get_name(), {start, end, step}, did);
+    // Calculate step
+    Value *step = next;
+    if (!isa<NilValue>(step)) {
+        auto rs = vm->get_free_reg(vm->get_top_frame());
+        step = sub(next, start, rs, vm);
+        if (!step)
+            step = vm->load(rs);
     }
+    assert(range_cls && "Range is not a class type");
+    constr = opcode::lookup_method(vm, range_cls, range_cls->get_name(), {start, end, step}, did);
     if (!constr) {
         if (did == diags::DiagID::UNKNOWN) {
             raise(mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, "Range")));
@@ -2849,34 +2862,34 @@ static void range(Value *start, Value *step, Value *end, Register dst, Interpret
 }
 
 void CreateRange::exec(Interpreter *vm) {
-    range(vm->load(start), vm->load(step), vm->load(end), dst, vm);
+    range(vm->load(start), vm->load(next), vm->load(end), dst, vm);
 }
 
 void CreateRange2::exec(Interpreter *vm) {
-    range(vm->load_const(start), vm->load(step), vm->load(end), dst, vm);
+    range(vm->load_const(start), vm->load(next), vm->load(end), dst, vm);
 }
 
 void CreateRange3::exec(Interpreter *vm) {
-    range(vm->load(start), vm->load_const(step), vm->load(end), dst, vm);
+    range(vm->load(start), vm->load_const(next), vm->load(end), dst, vm);
 }
 
 void CreateRange4::exec(Interpreter *vm) {
-    range(vm->load(start), vm->load(step), vm->load_const(end), dst, vm);
+    range(vm->load(start), vm->load(next), vm->load_const(end), dst, vm);
 }
 
 void CreateRange5::exec(Interpreter *vm) {
-    range(vm->load_const(start), vm->load_const(step), vm->load(end), dst, vm);}
+    range(vm->load_const(start), vm->load_const(next), vm->load(end), dst, vm);}
 
 void CreateRange6::exec(Interpreter *vm) {
-    range(vm->load_const(start), vm->load(step), vm->load_const(end), dst, vm);
+    range(vm->load_const(start), vm->load(next), vm->load_const(end), dst, vm);
 }
 
 void CreateRange7::exec(Interpreter *vm) {
-    range(vm->load(start), vm->load_const(step), vm->load_const(end), dst, vm);
+    range(vm->load(start), vm->load_const(next), vm->load_const(end), dst, vm);
 }
 
 void CreateRange8::exec(Interpreter *vm) {
-    range(vm->load_const(start), vm->load_const(step), vm->load_const(end), dst, vm);
+    range(vm->load_const(start), vm->load_const(next), vm->load_const(end), dst, vm);
 }
 
 void Switch::exec(Interpreter *vm) {

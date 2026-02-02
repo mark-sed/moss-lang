@@ -320,49 +320,49 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::CreateRange>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange2>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange3>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange4>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange5>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange6>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange7>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::CreateRange8>(op_gen)){
             write_register(o->dst);
             write_register(o->start);
-            write_register(o->step);
+            write_register(o->next);
             write_register(o->end);
         }
         else if (auto o = dyn_cast<opcode::Switch>(op_gen)){

@@ -1226,46 +1226,37 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
 
         auto start_reg = emit(start);
         auto end_reg = emit(end);
-        RegValue *step_reg = nullptr;
-        // Step has to be calculated from start and second
+        RegValue *rngnext_reg = nullptr;
         if (second) {
-            auto sec_reg = emit(second);
+            rngnext_reg = emit(second);
             if (start_reg->is_const()) {
-                if (sec_reg->is_const()) {
-                    append(new StoreConst(next_reg(), free_reg(sec_reg)));
-                    sec_reg = last_reg();
-                }
-                append(new Sub3(next_reg(), free_reg(sec_reg), start_reg->reg()));
-            } else {
-                if (sec_reg->is_const()) {
-                    append(new Sub2(next_reg(), free_reg(sec_reg), start_reg->reg()));
-                } else {
-                    append(new Sub(next_reg(), free_reg(sec_reg), start_reg->reg()));
+                if (rngnext_reg->is_const()) {
+                    append(new StoreConst(next_reg(), free_reg(rngnext_reg)));
+                    rngnext_reg = last_reg();
                 }
             }
-            step_reg = last_reg();
         } else {
-            // If step is not set, then set it to nil
+            // If rngnext is not set, then set it to nil
             append(new StoreNilConst(next_creg()));
-            step_reg = last_creg();
+            rngnext_reg = last_creg();
         }
 
-        if (!start_reg->is_const() && !step_reg->is_const() && !end_reg->is_const())
-            append(new CreateRange(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (start_reg->is_const() && !step_reg->is_const() && !end_reg->is_const())
-            append(new CreateRange2(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (!start_reg->is_const() && step_reg->is_const() && !end_reg->is_const())
-            append(new CreateRange3(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (!start_reg->is_const() && !step_reg->is_const() && end_reg->is_const())
-            append(new CreateRange4(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (start_reg->is_const() && step_reg->is_const() && !end_reg->is_const())
-            append(new CreateRange5(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (start_reg->is_const() && !step_reg->is_const() && end_reg->is_const())
-            append(new CreateRange6(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (!start_reg->is_const() && step_reg->is_const() && end_reg->is_const())
-            append(new CreateRange7(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
-        else if (start_reg->is_const() && step_reg->is_const() && end_reg->is_const())
-            append(new CreateRange8(next_reg(), free_reg(start_reg), free_reg(step_reg), free_reg(end_reg)));
+        if (!start_reg->is_const() && !rngnext_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && !rngnext_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange2(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (!start_reg->is_const() && rngnext_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange3(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (!start_reg->is_const() && !rngnext_reg->is_const() && end_reg->is_const())
+            append(new CreateRange4(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && rngnext_reg->is_const() && !end_reg->is_const())
+            append(new CreateRange5(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && !rngnext_reg->is_const() && end_reg->is_const())
+            append(new CreateRange6(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (!start_reg->is_const() && rngnext_reg->is_const() && end_reg->is_const())
+            append(new CreateRange7(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
+        else if (start_reg->is_const() && rngnext_reg->is_const() && end_reg->is_const())
+            append(new CreateRange8(next_reg(), free_reg(start_reg), free_reg(rngnext_reg), free_reg(end_reg)));
         else {
             assert(false && "unreachable");
         }

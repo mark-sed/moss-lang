@@ -82,3 +82,22 @@ for (a: r) {
     }
 }
 "\n"
+
+splitted_all = "aaaaaaa"
+start = 1
+v = true
+try
+    splitted = splitted_all[start..v]
+catch (e:ValueError)
+    "caught\n"
+
+try
+    splitted = splitted_all[v..10]
+catch (e:ValueError)
+    "caught\n"
+
+try
+    splitted = splitted_all[0,v..10]
+catch (e:ValueError)
+    "caught\n"
+
