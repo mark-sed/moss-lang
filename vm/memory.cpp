@@ -150,6 +150,15 @@ size_t MemoryPool::get_finally_stack_size() {
     return this->finally_stack.size();
 }
 
+void MemoryPool::push_catch(ExceptionCatch ec) {
+    this->catches.push_back(ec);
+}
+
+void MemoryPool::pop_catch(opcode::IntConst amount) {
+    assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack");
+    this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
+}
+
 void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
     bool first = true;
     ++tab_depth;

@@ -25,6 +25,7 @@ namespace moss {
 
 class Value;
 class FunValue;
+struct ExceptionCatch;
 
 namespace opcode {
     class Finally;
@@ -41,6 +42,7 @@ private:
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     std::vector<std::vector<opcode::Finally *>> finally_stack;
+    std::list<ExceptionCatch> catches;
 
     bool holds_consts;
     bool global;
@@ -138,6 +140,15 @@ public:
 
     std::vector<opcode::Finally *> &get_finally_stack();
     size_t get_finally_stack_size();
+
+    /// \brief Pushes a new catch exception block into the catch stack.
+    void push_catch(ExceptionCatch ec);
+    /// \brief Removes value from top of the stack.
+    void pop_catch(opcode::IntConst amount);
+
+    std::list<ExceptionCatch> &get_catches() {
+        return catches;
+    }
 
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;

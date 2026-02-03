@@ -1074,6 +1074,8 @@ public:
     // TODO: Debug
 };
 
+struct ExceptionCatch;
+
 class FunValue : public Value {
 private:
     std::vector<FunValueArg *> args;
@@ -1081,6 +1083,7 @@ private:
     Interpreter *vm;
     opcode::Address body_addr;
     ClassValue *constructee;
+    std::list<ExceptionCatch> catches;
 public:
     static const TypeKind ClassType = TypeKind::FUN;
 
@@ -1110,6 +1113,12 @@ public:
     virtual inline bool is_hashable() override { return true; }
     virtual opcode::IntConst hash() override {
         return std::hash<ustring>{}("0f_"+name);
+    }
+
+    void push_catch(ExceptionCatch c);
+
+    std::list<ExceptionCatch> &get_catches() {
+        return catches;
     }
 
     void set_vararg(opcode::IntConst index) {

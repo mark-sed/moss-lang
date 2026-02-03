@@ -73,6 +73,10 @@ Value *Value::get_attr(ustring name, Interpreter *caller_vm) {
     return attrs->load_name(name, caller_vm);
 }
 
+void FunValue::push_catch(ExceptionCatch c) {
+    catches.push_back(c);
+}
+
 Value *SuperValue::get_attr(ustring name, Interpreter *caller_vm) {
     auto type_v = instance->get_type();
     auto type = dyn_cast<ClassValue>(type_v);

@@ -200,8 +200,6 @@ private:
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
 
-    std::list<ExceptionCatch> catches;   ///< List of current catches
-
     static gcs::TracingGC *gc;  ///< Garbage collector for this VM
     static T_Converters converters; ///< Mapping of formats and their converters
     static T_Generators generators; ///< Mapping of formats and their generators
@@ -353,18 +351,11 @@ public:
     }
 #endif
 
-    /// \brief Pushes a new catch exception block into the catch stack.
-    void push_catch(ExceptionCatch ec) {
-        this->catches.push_back(ec);
-    }
+    /// \brief Pushes a new catch exception block into the catch stack of a
+    // current function or this module.
+    void push_catch(ExceptionCatch ec);
     /// \brief Removes value from top of the stack.
-    void pop_catch(opcode::IntConst amount) {
-        assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack");
-        this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
-    }
-    /// \returns catch stack.
-    std::list<ExceptionCatch>& get_catches() { return this->catches; }
-    std::optional<moss::ExceptionCatch> get_catch_for_exception(Value *exc, bool only_current_frame=false);
+    void pop_catch(opcode::IntConst amount);
 
     /// \brief Pushes a new finally into finally stack.
     void push_finally(opcode::Finally *fnl);

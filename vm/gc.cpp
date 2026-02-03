@@ -174,6 +174,9 @@ void TracingGC::mark_frame(MemoryPool *p) {
     for (auto v: p->get_spilled_values()) {
         mark_value(v);
     }
+    for (auto c: p->get_catches()) {
+        mark_value(c.type);
+    }
 }
 
 void TracingGC::mark_roots(Interpreter *ivm) {
@@ -189,10 +192,6 @@ void TracingGC::mark_roots(Interpreter *ivm) {
     // Mark values pushed as parents
     for (auto pl: ivm->parent_list) {
         mark_value(pl);
-    }
-
-    for (auto c: ivm->catches) {
-        mark_value(c.type);
     }
 
     // Call frame marking

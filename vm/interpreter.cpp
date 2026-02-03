@@ -559,7 +559,6 @@ void Interpreter::restore_to_global_frame() {
     LOG1("Restoring interpreter to global frame position");
     // clear() should be calling destructors as well
     call_frames.clear();
-    catches.clear();
 
     assert(!frames.empty() && "sanity check");
     assert(!const_pools.empty() && "sanity check");
@@ -567,18 +566,13 @@ void Interpreter::restore_to_global_frame() {
     const_pools.erase(std::next(frames.begin()), frames.end());    
 }
 
-std::optional<moss::ExceptionCatch> Interpreter::get_catch_for_exception(Value *exc, bool only_current_frame) {
-    for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
-        auto ec = *riter;
-        if (only_current_frame && ec.frame_position != get_top_frame())
-            return std::nullopt;
-        if (!ec.type || opcode::is_type_eq_or_subtype(exc->get_type(), ec.type)) {
-            return ec;
-        }
-    }
-    return std::nullopt;
+void Interpreter::push_catch(ExceptionCatch ec) {
+    get_local_frame()->push_catch(ec);
 }
 
+void Interpreter::pop_catch(opcode::IntConst amount) {
+    get_local_frame()->pop_catch(amount);
+}
 
 void Interpreter::run() {
     LOG1("Running interpreter of " << (src_file ? src_file->get_name() : "??") << "\n----- OUTPUT: -----");
@@ -596,13 +590,21 @@ void Interpreter::run() {
                 // Match to known catches otherwise let fall through to next interpreter
                 // or interpreter owner to print or exit or both
                 bool handled = false;
-                for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
-                    auto ec = *riter;
-                    if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
-                        LOGMAX("Caught exception");
-                        handle_exception(ec, v);
-                        handled = true;
-                        break;
+                for (auto frm: frames) {
+                    // TODO: The issue is that these are only frames of this VM
+                    // but we need to walk the frames across VMs from current
+                    // frame back to its caller.
+                    // Maybe add some global stack and it could be also used
+                    // for correct stacktrace?
+                    auto catches = frm->get_catches();
+                    for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
+                        auto ec = *riter;
+                        if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
+                            LOGMAX("Caught exception");
+                            handle_exception(ec, v);
+                            handled = true;
+                            break;
+                        }
                     }
                 }
                 // Rethrow exception to be handled by next interpreter or unhandled
