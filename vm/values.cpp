@@ -73,6 +73,10 @@ Value *Value::get_attr(ustring name, Interpreter *caller_vm) {
     return attrs->load_name(name, caller_vm);
 }
 
+void FunValue::push_catch(ExceptionCatch c) {
+    catches.push_back(c);
+}
+
 Value *SuperValue::get_attr(ustring name, Interpreter *caller_vm) {
     auto type_v = instance->get_type();
     auto type = dyn_cast<ClassValue>(type_v);
@@ -100,7 +104,7 @@ void Value::copy_attrs(MemoryPool *p) {
 void Value::set_attr(ustring name, Value *v, bool internal_access) {
     assert((this->is_modifiable() || internal_access) && "Setting attribute for non-modifiable value");
     if (!attrs) {
-        this->attrs = new MemoryPool();
+        this->attrs = new MemoryPool(nullptr);
     }
     auto reg = attrs->get_free_reg();
     attrs->store(reg, v);
@@ -348,15 +352,6 @@ std::ostream& ModuleValue::debug(std::ostream& os) const {
     if (attrs)
         os << ": " << *attrs;
     return os;
-}
-
-ModuleValue::~ModuleValue() {
-    delete vm->get_code();
-    delete vm->get_src_file();
-    delete vm;
-    // Attrs need to be set to nullptr as ~Value will be called, but
-    // vm destructor should delete global frame which is attrs
-    this->attrs = nullptr;
 }
 
 EnumValue::EnumValue(EnumTypeValue *type, ustring name) : Value(ClassType, name, type) {

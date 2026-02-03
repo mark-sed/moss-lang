@@ -45,6 +45,7 @@ private:
 
     static std::vector<ModuleValue *> currently_imported_modules;
     static std::list<MemoryPool *> popped_frames;
+    static std::list<Interpreter *> vms;
 public:
     TracingGC(Interpreter *vm);
 
@@ -58,6 +59,8 @@ public:
     /// Once import of a module is done, it should be popped
     static void pop_currently_imported_module();
 
+    static void push_vm(Interpreter *vm);
+
     /// Adds a new removed memory pool for collection
     static void push_popped_frame(MemoryPool *f);
 #ifndef NDEBUG
@@ -65,6 +68,11 @@ public:
     static size_t get_currently_imported_modules_size() { return currently_imported_modules.size(); }
     static size_t get_popped_frames_size() { return popped_frames.size(); }
     static std::list<MemoryPool *> get_popped_frames() { return popped_frames; }
+    static void re_init_gc() {
+        currently_imported_modules.clear();
+        popped_frames.clear();
+        vms.clear();
+    }
 #endif
 };
 

@@ -30,6 +30,8 @@ static bool value_exists_on_heap(const Value *val) {
 
 static void init_gc() {
     Value::next_gc = std::numeric_limits<size_t>::max();
+    Value::all_values.clear();
+    gcs::TracingGC::re_init_gc();
 }
 
 static void deinit_gc() {
@@ -58,7 +60,7 @@ fun foo() {
     bcgen::BytecodeGen cgen(bc, &parser);
     cgen.generate(mod);
 
-    Interpreter *i = new Interpreter(bc, nullptr, true);
+    Interpreter *i = new Interpreter(bc, &sf, true);
     i->run();
 
     auto foo = i->load_name("foo");
@@ -128,7 +130,7 @@ fun foo() {
     bcgen::BytecodeGen cgen(bc, &parser);
     cgen.generate(mod);
 
-    Interpreter *i = new Interpreter(bc, nullptr, true);
+    Interpreter *i = new Interpreter(bc, &sf, true);
     i->run();
 
     auto foo = i->load_name("foo");

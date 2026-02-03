@@ -25,6 +25,7 @@ namespace moss {
 
 class Value;
 class FunValue;
+struct ExceptionCatch;
 
 namespace opcode {
     class Finally;
@@ -37,10 +38,12 @@ namespace opcode {
 class MemoryPool {
 private:
     Value *pool_owner; ///< This value is set to the owner of this pool if it is a function
+    Interpreter *vm_owner;
     std::unordered_map<opcode::Register, Value *> pool;
     std::map<ustring, opcode::Register> sym_table;
     std::list<Value *> spilled_values;   ///< Modules and spaces imported and spilled into global scope
     std::vector<std::vector<opcode::Finally *>> finally_stack;
+    std::list<ExceptionCatch> catches;
 
     bool holds_consts;
     bool global;
@@ -50,8 +53,9 @@ public:
 #ifndef NDEBUG
     static long allocated;
 #endif
-    MemoryPool(bool holds_consts=false, bool global=false) : pool_owner(nullptr), holds_consts(holds_consts),
-               global(global), marked(false) {
+    MemoryPool(Interpreter *vm_owner, bool holds_consts=false, bool global=false)
+                : pool_owner(nullptr), vm_owner(vm_owner), holds_consts(holds_consts),
+                  global(global), marked(false) {
         if (!global && !holds_consts) {
             // TODO: Fine tune these values
             pool = std::unordered_map<opcode::Register, Value *>(128);
@@ -68,7 +72,7 @@ public:
 #endif
     }
     MemoryPool *clone() {
-        auto cpy = new MemoryPool(holds_consts, global);
+        auto cpy = new MemoryPool(vm_owner, holds_consts, global);
         cpy->pool = pool;
         cpy->sym_table = sym_table;
         cpy->spilled_values = spilled_values;
@@ -138,6 +142,17 @@ public:
 
     std::vector<opcode::Finally *> &get_finally_stack();
     size_t get_finally_stack_size();
+
+    /// \brief Pushes a new catch exception block into the catch stack.
+    void push_catch(ExceptionCatch ec);
+    /// \brief Removes value from top of the stack.
+    void pop_catch(opcode::IntConst amount);
+
+    std::list<ExceptionCatch> &get_catches() {
+        return catches;
+    }
+
+    Interpreter *get_vm_owner() { return this->vm_owner; }
 
     std::ostream& debug(std::ostream& os) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;

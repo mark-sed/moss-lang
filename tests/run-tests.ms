@@ -1115,6 +1115,15 @@ fun test_attribute_errors(name) {
 .*'Object of type Note'.*[\s\S]*""", expected_err="")
 }
 
+fun test_exception_mangled_stack(name) {
+    ~expect_pass("exception_tests/mangled_stack.ms", name, """__next\n1__next
+caught SI\nfinally in foo\nEnd of foo\n32try callit done!\nfinally in callit\nCallit end\ntrue\nEnd\n""", "")
+}
+
+fun test_exception_stackframe_report(name) {
+    ~expect_fail("exception_tests/stackframe_report.ms", name, """caught\n""", rx_err="Stacktrace:\n  inner.*\n  foo.*\n  top-level scope at.*\n4")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -1998,22 +2007,48 @@ YEP<class Mod1Cls>
 mod2\n""", 
 """gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: LIST(List)
 gc.cpp::sweep: Deleting: LIST(List)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting: MODULE(external_module)
@@ -2025,7 +2060,14 @@ gc.cpp::sweep: Deleting: FUN(get_name)
 gc.cpp::sweep: Deleting: FUN(mod1fun)
 gc.cpp::sweep: Deleting: FUN(get_list)
 gc.cpp::sweep: Deleting: FUN(get_mod2)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting VM external_module
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting: MODULE(external_module)
@@ -2037,7 +2079,10 @@ gc.cpp::sweep: Deleting: FUN(get_name)
 gc.cpp::sweep: Deleting: FUN(mod1fun)
 gc.cpp::sweep: Deleting: FUN(get_list)
 gc.cpp::sweep: Deleting: FUN(get_mod2)
-gc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\ngc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting VM external_module\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
 }
 
 
@@ -2046,17 +2091,8 @@ fun test_repl_output(name) {
 }
 
 fun test_repl_exceptions(name) {
-    ~expect_pass("repl_exceptions.ms", name, rx_err="Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo\\(a\\) at <repl>\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*", use_repl=true)
+    ~expect_pass("repl_exceptions.ms", name, rx_err="Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo.*\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*", use_repl=true)
 }
-
-/*
-
-fun test_(name) {
-    ~expect_pass(".ms", name, """
-""", "")
-}
-
-*/
 
 } // Tests space
 TEST_AMOUNT = attrs(Tests).length()
@@ -2151,6 +2187,9 @@ fun run_all_tests() {
     ~run_test("implicit_formats")
     ~run_test("mains")
     ~run_test("attribute_errors")
+
+    ~run_test("exception_mangled_stack")
+    ~run_test("exception_stackframe_report")
 
     ~run_test("fibonacci")
     ~run_test("factorial")
