@@ -114,7 +114,10 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
     assert(gc && "sanity check");
     this->const_pools.push_back(new MemoryPool(this, true, true));
     // Global frame
-    push_frame(new MemoryPool(this, false, true), false);
+    if (main)
+        push_frame(new MemoryPool(this, false, true), false);
+    else
+        frames.push_back(new MemoryPool(this, false, true));
     init_const_frame();
     opcode::Register glob_reg = 0;
     if (!libms_mod && !main) {
@@ -603,15 +606,15 @@ void Interpreter::run() {
             } else {
                 // Match to known catches otherwise let fall through to next interpreter
                 // or interpreter owner to print or exit or both
-                outs << "\n";
-                for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
-                    auto frm = *rfi;
-                    if (frm.frame->get_pool_owner())
-                        outs << frm.frame   ->get_pool_owner()->get_name() << "\n";
-                    else
-                        outs << "global fr " << frm.frame->get_vm_owner()->get_src_file()->get_module_name() << "\n";
-                }
-                outs << "-----\n";
+                //outs << "\n";
+                //for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
+                //    auto frm = *rfi;
+                //    if (frm.frame->get_pool_owner())
+                //        outs << frm.frame   ->get_pool_owner()->get_name() << "\n";
+                //    else
+                //        outs << "global fr " << frm.frame->get_vm_owner()->get_src_file()->get_module_name() << "\n";
+                //}
+                //outs << "-----\n";
                 bool handled = false;
                 FrameInfo prev_p = {nullptr, nullptr};
                 int pop_amount = 0;
@@ -622,63 +625,63 @@ void Interpreter::run() {
                     // but we need to walk the frames across VMs from current
                     // frame back to its caller. So global stack_frame has to be
                     // used and if the owner is not this vm, then just re-raise.
-                    if (frm->get_pool_owner())
-                        outs << frm->get_pool_owner()->get_name() << "<---\n";
-                    else
-                        outs << "global fr\n";
+                    //if (frm->get_pool_owner())
+                    //    outs << frm->get_pool_owner()->get_name() << "<---\n";
+                    //else
+                    //    outs << "global fr\n";
                     if (auto owner = frm->get_vm_owner()) {
                         if (owner != this) {
-                            outs << "Rethrowing! " << owner->get_src_file()->get_module_name() << " != " << src_file->get_module_name() << "\n";
+                            //outs << "Rethrowing! " << owner->get_src_file()->get_module_name() << " != " << src_file->get_module_name() << "\n";
                             LOGMAX("Rethrowing exception, top of the stack is other VM");
                             
                             // Restore current VMs frames
                             // Pop up until the frame before this;
-                            outs << "\n---Before unwind----\n";
-                            for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
-                                auto frm = *rfi;
-                                if (frm.frame->get_pool_owner())
-                                    outs << frm.frame   ->get_pool_owner()->get_name() << " ";
-                                else
-                                    outs << "global fr ";
-                                outs << " with cf: ";
-                                if (frm.call_frame)
-                                    outs << frm.call_frame->get_function()->get_name() << "\n";
-                                else
-                                    outs << "nullptr\n";
-                            }
+                            //outs << "\n---Before unwind----\n";
+                            //for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
+                            //    auto frm = *rfi;
+                            //    if (frm.frame->get_pool_owner())
+                            //        outs << frm.frame   ->get_pool_owner()->get_name() << " ";
+                            //    else
+                            //        outs << "global fr ";
+                            //    outs << " with cf: ";
+                            //    if (frm.call_frame)
+                            //        outs << frm.call_frame->get_function()->get_name() << "\n";
+                            //    else
+                            //        outs << "nullptr\n";
+                            //}
                             // We have to pop up until previous frame and then
                             // not pop call frame as it is used in external fun
                             // call to get the return value so it will be
                             // popped in call opcode.
                             unwind_stacks(prev_p);
                             pop_call_frame();
-                            outs << "---After uwind--\n";
-                            for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
-                                auto frm = *rfi;
-                                if (frm.frame->get_pool_owner())
-                                    outs << frm.frame   ->get_pool_owner()->get_name() << " ";
-                                else
-                                    outs << "global fr ";
-                                outs << " with cf: ";
-                                if (frm.call_frame)
-                                    outs << frm.call_frame->get_function()->get_name() << "\n";
-                                else
-                                    outs << "nullptr\n";
-                            }
-                            outs << "-----\n\n";
+                            //outs << "---After uwind--\n";
+                            //for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
+                            //    auto frm = *rfi;
+                            //    if (frm.frame->get_pool_owner())
+                            //        outs << frm.frame   ->get_pool_owner()->get_name() << " ";
+                            //    else
+                            //        outs << "global fr ";
+                            //    outs << " with cf: ";
+                            //    if (frm.call_frame)
+                            //        outs << frm.call_frame->get_function()->get_name() << "\n";
+                            //    else
+                            //        outs << "nullptr\n";
+                            //}
+                            //outs << "-----\n\n";
                             throw v;
                         }
                     }
                     auto catches = frm->get_catches();
                     for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
                         auto ec = *riter;
-                        outs << "Matching: " << *v->get_type() << " == ";
-                        if(ec.type)
-                            outs << ec << "\n";
-                        else
-                            outs << "nullptr\n"; 
+                        //outs << "Matching: " << *v->get_type() << " == ";
+                        //if(ec.type)
+                        //    outs << ec << "\n";
+                        //else
+                        //    outs << "nullptr\n"; 
                         if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
-                            outs << "MATCHED\n";
+                        //    outs << "MATCHED\n";
                             LOGMAX("Caught exception");
                             handle_exception(ec, v);
                             handled = true;
