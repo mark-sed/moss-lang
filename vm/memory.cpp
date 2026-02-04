@@ -11,17 +11,26 @@ long MemoryPool::allocated = 0;
 opcode::Register MemoryPool::dynamic_register_am = 0;
 
 void MemoryPool::store(opcode::Register reg, Value *v) {
+    assert(v && "Storing nullptr");
     while (pool.size()+1 >= pool.bucket_count()) {
         LOGMAX("No more reserved space, resizing pool from: " << pool.bucket_count() << " to " << pool.bucket_count()+(pool.bucket_count()/4));
         // TODO: Find some nice heuristic for this number
         pool.reserve(pool.bucket_count()+(pool.bucket_count()/4));
     }
+    if (v)
+        outs << "Storing: " << reg << " = " << *v << "\n";
+    else
+        outs << "Storing: " << reg << " = " << nullptr << "\n";
     pool[reg] = v;
 }
 
 Value *MemoryPool::load(opcode::Register reg) {
     assert(pool.find(reg) != pool.end() && "Pool access of unknown register");
     Value *v = pool[reg];
+    if (!v) {
+        outs << "Loading: " << reg << "\n";
+        outs << "\nIN FRAME: " << (this->get_pool_owner() ? this->get_pool_owner()->get_name() : "gf") << " in " << this->get_vm_owner()->get_src_file()->get_module_name() << "\n";
+    }
     assert(v && "Loading non-existent value");
     return v;
 }

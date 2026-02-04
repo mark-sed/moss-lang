@@ -104,7 +104,7 @@ void Value::copy_attrs(MemoryPool *p) {
 void Value::set_attr(ustring name, Value *v, bool internal_access) {
     assert((this->is_modifiable() || internal_access) && "Setting attribute for non-modifiable value");
     if (!attrs) {
-        this->attrs = new MemoryPool();
+        this->attrs = new MemoryPool(nullptr);
     }
     auto reg = attrs->get_free_reg();
     attrs->store(reg, v);

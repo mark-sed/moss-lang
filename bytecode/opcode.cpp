@@ -838,6 +838,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
         LOGMAX("External function has handed over control to original module");
         // This is after return from the function
+        outs << cf->get_function()->get_name() << "\n";
+        assert(cf->get_extern_return_value() && "External return value not set");
         vm->store(cf->get_return_reg(), cf->get_extern_return_value());
         vm->set_bci(cf->get_caller_addr());
         // Remove already pushed in call frame
@@ -1009,6 +1011,10 @@ void Return::exec(Interpreter *vm) {
         ret_v = new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 
+
+    outs << "Return from " << vm->get_src_file()->get_module_name() << " to "
+        << " with cf of "
+        << cf->get_function()->get_name() << "\n";
     if (cf->is_extern_module_call() || cf->is_runtime_call()) {
         // We need to propagete the return value back using the CallFrame
         // which is used by both VMs. We also need to stop the current
@@ -1058,7 +1064,10 @@ void ReturnConst::exec(Interpreter *vm) {
         ret_v =  new NoteValue(cf->get_function()->get_name(), rv_str);
     }
 
+    outs << "Return from " << vm->get_src_file()->get_module_name() << " from fun "
+        << cf->get_function()->get_name() << " with value : " << *ret_v << "\n";
     if (cf->is_extern_module_call() || cf->is_runtime_call()) {
+        outs << "SET EXT value\n";
         // We need to propagete the return value back using the CallFrame
         // which is used by both VMs. We also need to stop the current
         // vm and this will return back to the call.

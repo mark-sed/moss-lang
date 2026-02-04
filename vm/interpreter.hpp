@@ -196,6 +196,7 @@ private:
     
     std::list<MemoryPool *> const_pools; ///< Constant's frame stack
     std::list<MemoryPool *> frames;      ///< Frame stack
+    static std::list<MemoryPool *> stack_frames; ///< All VM's frames
 
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
@@ -318,7 +319,12 @@ public:
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
         auto cf = call_frames.back();
+        outs << "Popped CF: " << *cf << "\n";
         call_frames.pop_back(); 
+        if (!call_frames.empty())
+            outs << "Current CF: " << *call_frames.back() << "\n";
+        else
+            outs << "Curent CF: none\n";
         delete cf;
     }
     /// Pops most recet call frame, but does not delete it

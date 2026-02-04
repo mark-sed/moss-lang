@@ -20,6 +20,7 @@ ModuleValue *Interpreter::libms_mod = nullptr;
 T_Converters Interpreter::converters{};
 T_Generators Interpreter::generators{};
 std::vector<Value *> Interpreter::generator_notes{};
+std::list<MemoryPool *> Interpreter::stack_frames{};
 bool Interpreter::running_generator = false;
 bool Interpreter::enable_code_output = false;
 
@@ -111,9 +112,9 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         gc = new gcs::TracingGC(this);
     }
     assert(gc && "sanity check");
-    this->const_pools.push_back(new MemoryPool(true, true));
+    this->const_pools.push_back(new MemoryPool(this, true, true));
     // Global frame
-    this->frames.push_back(new MemoryPool(false, true));
+    this->frames.push_back(new MemoryPool(this, false, true));
     init_const_frame();
     opcode::Register glob_reg = 0;
     if (!libms_mod && !main) {
@@ -389,9 +390,10 @@ void Interpreter::push_spilled_value(Value *v) {
 
 void Interpreter::push_frame(Value *fun_owner) {
     LOGMAX("Frame pushed");
-    auto lf = new MemoryPool();
+    auto lf = new MemoryPool(this);
     this->frames.push_back(lf);
-    this->const_pools.push_back(new MemoryPool(true));
+    Interpreter::stack_frames.push_back(lf);
+    this->const_pools.push_back(new MemoryPool(this, true));
     if (fun_owner)
         lf->set_pool_owner(fun_owner);
         
@@ -400,7 +402,8 @@ void Interpreter::push_frame(Value *fun_owner) {
 void Interpreter::push_frame(MemoryPool *pool) {
     LOGMAX("Passed in frame pushed");
     this->frames.push_back(pool);
-    this->const_pools.push_back(new MemoryPool(true));
+    Interpreter::stack_frames.push_back(pool);
+    this->const_pools.push_back(new MemoryPool(this, true));
 }
 
 void Interpreter::pop_frame() {
@@ -408,6 +411,7 @@ void Interpreter::pop_frame() {
     assert(frames.size() > 1 && "Trying to pop global frame");
     auto f = frames.back();
     frames.pop_back();
+    Interpreter::stack_frames.pop_back();
     gc->push_popped_frame(f);
     assert(const_pools.size() > 1 && "Trying to pop global const frame");
     auto c = const_pools.back();
@@ -589,23 +593,62 @@ void Interpreter::run() {
             } else {
                 // Match to known catches otherwise let fall through to next interpreter
                 // or interpreter owner to print or exit or both
+                outs << "\n";
+                for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
+                    auto frm = *rfi;
+                    if (frm->get_pool_owner())
+                        outs << frm->get_pool_owner()->get_name() << "\n";
+                    else
+                        outs << "global fr\n";
+                }
+                outs << "-----\n";
                 bool handled = false;
-                for (auto frm: frames) {
-                    // TODO: The issue is that these are only frames of this VM
+                MemoryPool *prev_p = nullptr;
+                int pop_amount = 0;
+                for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi, ++pop_amount) {
+                    auto frm = *rfi;
+                    // The issue is that in frames are only frames of this VM
                     // but we need to walk the frames across VMs from current
-                    // frame back to its caller.
-                    // Maybe add some global stack and it could be also used
-                    // for correct stacktrace?
+                    // frame back to its caller. So global stack_frame has to be
+                    // used and if the owner is not this vm, then just re-raise.
+                    if (frm->get_pool_owner())
+                        outs << frm->get_pool_owner()->get_name() << "\n";
+                    else
+                        outs << "global fr\n";
+                    if (auto owner = frm->get_vm_owner()) {
+                        if (owner != this) {
+                            outs << "Rethrowing! " << owner->get_src_file()->get_module_name() << " != " << src_file->get_module_name() << "\n";
+                            LOGMAX("Rethrowing exception, top of the stack is other VM");
+                            
+                            // Restore current VMs frames
+                            // Pop up until the frame before this;
+                            for (int i = 1; i < pop_amount; ++i) {
+                                pop_frame();
+                                // TODO: Call frames also need to be tracked.
+                                pop_call_frame();
+                            }
+                            throw v;
+                        }
+                    }
                     auto catches = frm->get_catches();
                     for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
                         auto ec = *riter;
+                        outs << "Matching: " << *v->get_type() << " == ";
+                        if(ec.type)
+                            outs << ec << "\n";
+                        else
+                            outs << "nullptr\n"; 
                         if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
+                            outs << "MATCHED\n";
                             LOGMAX("Caught exception");
                             handle_exception(ec, v);
                             handled = true;
                             break;
                         }
                     }
+                    if (handled)
+                        break;
+                    prev_p = frm;
                 }
                 // Rethrow exception to be handled by next interpreter or unhandled
                 if (!handled) {
