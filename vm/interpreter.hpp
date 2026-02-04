@@ -185,6 +185,11 @@ inline std::ostream& operator<< (std::ostream& os, ExceptionCatch &ec) {
     return ec.debug(os);
 }
 
+struct FrameInfo {
+    MemoryPool *frame;
+    CallFrame *call_frame;
+};
+
 /// \brief Interpreter for moss bytecode
 /// Interpreter holds memory pools (stack frames) and runs bytecode provided
 class Interpreter {
@@ -196,7 +201,7 @@ private:
     
     std::list<MemoryPool *> const_pools; ///< Constant's frame stack
     std::list<MemoryPool *> frames;      ///< Frame stack
-    static std::list<MemoryPool *> stack_frames; ///< All VM's frames
+    static std::list<FrameInfo> stack_frames; ///< All VM's frames
 
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
@@ -219,6 +224,8 @@ private:
     MemoryPool *get_const_pool() { return this->const_pools.back(); }
     MemoryPool *get_local_frame() { return this->frames.back(); }
     
+    void unwind_stacks(FrameInfo fi);
+
     void init_const_frame();
     opcode::Register init_global_frame();
     void init_global_module_values(opcode::Register &reg);
@@ -285,7 +292,7 @@ public:
     void push_frame(Value *owner=nullptr);
     /// Pushes passed in frame as a value frame and creates a new one for
     /// const frame.
-    void push_frame(MemoryPool *pool);
+    void push_frame(MemoryPool *pool, bool push_const=true);
     /// Pops a frame (memory pool) from a frame stack
     void pop_frame();
     /// \return Top frame, meaning the current local frame or global if no local is inserted
@@ -319,12 +326,12 @@ public:
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
         auto cf = call_frames.back();
-        outs << "Popped CF: " << *cf << "\n";
+        //outs << "Popped CF: " << *cf << "\n";
         call_frames.pop_back(); 
-        if (!call_frames.empty())
-            outs << "Current CF: " << *call_frames.back() << "\n";
-        else
-            outs << "Curent CF: none\n";
+        //if (!call_frames.empty())
+        //    outs << "Current CF: " << *call_frames.back() << "\n";
+        //else
+        //    outs << "Curent CF: none\n";
         delete cf;
     }
     /// Pops most recet call frame, but does not delete it
