@@ -76,6 +76,7 @@ private:
     bool extern_module_call;
     bool runtime_call;
     Value *extern_return_value;
+    bool matched_to_frame;
 public:
 #ifndef NDEBUG
     static long allocated;
@@ -86,7 +87,8 @@ public:
                                          constructor_call(false),
                                          extern_module_call(false),
                                          runtime_call(false),
-                                         extern_return_value(nullptr) {
+                                         extern_return_value(nullptr),
+                                         matched_to_frame(false) {
 #ifndef NDEBUG
         ++allocated;
 #endif
@@ -124,6 +126,8 @@ public:
     void set_runtime_call(bool b) { this->runtime_call = b; }
     /// Sets value to return when this call was external or runtime
     void set_extern_return_value(Value *v) { this->extern_return_value = v; }
+    bool is_matched_to_frame() { return this->matched_to_frame; }
+    void set_matched_to_frame(bool s) { this->matched_to_frame = s; }
 
     Value *get_function() { return this->function; }
     std::vector<CallFrameArg> &get_args() { return this->args; }
@@ -185,6 +189,11 @@ inline std::ostream& operator<< (std::ostream& os, ExceptionCatch &ec) {
     return ec.debug(os);
 }
 
+struct FrameInfo {
+    MemoryPool *frame;
+    CallFrame *call_frame;
+};
+
 /// \brief Interpreter for moss bytecode
 /// Interpreter holds memory pools (stack frames) and runs bytecode provided
 class Interpreter {
@@ -196,11 +205,11 @@ private:
     
     std::list<MemoryPool *> const_pools; ///< Constant's frame stack
     std::list<MemoryPool *> frames;      ///< Frame stack
+    static std::list<FrameInfo> stack_frames; ///< All VM's frames
+    static std::vector<Value *> unwound_funs; ///< Functions unwound during exception handling for stack frame dump
 
     std::list<CallFrame *> call_frames;  ///< Call frame stack
     std::list<ClassValue *> parent_list; ///< Classes that will be used in class construction
-
-    std::list<ExceptionCatch> catches;   ///< List of current catches
 
     static gcs::TracingGC *gc;  ///< Garbage collector for this VM
     static T_Converters converters; ///< Mapping of formats and their converters
@@ -215,14 +224,18 @@ private:
     bool bci_modified;
     bool stop;
     bool main;
+    bool marked;
     
     MemoryPool *get_global_const_pool() { return this->const_pools.front(); };
     MemoryPool *get_const_pool() { return this->const_pools.back(); }
     MemoryPool *get_local_frame() { return this->frames.back(); }
     
+    void unwind_stacks(FrameInfo fi);
+
     void init_const_frame();
     opcode::Register init_global_frame();
     void init_global_module_values(opcode::Register &reg);
+    void clear_unwound_frames();
 public:
     static bool running_generator; ///< When true it means that the currently run code is generator of the output
     FunValue *main_to_run;         ///< Function annotated as @main (set only if this is main vm)
@@ -232,6 +245,7 @@ public:
 
     /// Runs interpreter
     void run();
+    void run_from_external(MemoryPool *caller_frame);
 
     /// Call to another VM's function
     /// \param fun Function that is called
@@ -286,7 +300,7 @@ public:
     void push_frame(Value *owner=nullptr);
     /// Pushes passed in frame as a value frame and creates a new one for
     /// const frame.
-    void push_frame(MemoryPool *pool);
+    void push_frame(MemoryPool *pool, bool push_const=true);
     /// Pops a frame (memory pool) from a frame stack
     void pop_frame();
     /// \return Top frame, meaning the current local frame or global if no local is inserted
@@ -313,9 +327,7 @@ public:
     std::ostream& report_call_stack(std::ostream& os);
 
     /// Pushes a new empty call frame into call frame stack
-    void push_call_frame(Value *fun=nullptr) {
-        call_frames.push_back(new CallFrame(fun));
-    }
+    void push_call_frame(Value *fun=nullptr);
     /// Pops top (most recent) frame from call frame stack and deletes it
     void pop_call_frame() { 
         assert(!this->call_frames.empty() && "no call frame to pop");
@@ -351,20 +363,15 @@ public:
     gcs::TracingGC *__get_gc() {
         return gc;
     }
+
+    void print_stack_frame(ustring msg="");
 #endif
 
-    /// \brief Pushes a new catch exception block into the catch stack.
-    void push_catch(ExceptionCatch ec) {
-        this->catches.push_back(ec);
-    }
+    /// \brief Pushes a new catch exception block into the catch stack of a
+    // current function or this module.
+    void push_catch(ExceptionCatch ec);
     /// \brief Removes value from top of the stack.
-    void pop_catch(opcode::IntConst amount) {
-        assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack");
-        this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
-    }
-    /// \returns catch stack.
-    std::list<ExceptionCatch>& get_catches() { return this->catches; }
-    std::optional<moss::ExceptionCatch> get_catch_for_exception(Value *exc, bool only_current_frame=false);
+    void pop_catch(opcode::IntConst amount);
 
     /// \brief Pushes a new finally into finally stack.
     void push_finally(opcode::Finally *fnl);
@@ -441,6 +448,8 @@ public:
 
     /// \brief Handler for an exception
     void handle_exception(ExceptionCatch ec, Value *v);
+    /// Handler for exceptions happening in internal call (to libms).
+    void exception_in_internal_call();
 
     /// \brief Restores frames to a global frame state
     void restore_to_global_frame();
@@ -456,6 +465,9 @@ public:
 
     /// \returns source file this interprets
     File *get_src_file() { return this->src_file; }
+
+    void set_marked(bool m) { this->marked = m; }
+    bool is_marked() { return this->marked; }
     
     std::ostream& debug(std::ostream& os) const;
 };

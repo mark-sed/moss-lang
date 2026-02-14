@@ -1360,7 +1360,13 @@ void mslib::dispatch(Interpreter *vm, ustring module_name, ustring name, Value *
 
     auto return_reg = vm->get_call_frame()->get_return_reg();
     auto caller_addr = vm->get_call_frame()->get_caller_addr();
-    vm->pop_call_frame();
+    if (!err) {
+        vm->pop_call_frame();
+    } else {
+        // Lets not pop frame if there is an exception as we need to show it in
+        // the stack frame if exception is caught.
+        vm->exception_in_internal_call();
+    }
     if (!ret_v)
         ret_v = BuiltIns::Nil;
     vm->store(return_reg, ret_v);

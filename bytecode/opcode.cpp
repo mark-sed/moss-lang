@@ -130,14 +130,7 @@ Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_li
         LOGMAX("Runtime call to method");
         cf->set_runtime_call(true);
         LOGMAX("Call frame: " << *cf);
-        try {
-            vm->runtime_call(funV);
-        } catch(Value *v) {
-            LOGMAX("Exception in runtime function call, dropping frame and rethrowing");
-            LOGMAX("Dropping call frame after exception");
-            vm->pop_call_frame();
-            throw v;
-        }
+        vm->runtime_call(funV);
         ret_v = cf->get_extern_return_value();
     }
     LOGMAX("Runtime call finished");
@@ -838,6 +831,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
         LOGMAX("External function has handed over control to original module");
         // This is after return from the function
+        assert(cf->get_extern_return_value() && "External return value not set");
         vm->store(cf->get_return_reg(), cf->get_extern_return_value());
         vm->set_bci(cf->get_caller_addr());
         // Remove already pushed in call frame
@@ -1118,6 +1112,7 @@ void PushUnpacked::exec(Interpreter *vm) {
                         vm->get_call_frame()->push_back(v);
                     } catch (Value *ve) {
                         if (ve->get_type() == BuiltIns::StopIteration) {
+                            // We have call frame from runtime call in, drop it
                             break;
                         }
                         else
@@ -1361,7 +1356,7 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
     auto gen_mod = new ModuleValue(name, mod_i->get_global_frame(), mod_i);
     mod_i->set_vms_module(gen_mod);
     vm->push_currently_imported_module(gen_mod);
-    mod_i->run();
+    mod_i->run_from_external(nullptr);
     if (mod_i->get_exit_code() != 0) {
         LOGMAX("Import exited, delegating exit code");
         vm->set_exit_code(mod_i->get_exit_code());

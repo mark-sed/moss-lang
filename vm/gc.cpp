@@ -8,6 +8,7 @@ using namespace gcs;
 
 std::vector<ModuleValue *> TracingGC::currently_imported_modules{};
 std::list<MemoryPool *> TracingGC::popped_frames{};
+std::list<Interpreter *> TracingGC::vms{};
 
 void TracingGC::push_currently_imported_module(ModuleValue *m) {
     currently_imported_modules.push_back(m);
@@ -17,7 +18,13 @@ void TracingGC::pop_currently_imported_module() {
     currently_imported_modules.pop_back();
 }
 
+void TracingGC::push_vm(Interpreter *vm) {
+    vms.push_back(vm);
+}
+
 void TracingGC::push_popped_frame(MemoryPool *f) {
+    if (f->is_global())
+        return; // Globals are deleted by VM
     popped_frames.push_back(f);
 }
 
@@ -77,6 +84,21 @@ void TracingGC::sweep() {
             delete f;
         }
     }
+
+    std::list<Interpreter *>::iterator vmi = vms.begin();
+    while (vmi != vms.end()) {
+        auto v = *vmi;
+        assert(v && "nullptr not removed from vms?");
+        if (v->is_marked()) {
+            v->set_marked(false);
+            ++vmi;
+        }
+        else {
+            LOGMAX("Deleting VM " << (v->get_src_file() ? v->get_src_file()->get_module_name() : "?"));
+            vmi = vms.erase(vmi);
+            delete v;
+        }
+    }
 }
 
 void TracingGC::blacken_value(Value *v) {
@@ -121,6 +143,7 @@ void TracingGC::blacken_value(Value *v) {
         for (auto f: subv->get_closures()) {
             mark_frame(f);
         }
+        mark_roots(subv->get_vm());
     }
     else if (auto subv = dyn_cast<FunValueList>(v)) {
         for (auto fv: subv->get_funs()) {
@@ -143,6 +166,7 @@ void TracingGC::blacken_value(Value *v) {
         for (auto o: spcv->get_extra_owners()) {
             mark_value(o);
         }
+        mark_roots(spcv->get_owner_vm());
     }
 }
 
@@ -174,9 +198,18 @@ void TracingGC::mark_frame(MemoryPool *p) {
     for (auto v: p->get_spilled_values()) {
         mark_value(v);
     }
+    for (auto c: p->get_catches()) {
+        mark_value(c.type);
+    }
+    mark_roots(p->get_vm_owner());
 }
 
 void TracingGC::mark_roots(Interpreter *ivm) {
+    if (!ivm || ivm->is_marked())
+        return;
+    ivm->set_marked(true);
+    LOGMAX("Marked VM: " <<  (ivm->get_src_file() ? ivm->get_src_file()->get_module_name() : "?"));
+
     for (auto mem: ivm->frames) {
         mark_frame(mem);
     }
@@ -189,10 +222,6 @@ void TracingGC::mark_roots(Interpreter *ivm) {
     // Mark values pushed as parents
     for (auto pl: ivm->parent_list) {
         mark_value(pl);
-    }
-
-    for (auto c: ivm->catches) {
-        mark_value(c.type);
     }
 
     // Call frame marking
@@ -214,10 +243,14 @@ void TracingGC::mark_roots(Interpreter *ivm) {
         assert(Interpreter::libms_mod->get_vm() && "sanity check");
         mark_value(Interpreter::libms_mod);
     }
-    // Modules in the middle of import, this should be done only once, so by main
     if (ivm->is_main()) {
+        // Modules in the middle of import, this should be done only once, so by main
         for (auto m: currently_imported_modules) {
             mark_value(m);
+        }
+        // Unwound functions are static so mark only by main
+        for (auto f: Interpreter::unwound_funs) {
+            mark_value(f);
         }
     }
 }

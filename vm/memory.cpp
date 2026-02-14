@@ -11,6 +11,7 @@ long MemoryPool::allocated = 0;
 opcode::Register MemoryPool::dynamic_register_am = 0;
 
 void MemoryPool::store(opcode::Register reg, Value *v) {
+    assert(v && "Storing nullptr");
     while (pool.size()+1 >= pool.bucket_count()) {
         LOGMAX("No more reserved space, resizing pool from: " << pool.bucket_count() << " to " << pool.bucket_count()+(pool.bucket_count()/4));
         // TODO: Find some nice heuristic for this number
@@ -148,6 +149,15 @@ void MemoryPool::pop_finally_stack() {
 
 size_t MemoryPool::get_finally_stack_size() {
     return this->finally_stack.size();
+}
+
+void MemoryPool::push_catch(ExceptionCatch ec) {
+    this->catches.push_back(ec);
+}
+
+void MemoryPool::pop_catch(opcode::IntConst amount) {
+    assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack");
+    this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
 }
 
 void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {

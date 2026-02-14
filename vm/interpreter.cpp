@@ -20,6 +20,8 @@ ModuleValue *Interpreter::libms_mod = nullptr;
 T_Converters Interpreter::converters{};
 T_Generators Interpreter::generators{};
 std::vector<Value *> Interpreter::generator_notes{};
+std::list<FrameInfo> Interpreter::stack_frames{};
+std::vector<Value *> Interpreter::unwound_funs{};
 bool Interpreter::running_generator = false;
 bool Interpreter::enable_code_output = false;
 
@@ -106,14 +108,18 @@ FunValue * Interpreter::get_generator(ustring format) {
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
         : code(code), src_file(src_file), vms_module(nullptr), bci(0),
           exit_code(0), bci_modified(false), stop(false), main(main),
-          main_to_run(nullptr) {
+          marked(false), main_to_run(nullptr) {
     if (main && !gc) {
         gc = new gcs::TracingGC(this);
     }
+    gc->push_vm(this);
     assert(gc && "sanity check");
-    this->const_pools.push_back(new MemoryPool(true, true));
+    this->const_pools.push_back(new MemoryPool(this, true, true));
     // Global frame
-    this->frames.push_back(new MemoryPool(false, true));
+    if (main)
+        push_frame(new MemoryPool(this, false, true), false);
+    else
+        frames.push_back(new MemoryPool(this, false, true));
     init_const_frame();
     opcode::Register glob_reg = 0;
     if (!libms_mod && !main) {
@@ -164,9 +170,9 @@ Interpreter::~Interpreter() {
         // is created, like in unit test case
         Interpreter::gc = nullptr;
 
-        //for (auto v: generator_notes) {
-        //    delete v;
-        //}
+        for (auto v: generator_notes) {
+            delete v;
+        }
     }
     // Code is to be deleted by the creator of it
 }
@@ -289,9 +295,7 @@ std::ostream& ExceptionCatch::debug(std::ostream& os) const {
 std::ostream& Interpreter::report_call_stack(std::ostream& os) {
     // TODO: Color output
     os << "Stacktrace:\n";
-    for (auto riter = call_frames.rbegin(); riter != call_frames.rend(); ++riter) {
-        CallFrame *cf = *riter;
-        Value *fun_val = cf->get_function();
+    for (auto *fun_val : unwound_funs) {
         if (!fun_val) {
             // This is a case where the exception was raised while calling a
             // function, so we skip this
@@ -389,18 +393,34 @@ void Interpreter::push_spilled_value(Value *v) {
 
 void Interpreter::push_frame(Value *fun_owner) {
     LOGMAX("Frame pushed");
-    auto lf = new MemoryPool();
+    auto lf = new MemoryPool(this);
     this->frames.push_back(lf);
-    this->const_pools.push_back(new MemoryPool(true));
+    CallFrame *matching_cf = nullptr;
+    // Match cf only if this frame is for a function
+    if (fun_owner && isa<FunValue>(fun_owner) && has_call_frame()) {
+        matching_cf = get_call_frame();
+    }
+    Interpreter::stack_frames.push_back({lf, matching_cf});
+    this->const_pools.push_back(new MemoryPool(this, true));
     if (fun_owner)
         lf->set_pool_owner(fun_owner);
         
 }
 
-void Interpreter::push_frame(MemoryPool *pool) {
+void Interpreter::push_frame(MemoryPool *pool, bool push_const) {
     LOGMAX("Passed in frame pushed");
     this->frames.push_back(pool);
-    this->const_pools.push_back(new MemoryPool(true));
+    CallFrame *cf = nullptr;
+    if (has_call_frame() && !pool->is_global()) {
+        auto poss_cf = get_call_frame();
+        if (!poss_cf->is_matched_to_frame()) {
+            cf = poss_cf;
+            poss_cf->set_matched_to_frame(true);
+        }
+    }
+    Interpreter::stack_frames.push_back({pool, cf});
+    if (push_const)
+        this->const_pools.push_back(new MemoryPool(this, true));
 }
 
 void Interpreter::pop_frame() {
@@ -408,6 +428,7 @@ void Interpreter::pop_frame() {
     assert(frames.size() > 1 && "Trying to pop global frame");
     auto f = frames.back();
     frames.pop_back();
+    Interpreter::stack_frames.pop_back();
     gc->push_popped_frame(f);
     assert(const_pools.size() > 1 && "Trying to pop global const frame");
     auto c = const_pools.back();
@@ -416,15 +437,15 @@ void Interpreter::pop_frame() {
 }
 
 void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
-    push_frame(fun);
+    // No frame push as it will be done in specialized run
     call_frames.push_back(cf);
     set_bci(fun->get_body_addr());
+    auto frm = new MemoryPool(this);
+    frm->set_pool_owner(fun);
     try {
-        run();
+        run_from_external(frm);
     } catch (Value *e) {
         LOGMAX("Exception in cross_module_call, pop_frame and rethrow");
-        // No return encountered so pop frame
-        pop_frame();
         throw e;
     }
 }
@@ -436,18 +457,16 @@ void Interpreter::runtime_call(FunValue *fun) {
 
     LOGMAX("Runtime call to " << *fun << " with: " << *get_call_frame());
 
-    push_frame();
+    // No frame push as it will be done in specialized run
     get_call_frame()->set_function(fun);
     set_bci(fun->get_body_addr());
     try {
-        run();
+        run_from_external(new MemoryPool(this));
     } catch (Value *e) {
-        LOGMAX("Exception in runtime_call, restore vm info and pop_frame and rethrow");
+        LOGMAX("Exception in runtime_call, restore vm info and rethrow");
         this->bci = pre_call_bci;
         this->bci_modified = pre_bci_modified;
         this->stop = pre_stop;
-        // No return encountered so pop frame
-        pop_frame();
         throw e;
     }
 
@@ -513,6 +532,12 @@ bool Interpreter::is_try_not_in_catch() {
     return isa<NilValue>(val);
 }
 
+void Interpreter::exception_in_internal_call() {
+    LOGMAX("Exception in internal call, pushing frame to unwound frames and dropping it.")
+    unwound_funs.push_back(get_call_frame()->get_function());
+    pop_call_frame();
+}
+
 void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
     LOGMAX("Exception catch found:\n" << ec);
     set_bci(ec.addr);
@@ -555,11 +580,80 @@ void Interpreter::handle_exception(ExceptionCatch ec, Value *v) {
     store_name(reg, ec.name);
 }
 
+void Interpreter::push_call_frame(Value *fun) {
+    call_frames.push_back(new CallFrame(fun));
+}
+
+void Interpreter::push_catch(ExceptionCatch ec) {
+    get_local_frame()->push_catch(ec);
+}
+
+void Interpreter::pop_catch(opcode::IntConst amount) {
+    get_local_frame()->pop_catch(amount);
+}
+
+#ifndef NDEBUG
+void Interpreter::print_stack_frame(ustring msg) {
+    if (!msg.empty())
+        outs << "Stack frame at: " << msg << ":\n";
+    outs << "---v-TOP-v---\n";
+    size_t i = 0;
+    for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi, ++i) {
+        auto frm = *rfi;
+        if (frm.frame->get_pool_owner())
+            outs << i << ". " << frm.frame->get_pool_owner()->get_name();
+        else {
+            outs << i << ". ";
+            if (frm.frame->is_global())
+                outs << "GF";
+            else {
+                outs << "Object frame";
+            }
+        }
+        outs << " [" << frm.frame->get_vm_owner()->get_src_file()->get_module_name() << "]";
+        if (!frm.call_frame) {
+            outs << "\t\t<no CF>";
+        } else {
+            outs << "\t\t<" << frm.call_frame->get_function()->get_name() << ">";
+        }
+        if (this->frames.size() >= i) {
+            auto it = this->frames.rbegin();
+            std::advance(it, i);
+            auto f = *it;
+            outs << "\t\t|" << i << ". ";
+            if (f->is_global())
+                outs << "GF";
+            else {
+                if (f->get_pool_owner())
+                    outs << f->get_pool_owner()->get_name();
+                else
+                    outs << "Object frame";
+            }
+            outs << " [" << f->get_vm_owner()->get_src_file()->get_module_name() << "]";
+            outs << "|";
+        }
+        outs << "\n";
+    }
+    outs << "--^-BOTTOM-^--\n";
+}
+#endif //NDEBUG
+
+void Interpreter::unwind_stacks(FrameInfo fi) {
+    while(stack_frames.back().frame != fi.frame) {
+        auto frinf = stack_frames.back();
+        if (!frinf.frame->is_global())
+            pop_frame();
+        if (frinf.call_frame) {
+            unwound_funs.push_back(frinf.call_frame->get_function());
+            pop_call_frame();
+        }
+    }
+}
+
 void Interpreter::restore_to_global_frame() {
     LOG1("Restoring interpreter to global frame position");
-    // clear() should be calling destructors as well
     call_frames.clear();
-    catches.clear();
+    get_global_frame()->get_catches().clear();
 
     assert(!frames.empty() && "sanity check");
     assert(!const_pools.empty() && "sanity check");
@@ -567,18 +661,19 @@ void Interpreter::restore_to_global_frame() {
     const_pools.erase(std::next(frames.begin()), frames.end());    
 }
 
-std::optional<moss::ExceptionCatch> Interpreter::get_catch_for_exception(Value *exc, bool only_current_frame) {
-    for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
-        auto ec = *riter;
-        if (only_current_frame && ec.frame_position != get_top_frame())
-            return std::nullopt;
-        if (!ec.type || opcode::is_type_eq_or_subtype(exc->get_type(), ec.type)) {
-            return ec;
-        }
+void Interpreter::run_from_external(MemoryPool *caller_frame) {
+    push_frame(get_global_frame());
+    if (caller_frame)
+        push_frame(caller_frame);
+    try {
+        run();
+    } catch (Value *e) {
+        assert((!stack_frames.empty() && stack_frames.back().frame == get_global_frame()) && "Expected global frame on top");
+        pop_frame(); // Popping this global frame (duplicated)
+        throw e; // rethrow
     }
-    return std::nullopt;
+    pop_frame();
 }
-
 
 void Interpreter::run() {
     LOG1("Running interpreter of " << (src_file ? src_file->get_name() : "??") << "\n----- OUTPUT: -----");
@@ -587,8 +682,13 @@ void Interpreter::run() {
         opcode::OpCode *opc = (*code)[bci];
         try {
             opc->exec(this);
-        } catch (Value *v) {
-            // FIXME: this does not handle case where catch is not run 
+            // If we get to exectute opcode and unwound stack is not empty, then
+            // we got here after some exception was handled or reported (repl),
+            // so just clear it. The check for empty() for vector is O(1).
+            if (!unwound_funs.empty()) {
+                unwound_funs.clear();
+            }
+        } catch (Value *v) { 
             if (has_finally() && !is_try_not_in_catch()) {
                 LOGMAX("Raise before running finally - run finally");
                 call_finally();
@@ -596,14 +696,37 @@ void Interpreter::run() {
                 // Match to known catches otherwise let fall through to next interpreter
                 // or interpreter owner to print or exit or both
                 bool handled = false;
-                for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
-                    auto ec = *riter;
-                    if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
-                        LOGMAX("Caught exception");
-                        handle_exception(ec, v);
-                        handled = true;
-                        break;
+                FrameInfo prev_p = {nullptr, nullptr};
+                int pop_amount = 0;
+                for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi, ++pop_amount) {
+                    auto frinf = *rfi;
+                    auto frm = frinf.frame;
+                    // The issue is that in frames are only frames of this VM
+                    // but we need to walk the frames across VMs from current
+                    // frame back to its caller. So global stack_frame has to be
+                    // used and if the owner is not this vm, then just re-raise.
+                    if (auto owner = frm->get_vm_owner()) {
+                        if (owner != this) {
+                            LOGMAX("Rethrowing exception, top of the stack is other VM");
+                            // Restore current VMs frames
+                            // Pop up until the frame before this;
+                            unwind_stacks(prev_p);
+                            throw v;
+                        }
                     }
+                    auto catches = frm->get_catches();
+                    for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
+                        auto ec = *riter;
+                        if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
+                            LOGMAX("Caught exception");
+                            handle_exception(ec, v);
+                            handled = true;
+                            break;
+                        }
+                    }
+                    if (handled)
+                        break;
+                    prev_p = frinf;
                 }
                 // Rethrow exception to be handled by next interpreter or unhandled
                 if (!handled) {
@@ -611,7 +734,8 @@ void Interpreter::run() {
                         LOGMAX("Uncaught raise, run finally before rethrow");
                         call_finally();
                     }else {
-                        LOGMAX("Rethrowing exception, no catch caught it");
+                        LOGMAX("Unwindind and rethrowing exception, no catch caught it");
+                        unwind_stacks(prev_p);
                         throw v;
                     }
                 }
