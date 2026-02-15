@@ -654,6 +654,27 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
     return diags::ARG_MISMATCH;
 }
 
+static ustring create_fun_errors(std::vector<std::pair<FunValue *, diags::DiagID>> msgs) {
+    std::stringstream ss;
+    for (auto [f, d]: msgs) {
+        ss << "\n  " << f->get_signature() << " — " << diags::DIAG_MSGS[d];
+    }
+    return ss.str();
+}
+
+static ustring create_fun_args_str(std::vector<CallFrameArg> args) {
+    std::stringstream ss;
+    bool first = true;
+    for (auto a: args) {
+        if (!first) {
+            ss << ", ";
+        }
+        first = false;
+        ss << a.value->dump();
+    }
+    return ss.str();
+}
+
 void call(Interpreter *vm, Register dst, Value *funV) {
     LOGMAX("Call to : " << *funV);
     auto cf = vm->get_call_frame();
@@ -754,6 +775,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         auto fvl = dyn_cast<FunValueList>(funV);
         op_assert(fvl, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CALLABLE, funV->get_name().c_str())));
         
+        std::vector<std::pair<FunValue *, diags::DiagID>> call_errors;
         std::optional<diags::DiagID> err_id;
         // Walk functions and check if it can be called
         for (auto f: fvl->get_funs()) {
@@ -762,12 +784,16 @@ void call(Interpreter *vm, Register dst, Value *funV) {
                 fun = f;
                 break;
             }
+            call_errors.push_back({f, *err_id});
         }
         if (!fun) {
             LOGMAX("Popping call frame 3");
+            auto args = create_fun_args_str(cf->get_args());
+            auto msg = create_fun_errors(call_errors);
+            // Pop after creating args string!
             vm->pop_call_frame();
-            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, 
-                fvl->back()->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL_DETAILED, 
+                fvl->back()->get_name().c_str(), args.c_str(), msg.c_str())));
         }
     }
     else {
@@ -775,9 +801,11 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         if (err_id) {
             // Pop frame so that call stack is correct
             LOGMAX("Popping call frame 4");
+            auto args = create_fun_args_str(cf->get_args());
+            auto msg = create_fun_errors({{fun, *err_id}});
             vm->pop_call_frame();
-            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
-                fun->get_name().c_str(), diags::DIAG_MSGS[*err_id])));
+            raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL_DETAILED,
+                fun->get_name().c_str(), args.c_str(), msg.c_str())));
         }
     }
 

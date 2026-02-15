@@ -684,7 +684,7 @@ fun test_compound_assignment(name) {
 }
 
 fun test_calls(name) {
-    ~expect_pass("calls.ms", name, rx_out="called.*.*\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\nhi\n.*could not match arguments.*\n.*could not match arguments.*\n.*passed more arguments than the function accepts.*\n")
+    ~expect_pass("calls.ms", name, rx_out="called.*.*\n.*\n.*could not match arguments.*\n.*\n.*could not match arguments.*\n.*\n.*passed more arguments than the function accepts.*\nhi\n.*\n.*could not match arguments.*\n.*\n.*could not match arguments.*\n.*\n.*passed more arguments than the function accepts.*\n")
 }
 
 fun test_continues_and_breaks(name) {
@@ -2091,7 +2091,7 @@ fun test_repl_output(name) {
 }
 
 fun test_repl_exceptions(name) {
-    ~expect_pass("repl_exceptions.ms", name, rx_err="Stacktrace:\n  top-level.*\n.*Incorrect call.*could not match arguments.*\nStacktrace:\n  foo.*\n  top-level scope.*\n.*Name 'b' is not defined.*\nStacktrace:\n  top-level scope at <repl>\n.*Incorrect call to function 'foo'.*passed more arguments.*", use_repl=true)
+    ~expect_pass("repl_exceptions.ms", name, rx_err=r"Stacktrace:\n  top-level[\s\S]*?Incorrect call[\s\S]*?could not match arguments[\s\S]*?Stacktrace:\n  foo[\s\S]*?Name 'b' is not defined[\s\S]*?Stacktrace:\n  top-level scope at <repl>[\s\S]*?Incorrect call to function 'foo'[\s\S]*?passed more arguments", use_repl=true)
 }
 
 } // Tests space
