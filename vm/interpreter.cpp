@@ -399,6 +399,11 @@ void Interpreter::push_frame(Value *fun_owner) {
     // Match cf only if this frame is for a function
     if (fun_owner && isa<FunValue>(fun_owner) && has_call_frame()) {
         matching_cf = get_call_frame();
+        if (!matching_cf->is_matched_to_frame()) {
+            matching_cf->set_matched_to_frame(true);
+        } else {
+            matching_cf = nullptr;
+        }
     }
     Interpreter::stack_frames.push_back({lf, matching_cf});
     this->const_pools.push_back(new MemoryPool(this, true));
@@ -411,7 +416,8 @@ void Interpreter::push_frame(MemoryPool *pool, bool push_const) {
     LOGMAX("Passed in frame pushed");
     this->frames.push_back(pool);
     CallFrame *cf = nullptr;
-    if (has_call_frame() && !pool->is_global()) {
+    auto owner = pool->get_pool_owner();
+    if (has_call_frame() && !pool->is_global() && (!owner || isa<FunValue>(owner))) {
         auto poss_cf = get_call_frame();
         if (!poss_cf->is_matched_to_frame()) {
             cf = poss_cf;
