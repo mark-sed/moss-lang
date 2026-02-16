@@ -1084,14 +1084,14 @@ private:
     std::list<MemoryPool *> closures;
     Interpreter *vm;
     opcode::Address body_addr;
-    ClassValue *constructee;
+    ClassValue *parent_class;
     std::list<ExceptionCatch> catches;
 public:
     static const TypeKind ClassType = TypeKind::FUN;
 
     FunValue(opcode::StringConst name, opcode::StringConst arg_names, Interpreter *vm, ModuleValue *owner=nullptr)
             : Value(ClassType, name, BuiltIns::Function, nullptr, owner), 
-              args(), closures(), vm(vm), body_addr(0), constructee(nullptr) {
+              args(), closures(), vm(vm), body_addr(0), parent_class(nullptr) {
         auto names = utils::split_csv(arg_names, ',');
         for (auto n: names) {
             args.push_back(new FunValueArg(n, std::vector<Value *>{}));
@@ -1104,7 +1104,7 @@ public:
              opcode::Address body_addr,
              ModuleValue *owner=nullptr) 
             : Value(ClassType, name, BuiltIns::Function, nullptr, owner), args(args), vm(vm),
-              body_addr(body_addr), constructee(nullptr) {}
+              body_addr(body_addr), parent_class(nullptr) {}
 
     ~FunValue();
 
@@ -1147,9 +1147,11 @@ public:
         return std::isdigit(name[0]);
     }
 
-    void set_constructee(ClassValue *c) { this->constructee = c; }
-    ClassValue *get_constructee() { return this->constructee; }
-    bool is_constructor() { return this->constructee != nullptr; }
+    void set_parent_class(ClassValue *c) { this->parent_class = c; }
+    ClassValue *get_parent_class() { return this->parent_class; }
+    bool is_constructor() { 
+        return this->parent_class != nullptr && parent_class->get_name() == name;
+    }
 
     void push_closure(MemoryPool *p) {
         closures.push_back(p);
@@ -1420,15 +1422,16 @@ public:
 class SuperValue : public Value {
 private:
     ObjectValue *instance;
+    ClassValue *parent;
 public:
     static const TypeKind ClassType = TypeKind::SUPER_VALUE;
 
-    SuperValue(ObjectValue *instance)
-        : Value(ClassType, "super", BuiltIns::super), instance(instance) {}
+    SuperValue(ObjectValue *instance, ClassValue *parent)
+        : Value(ClassType, "super", BuiltIns::super), instance(instance), parent(parent) {}
     ~SuperValue() {}
 
     virtual Value *clone() override {
-        return new SuperValue(this->instance);
+        return new SuperValue(this->instance, this->parent);
     }
 
     virtual inline bool is_hashable() override { return true; }
@@ -1437,15 +1440,16 @@ public:
     }
 
     ObjectValue *get_instance() { return this->instance; }
+    ClassValue *get_parent() { return this->parent; }
 
     virtual Value *get_attr(ustring name, Interpreter *caller_vm) override;
 
     virtual opcode::StringConst as_string() const override {
-        return "<super of " + instance->get_type()->get_name() + ">";
+        return "<super of " + instance->get_type()->get_name() + " in class " + parent->get_name() + ">";
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "super(" << *instance << ")";
+        os << "super(" << *instance << ", " << *parent << ")";
         return os;
     }
 };

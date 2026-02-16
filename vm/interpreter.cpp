@@ -466,8 +466,10 @@ void Interpreter::runtime_call(FunValue *fun) {
     // No frame push as it will be done in specialized run
     get_call_frame()->set_function(fun);
     set_bci(fun->get_body_addr());
+    auto frm = new MemoryPool(this);
+    frm->set_pool_owner(fun);
     try {
-        run_from_external(new MemoryPool(this));
+        run_from_external(frm);
     } catch (Value *e) {
         LOGMAX("Exception in runtime_call, restore vm info and rethrow");
         this->bci = pre_call_bci;

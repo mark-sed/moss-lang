@@ -212,6 +212,20 @@ void End::exec(Interpreter *vm) {
     }
 }
 
+static ClassValue *get_current_class(Interpreter *vm) {
+    auto stack_frames = Interpreter::get_stack_frames();
+    for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
+        auto frinf = *rfi;
+        auto frm = frinf.frame;
+        auto owner = frm->get_pool_owner();
+        if (owner)
+            if (auto oc = dyn_cast<FunValue>(owner)) {
+                return oc->get_parent_class();
+            }
+    }
+    return nullptr;
+}
+
 void Load::exec(Interpreter *vm) {
     // Special case is when super is called
     if (this->name == "super") {
@@ -219,7 +233,9 @@ void Load::exec(Interpreter *vm) {
         assert(ths_v && "Not inside of a class");
         auto ths = dyn_cast<ObjectValue>(ths_v);
         assert(ths && "this is not an object?!");
-        vm->store(this->dst, new SuperValue(ths));
+        auto parent = get_current_class(vm);
+        assert(parent && "No class in scope found for super");
+        vm->store(this->dst, new SuperValue(ths, parent));
         return;
     }
     auto v = vm->load_name(this->name);
@@ -705,10 +721,8 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         if (auto spr = dyn_cast<SuperValue>(funV)) {
             super_caller = vm->load_name("this");
             assert(super_caller && "Super call, yet super caller is not set");
-            // super() call, so extract the class based on the mro
-            auto inst_type = spr->get_instance()->get_type();
-            auto inst_cls = dyn_cast<ClassValue>(inst_type);
-            assert(inst_cls && "Object type is not a class");
+            // super() call, so extract the class
+            auto inst_cls = spr->get_parent();
             op_assert(!inst_cls->get_all_supers().empty(), mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_SUPER, inst_cls->get_name().c_str())));
             // We need to go through mro and find the first parent with constructor
             for (auto parent: inst_cls->get_all_supers()) {
@@ -728,7 +742,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
             }
             LOGMAX("Super call to: " << *cls);
         } else if (as_fun) {
-            cls = as_fun->get_constructee();
+            cls = as_fun->get_parent_class();
         }
         assert(cls && "sanity check");
         constructor_of = cls;
@@ -1187,18 +1201,16 @@ void CreateFun::exec(Interpreter *vm) {
     // Check if this is in class frame and if the names match, set this as constructor
     Value *pown = vm->get_top_frame()->get_pool_owner();
     if (pown && isa<ClassValue>(pown)) {
-        if (name == pown->get_name()) {
-            LOGMAX("Setting function " << name << " as constructor");
-            funval->set_constructee(dyn_cast<ClassValue>(pown));
-        } else if (pown->has_annotation(annots::INTERNAL_BIND)) {
+        funval->set_parent_class(dyn_cast<ClassValue>(pown));
+        if (pown->has_annotation(annots::INTERNAL_BIND)) {
             // This might be a constructor of internal_bind class where the names don't match
             auto annt = pown->get_annotation(annots::INTERNAL_BIND);
             if (auto ann_v = dyn_cast<StringValue>(annt)) {
                 if (ann_v->get_value() == name) {
-                    LOGMAX("Setting function " << name << " as constructor (matched on internal_bind name)");
+                    LOGMAX("Setting method " << name << " for other class (matched on internal_bind name)");
                     // This value will change in class bind once internal_bind is executed. But this needs to be 
                     // denoted as a constructor
-                    funval->set_constructee(dyn_cast<ClassValue>(pown));
+                    funval->set_parent_class(dyn_cast<ClassValue>(pown));
                 }
             } else {
                 assert(false && "internal_bind annotation without string value");
@@ -2842,7 +2854,7 @@ void BuildSpace::exec(Interpreter *vm) {
         vm->store_name(dst, name);
         if (anonymous)
             vm->push_spilled_value(spc);
-        vm->push_frame();
+        vm->push_frame(spc);
         spc->set_attrs(vm->get_top_frame());
     }
 }

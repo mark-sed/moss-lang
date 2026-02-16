@@ -229,3 +229,47 @@ get_mod().get_sup()
 "\n"
 get_mod().get_sup().foo()
 "\n"
+
+class Ec {
+    fun Ec(m:String) {
+        "EC\n"
+        super
+        "\n"
+        this.msg = m
+    }
+
+    fun __String() {
+        return "Ec: " ++ this.msg ++ "\n"
+    }
+}
+
+class PythonException : Ec {
+    d"Moss exception that represents a Python exception."
+
+    fun PythonException(msg:String, obj:[PythonObject,NilType]=nil) {
+        "PyE\n"
+        super
+        "\n"
+        ~super(msg)
+        this.obj = obj
+    }
+
+    fun __String() {
+        return "PythonException: " ++ this.msg ++ "\n"
+    }
+}
+
+class PythonToMossConversionError : PythonException {
+    fun PythonToMossConversionError(msg:String) {
+        "PTMCE\n"
+        super
+        "\n"
+        ~super(msg, nil)
+    }
+
+    fun __String() {
+        return "PythonToMossConversionError: " ++ this.msg ++ "\n"
+    }
+}
+
+PythonToMossConversionError("text")

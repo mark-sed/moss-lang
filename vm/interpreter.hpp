@@ -308,6 +308,7 @@ public:
     MemoryPool *get_top_const_frame() { return this->get_const_pool(); }
     MemoryPool *get_global_frame() { return this->frames.front(); }
     std::list<MemoryPool *>& get_frames() { return this->frames; }
+    static std::list<FrameInfo>& get_stack_frames() { return stack_frames; } 
 
     /// Spills value into current frame
     void push_spilled_value(Value *v);
