@@ -160,9 +160,9 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_string(o->name);
         }
-        else if (isa<opcode::PushFrame>(op_gen)){
-            // Nothing to do
-        }
+        //else if (isa<opcode::PushFrame>(op_gen)){
+        //    // Nothing to do
+        //}
         else if (isa<opcode::PopFrame>(op_gen)){
             // Nothing to do
         }

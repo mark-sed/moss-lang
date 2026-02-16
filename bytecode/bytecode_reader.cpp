@@ -220,9 +220,9 @@ Bytecode *BytecodeReader::read() {
                 auto str = read_string();
                 bc->push_back(new CallFormatter(reg, str));
             } break;
-            case opcode::OpCodes::PUSH_FRAME: {
-                bc->push_back(new PushFrame());
-            } break;
+            //case opcode::OpCodes::PUSH_FRAME: {
+            //    bc->push_back(new PushFrame());
+            //} break;
             case opcode::OpCodes::POP_FRAME: {
                 bc->push_back(new PopFrame());
             } break;

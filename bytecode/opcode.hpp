@@ -70,7 +70,7 @@ enum OpCodes : opcode_t {
     JMP_IF_FALSE, //      %src, addr
     CALL, //              %dst, fun
     CALL_FORMATTER, //    %dst, fun
-    PUSH_FRAME, //
+    //PUSH_FRAME, //
     POP_FRAME,  //
     PUSH_CALL_FRAME, //
     POP_CALL_FRAME,  //
@@ -896,22 +896,22 @@ public:
     }
 };
 
-class PushFrame : public OpCode {
-public:
-    static const OpCodes ClassType = OpCodes::PUSH_FRAME;
-
-    PushFrame() : OpCode(ClassType, "PUSH_FRAME") {}
-    
-    void exec(Interpreter *vm) override;
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        return isa<PushFrame>(other);
-    }
-};
+//class PushFrame : public OpCode {
+//public:
+//    static const OpCodes ClassType = OpCodes::PUSH_FRAME;
+//
+//    PushFrame() : OpCode(ClassType, "PUSH_FRAME") {}
+//    
+//    void exec(Interpreter *vm) override;
+//    
+//    virtual inline std::ostream& debug(std::ostream& os) const override {
+//        os << mnem;
+//        return os;
+//    }
+//    bool equals(OpCode *other) override {
+//        return isa<PushFrame>(other);
+//    }
+//};
 
 class PopFrame : public OpCode {
 public:

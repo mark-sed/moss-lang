@@ -995,9 +995,9 @@ void CallFormatter::exec(Interpreter *vm) {
     }
 }
 
-void PushFrame::exec(Interpreter *vm) {
-    vm->push_frame();
-}
+//void PushFrame::exec(Interpreter *vm) {
+//    vm->push_frame();
+//}
 
 void PopFrame::exec(Interpreter *vm) {
     vm->pop_frame();
