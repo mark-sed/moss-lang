@@ -93,3 +93,42 @@ try
     }
 catch (e:ValueError)
     "caught\n"
+
+l = [1,2,3]
+b = [0]
+
+a, b[0], c = l
+a
+b[0]
+c
+"\n"
+
+d = [[]]
+...d[0], a = l
+d
+a
+"\n"
+
+res = [nil, nil, nil]
+res[2], res[0], res[1] = [0, 1, 2]
+res
+"\n"
+
+class Storage {}
+s = Storage()
+
+s.a, s.b, ...s.c = [1, 2, 3, 4, 5, 6]
+s.a
+s.b
+s.c
+"\n"
+
+s.c[0], s.c[1], g = [nil, nil, 1]
+s.c
+g
+"\n"
+
+try
+    a, s.c[100] = [1, 2] 
+catch(e: IndexError)
+    "caught\n"
