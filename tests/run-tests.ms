@@ -1098,30 +1098,7 @@ Running test main\n""", "")
 }
 
 fun test_attribute_errors(name) {
-    ~expect_pass("attribute_errors.ms", name, rx_out=r""".*'Module math'.*[\s\S]*\
-.*'Object of type Exception'.*[\s\S]*\
-.*'Enum Foo'.*[\s\S]*\
-.*'Foo F'.*[\s\S]*\
-.*'Function print'.*[\s\S]*\
-.*'List'.*[\s\S]*\
-.*'String'.*[\s\S]*\
-.*'Int'.*[\s\S]*\
-.*'Float'.*[\s\S]*\
-.*'Bool'.*[\s\S]*\
-.*'NilType'.*[\s\S]*\
-.*'FunctionList'.*[\s\S]*\
-.*'Object of type Complex'.*[\s\S]*\
-.*'Object of type Range'.*[\s\S]*\
-.*'Dict'.*[\s\S]*\
-.*'super of class Foo'.*[\s\S]*\
-.*'Object of type ListIterator'.*[\s\S]*\
-.*'Object of type DictIterator'.*[\s\S]*\
-.*'Object of type StringIterator'.*[\s\S]*\
-.*'Object of type BytesIterator'.*[\s\S]*\
-.*'Object of type FunctionListIterator'.*[\s\S]*\
-.*'Type Exception'.*[\s\S]*\
-.*'Space Foo'.*[\s\S]*\
-.*'Object of type Note'.*[\s\S]*""", expected_err="")
+    ~expect_pass("attribute_errors.ms", name, rx_out=r""".*'Module math'.*\n.*'Object of type Exception'.*\n.*'Enum Foo'.*\n.*'Foo F'.*\n.*'Function print'.*\n.*'List'.*\n.*'String'.*\n.*'Int'.*\n.*'Float'.*\n.*'Bool'.*\n.*'NilType'.*\n.*'FunctionList'.*\n.*'Object of type Complex'.*\n.*'Object of type Range'.*\n.*'Dict'.*\n.*'super of class Foo'.*\n.*'Object of type ListIterator'.*\n.*'Object of type DictIterator'.*\n.*'Object of type StringIterator'.*\n.*'Object of type BytesIterator'.*\n.*'Object of type FunctionListIterator'.*\n.*'Type Exception'.*\n.*'Space Foo'.*\n.*'Object of type Note'.*?""", expected_err="")
 }
 
 fun test_exception_mangled_stack(name) {
