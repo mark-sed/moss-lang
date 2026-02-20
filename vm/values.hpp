@@ -155,10 +155,17 @@ public:
     virtual inline bool is_iterable() { return false; }
 
     virtual std::ostream& debug(std::ostream& os) const = 0;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const;
 
     virtual opcode::StringConst as_string() const = 0;
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const {
+        return as_string();
+    }
     virtual opcode::StringConst dump() {
         return as_string();
+    }
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) {
+        return dump();
     }
     /// Converts numeric type to float. The type has to be checked if it is
     /// numeric otherwise assert is raised or 0.0 returned
@@ -593,48 +600,78 @@ public:
         vals.clear();
     }
 
-    virtual opcode::StringConst as_string() const override {
-        if (vals.empty()) return "[]";
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const override {
+        if (vals.empty())
+            return "[]";
+        if (visited.count(this))
+            return "[...]";
         std::stringstream ss;
         ss << "[";
+        visited.insert(this);
         bool first = true;
         for (auto v: vals) {
             if (first) {
-                ss << v->dump();
+                ss << v->dump(visited);
                 first = false;
             }
             else {
-                ss << ", " << v->dump();
+                ss << ", " << v->dump(visited);
             }
         }
+        visited.erase(this);
         ss << "]";
 
         return ss.str();
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::unordered_set<const Value *> visited{};
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) override {
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump() override {
+        return as_string();
     }
 
     virtual Value *iter(Interpreter *vm) override;
 
     virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
-    virtual std::ostream& debug(std::ostream& os) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
         os << "List(" << vals.size() << ") [";
         if (vals.empty()) {
             os << "]";
             return os;
         }
-
-        bool first = true;
-        ++tab_depth;
-        for (auto v: vals) {
-            // TODO: tab has to increase with each use so that if
-            // list or some other structure is outputted it will also have
-            // correct tabs.
-            os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') << *v; 
-            first = false;
+        
+        if (visited.count(this)) {
+            os << "...]";
+        } else {
+            bool first = true;
+            ++tab_depth;
+            visited.insert(this);
+            for (auto v: vals) {
+                // TODO: tab has to increase with each use so that if
+                // list or some other structure is outputted it will also have
+                // correct tabs.
+                os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ');
+                v->debug(os, tab_depth, visited);
+                first = false;
+            }
+            visited.erase(this);
+            --tab_depth;
+            os << "\n" << std::string(tab_depth*2, ' ') << "]";
         }
-        --tab_depth;
-        os << "\n" << std::string(tab_depth*2, ' ') << "]";
         return os;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        std::unordered_set<const Value *> visited{};
+        return debug(os, tab_depth, visited);
     }
 };
 
@@ -711,53 +748,80 @@ public:
         vals.clear();
     }
 
-    virtual opcode::StringConst as_string() const override {
-        if (vals.empty()) return "{:}";
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const override {
+        if (vals.empty())
+            return "{:}";
+        if (visited.count(this))
+            return "{...}";
+
         std::stringstream ss;
         ss << "{";
+        visited.insert(this);
         bool first = true;
         for (auto [k, v]: vals) {
             for (auto vl: v) {
                 if (first) {
-                    ss << vl.first->dump() << ": " << vl.second->dump();
+                    ss << vl.first->dump(visited) << ": " << vl.second->dump(visited);
                     first = false;
                 }
                 else {
-                    ss << ", " << vl.first->dump() << ": " << vl.second->dump();
+                    ss << ", " << vl.first->dump(visited) << ": " << vl.second->dump(visited);
                 }
             }
         }
+        visited.erase(this);
         ss << "}";
-
         return ss.str();
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::unordered_set<const Value *> visited{};
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) override {
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump() override {
+        return as_string();
     }
 
     virtual Value *iter(Interpreter *vm) override;
 
     virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
-    virtual std::ostream& debug(std::ostream& os) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
         os << "Dict(" << vals.size() << ") {";
         if (vals.empty()) {
             os << "}";
             return os;
         }
-
-        bool first = true;
-        ++tab_depth;
-        for (auto [k, v]: vals) {
-            // TODO: tab has to increase with each use so that if
-            // list or some other structure is outputted it will also have
-            // correct tabs.
-            for (auto vl: v) {
-                os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
-                << "(" << k << ")" << *vl.first << ": " << *vl.second; 
-                first = false;
+        
+        if (visited.count(this)) {
+            os << "...}";
+        } else {
+            bool first = true;
+            ++tab_depth;
+            visited.insert(this);
+            for (auto [k, v]: vals) {
+                for (auto vl: v) {
+                    os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
+                    << "(" << k << ")" << *vl.first << ": ";
+                    vl.second->debug(os, tab_depth, visited);
+                    first = false;
+                }
             }
+            visited.erase(this);
+            --tab_depth;
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
         }
-        --tab_depth;
-        os << "\n" << std::string(tab_depth*2, ' ') << "}";
         return os;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        std::unordered_set<const Value *> visited{};
+        return debug(os, tab_depth, visited);
     }
 };
 
@@ -918,6 +982,7 @@ public:
     std::list<ClassValue *> get_all_supers();
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class ObjectValue : public Value {
@@ -951,6 +1016,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class SpaceValue : public Value {
@@ -993,6 +1059,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class ModuleValue : public Value {
@@ -1396,7 +1463,7 @@ public:
         return "<Enum " + name + ">";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
         os << "Enum {";
         if (vals.empty()) {
             os << "}";
@@ -1416,6 +1483,11 @@ public:
             os << "\n" << std::string(tab_depth*2, ' ') << "}";
         }
         return os;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        std::unordered_set<const Value *> visited{};
+        return debug(os, tab_depth, visited);
     }
 };
 

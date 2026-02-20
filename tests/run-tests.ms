@@ -396,7 +396,8 @@ fun test_note_options(name) {
 }
 
 fun test_output(name) {
-    ~expect_pass("output.ms", name, "42, true, false\nmoss language\n13\n9\n42\n", "")
+    ~expect_pass("output.ms", name, """42, true, false\nmoss language\n13\n9\n42
+{"b": 2, "l": [1, [0, 0], 2], "dct": {...}, "a": 1}\n[1, [0, 0], 2, [...]]\n{"a": [1, [0, 0], 2, [...]]}\n""", "")
 }
 
 fun test_expressions(name) {
@@ -1179,12 +1180,53 @@ List(1) [
       C
     }
   ]
-]\nEnum {}
+]
+Enum {}
 Class MyClass : A, B {
   "MyClass": Fun(MyClass(n:[Int, Float]) @110),
   "NAME": String("myclass"),
   "get_n": Fun(get_n(this) @119)
-}\n""", "")
+}
+Object : FooCls {
+  "NAME": String("FooCls"),
+  "a": Object : FooCls {...},
+  "again": Object : FooCls {...},
+  "i": Int(4),
+  "me": Class FooCls {
+    "NAME": String("FooCls"),
+    "me": Class FooCls {...}
+  }
+}
+Space : FooSpc {
+  "foo_class": Class FooCls {
+    "NAME": String("FooCls"),
+    "me": Class FooCls {...}
+  },
+  "me": Space : FooSpc {...},
+  "pi": Float(3.14)
+}
+Dict(4) {
+  (-7608462621679433859)String("b"): Int(2),
+  (-6906085509080617442)String("l"): List(3) [
+    Int(1),
+    List(2) [
+      Int(0),
+      Int(0)
+    ],
+    Int(2)
+  ],
+  (3176031829589892468)String("dct"): Dict(4) {...},
+  (4993892634952068459)String("a"): Int(1)
+}
+List(4) [
+  Int(1),
+  List(2) [
+    Int(0),
+    Int(0)
+  ],
+  Int(2),
+  List(4) [...]
+]\n""", "")
 }
 
 fun test_lib_print(name) {

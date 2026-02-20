@@ -1,6 +1,7 @@
 #include "memory.hpp"
 #include "logging.hpp"
 #include <cassert>
+#include <unordered_set>
 
 using namespace moss;
 
@@ -160,20 +161,27 @@ void MemoryPool::pop_catch(opcode::IntConst amount) {
     this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
 }
 
-void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
+void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
     bool first = true;
     ++tab_depth;
     for (auto [k, v]: sym_table) {
         if (!v)
             continue;
+        auto val = this->pool.at(v);
         if (!first) {
             os << ",";
         }
         first = false;
         os << "\n";
-        os << std::string(tab_depth*2, ' ') << "\"" << k << "\": " << *(this->pool.at(v));
+        os << std::string(tab_depth*2, ' ') << "\"" << k << "\": ";
+        val->debug(os, tab_depth, visited);
     }
     --tab_depth;
+}
+
+void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth) const {
+    std::unordered_set<const Value *> visited{};
+    debug_sym_table(os, tab_depth, visited);
 }
 
 std::ostream& MemoryPool::debug(std::ostream& os) const {
