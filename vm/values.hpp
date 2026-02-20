@@ -617,25 +617,37 @@ public:
 
     virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
-    virtual std::ostream& debug(std::ostream& os) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
         os << "List(" << vals.size() << ") [";
         if (vals.empty()) {
             os << "]";
             return os;
         }
-
-        bool first = true;
-        ++tab_depth;
-        for (auto v: vals) {
-            // TODO: tab has to increase with each use so that if
-            // list or some other structure is outputted it will also have
-            // correct tabs.
-            os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') << *v; 
-            first = false;
+        
+        if (visited.count(this)) {
+            os << "...]";
+        } else {
+            bool first = true;
+            ++tab_depth;
+            visited.insert(this);
+            for (auto v: vals) {
+                // TODO: tab has to increase with each use so that if
+                // list or some other structure is outputted it will also have
+                // correct tabs.
+                os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ');
+                v->debug(os, tab_depth, visited);
+                first = false;
+            }
+            visited.erase(this);
+            --tab_depth;
+            os << "\n" << std::string(tab_depth*2, ' ') << "]";
         }
-        --tab_depth;
-        os << "\n" << std::string(tab_depth*2, ' ') << "]";
         return os;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        std::unordered_set<const Value *> visited{};
+        return debug(os, tab_depth, visited);
     }
 };
 
@@ -737,28 +749,37 @@ public:
 
     virtual void set_subsc(Interpreter *vm, Value *key, Value *val) override;
 
-    virtual std::ostream& debug(std::ostream& os) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
         os << "Dict(" << vals.size() << ") {";
         if (vals.empty()) {
             os << "}";
             return os;
         }
-
-        bool first = true;
-        ++tab_depth;
-        for (auto [k, v]: vals) {
-            // TODO: tab has to increase with each use so that if
-            // list or some other structure is outputted it will also have
-            // correct tabs.
-            for (auto vl: v) {
-                os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
-                << "(" << k << ")" << *vl.first << ": " << *vl.second; 
-                first = false;
+        
+        if (visited.count(this)) {
+            os << "...}";
+        } else {
+            bool first = true;
+            ++tab_depth;
+            visited.insert(this);
+            for (auto [k, v]: vals) {
+                for (auto vl: v) {
+                    os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
+                    << "(" << k << ")" << *vl.first << ": ";
+                    vl.second->debug(os, tab_depth, visited);
+                    first = false;
+                }
             }
+            visited.erase(this);
+            --tab_depth;
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
         }
-        --tab_depth;
-        os << "\n" << std::string(tab_depth*2, ' ') << "}";
         return os;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        std::unordered_set<const Value *> visited{};
+        return debug(os, tab_depth, visited);
     }
 };
 
@@ -1400,7 +1421,7 @@ public:
         return "<Enum " + name + ">";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
         os << "Enum {";
         if (vals.empty()) {
             os << "}";
@@ -1420,6 +1441,11 @@ public:
             os << "\n" << std::string(tab_depth*2, ' ') << "}";
         }
         return os;
+    }
+
+    virtual std::ostream& debug(std::ostream& os) const override {
+        std::unordered_set<const Value *> visited{};
+        return debug(os, tab_depth, visited);
     }
 };
 

@@ -315,36 +315,46 @@ std::ostream& ClassValue::debug(std::ostream& os, unsigned tab_depth, std::unord
         os << "}";
     }
     else {
-        attrs->debug_sym_table(os, tab_depth, visited);
-        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        if (visited.count(this)) {
+            os << "...}";
+        } else {
+            visited.insert(this);
+            attrs->debug_sym_table(os, tab_depth, visited);
+            visited.erase(this);
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        }
     }
 
     return os;
 }
 
 std::ostream& ClassValue::debug(std::ostream& os) const {
-    std::unordered_set<const Value *> visited{this};
+    std::unordered_set<const Value *> visited{};
     return debug(os, tab_depth, visited);
 }
 
 std::ostream& ObjectValue::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
     // TODO: Output all needed debug info
-    os << std::string(tab_depth*2, ' ') <<  "Object : " << type->get_name() << " {"; 
+    os << "Object : " << type->get_name() << " {"; 
     if (!attrs || attrs->is_empty_sym_table()) {
         os << "}";
     }
     else {
-        visited.insert(this);
-        attrs->debug_sym_table(os, tab_depth, visited);
-        visited.erase(this);
-        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        if (visited.count(this)) {
+            os << "...}";
+        } else {
+            visited.insert(this);
+            attrs->debug_sym_table(os, tab_depth, visited);
+            visited.erase(this);
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        }
     }
 
     return os;
 }
 
 std::ostream& ObjectValue::debug(std::ostream& os) const {
-    std::unordered_set<const Value *> visited{this};
+    std::unordered_set<const Value *> visited{};
     return debug(os, tab_depth, visited);
 }
 
@@ -355,15 +365,21 @@ std::ostream& SpaceValue::debug(std::ostream& os, unsigned tab_depth, std::unord
         os << "}";
     }
     else {
-        attrs->debug_sym_table(os, tab_depth, visited);
-        os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        if (visited.count(this)) {
+            os << "...}";
+        } else {
+            visited.insert(this);
+            attrs->debug_sym_table(os, tab_depth, visited);
+            visited.erase(this);
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        }
     }
 
     return os;
 }
 
 std::ostream& SpaceValue::debug(std::ostream& os) const {
-    std::unordered_set<const Value *> visited{this};
+    std::unordered_set<const Value *> visited{};
     return debug(os, tab_depth, visited);
 }
 

@@ -174,13 +174,7 @@ void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth, std::unor
         first = false;
         os << "\n";
         os << std::string(tab_depth*2, ' ') << "\"" << k << "\": ";
-        if (visited.count(val)) {
-            os << "<recursion>";
-        } else {
-            visited.insert(val);
-            val->debug(os, tab_depth, visited);
-            visited.erase(val);
-        }
+        val->debug(os, tab_depth, visited);
     }
     --tab_depth;
 }
