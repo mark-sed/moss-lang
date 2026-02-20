@@ -155,6 +155,7 @@ public:
     virtual inline bool is_iterable() { return false; }
 
     virtual std::ostream& debug(std::ostream& os) const = 0;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const;
 
     virtual opcode::StringConst as_string() const = 0;
     virtual opcode::StringConst dump() {
@@ -918,6 +919,7 @@ public:
     std::list<ClassValue *> get_all_supers();
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class ObjectValue : public Value {
@@ -951,6 +953,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class SpaceValue : public Value {
@@ -993,6 +996,7 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class ModuleValue : public Value {

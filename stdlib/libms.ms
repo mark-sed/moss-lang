@@ -1802,7 +1802,8 @@ class __SystemExit : Exception {
     """
 
     fun SystemExit(code=0) {
-        this.msg = this.code = code
+        ~super(code)
+        this.code = code
     }
 
     fun __String() {

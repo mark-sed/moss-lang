@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <cstdint>
 #include <iostream>
 #include <optional>
@@ -155,6 +156,7 @@ public:
     Interpreter *get_vm_owner() { return this->vm_owner; }
 
     std::ostream& debug(std::ostream& os) const;
+    void debug_sym_table(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const;
     void debug_sym_table(std::ostream& os, unsigned tab_depth=0) const;
 
     /// \return list of all the keys in the symbol table
