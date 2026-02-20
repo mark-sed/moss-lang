@@ -158,8 +158,14 @@ public:
     virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const;
 
     virtual opcode::StringConst as_string() const = 0;
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const {
+        return as_string();
+    }
     virtual opcode::StringConst dump() {
         return as_string();
+    }
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) {
+        return dump();
     }
     /// Converts numeric type to float. The type has to be checked if it is
     /// numeric otherwise assert is raised or 0.0 returned
@@ -594,23 +600,41 @@ public:
         vals.clear();
     }
 
-    virtual opcode::StringConst as_string() const override {
-        if (vals.empty()) return "[]";
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const override {
+        if (vals.empty())
+            return "[]";
+        if (visited.count(this))
+            return "[...]";
         std::stringstream ss;
         ss << "[";
+        visited.insert(this);
         bool first = true;
         for (auto v: vals) {
             if (first) {
-                ss << v->dump();
+                ss << v->dump(visited);
                 first = false;
             }
             else {
-                ss << ", " << v->dump();
+                ss << ", " << v->dump(visited);
             }
         }
+        visited.erase(this);
         ss << "]";
 
         return ss.str();
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::unordered_set<const Value *> visited{};
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) override {
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump() override {
+        return as_string();
     }
 
     virtual Value *iter(Interpreter *vm) override;
@@ -724,25 +748,43 @@ public:
         vals.clear();
     }
 
-    virtual opcode::StringConst as_string() const override {
-        if (vals.empty()) return "{:}";
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const override {
+        if (vals.empty())
+            return "{:}";
+        if (visited.count(this))
+            return "{...}";
+
         std::stringstream ss;
         ss << "{";
+        visited.insert(this);
         bool first = true;
         for (auto [k, v]: vals) {
             for (auto vl: v) {
                 if (first) {
-                    ss << vl.first->dump() << ": " << vl.second->dump();
+                    ss << vl.first->dump(visited) << ": " << vl.second->dump(visited);
                     first = false;
                 }
                 else {
-                    ss << ", " << vl.first->dump() << ": " << vl.second->dump();
+                    ss << ", " << vl.first->dump(visited) << ": " << vl.second->dump(visited);
                 }
             }
         }
+        visited.erase(this);
         ss << "}";
-
         return ss.str();
+    }
+
+    virtual opcode::StringConst as_string() const override {
+        std::unordered_set<const Value *> visited{};
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) override {
+        return as_string(visited);
+    }
+
+    virtual opcode::StringConst dump() override {
+        return as_string();
     }
 
     virtual Value *iter(Interpreter *vm) override;

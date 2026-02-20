@@ -396,7 +396,8 @@ fun test_note_options(name) {
 }
 
 fun test_output(name) {
-    ~expect_pass("output.ms", name, "42, true, false\nmoss language\n13\n9\n42\n", "")
+    ~expect_pass("output.ms", name, """42, true, false\nmoss language\n13\n9\n42
+{"b": 2, "l": [1, [0, 0], 2], "dct": {...}, "a": 1}\n[1, [0, 0], 2, [...]]\n{"a": [1, [0, 0], 2, [...]]}\n""", "")
 }
 
 fun test_expressions(name) {
