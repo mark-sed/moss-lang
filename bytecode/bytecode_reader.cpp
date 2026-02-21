@@ -3,23 +3,43 @@
 #include "bytecode.hpp"
 #include "opcode.hpp"
 #include "logging.hpp"
+#include "errors.hpp"
 #include <cstdlib>
 
 using namespace moss;
 using namespace moss::opcode;
 
+void BytecodeReader::read_raw(char* data, std::size_t size) {
+    this->stream->read(data, size);
+
+    if (this->stream->gcount() == size) {
+        for (size_t i = 0; i < size; ++i) {
+            crc_checksum ^= static_cast<unsigned char>(data[i]);
+            for (int j = 0; j < 8; ++j)
+                crc_checksum = (crc_checksum >> 1) ^ (0xEDB88320 & -(crc_checksum & 1));
+        }
+    }
+
+    if (!this->stream && !this->stream->eof()) {
+        error::error(error::ErrorCode::BYTECODE, "Error reading bytecode", &this->file, true);
+    }
+}
+
 Register BytecodeReader::read_register() {
     char buffer[BC_REGISTER_SIZE];
     char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BC_REGISTER_SIZE);
-    return *(Register *)&buffer[0];
+    read_raw(buffer_ptr, BC_REGISTER_SIZE);
+    Register reg;
+    std::memcpy(&reg, buffer, sizeof(reg));
+    return reg;
 }
 
 StringConst BytecodeReader::read_string() {
     char buffer[BC_STR_LEN_SIZE];
     char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BC_STR_LEN_SIZE);
-    strlen_t str_len = *(strlen_t *)&buffer[0];
+    read_raw(buffer_ptr, BC_STR_LEN_SIZE);
+    strlen_t str_len;
+    std::memcpy(&str_len, buffer, sizeof(str_len));
 
     if (str_len > buffer_size) {
         // Change buffer to size of nearest higher multiple of 64
@@ -27,43 +47,78 @@ StringConst BytecodeReader::read_string() {
         this->str_buffer = (char *)std::realloc(str_buffer, buffer_size);
     }
 
-    this->stream->read(str_buffer, str_len);
+    read_raw(str_buffer, str_len);
     return StringConst(str_buffer, str_len);
 }
 
 IntConst BytecodeReader::read_const_int() {
     char buffer[BC_INT_SIZE];
     char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BC_INT_SIZE);
-    return *(IntConst *)&buffer[0];
+    read_raw(buffer_ptr, BC_INT_SIZE);
+    IntConst c;
+    std::memcpy(&c, buffer, sizeof(c));
+    return c;
 }
 
 FloatConst BytecodeReader::read_const_float() {
     char buffer[BC_FLOAT_SIZE];
     char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BC_FLOAT_SIZE);
-    return *(FloatConst *)&buffer[0];
+    read_raw(buffer_ptr, BC_FLOAT_SIZE);
+    FloatConst c;
+    std::memcpy(&c, buffer, sizeof(c));
+    return c;
 }
 
 BoolConst BytecodeReader::read_const_bool() {
     char buffer[BC_BOOL_SIZE];
     char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BC_BOOL_SIZE);
-    return *(BoolConst *)&buffer[0];
+    read_raw(buffer_ptr, BC_BOOL_SIZE);
+    BoolConst c;
+    std::memcpy(&c, buffer, sizeof(c));
+    return c;
 }
 
 Address BytecodeReader::read_address() {
     char buffer[BC_ADDR_SIZE];
     char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BC_ADDR_SIZE);
-    return *(Address *)&buffer[0];
+    read_raw(buffer_ptr, BC_ADDR_SIZE);
+    Address addr;
+    std::memcpy(&addr, buffer, sizeof(addr));
+    return addr;
 }
 
 bc_header::BytecodeHeader BytecodeReader::read_header() {
-    char buffer[BCH_SIZE];
-    char *buffer_ptr = &buffer[0];
-    this->stream->read(buffer_ptr, BCH_SIZE);
-    return *(bc_header::BytecodeHeader *)&buffer[0];
+    bc_header::BytecodeHeader header{};
+    this->stream->read(reinterpret_cast<char*>(&header), sizeof(header));
+
+    // Check read success (size).
+    if (this->stream->gcount() != sizeof(header)) {
+        std::string msg = "Invalid moss bytecode file — file size cannot fit header";
+        error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
+    }
+
+    // Validate ID.
+    constexpr std::uint32_t EXPECTED_ID = 0xFF00002A;
+    if (header.id != EXPECTED_ID) {
+        std::string msg = "Invalid moss bytecode file — moss ID not matched";
+        error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
+    }
+
+    // Check BC version compatibility.
+    if (header.bc_version != bc_header::BYTECODE_VERSION) {
+        std::string msg = "Incompatible moss bytecode version — interpreter uses version " +
+            std::to_string(bc_header::BYTECODE_VERSION) + ", but file uses version " +
+            std::to_string(header.bc_version);
+        error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
+    }
+
+    // Check Moss version and warn if bc was compiled with newer version.
+    if (header.moss_version > MOSS_VERSION_UINT32) {
+        auto version_string = header.get_version_string();
+        error::warning(diags::Diagnostic(true, file, diags::WarningID::MSB_COMPILED_WITH_NEWER_VER, version_string.c_str()));
+    }
+
+    return header;
 }
 
 Bytecode *BytecodeReader::read() {
@@ -71,16 +126,16 @@ Bytecode *BytecodeReader::read() {
 
     Bytecode *bc = new Bytecode();
 
-    char opcode_char;
-    opcode_t opcode;
-
     bc_header::BytecodeHeader header_val = read_header();
     bc_header::BytecodeHeader *header = new bc_header::BytecodeHeader(header_val);
     LOGMAX("Read header: " << *header);
     bc->set_header(header);
 
+    char opcode_char;
+    opcode_t opcode;
+
     do {
-        this->stream->read(&opcode_char, BC_OPCODE_SIZE);
+        read_raw(&opcode_char, BC_OPCODE_SIZE);
         opcode = static_cast<opcode_t>(opcode_char);
         if (this->stream->eof()) 
             break;
@@ -820,11 +875,20 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::LOOP_END: {
                 bc->push_back(new LoopEnd());
             } break;
-            default: 
+            default: {
                 std::string msg = "unknown opcode in bytecode reader: "+std::to_string(opcode);
                 error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
+            }
         }
     } while(!this->stream->eof());
+
+    std::uint32_t computed = ~crc_checksum;
+    std::uint32_t expected = header->checksum;
+
+    if (computed != expected) {
+        std::string msg = "Moss bytecode checksum mismatch (corrupted file) " + std::to_string(computed) + " != " + std::to_string(expected);
+        error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
+    }
 
     return bc;
 }

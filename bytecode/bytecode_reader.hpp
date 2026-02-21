@@ -28,6 +28,9 @@ private:
     char *str_buffer;
     size_t buffer_size;
 
+    std::uint32_t crc_checksum;
+
+    void read_raw(char* data, std::size_t size);
     opcode::Register read_register();
     opcode::StringConst read_string();
     opcode::IntConst read_const_int();
@@ -36,7 +39,7 @@ private:
     opcode::Address read_address();
     bc_header::BytecodeHeader read_header();
 public:
-    BytecodeReader(BytecodeFile &file) : file(file), buffer_size(256) {
+    BytecodeReader(BytecodeFile &file) : file(file), buffer_size(256), crc_checksum(0xFFFFFFFF) {
         this->stream = file.get_new_stream();
         // Buffer might be reallocated, so malloc has to be used
         this->str_buffer = (char *)std::malloc(buffer_size);

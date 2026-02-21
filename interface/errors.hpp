@@ -30,8 +30,7 @@ namespace diags {
 
 /// Namespace holding resources for error and warning handling
 namespace error {
-    
-    
+
     using msgtype = const char *;
     namespace msgs {
         inline msgtype UNKNOWN_SYMBOL = "Unknown symbol \"%s\"";
@@ -139,6 +138,11 @@ namespace error {
     /// \note If -W error is set then it will also exit with 1 (runtime error)
     /// \param msg Message to print 
     void warning(diags::Diagnostic msg);
+
+    /// Prints warning to std::cerr if warnings are enabled.
+    /// \note If -W error is set then it will also exit with 1 (runtime error)
+    /// \param msg Message to print 
+    void warning(const char *msg);
 
     /// Exits program with passed in code
     /// \param code Error code to exit with 

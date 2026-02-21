@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "bytecode_reader.hpp"
 #include "bytecode_writer.hpp"
+#include <cstdio>
 
 namespace{
 
@@ -19,11 +20,7 @@ TEST(BytecodeWriterAndReader, TestCorrectness){
     bc->push_back(new opcode::StoreName(0, "foo"));
     bc->push_back(new opcode::Load(1, "foo"));
 
-#ifdef __linux__
-    auto file_path = "/tmp/mosstest.msb";
-#else
     auto file_path = "mosstest.msb";
-#endif
 
     BytecodeFile bfo(file_path);
     BytecodeWriter *bcwriter = new BytecodeWriter(bfo);
@@ -38,6 +35,8 @@ TEST(BytecodeWriterAndReader, TestCorrectness){
         EXPECT_TRUE(*bc->get_code()[i] == *bc_read->get_code()[i]);
     }
 
+    int ret = std::remove(file_path);
+    ASSERT_EQ(ret, 0) << "Failed to remove file";
     delete bc;
     delete bc_read;
     delete bcwriter;
@@ -209,11 +208,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::LoopBegin());
     bc->push_back(new opcode::LoopEnd());
 
-#ifdef __linux__
-    auto file_path = "/tmp/mosstest_all.msb";
-#else
     auto file_path = "mosstest_all.msb";
-#endif
 
     BytecodeFile bfo(file_path);
     BytecodeWriter *bcwriter = new BytecodeWriter(bfo);
@@ -230,6 +225,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
         EXPECT_EQ(static_cast<unsigned int>(bc_read->get_code()[i]->get_type()), i) << "Read: '" << *(bc_read->get_code()[i]) << "'";
     }
 
+    int ret = std::remove(file_path);
+    ASSERT_EQ(ret, 0) << "Failed to remove file";
     delete bc;
     delete bc_read;
     delete bcwriter;

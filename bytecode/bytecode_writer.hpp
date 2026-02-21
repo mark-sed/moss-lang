@@ -26,13 +26,16 @@ private:
     BytecodeFile &file;
     std::ostream *stream;
 
+    std::uint32_t crc_checksum;
+
+    void write_raw(const char* data, std::size_t size);
     void write_register(opcode::Register reg);
     void write_address(opcode::Address addr);
     void write_string(opcode::StringConst val);
     void write_int(opcode::IntConst v);
     void write_header(bc_header::BytecodeHeader bch);
 public:
-    BytecodeWriter(BytecodeFile &file) : file(file) {
+    BytecodeWriter(BytecodeFile &file) : file(file), crc_checksum(0xFFFFFFFF) {
         this->stream = file.create_out_stream();
     }
     ~BytecodeWriter() {

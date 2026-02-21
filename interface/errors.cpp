@@ -172,6 +172,19 @@ void error::warning(diags::Diagnostic msg) {
     }
 }
 
+void error::warning(const char *msg) {
+    if (clopts::get_warning_level() == clopts::WarningLevel::WL_IGNORE)
+        return;
+    
+    errs << error::colors::colorize(error::colors::YELLOW) << "warning"
+         << error::colors::reset() << ": " << msg << ".";
+
+    if (clopts::get_warning_level() == clopts::WarningLevel::WL_ERROR) {
+        LOGMAX("-W error set so exiting with warning");
+        std::exit(error::ErrorCode::RUNTIME);
+    }
+}
+
 [[noreturn]] void error::exit(error::ErrorCode code) {
     LOG1("Exiting program with code " << code);
     std::exit(code);

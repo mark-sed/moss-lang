@@ -22,9 +22,12 @@
 
 #define MOSS_VERSION_MAJOR 0  ///< Interpreter's major version
 #define MOSS_VERSION_MINOR 7  ///< Interpreter's minor version
-#define MOSS_VERSION_PATCH 4  ///< Interpreter's patch
+#define MOSS_VERSION_PATCH 5  ///< Interpreter's patch
 
 /// Moss version as a string
 #define MOSS_VERSION MACRO_TO_STR(MOSS_VERSION_MAJOR) "." MACRO_TO_STR(MOSS_VERSION_MINOR) "." MACRO_TO_STR(MOSS_VERSION_PATCH)
+
+/// Moss version as uint32 value
+#define MOSS_VERSION_UINT32 ((std::uint32_t)((MOSS_VERSION_MAJOR << 24) | (MOSS_VERSION_MINOR << 16) | (MOSS_VERSION_PATCH << 8)))
 
 #endif//_MOSS_HPP_

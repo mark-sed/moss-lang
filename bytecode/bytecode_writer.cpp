@@ -11,29 +11,42 @@
 using namespace moss;
 using namespace moss::opcode;
 
+void BytecodeWriter::write_raw(const char* data, std::size_t size) {
+    this->stream->write(data, size);
+
+    // update CRC
+    for (size_t i = 0; i < size; ++i) {
+        crc_checksum ^= static_cast<unsigned char>(data[i]);
+        for (int j = 0; j < 8; ++j)
+            crc_checksum = (crc_checksum >> 1) ^ (0xEDB88320 & -(crc_checksum & 1));
+    }
+}
+
 void BytecodeWriter::write_register(Register reg) {
-    this->stream->write(reinterpret_cast<char *>(&reg), BC_REGISTER_SIZE);
+    write_raw(reinterpret_cast<char *>(&reg), BC_REGISTER_SIZE);
 }
 
 void BytecodeWriter::write_address(Address addr) {
-    this->stream->write(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
+    write_raw(reinterpret_cast<char *>(&addr), BC_ADDR_SIZE);
 }
 
 void BytecodeWriter::write_int(IntConst v) {
-    this->stream->write(reinterpret_cast<char *>(&v), BC_INT_SIZE);
+    write_raw(reinterpret_cast<char *>(&v), BC_INT_SIZE);
 }
 
 void BytecodeWriter::write_string(StringConst val) {
     const char *txt = val.c_str();
     strlen_t len = val.size();
-    this->stream->write(reinterpret_cast<char *>(&len), BC_STR_LEN_SIZE);
-    this->stream->write(txt, val.size());
+    write_raw(reinterpret_cast<char *>(&len), BC_STR_LEN_SIZE);
+    write_raw(txt, val.size());
 }
 
 void BytecodeWriter::write_header(bc_header::BytecodeHeader bch) {
-    this->stream->write(reinterpret_cast<const char *>(&bch.id), BCH_ID_SIZE);
+    // Write header and don't update checksum.
+    this->stream->write(reinterpret_cast<char *>(&bch.id), BCH_ID_SIZE);
     this->stream->write(reinterpret_cast<char *>(&bch.checksum), BCH_CHECKSUM_SIZE);
-    this->stream->write(reinterpret_cast<char *>(&bch.version), BCH_VERSION_SIZE);
+    this->stream->write(reinterpret_cast<char *>(&bch.bc_version), BCH_BC_VERSION_SIZE);
+    this->stream->write(reinterpret_cast<char *>(&bch.moss_version), BCH_MOSS_VERSION_SIZE);
     this->stream->write(reinterpret_cast<char *>(&bch.timestamp), BCH_TIMESTAMP_SIZE);
 }
 
@@ -46,7 +59,7 @@ void BytecodeWriter::write(Bytecode *code) {
 
     for (opcode::OpCode *op_gen: code->get_code()) {
         opcode_t opc = op_gen->get_type();
-        this->stream->write(reinterpret_cast<char *>(&opc), BC_OPCODE_SIZE);
+        write_raw(reinterpret_cast<char *>(&opc), BC_OPCODE_SIZE);
         if (isa<opcode::End>(op_gen)){
             // Nothing to do
         }
@@ -124,12 +137,12 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (auto o = dyn_cast<opcode::StoreFloatConst>(op_gen)){
             write_register(o->dst);
             auto val = o->val;
-            this->stream->write(reinterpret_cast<char *>(&val), BC_FLOAT_SIZE);
+            write_raw(reinterpret_cast<char *>(&val), BC_FLOAT_SIZE);
         }
         else if (auto o = dyn_cast<opcode::StoreBoolConst>(op_gen)){
             write_register(o->dst);
             auto val = o->val;
-            this->stream->write(reinterpret_cast<char *>(&val), BC_BOOL_SIZE);
+            write_raw(reinterpret_cast<char *>(&val), BC_BOOL_SIZE);
         }
         else if (auto o = dyn_cast<opcode::StoreStringConst>(op_gen)){
             write_register(o->dst);
@@ -397,6 +410,13 @@ void BytecodeWriter::write(Bytecode *code) {
             error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
         }
     }
+
+    // Patch checksum
+    std::uint32_t final_crc = ~crc_checksum;
+    auto end_pos = this->stream->tellp();
+    this->stream->seekp(BCH_ID_SIZE);
+    this->stream->write(reinterpret_cast<char*>(&final_crc), BCH_CHECKSUM_SIZE);
+    this->stream->seekp(end_pos);
 
     this->stream->flush();
     LOGMAX("Finished writing bytecode");

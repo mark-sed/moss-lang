@@ -444,10 +444,12 @@ static const char * DIAG_MSGS[] = {
 /// \brief ID of diagnostic error
 /// This value corresponds to the error message tied to this error type
 enum WarningID : unsigned {
-    WARN_UNKNOWN = 0,       ///< This value should not be reported
-    INT_CANNOT_FIT,         ///< When value used is bigger or lower than moss Int
-    FLOAT_CANNOT_FIT,       ///< Same as before
-    NUMBER_OF_WARNING_IDS   ///< This value should not be reported it can be used to get the amount of IDs
+    WARN_UNKNOWN = 0,           ///< This value should not be reported
+    INT_CANNOT_FIT,             ///< When value used is bigger or lower than moss Int
+    FLOAT_CANNOT_FIT,           ///< Same as before
+    MSB_COMPILED_WITH_NEWER_VER,///< When bytecode was compiled with newer version of moss.
+    
+    NUMBER_OF_WARNING_IDS      ///< This value should not be reported it can be used to get the amount of IDs
 };
 
 /// This array holds messages (formatting strings) corresponding to WarningID.
@@ -457,6 +459,7 @@ static const char * WARNING_MSGS[] = {
     "Unknown error",
     "Value '%s' cannot fit into Int",
     "Value '%s' is too big or too close to 0 to fit into Float",
+    "Program was compiled with newer version of Moss (%s)",
 };
 
 /// \brief Diagnostic message for error reporting
