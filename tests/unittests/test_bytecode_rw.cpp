@@ -35,12 +35,12 @@ TEST(BytecodeWriterAndReader, TestCorrectness){
         EXPECT_TRUE(*bc->get_code()[i] == *bc_read->get_code()[i]);
     }
 
-    int ret = std::remove(file_path);
-    ASSERT_EQ(ret, 0) << "Failed to remove file";
     delete bc;
     delete bc_read;
     delete bcwriter;
     delete bcreader;
+    int ret = std::remove(file_path);
+    ASSERT_EQ(ret, 0) << "Failed to remove file";
 }
 
 // Test for all opcodes
@@ -224,13 +224,14 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
         EXPECT_TRUE(*bc->get_code()[i] == *bc_read->get_code()[i]) << "Written: \'" << *(bc->get_code()[i]) << "'\n   Read: '" << *(bc_read->get_code()[i]) << "'";
         EXPECT_EQ(static_cast<unsigned int>(bc_read->get_code()[i]->get_type()), i) << "Read: '" << *(bc_read->get_code()[i]) << "'";
     }
-
-    int ret = std::remove(file_path);
-    ASSERT_EQ(ret, 0) << "Failed to remove file";
+    
     delete bc;
     delete bc_read;
     delete bcwriter;
     delete bcreader;
+
+    int ret = std::remove(file_path);
+    ASSERT_EQ(ret, 0) << "Failed to remove file";
 }
 
 }
