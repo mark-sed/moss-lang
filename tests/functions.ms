@@ -13,11 +13,11 @@ fun sum(a:Int, b:Int=3) {
 
 sum(4, 5)++"\n"
 
-fun overloading(a:Int, b:[Bool, Int]) {
+fun overloading(a:String, b:[Int]) {
     return a ++ b ++ "\n"
 }
 
-fun overloading(a:String, b:[Int]) {
+fun overloading(a:Int, b:[Bool, Int]) {
     return a ++ b ++ "\n"
 }
 
@@ -28,16 +28,16 @@ overloading("test", 2)
 sum = 42
 sum ++ "\n"
 
+fun fooa(a=0) {
+    a
+}
+
 fun fooa(x, y:Bool, z, q, ...c, d=1) {
     x ++ y ++ z ++ q ++ c ++ d
 }
 
 fun fooa(a, b, c=5) {
     a ++ b ++ c
-}
-
-fun fooa(a=0) {
-    a
 }
 
 ~fooa()
@@ -82,16 +82,16 @@ fun varargsf(a:[Int,Bool], ... b) {
 ~varargsf(0, 1, "ok", false, nil)
 ~varargsf(true, 1)
 
+fun getID(x) {
+    return 42
+}
+
 fun getID(x:String) {
     return 1
 }
 
 fun getID(x:[Int, Bool]) {
     return 0
-}
-
-fun getID(x) {
-    return 42
 }
 
 getID("hi")

@@ -448,7 +448,8 @@ fun test_functions(name) {
 }
 
 fun test_function_overwriting(name) {
-    ~expect_pass("function_overwriting.ms", name, "foo2\nbar3\nbar3\nf1\nf2\ng2\ng3\nga\nbaz3\nbaz3\nh1\nh2\nl2\nP2\nP3\nP4\n", "")
+    ~expect_pass("function_overwriting.ms", name, """foo2\nbar3\nbar3\nf1\nf2\ng2\ng3\nga\nbaz3\nbaz3\nh1\nh2\nl2\nP2\nP3\nP4
+++Starting.\n++finished.\n1\n""", "")
 }
 
 fun test_annotations(name) {

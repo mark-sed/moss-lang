@@ -11,28 +11,21 @@
  * then a TypeError is raised.
  */
 
+fun foo(a, b) {
+    return "All other types\n"
+}
+
 fun foo(a:Int, b) { 
     return "Int first\n"
 }; 
 
 fun foo(a:String, b) { 
     return "String first\n"
-}; 
-
-// Uncomment once added
-/*fun foo(a:Rnd, b) { 
-    return a::shuffle(b) 
-}; */
-
-fun foo(a, b) {
-    return "All other types\n"
-}
+};
 
 foo(1, 2)
 foo("1", 2)
-//foo(Rnd, [2,3,4,5])
 foo(true, false)
-
 
 /**
  * Type inheritance

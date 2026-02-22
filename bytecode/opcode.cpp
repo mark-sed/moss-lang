@@ -791,8 +791,10 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         
         std::vector<std::pair<FunValue *, diags::DiagID>> call_errors;
         std::optional<diags::DiagID> err_id;
-        // Walk functions and check if it can be called
-        for (auto f: fvl->get_funs()) {
+        // Walk functions backward and check if it can be called
+        auto fun_vect = fvl->get_funs();
+        for (auto it = fun_vect.rbegin(); it != fun_vect.rend(); ++it) {
+            auto f = *it;
             err_id = can_call(f, cf);
             if (!err_id) {
                 fun = f;

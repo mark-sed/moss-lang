@@ -75,12 +75,12 @@ fun baz(a, b, ...c) {
 baz(1, 2)
 baz(1, 2, 3, 4)
 
-fun h(a:[Int, String], b:[Int, Bool]) {
-    return "h1\n"
-}
-
 fun h(a:[Int, String], b:[Int, Float]) {
     return "h2\n"
+}
+
+fun h(a:[Int, String], b:[Int, Bool]) {
+    return "h1\n"
 }
 
 h(1, 2)
@@ -119,3 +119,11 @@ class P {
 ~P(3, 4.4)
 ~P(3, 4.4, "", "")
 ~P()
+
+fun print(msg:String) {
+    ~moss.print("++"++msg)
+}
+
+~print("Starting.")
+~::print("finished.")
+~print(1)

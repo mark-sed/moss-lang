@@ -12,12 +12,7 @@ class __Int {
     d"""
     Integer (whole number) value.
     """
-
-    @internal
-    fun Int(v:String, base=10) {
-        d"Converts String value `v` of number base `base` into na Int."
-    }
-
+    
     @internal
     fun Int(v=0) {
         d"""
@@ -26,6 +21,11 @@ class __Int {
         TypeError is raised.
         When converting Float, then the decimal part is cut of, not rounded.
         """
+    }
+
+    @internal
+    fun Int(v:String, base=10) {
+        d"Converts String value `v` of number base `base` into na Int."
     }
 }
 
