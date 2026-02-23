@@ -126,6 +126,12 @@ class __String {
         return this.length() == 0
     }
 
+    fun ends_with(suffix:String) {
+        d"Returns true if this string has suffix `suffix`."
+        len = length(suffix)
+        return length(this) >= len && this[-len..0] == suffix
+    }
+
     fun expand_tabs(tab_size:Int=8) {
         d"""
         Replaces tabs with spaces according to `tab_size`.
@@ -273,6 +279,31 @@ class __String {
         """
     }
 
+    fun remove_prefix(prefix:String) {
+        d"""
+        Returns this string with removed prefix `prefix` if it starts with it,
+        if not then this string is returned unchanged.
+        Only one occurrence is removed.
+        """
+        len = length(prefix)
+        if (this[0..len] == prefix)
+            return this[len..length(this)]
+        return this
+    }
+
+    fun remove_suffix(suffix:String) {
+        d"""
+        Returns this string with removed suffix `suffix` if it ends with it,
+        if not then this string is returned unchanged.
+        Only one occurrence is removed.
+        """
+        len = length(suffix)
+        this_len = length(this)
+        if (this_len >= len && this[-len..0] == suffix)
+            return this[0..this_len-len]
+        return this
+    }
+
     @internal
     fun replace(target:String, value:String, count:Int=-1) {
         d"""
@@ -311,6 +342,11 @@ class __String {
         If `sep` in empty, then string is split at every character.
         If `maxsplit` is non-negative number then split is done this many times.
         """
+    }
+
+    fun starts_with(prefix:String) {
+        d"Returns true if this string has prefix `prefix`."
+        return this[0..length(prefix)] == prefix
     }
 
     @internal

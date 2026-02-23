@@ -39,3 +39,80 @@
 "".expand_tabs()              // ""
 "no_tabs".expand_tabs(4)      // "no_tabs"
 "\n"
+
+"HelloWorld".remove_prefix("Hello")      // "World"
+"\n"
+"HelloWorld".remove_prefix("World")      // "HelloWorld"
+"\n"
+"abcabc".remove_prefix("abc")            // "abc"
+"\n"
+"abc".remove_prefix("abcd")              // "abc"
+"\n"
+"test".remove_prefix("")                 // "test"
+"\n"
+"prefix".remove_prefix("pre")            // "fix"
+"\n"
+"prefix".remove_prefix("prefix")         // ""
+"prefix".remove_prefix("PREFIX")         // "prefix"
+"\n"
+"".remove_prefix("x")                    // ""
+
+"HelloWorld".remove_suffix("World")     // "Hello"
+"\n"
+"HelloWorld".remove_suffix("Hello")     // "HelloWorld"
+"\n"
+"abcabc".remove_suffix("abc")           // "abc"
+"\n"
+"abc".remove_suffix("abcd")             // "abc"
+"\n"
+"test".remove_suffix("")                // "test"
+"\n"
+"filename.txt".remove_suffix(".txt")    // "filename"
+"\n"
+"filename.txt".remove_suffix(".pdf")    // "filename.txt"
+"\n"
+"CaseTest".remove_suffix("test")        // "CaseTest"
+"\n"
+"".remove_suffix("x")                   // ""
+
+"hello".starts_with("he")     //  True
+"\n"
+"hello".starts_with("lo")     //  False
+"\n"
+"hello".starts_with("hello")  //  True
+"\n"
+"hello".starts_with("")       //  True
+"\n"
+"hello".starts_with("h")      // True
+"\n"
+"hello".starts_with("H")      // False
+"\n"
+"hello".starts_with("hello!") //  False
+"\n"
+"".starts_with("")            // True
+"\n"
+"".starts_with("a")           // False
+"\n"
+"123".starts_with("1")        // True
+"\n"
+
+"hello".ends_with("lo")      // True
+"\n"
+"hello".ends_with("he")      // False
+"\n"
+"hello".ends_with("hello")   // True
+"\n"
+"hello".ends_with("")        // True
+"\n"
+"hello".ends_with("o")       // True
+"\n"
+"hello".ends_with("O")       // False
+"\n"
+"hello".ends_with("world")   // False
+"\n"
+"".ends_with("")             // True
+"\n"
+"".ends_with("a")           // False
+"\n"
+"123".ends_with("3")        // True
+"\n"

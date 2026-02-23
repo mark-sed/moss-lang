@@ -1418,7 +1418,10 @@ ab  cd  e
 a       b
 a   b
 c   d
-no_tabs\n""", "")
+no_tabs\nWorld\nHelloWorld\nabc\nabc\ntest\nfix\nprefix
+Hello\nHelloWorld\nabc\nabc\ntest\nfilename\nfilename.txt\nCaseTest
+true\nfalse\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue
+true\nfalse\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue\n""", "")
 }
 
 fun test_lib_string_is(name) {
