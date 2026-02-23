@@ -94,6 +94,26 @@ class __String {
         """
     }
 
+    fun center(width:Int, fill_char:String=" ") {
+        d"""
+        Extends this string to length `width` and places this string in the
+        center padded by character `fill_char`.
+        If `fill_char` is not 1 character long then TypeError is raised.
+        If `width` is less or equal to length of this string then this string
+        is returned.
+        """
+        if (length(fill_char) != 1)
+            raise TypeError("The fill character has to be exactly 1 character long.\n")
+        len = length(this)
+        if (width <= len)
+            return this
+        total_padding = width - len
+        left_padding = total_padding / 2
+        right_padding = total_padding - left_padding  // extra goes to the right
+
+        return (fill_char * left_padding) ++ this ++ (fill_char * right_padding)
+    }
+
     @internal
     fun count(sub:String) {
         d"""
@@ -104,6 +124,32 @@ class __String {
     fun empty() {
         d"Returns true if String is empty, false otherwise."
         return this.length() == 0
+    }
+
+    fun expand_tabs(tab_size:Int=8) {
+        d"""
+        Replaces tabs with spaces according to `tab_size`.
+        This expansion keeps the tab alignments so when called on "a\tb" with
+        `tab_size=8` there will be 7 spaces between the letters.
+        """
+        result = []
+        col = 0
+
+        for (ch : this) {
+            if (ch == "\t") {
+                spaces = tab_size - (col % tab_size)
+                ~result.append(" " * spaces)
+                col += spaces
+            } else {
+                ~result.append(ch)
+                if (ch == "\n" or ch == "\r")
+                    col = 0
+                else
+                    col += 1
+            }
+        }
+
+        return "".join(result)
     }
 
     @internal

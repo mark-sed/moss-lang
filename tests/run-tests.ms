@@ -1398,6 +1398,29 @@ HHHEL23-O
 3\n3\n3\n10\n0\n4\n4\n7\n2\n5\n6\n3\n3\n1\n2\n5\n2\n3\n2\n1\n-1\n-1\n-1\n""", "")
 }
 
+fun test_lib_strings(name) {
+    ~expect_pass("stdlib_tests/strings2.ms", name, """|    hi    |
+----hi----
+---hi----
+hello
+**a**
+..abc...
+...abc...
+----
+x
+x |
+a       b
+a   b
+ab  c
+abcd    e
+ab  cd  e
+|    |
+a       b
+a   b
+c   d
+no_tabs\n""", "")
+}
+
 fun test_lib_string_is(name) {
     ~expect_pass("stdlib_tests/string_is.ms", name, """true\nfalse\ntrue\nfalse
 ----
