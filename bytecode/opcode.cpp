@@ -1184,13 +1184,11 @@ void PushUnpacked::exec(Interpreter *vm) {
             vm->get_call_frame()->push_back(StringValue::get(ustring(1, elem)));
         }
     } else if (auto vdct = dyn_cast<DictValue>(v)) {
-        for (auto elem: vdct->get_vals()) {
-            for (auto [k, v]: elem.second) {
-                auto kname = dyn_cast<StringValue>(k);
-                op_assert(kname, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::KEYWORD_NOT_A_STRING,
-                    k->get_type()->get_name().c_str())));
-                vm->get_call_frame()->push_back(kname->get_value(), v);
-            }
+        for (auto [_, k, v]: *vdct) {
+            auto kname = dyn_cast<StringValue>(k);
+            op_assert(kname, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::KEYWORD_NOT_A_STRING,
+                k->get_type()->get_name().c_str())));
+            vm->get_call_frame()->push_back(kname->get_value(), v);
         }
     } else {
         raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_ITERABLE_TYPE,
@@ -1996,7 +1994,7 @@ bool opcode::eq(Value *s1, Value *s2, Interpreter *vm) {
         }
         else if (DictValue *dv1 = dyn_cast<DictValue>(s1)) {
             DictValue *dv2 = dyn_cast<DictValue>(s2);
-            if (dv1->get_vals().size() != dv2->get_vals().size())
+            if (dv1->size() != dv2->size())
                 return false;
             auto vals1 = dv1->get_vals();
             auto vals2 = dv2->get_vals();

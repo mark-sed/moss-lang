@@ -413,7 +413,7 @@ fun test_note_options(name) {
 
 fun test_output(name) {
     ~expect_pass("output.ms", name, """42, true, false\nmoss language\n13\n9\n42
-{"b": 2, "l": [1, [0, 0], 2], "dct": {...}, "a": 1}\n[1, [0, 0], 2, [...]]\n{"a": [1, [0, 0], 2, [...]]}\n""", "")
+{"a": 1, "b": 2, "dct": {...}, "l": [1, [0, 0], 2]}\n[1, [0, 0], 2, [...]]\n{"a": [1, [0, 0], 2, [...]]}\n""", "")
 }
 
 fun test_expressions(name) {
@@ -859,7 +859,7 @@ fun test_multivar(name) {
     ~expect_pass("multivar.ms", name, """1 2 3 4
 true nil 5
 caught
-false 0 true 4
+true 4 false 0
 1 2 3 [4, 5, 6, 7]
 [0, 1, 2, 3, 4, 5, 6] 7 8
 q r [3, 4, 5, 6, 7, 8] t u v
@@ -1226,7 +1226,9 @@ Space : FooSpc {
   "pi": Float(3.14)
 }
 Dict(4) {
+  (4993892634952068459)String("a"): Int(1),
   (-7608462621679433859)String("b"): Int(2),
+  (3176031829589892468)String("dct"): Dict(4) {...},
   (-6906085509080617442)String("l"): List(3) [
     Int(1),
     List(2) [
@@ -1234,9 +1236,7 @@ Dict(4) {
       Int(0)
     ],
     Int(2)
-  ],
-  (3176031829589892468)String("dct"): Dict(4) {...},
-  (4993892634952068459)String("a"): Int(1)
+  ]
 }
 List(4) [
   Int(1),
@@ -1463,8 +1463,8 @@ ML:[1, 2, 3, 4, 0, 1]\n3\n1\nML:[1, 2, 4, 0]\nML:[]\n""", "")
 }
 
 fun test_lib_extending_dict(name) {
-    ~expect_pass("stdlib_tests/extending_dict.ms", name, """<class MyDict>\n[D]:{"b": 2, "c": 3, "a": 1}\n[D]:{:}\n1
-[D]:{"b": 2, "c": 3}\n2\nfalse\nnope\n[D]:{"b": 2}\n[D]:{:}\n""", "")
+    ~expect_pass("stdlib_tests/extending_dict.ms", name, """<class MyDict>
+[D]:{"a": 1, "b": 2, "c": 3}\n[D]:{:}\n1\n[D]:{"b": 2, "c": 3}\n2\nfalse\nnope\n[D]:{"b": 2}\n[D]:{:}\n""", "")
 }
 
 fun test_lib_random(name) {

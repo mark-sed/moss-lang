@@ -710,12 +710,93 @@ public:
 class DictIterator;
 
 class DictValue : public Value {
+public:
+    using Key = opcode::IntConst;
+    using ValueT = std::vector<std::pair<Value*, Value*>>;
 private:
     friend class DictIterator;
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;
-    std::vector<opcode::IntConst> insertion_order;
+    std::map<Key, ValueT> vals;
+    std::vector<Key> insertion_order;
 public:
     static const TypeKind ClassType = TypeKind::DICT;
+
+    class const_iterator {
+        using OuterIter = std::vector<Key>::const_iterator;
+        using InnerIter = ValueT::const_iterator;
+
+    private:
+        OuterIter outer_;
+        OuterIter outer_end_;
+        const std::map<Key, ValueT>* vals_;
+        InnerIter inner_;
+
+        void advance_to_valid() {
+            while (outer_ != outer_end_) {
+                const auto& vec = vals_->at(*outer_);
+                if (!vec.empty()) {
+                    inner_ = vec.begin();
+                    return;
+                }
+                ++outer_;
+            }
+        }
+
+        const_iterator(OuterIter outer,
+                       OuterIter outer_end,
+                       const std::map<Key, ValueT>* vals)
+            : outer_(outer), outer_end_(outer_end), vals_(vals)
+        {
+            if (outer_ != outer_end_) {
+                advance_to_valid();
+            }
+        }
+
+        friend class DictValue;
+    public:
+        using iterator_category = std::forward_iterator_tag;
+
+        // (key, pair.first, pair.second)
+        using value_type = std::tuple<const Key&, Value*, Value*>;
+
+        const_iterator& operator++() {
+            ++inner_;
+
+            const auto& vec = vals_->at(*outer_);
+            if (inner_ == vec.end()) {
+                ++outer_;
+                advance_to_valid();
+            }
+
+            return *this;
+        }
+
+        bool operator==(const const_iterator& other) const {
+            return outer_ == other.outer_ &&
+                   (outer_ == outer_end_ || inner_ == other.inner_);
+        }
+
+        bool operator!=(const const_iterator& other) const {
+            return !(*this == other);
+        }
+
+        value_type operator*() const {
+            const Key& key = *outer_;
+            const auto& pair = *inner_;
+            return {key, pair.first, pair.second};
+        }
+    };
+
+    const_iterator begin() const {
+        return const_iterator(insertion_order.begin(),
+                              insertion_order.end(),
+                              &vals);
+    }
+
+    const_iterator end() const {
+        return const_iterator(insertion_order.end(),
+                              insertion_order.end(),
+                              &vals );
+    }
 
     // Since pushing a value might cause an exception there cannot be a constructor which takes list as is bellow.
     DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals, std::vector<opcode::IntConst> insertion_order);
@@ -730,13 +811,21 @@ public:
     virtual inline bool is_hashable() override { return false; }
     virtual inline bool is_iterable() override { return true; }
 
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> &get_vals() { return this->vals; }
+    std::map<Key, ValueT> &get_vals() { return this->vals; }
     std::vector<std::pair<Value *, Value *>> vals_as_list();
 
     void push(Value *k, Value *v, Interpreter *vm);
     void push(std::vector<Value *> &keys, std::vector<Value *> &values, Interpreter *vm);
     void push(ListValue *keys, ListValue *values, Interpreter *vm) {
         push(keys->get_vals(), values->get_vals(), vm);
+    }
+    // TODO: Make this accept only Value key
+    void erase(std::map<Key, ValueT>::iterator it, Key hsh) {
+        vals.erase(it);
+        auto h_it = std::find(insertion_order.begin(), insertion_order.end(), hsh);
+        if (h_it != insertion_order.end()) {
+            insertion_order.erase(h_it);
+        }
     }
 
     size_t size() {
@@ -758,16 +847,13 @@ public:
         ss << "{";
         visited.insert(this);
         bool first = true;
-        for (auto hsh: insertion_order) {
-            auto &v = vals.at(hsh);
-            for (auto vl: v) {
-                if (first) {
-                    ss << vl.first->dump(visited) << ": " << vl.second->dump(visited);
-                    first = false;
-                }
-                else {
-                    ss << ", " << vl.first->dump(visited) << ": " << vl.second->dump(visited);
-                }
+        for (const auto& [_, k, v] : *this) {
+            if (first) {
+                ss << k->dump(visited) << ": " << v->dump(visited);
+                first = false;
+            }
+            else {
+                ss << ", " << k->dump(visited) << ": " <<v->dump(visited);
             }
         }
         visited.erase(this);

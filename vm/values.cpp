@@ -417,14 +417,11 @@ void DictValue::push(Value *k, Value *v, Interpreter *vm) {
                 LOGMAX("Overriding index " << vindex << " with " << *vals[hash_key][vindex].first << ": " << *vals[hash_key][vindex].second);
                 contains = true;
                 vals[hash_key][vindex] = std::make_pair(k, v);
-                break;
+                return;
             }
         }
-        if (!contains) {
-            LOGMAX("New key, appending");
-            vals[hash_key].push_back(std::make_pair(k, v));
-            insertion_order.push_back(hash_key);
-        }
+        LOGMAX("New key, appending");
+        vals[hash_key].push_back(std::make_pair(k, v));
     } else {
         LOGMAX("No clash creating a new item");
         std::vector<std::pair<Value *, Value *>> item{std::make_pair(k, v)};
