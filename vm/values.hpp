@@ -713,17 +713,18 @@ class DictValue : public Value {
 private:
     friend class DictIterator;
     std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;
+    std::vector<opcode::IntConst> insertion_order;
 public:
     static const TypeKind ClassType = TypeKind::DICT;
 
     // Since pushing a value might cause an exception there cannot be a constructor which takes list as is bellow.
-    DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
+    DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals, std::vector<opcode::IntConst> insertion_order);
     DictValue();
 
     ~DictValue() {}
 
     virtual Value *clone() override {
-        return new DictValue(this->vals);
+        return new DictValue(this->vals, this->insertion_order);
     }
 
     virtual inline bool is_hashable() override { return false; }
@@ -737,15 +738,14 @@ public:
     void push(ListValue *keys, ListValue *values, Interpreter *vm) {
         push(keys->get_vals(), values->get_vals(), vm);
     }
+
     size_t size() {
-        size_t s = 0;
-        for (auto [k, v]: vals) {
-            s += v.size();
-        }
-        return s;
+        return insertion_order.size();
     }
+    
     void clear() {
         vals.clear();
+        insertion_order.clear();
     }
 
     virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const override {
@@ -758,7 +758,8 @@ public:
         ss << "{";
         visited.insert(this);
         bool first = true;
-        for (auto [k, v]: vals) {
+        for (auto hsh: insertion_order) {
+            auto &v = vals.at(hsh);
             for (auto vl: v) {
                 if (first) {
                     ss << vl.first->dump(visited) << ": " << vl.second->dump(visited);
@@ -804,7 +805,8 @@ public:
             bool first = true;
             ++tab_depth;
             visited.insert(this);
-            for (auto [k, v]: vals) {
+            for (const auto k: insertion_order) {
+                const auto &v = vals.at(k);
                 for (auto vl: v) {
                     os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
                     << "(" << k << ")" << *vl.first << ": ";
@@ -828,7 +830,7 @@ public:
 class DictIterator : public Value {
 private:
     DictValue &value;
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>>::iterator iterator;
+    size_t iterator;
     size_t keys_iterator;
 public:
     static const TypeKind ClassType = TypeKind::DICT_ITER;

@@ -229,10 +229,11 @@ Value *DictValue::iter(Interpreter *vm) {
 
 Value *DictIterator::next(Interpreter *vm) {
     (void)vm;
-    if (this->iterator == this->value.vals.end()) {
+    if (this->iterator >= this->value.insertion_order.size()) {
         opcode::raise(mslib::create_stop_iteration());
     }
-    auto item = iterator->second;
+    auto hsh = this->value.insertion_order[this->iterator];
+    auto item = this->value.vals[hsh];
     auto key = item[keys_iterator].first;
     auto val = item[keys_iterator].second;
     ++keys_iterator;
@@ -291,7 +292,8 @@ void DictValue::set_subsc(Interpreter *vm, Value *key, Value *val) {
 
 std::vector<std::pair<Value *, Value *>> DictValue::vals_as_list() {
     std::vector<std::pair<Value *, Value *>> res;
-    for (auto [_, vs] : vals) {
+    for (auto hsh: insertion_order) {
+        auto vs = vals[hsh];
         res.insert(res.end(), vs.begin(), vs.end());
     }
     return res;
@@ -421,11 +423,13 @@ void DictValue::push(Value *k, Value *v, Interpreter *vm) {
         if (!contains) {
             LOGMAX("New key, appending");
             vals[hash_key].push_back(std::make_pair(k, v));
+            insertion_order.push_back(hash_key);
         }
     } else {
         LOGMAX("No clash creating a new item");
         std::vector<std::pair<Value *, Value *>> item{std::make_pair(k, v)};
         vals[hash_key] = item;
+        insertion_order.push_back(hash_key);
     }
 }
 
@@ -519,8 +523,8 @@ IntValue::IntValue(opcode::IntConst value) : Value(ClassType, "Int", BuiltIns::I
         this->attrs = BuiltIns::Int->get_attrs()->clone();
 }
 
-DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals)
-        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals) {
+DictValue::DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals, std::vector<opcode::IntConst> insertion_order)
+        : Value(ClassType, "Dict", BuiltIns::Dict), vals(vals), insertion_order(insertion_order) {
     if(BuiltIns::Dict->get_attrs())
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }
@@ -529,7 +533,7 @@ DictValue::DictValue() : Value(ClassType, "Dict", BuiltIns::Dict) {
         this->attrs = BuiltIns::Dict->get_attrs()->clone();
 }
 
-DictIterator::DictIterator(DictValue &value) : Value(ClassType, "DictIterator", BuiltIns::DictIterator), value(value), iterator(value.vals.begin()), keys_iterator(0) {
+DictIterator::DictIterator(DictValue &value) : Value(ClassType, "DictIterator", BuiltIns::DictIterator), value(value), iterator(0), keys_iterator(0) {
     if(BuiltIns::DictIterator->get_attrs())
         this->attrs = BuiltIns::DictIterator->get_attrs()->clone();
 }
