@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <memory>
+#include <cctype>
 
 using namespace utils;
 
@@ -14,7 +15,7 @@ std::set<ustring> utils::split_csv_set(ustring csv, char delim) {
     ustring value;
     std::stringstream csv_stream(csv);
     while(std::getline(csv_stream, value, delim)){
-        utils::trim(value);
+        utils::trim(value, static_cast<int(*)(int)>(std::isspace));
         splitted.insert(value);
     }
     return splitted;
@@ -25,7 +26,7 @@ std::vector<ustring> utils::split_csv(ustring csv, char delim) {
     ustring value;
     std::stringstream csv_stream(csv);
     while(std::getline(csv_stream, value, delim)){
-        utils::trim(value);
+        utils::trim(value, static_cast<int(*)(int)>(std::isspace));
         splitted.push_back(value);
     }
     return splitted;

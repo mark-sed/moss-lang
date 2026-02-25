@@ -33,26 +33,29 @@ std::set<ustring> split_csv_set(ustring csv, char delim=',');
 ustring sanitize(const ustring &text);
 
 /// Trim whitespace from the left of the string
-inline void ltrim(ustring &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
+template <typename Pred>
+inline void ltrim(ustring &s, Pred pred) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [&](unsigned char ch) {
+        return !pred(ch);
     }));
 }
 
 /// Trim whitespace from the right of the string
-inline void rtrim(ustring &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
+template <typename Pred>
+inline void rtrim(ustring &s, Pred pred) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [&](unsigned char ch) {
+        return !pred(ch);
     }).base(), s.end());
 }
 
 /// Trim whitespace from string on both sides
-inline void trim(ustring &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
+template <typename Pred>
+inline void trim(ustring &s, Pred pred) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [&](unsigned char ch) {
+        return !pred(ch);
     }));
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
+    s.erase(std::find_if(s.rbegin(), s.rend(), [&](unsigned char ch) {
+        return !pred(ch);
     }).base(), s.end());
 }
 

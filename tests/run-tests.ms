@@ -1378,6 +1378,19 @@ fun test_lib_strings(name) {
     ~expect_pass("stdlib_tests/strings.ms", name, """3\n12\n11
 dcba\ntrue
 a \tb
+hello
+hello
+hello
+hello
+xyz
+hello
+hello
+example
+hello world
+long string with spaces
+longer example string
+abcXYZ
+complex@@@string
 hello\nthere madam!
 HELLO! BACK TO YOU - 98&*
 x1234y5--🧆
@@ -1461,7 +1474,22 @@ hello
 abc
 ---
 x
- x|\n""", "")
+ x|
+hello
+hello programmer
+hello
+xyz
+hello
+x
+hello
+hello
+hello
+hello
+xyz
+hello
+x
+hello
+test\n""", "")
 }
 
 fun test_lib_string_is(name) {

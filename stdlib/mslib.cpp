@@ -1059,6 +1059,28 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(counti);
             return IntValue::get(ai->get_value() << counti->get_value());
         }},
+        {"lstrip", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 2);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            auto strv = sv->get_value();
+            auto chars = cf->get_arg("chars");
+            if (isa<NilValue>(chars))
+                utils::ltrim(strv, static_cast<int(*)(int)>(std::isspace));
+            else {
+                auto chars_str = mslib::get_string(chars);
+                utils::ltrim(strv, [&](unsigned char ch) {
+                    return chars_str.find(ch) != std::string::npos;
+                });
+            }
+            return StringValue::get(strv);
+        }},
         {"multi_replace", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             auto ths = cf->get_arg("this");
@@ -1196,6 +1218,28 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(counti);
             return IntValue::get(ai->get_value() >> counti->get_value());
         }},
+        {"rstrip", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 2);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            auto strv = sv->get_value();
+            auto chars = cf->get_arg("chars");
+            if (isa<NilValue>(chars))
+                utils::rtrim(strv, static_cast<int(*)(int)>(std::isspace));
+            else {
+                auto chars_str = mslib::get_string(chars);
+                utils::rtrim(strv, [&](unsigned char ch) {
+                    return chars_str.find(ch) != std::string::npos;
+                });
+            }
+            return StringValue::get(strv);
+        }},
         {"setattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             assert(cf->get_args().size() == 3);
             auto obj = cf->get_arg("obj");
@@ -1251,8 +1295,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             return create_iterator<StringIterator, StringValue>(vm, cf, BuiltIns::StringIterator, err);
         }},
         {"strip", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
-            assert(cf->get_args().size() == 1);
-            auto arg = cf->get_args()[0].value;
+            assert(cf->get_args().size() == 2);
+            auto arg = cf->get_arg("this");
             auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
             if (err)
                 return nullptr;
@@ -1261,7 +1305,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
             auto strv = sv->get_value();
-            utils::trim(strv);
+            auto chars = cf->get_arg("chars");
+            if (isa<NilValue>(chars))
+                utils::trim(strv, static_cast<int(*)(int)>(std::isspace));
+            else {
+                auto chars_str = mslib::get_string(chars);
+                utils::trim(strv, [&](unsigned char ch) {
+                    return chars_str.find(ch) != std::string::npos;
+                });
+            }
             return StringValue::get(strv);
         }},
         {"swapcase", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {

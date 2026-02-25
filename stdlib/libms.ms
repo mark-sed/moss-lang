@@ -274,6 +274,16 @@ class __String {
     }
 
     @internal
+    fun lstrip(chars:[String,NilType]=nil) {
+        d"""
+        Remove leading characters from this string according to characters in
+        String `chars`.
+        If `chars` is `nil`, then this removes whitespace (' ', '\f', '\n',
+        '\r', '\t', '\v') characters from start of this String.
+        """
+    }
+
+    @internal
     fun lower() {
         d"""
         Converts all the string letters into lowercase.
@@ -371,6 +381,16 @@ class __String {
     }
 
     @internal
+    fun rstrip(chars:[String,NilType]=nil) {
+        d"""
+        Remove trailing characters from this string according to characters in
+        String `chars`.
+        If `chars` is `nil`, then this removes whitespace (' ', '\f', '\n',
+        '\r', '\t', '\v') characters from end of this String.
+        """
+    }
+
+    @internal
     fun split(sep:[String,NilType]=nil, maxsplit:Int=-1) {
         d"""
         Returns a list of strings, using `sep` as the delimiter string.
@@ -386,10 +406,12 @@ class __String {
     }
 
     @internal
-    fun strip() {
+    fun strip(chars:[String,NilType]=nil) {
         d"""
-        Removes whitespace (' ', '\f', '\n', '\r', '\t', '\v') characters from
-        start and end of String.
+        Remove leading and trailing characters from this string according to
+        characters in String `chars`.
+        If `chars` is `nil`, then this removes whitespace (' ', '\f', '\n',
+        '\r', '\t', '\v') characters from start and end of this String.
         """
     }
 

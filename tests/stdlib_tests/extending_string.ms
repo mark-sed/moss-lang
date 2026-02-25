@@ -57,7 +57,7 @@ MyString("  a\n  ").strip()
 "\n"
 try
     String.strip(52)
-catch (e:ValueError)
+catch (e:TypeError)
     "caught\n"
 
 ms.reverse().__value
