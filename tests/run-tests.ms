@@ -1443,7 +1443,25 @@ c   d
 no_tabs\nWorld\nHelloWorld\nabc\nabc\ntest\nfix\nprefix
 Hello\nHelloWorld\nabc\nabc\ntest\nfilename\nfilename.txt\nCaseTest
 true\nfalse\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue
-true\nfalse\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue\n""", "")
+true\nfalse\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\nfalse\ntrue
+hi   |
+hi---
+hello
+a***
+abc...
+abc
+---
+x
+x |
+   hi|
+---hi
+hello
+***a
+...abc
+abc
+---
+x
+ x|\n""", "")
 }
 
 fun test_lib_string_is(name) {

@@ -116,3 +116,41 @@
 "\n"
 "123".ends_with("3")        // True
 "\n"
+
+"hi".ljust(5)         // "hi   "
+"|\n"
+"hi".ljust(5, "-")    // "hi---"
+"\n"
+"hello".ljust(3)      // "hello"
+"\n"
+"a".ljust(4, "*")     // "a***"
+"\n"
+"abc".ljust(6, ".")   // "abc..."
+"\n"
+"abc".ljust(3)        // "abc"
+"\n"
+"".ljust(3, "-")      // "---"
+"\n"
+"x".ljust(1)          // "x"
+"\n"
+"x".ljust(2)          // "x "
+"|\n"
+
+"hi".rjust(5)
+"|\n"
+"hi".rjust(5, "-")
+"\n"
+"hello".rjust(3)
+"\n"
+"a".rjust(4, "*")
+"\n"
+"abc".rjust(6, ".")
+"\n"
+"abc".rjust(3)
+"\n"
+"".rjust(3, "-")
+"\n"
+"x".rjust(1)
+"\n"
+"x".rjust(2)
+"|\n"

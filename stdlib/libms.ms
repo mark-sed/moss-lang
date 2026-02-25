@@ -255,6 +255,24 @@ class __String {
         d"Returns amount of characters in this string."
     }
 
+    fun ljust(width:Int, fill_char:String=" ") {
+        d"""
+        Returns right-justified string of length `width` with padding
+        `fill_char` on the right.
+        If `fill_char` is not exactly 1 character long, then TypeError is
+        raised.
+        """
+        if (length(fill_char) != 1)
+            raise TypeError("The fill character has to be exactly 1 character long.\n")
+
+        len = length(this)
+        if (width <= len)
+            return this
+
+        padding = width - len
+        return this ++ (fill_char * padding)
+    }
+
     @internal
     fun lower() {
         d"""
@@ -332,6 +350,24 @@ class __String {
         if (inx <= -1)
             return inx
         return inx + start
+    }
+
+    fun rjust(width:Int, fill_char:String=" ") {
+        d"""
+        Returns right-justified string of length `width` with padding
+        `fill_char` on the right.
+        If `fill_char` is not exactly 1 character long, then TypeError is
+        raised.
+        """
+        if (length(fill_char) != 1)
+            raise TypeError("The fill character has to be exactly 1 character long.\n")
+
+        len = length(this)
+        if (width <= len)
+            return this
+
+        padding = width - len
+        return (fill_char * padding) ++ this
     }
 
     @internal
