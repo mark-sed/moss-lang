@@ -413,7 +413,7 @@ fun test_note_options(name) {
 
 fun test_output(name) {
     ~expect_pass("output.ms", name, """42, true, false\nmoss language\n13\n9\n42
-{"b": 2, "l": [1, [0, 0], 2], "dct": {...}, "a": 1}\n[1, [0, 0], 2, [...]]\n{"a": [1, [0, 0], 2, [...]]}\n""", "")
+{"a": 1, "b": 2, "dct": {...}, "l": [1, [0, 0], 2]}\n[1, [0, 0], 2, [...]]\n{"a": [1, [0, 0], 2, [...]]}\n""", "")
 }
 
 fun test_expressions(name) {
@@ -859,7 +859,7 @@ fun test_multivar(name) {
     ~expect_pass("multivar.ms", name, """1 2 3 4
 true nil 5
 caught
-false 0 true 4
+true 4 false 0
 1 2 3 [4, 5, 6, 7]
 [0, 1, 2, 3, 4, 5, 6] 7 8
 q r [3, 4, 5, 6, 7, 8] t u v
@@ -1122,6 +1122,28 @@ fun test_attribute_errors(name) {
     ~expect_pass("attribute_errors.ms", name, rx_out=r""".*'Module math'.*\n.*'Object of type Exception'.*\n.*'Enum Foo'.*\n.*'Foo F'.*\n.*'Function print'.*\n.*'List'.*\n.*'String'.*\n.*'Int'.*\n.*'Float'.*\n.*'Bool'.*\n.*'NilType'.*\n.*'FunctionList'.*\n.*'Object of type Complex'.*\n.*'Object of type Range'.*\n.*'Dict'.*\n.*'super of class Foo'.*\n.*'Object of type ListIterator'.*\n.*'Object of type DictIterator'.*\n.*'Object of type StringIterator'.*\n.*'Object of type BytesIterator'.*\n.*'Object of type FunctionListIterator'.*\n.*'Type Exception'.*\n.*'Space Foo'.*\n.*'Object of type Note'.*?""", expected_err="")
 }
 
+fun test_dict_insertion_order(name) {
+    ~expect_pass("dict_insertion_order.ms", name, """{"a": 1, "b": 2, "c": 3}
+{"a": 1, "b": 20, "c": 3}
+{"a": 1, "b": 20, "c": 3, "d": 4}
+20\n{"a": 1, "c": 3, "d": 4}
+{"a": 1, "c": 3, "d": 4, "b": 200}
+{"a": 1, "d": 4, "b": 200}
+["b", 200]\n{"a": 1, "d": 4}
+{"a": 1, "d": 4, "x": 100, "y": 200}
+{:}
+{"x": 1, "y": 2, "nested": {"a": 10, "b": 20}}
+{"x": 1, "y": 2, "nested": {"a": 10, "b": 20}, "list": [{"k1": 100}, {"k2": 200}]}
+{"x": 1, "y": 2, "nested": {"a": 999, "b": 20}, "list": [{"k1": 100}, {"k2": 200}]}
+{"x": 1, "y": 2, "nested": {"a": 999, "b": 20, "c": 30}, "list": [{"k1": 100}, {"k2": 200}]}
+20\n{"x": 1, "y": 2, "nested": {"a": 999, "c": 30}, "list": [{"k1": 100}, {"k2": 200}]}
+{"x": 1, "y": 2, "nested": {"a": 999, "c": 30, "b": 222}, "list": [{"k1": 100}, {"k2": 200}]}
+["list", [{"k1": 100}, {"k2": 200}]]\n{"x": 1, "y": 2, "nested": {"a": 999, "c": 30, "b": 222}}
+{"x": 1, "y": 2, "nested": {"a": 999, "c": 30, "b": 222}, "z": {"inner": [{"p": 1}, {"q": 2}]}}
+{"x": 1, "y": 2, "nested": {:}, "z": {"inner": [{"p": 1}, {"q": 2}]}}
+["z", {"inner": [{"p": 1}, {"q": 2}]}]\n["nested", {:}]\n["y", 2]\n["x", 1]\n""", "")
+}
+
 fun test_exception_mangled_stack(name) {
     ~expect_pass("exception_tests/mangled_stack.ms", name, """__next\n1__next
 caught SI\nfinally in foo\nEnd of foo\n32try callit done!\nfinally in callit\nCallit end\ntrue\nEnd\n""", "")
@@ -1226,7 +1248,9 @@ Space : FooSpc {
   "pi": Float(3.14)
 }
 Dict(4) {
+  (4993892634952068459)String("a"): Int(1),
   (-7608462621679433859)String("b"): Int(2),
+  (3176031829589892468)String("dct"): Dict(4) {...},
   (-6906085509080617442)String("l"): List(3) [
     Int(1),
     List(2) [
@@ -1234,9 +1258,7 @@ Dict(4) {
       Int(0)
     ],
     Int(2)
-  ],
-  (3176031829589892468)String("dct"): Dict(4) {...},
-  (4993892634952068459)String("a"): Int(1)
+  ]
 }
 List(4) [
   Int(1),
@@ -1463,8 +1485,8 @@ ML:[1, 2, 3, 4, 0, 1]\n3\n1\nML:[1, 2, 4, 0]\nML:[]\n""", "")
 }
 
 fun test_lib_extending_dict(name) {
-    ~expect_pass("stdlib_tests/extending_dict.ms", name, """<class MyDict>\n[D]:{"b": 2, "c": 3, "a": 1}\n[D]:{:}\n1
-[D]:{"b": 2, "c": 3}\n2\nfalse\nnope\n[D]:{"b": 2}\n[D]:{:}\n""", "")
+    ~expect_pass("stdlib_tests/extending_dict.ms", name, """<class MyDict>
+[D]:{"a": 1, "b": 2, "c": 3}\n[D]:{:}\n1\n[D]:{"b": 2, "c": 3}\n2\nfalse\nnope\n[D]:{"b": 2}\n[D]:{:}\n""", "")
 }
 
 fun test_lib_random(name) {
@@ -2263,6 +2285,7 @@ fun run_all_tests() {
     ~run_test("implicit_formats")
     ~run_test("mains")
     ~run_test("attribute_errors")
+    ~run_test("dict_insertion_order")
 
     ~run_test("exception_mangled_stack")
     ~run_test("exception_stackframe_report")

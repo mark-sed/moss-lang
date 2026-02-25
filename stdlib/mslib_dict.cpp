@@ -68,7 +68,7 @@ Value *Dict::pop(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value 
                 if (opcode::eq(vals[vindex].first, key, vm)) {
                     vals.erase(vals.begin() + vindex);
                     if (vals.empty()) {
-                        dv->get_vals().erase(found);
+                        dv->erase(found, hsh);
                     }
                     return vals[vindex].second;
                 }

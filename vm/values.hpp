@@ -710,26 +710,108 @@ public:
 class DictIterator;
 
 class DictValue : public Value {
+public:
+    using Key = opcode::IntConst;
+    using ValueT = std::vector<std::pair<Value*, Value*>>;
 private:
     friend class DictIterator;
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals;
+    std::map<Key, ValueT> vals;
+    std::vector<Key> insertion_order;
 public:
     static const TypeKind ClassType = TypeKind::DICT;
 
+    class const_iterator {
+        using OuterIter = std::vector<Key>::const_iterator;
+        using InnerIter = ValueT::const_iterator;
+
+    private:
+        OuterIter outer_;
+        OuterIter outer_end_;
+        const std::map<Key, ValueT>* vals_;
+        InnerIter inner_;
+
+        void advance_to_valid() {
+            while (outer_ != outer_end_) {
+                const auto& vec = vals_->at(*outer_);
+                if (!vec.empty()) {
+                    inner_ = vec.begin();
+                    return;
+                }
+                ++outer_;
+            }
+        }
+
+        const_iterator(OuterIter outer,
+                       OuterIter outer_end,
+                       const std::map<Key, ValueT>* vals)
+            : outer_(outer), outer_end_(outer_end), vals_(vals)
+        {
+            if (outer_ != outer_end_) {
+                advance_to_valid();
+            }
+        }
+
+        friend class DictValue;
+    public:
+        using iterator_category = std::forward_iterator_tag;
+
+        // (key, pair.first, pair.second)
+        using value_type = std::tuple<const Key&, Value*, Value*>;
+
+        const_iterator& operator++() {
+            ++inner_;
+
+            const auto& vec = vals_->at(*outer_);
+            if (inner_ == vec.end()) {
+                ++outer_;
+                advance_to_valid();
+            }
+
+            return *this;
+        }
+
+        bool operator==(const const_iterator& other) const {
+            return outer_ == other.outer_ &&
+                   (outer_ == outer_end_ || inner_ == other.inner_);
+        }
+
+        bool operator!=(const const_iterator& other) const {
+            return !(*this == other);
+        }
+
+        value_type operator*() const {
+            const Key& key = *outer_;
+            const auto& pair = *inner_;
+            return {key, pair.first, pair.second};
+        }
+    };
+
+    const_iterator begin() const {
+        return const_iterator(insertion_order.begin(),
+                              insertion_order.end(),
+                              &vals);
+    }
+
+    const_iterator end() const {
+        return const_iterator(insertion_order.end(),
+                              insertion_order.end(),
+                              &vals );
+    }
+
     // Since pushing a value might cause an exception there cannot be a constructor which takes list as is bellow.
-    DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals);
+    DictValue(std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> vals, std::vector<opcode::IntConst> insertion_order);
     DictValue();
 
     ~DictValue() {}
 
     virtual Value *clone() override {
-        return new DictValue(this->vals);
+        return new DictValue(this->vals, this->insertion_order);
     }
 
     virtual inline bool is_hashable() override { return false; }
     virtual inline bool is_iterable() override { return true; }
 
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>> &get_vals() { return this->vals; }
+    std::map<Key, ValueT> &get_vals() { return this->vals; }
     std::vector<std::pair<Value *, Value *>> vals_as_list();
 
     void push(Value *k, Value *v, Interpreter *vm);
@@ -737,15 +819,22 @@ public:
     void push(ListValue *keys, ListValue *values, Interpreter *vm) {
         push(keys->get_vals(), values->get_vals(), vm);
     }
-    size_t size() {
-        size_t s = 0;
-        for (auto [k, v]: vals) {
-            s += v.size();
+    // TODO: Make this accept only Value key
+    void erase(std::map<Key, ValueT>::iterator it, Key hsh) {
+        vals.erase(it);
+        auto h_it = std::find(insertion_order.begin(), insertion_order.end(), hsh);
+        if (h_it != insertion_order.end()) {
+            insertion_order.erase(h_it);
         }
-        return s;
     }
+
+    size_t size() {
+        return insertion_order.size();
+    }
+    
     void clear() {
         vals.clear();
+        insertion_order.clear();
     }
 
     virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const override {
@@ -758,15 +847,13 @@ public:
         ss << "{";
         visited.insert(this);
         bool first = true;
-        for (auto [k, v]: vals) {
-            for (auto vl: v) {
-                if (first) {
-                    ss << vl.first->dump(visited) << ": " << vl.second->dump(visited);
-                    first = false;
-                }
-                else {
-                    ss << ", " << vl.first->dump(visited) << ": " << vl.second->dump(visited);
-                }
+        for (const auto& [_, k, v] : *this) {
+            if (first) {
+                ss << k->dump(visited) << ": " << v->dump(visited);
+                first = false;
+            }
+            else {
+                ss << ", " << k->dump(visited) << ": " <<v->dump(visited);
             }
         }
         visited.erase(this);
@@ -804,7 +891,8 @@ public:
             bool first = true;
             ++tab_depth;
             visited.insert(this);
-            for (auto [k, v]: vals) {
+            for (const auto k: insertion_order) {
+                const auto &v = vals.at(k);
                 for (auto vl: v) {
                     os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
                     << "(" << k << ")" << *vl.first << ": ";
@@ -828,7 +916,7 @@ public:
 class DictIterator : public Value {
 private:
     DictValue &value;
-    std::map<opcode::IntConst, std::vector<std::pair<Value *, Value *>>>::iterator iterator;
+    size_t iterator;
     size_t keys_iterator;
 public:
     static const TypeKind ClassType = TypeKind::DICT_ITER;
