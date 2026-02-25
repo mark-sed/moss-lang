@@ -1122,6 +1122,28 @@ fun test_attribute_errors(name) {
     ~expect_pass("attribute_errors.ms", name, rx_out=r""".*'Module math'.*\n.*'Object of type Exception'.*\n.*'Enum Foo'.*\n.*'Foo F'.*\n.*'Function print'.*\n.*'List'.*\n.*'String'.*\n.*'Int'.*\n.*'Float'.*\n.*'Bool'.*\n.*'NilType'.*\n.*'FunctionList'.*\n.*'Object of type Complex'.*\n.*'Object of type Range'.*\n.*'Dict'.*\n.*'super of class Foo'.*\n.*'Object of type ListIterator'.*\n.*'Object of type DictIterator'.*\n.*'Object of type StringIterator'.*\n.*'Object of type BytesIterator'.*\n.*'Object of type FunctionListIterator'.*\n.*'Type Exception'.*\n.*'Space Foo'.*\n.*'Object of type Note'.*?""", expected_err="")
 }
 
+fun test_dict_insertion_order(name) {
+    ~expect_pass("dict_insertion_order.ms", name, """{"a": 1, "b": 2, "c": 3}
+{"a": 1, "b": 20, "c": 3}
+{"a": 1, "b": 20, "c": 3, "d": 4}
+20\n{"a": 1, "c": 3, "d": 4}
+{"a": 1, "c": 3, "d": 4, "b": 200}
+{"a": 1, "d": 4, "b": 200}
+["b", 200]\n{"a": 1, "d": 4}
+{"a": 1, "d": 4, "x": 100, "y": 200}
+{:}
+{"x": 1, "y": 2, "nested": {"a": 10, "b": 20}}
+{"x": 1, "y": 2, "nested": {"a": 10, "b": 20}, "list": [{"k1": 100}, {"k2": 200}]}
+{"x": 1, "y": 2, "nested": {"a": 999, "b": 20}, "list": [{"k1": 100}, {"k2": 200}]}
+{"x": 1, "y": 2, "nested": {"a": 999, "b": 20, "c": 30}, "list": [{"k1": 100}, {"k2": 200}]}
+20\n{"x": 1, "y": 2, "nested": {"a": 999, "c": 30}, "list": [{"k1": 100}, {"k2": 200}]}
+{"x": 1, "y": 2, "nested": {"a": 999, "c": 30, "b": 222}, "list": [{"k1": 100}, {"k2": 200}]}
+["list", [{"k1": 100}, {"k2": 200}]]\n{"x": 1, "y": 2, "nested": {"a": 999, "c": 30, "b": 222}}
+{"x": 1, "y": 2, "nested": {"a": 999, "c": 30, "b": 222}, "z": {"inner": [{"p": 1}, {"q": 2}]}}
+{"x": 1, "y": 2, "nested": {:}, "z": {"inner": [{"p": 1}, {"q": 2}]}}
+["z", {"inner": [{"p": 1}, {"q": 2}]}]\n["nested", {:}]\n["y", 2]\n["x", 1]\n""", "")
+}
+
 fun test_exception_mangled_stack(name) {
     ~expect_pass("exception_tests/mangled_stack.ms", name, """__next\n1__next
 caught SI\nfinally in foo\nEnd of foo\n32try callit done!\nfinally in callit\nCallit end\ntrue\nEnd\n""", "")
@@ -2263,6 +2285,7 @@ fun run_all_tests() {
     ~run_test("implicit_formats")
     ~run_test("mains")
     ~run_test("attribute_errors")
+    ~run_test("dict_insertion_order")
 
     ~run_test("exception_mangled_stack")
     ~run_test("exception_stackframe_report")
