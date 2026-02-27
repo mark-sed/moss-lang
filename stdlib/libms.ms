@@ -307,6 +307,24 @@ class __String {
         """
     }
 
+    fun partition(sep:String) {
+        d"""
+        Splits this string into 3 parts divided by separator `sep`.
+        Returns List of 3 values, `[<text before separator>, <separator>, <text
+        after the separator>]`.
+        If `sep` is not present then the results is [this, "", ""].
+        If `sep` is empty string then ValueError is raised.
+        """
+        if (sep == "")
+            raise ValueError("Empty separator.\n")
+        
+        idx = this.index(sep)
+        if (idx == -1)
+            return [this, "", ""]
+
+        return [this[0..idx], sep, this[idx + length(sep)..length(this)]]
+    }
+
     fun remove_prefix(prefix:String) {
         d"""
         Returns this string with removed prefix `prefix` if it starts with it,
@@ -380,6 +398,36 @@ class __String {
         return (fill_char * padding) ++ this
     }
 
+    fun rpartition(sep:String) {
+        d"""
+        Splits this string into 3 parts divided by separator `sep` when
+        iterating from the back (in reverse).
+        Returns List of 3 values, `[<text before separator>, <separator>, <text
+        after the separator>]`.
+        If `sep` is not present then the results is [this, "", ""].
+        If `sep` is empty string then ValueError is raised.
+        """
+        if (sep == "")
+            raise ValueError("Empty separator.\n")
+        
+        idx = this.rindex(sep)
+        if (idx == -1)
+            return ["", "", this]
+
+        return [this[0..idx], sep, this[idx + length(sep)..length(this)]]
+    }
+
+    @internal
+    fun rsplit(sep:[String,NilType]=nil, max_split:Int=-1) {
+        d"""
+        Returns a list of strings, using `sep` as the delimiter string when
+        parsing from the back (in reverse).
+        If `sep` is nil, then whitespace is used as the separator.
+        If `sep` in empty, then string is split at every character.
+        If `max_split` is non-negative number then split is done this many times.
+        """
+    }
+
     @internal
     fun rstrip(chars:[String,NilType]=nil) {
         d"""
@@ -391,12 +439,12 @@ class __String {
     }
 
     @internal
-    fun split(sep:[String,NilType]=nil, maxsplit:Int=-1) {
+    fun split(sep:[String,NilType]=nil, max_split:Int=-1) {
         d"""
         Returns a list of strings, using `sep` as the delimiter string.
         If `sep` is nil, then whitespace is used as the separator.
         If `sep` in empty, then string is split at every character.
-        If `maxsplit` is non-negative number then split is done this many times.
+        If `max_split` is non-negative number then split is done this many times.
         """
     }
 

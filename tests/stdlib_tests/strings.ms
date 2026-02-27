@@ -206,9 +206,9 @@ catch(e:ValueError)
 str = "hello\nthere\nfrom\nmoss"
 str.split()
 "\n"
-str.split(maxsplit=2)
+str.split(max_split=2)
 "\n"
-str.split(maxsplit=0)
+str.split(max_split=0)
 "\n"
 
 str2 = "1--2--3-4--5--"
@@ -216,9 +216,45 @@ str2.split("--")
 "\n"
 str2.split("-")
 "\n"
-str2.split("--", maxsplit=1)
+str2.split("--", max_split=1)
 "\n"
 "aabccbeeb".split("b")
+"\n"
+
+// TODO: The comment includes python result, but we differ
+"a b c d".rsplit(" ", 1)           // ["a b c", "d"]
+"\n"
+"a b c d".rsplit(" ", 2)           // ["a b", "c", "d"]
+"\n"
+"a b c d".rsplit()                 // ["a", "b", "c", "d"]
+"\n"
+"  a   b c  ".rsplit()             // ["a", "b", "c"]
+"\n"
+"one,two,three".rsplit(",", 1)     // ["one,two", "three"]
+"\n"
+"one,two,three".rsplit(",", 2)     // ["one", "two", "three"]
+"\n"
+"no-sep".rsplit(",", 1)            // ["no-sep"]
+"\n"
+"aaa".rsplit("a", 1)               // ["aa", ""]
+"\n"
+"aaa".rsplit("a", 2)               // ["a", "", ""]
+"\n"
+"".rsplit()                        // []
+"\n"
+"".rsplit(",")                     // [""]
+"\n"
+"   ".rsplit()                     // []
+"\n"
+"   ".rsplit(" ")                  // ["", "", "", ""]
+"\n"
+"end   ".rsplit(nil, 1)           // ["end"]
+"\n"
+"a b".rsplit(" ")                   // ["a", "b"]
+"\n"
+"a b ".rsplit(" ")                  // ["a", "b", ""]
+"\n"
+" a b".rsplit(" ")                  // ["", "a", "b"]
 "\n"
 
 "aaa".count("aa")

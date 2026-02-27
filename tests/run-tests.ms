@@ -1422,6 +1422,23 @@ AAAcAAAAcAAAAAA
 ["1", "", "2", "", "3", "4", "", "5", "", ""]
 ["1", "2--3-4--5--"]
 ["aa", "cc", "ee", ""]
+["a b c", "d"]
+["a b", "c", "d"]
+["a", "b", "c", "d"]
+["a", "b", "c"]
+["one,two", "three"]
+["one", "two", "three"]
+["no-sep"]
+["aa", ""]
+["a", "", ""]
+[]
+[]
+[]
+["", "", ""]
+["end"]
+["a", "b"]
+["a", "b", ""]
+["a", "b"]
 1\n3\n0\n0\n4\n0\n2
 0\n-1\n7\n-1\n0\n-1\nsir\n-1\n4\n-1\n4
 AABBCCD
@@ -1433,7 +1450,7 @@ HHHEL23-O
 3\n3\n3\n10\n0\n4\n4\n7\n2\n5\n6\n3\n3\n1\n2\n5\n2\n3\n2\n1\n-1\n-1\n-1\n""", "")
 }
 
-fun test_lib_strings(name) {
+fun test_lib_strings2(name) {
     ~expect_pass("stdlib_tests/strings2.ms", name, """|    hi    |
 ----hi----
 ---hi----
@@ -1475,21 +1492,12 @@ abc
 ---
 x
  x|
-hello
-hello programmer
-hello
-xyz
-hello
-x
-hello
-hello
-hello
-hello
-xyz
-hello
-x
-hello
-test\n""", "")
+hello\nhello programmer\nhello\nxyz\nhello\nx\nhello\nhello\nhello\nhello\nxyz\nhello\nx\nhello\ntest
+["hello", " ", "world"]\n["a", "bc", "abc"]\n["hello", "", ""]\n["key", "=", "value"]\n["no-separator", "", ""]
+["start", "-", "middle-end"]\n["", "a", "aa"]\n["", "aa", "a"]\n["", "", ""]\n["long", " ", "string with spaces"]
+["hello world", " ", "hello"]\n["abca", "bc", ""]\n["", "", "hello"]\n["key=value", "=", "123"]
+["", "", "no-separator"]\n["start-middle", "-", "end"]\n["aa", "a", ""]\n["a", "aa", ""]\n["", "", ""]
+["long string with", " ", "spaces"]\n""", "")
 }
 
 fun test_lib_string_is(name) {
@@ -2357,6 +2365,7 @@ fun run_all_tests() {
     ~run_test("lib_list_delete")
     ~run_test("lib_dicts")
     ~run_test("lib_strings")
+    ~run_test("lib_strings2")
     ~run_test("lib_string_is")
     ~run_test("lib_extending_string")
     ~run_test("lib_extending_note")

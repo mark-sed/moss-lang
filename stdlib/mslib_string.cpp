@@ -185,6 +185,40 @@ static std::vector<ustring> split_whitespace(const std::string& text, long max_s
     return tokens;
 }
 
+static std::vector<ustring> rsplit_whitespace(const std::string& text, long max_split=-1) {
+    std::vector<ustring> tokens;
+    size_t splits_done = 0;
+
+    auto it = text.end();
+
+    while (it != text.begin()) {
+        // Skip trailing whitespace
+        it = std::find_if_not(std::make_reverse_iterator(it),
+                              std::make_reverse_iterator(text.begin()),
+                              [](unsigned char ch){ return std::isspace(ch); }).base();
+
+        if (it == text.begin()) break;
+
+        // If max_split reached, take the rest
+        if (splits_done > 0 && splits_done == max_split) {
+            tokens.emplace_back(text.begin(), it);
+            break;
+        }
+
+        // Find previous whitespace
+        auto start = std::find_if(std::make_reverse_iterator(it),
+                                 std::make_reverse_iterator(text.begin()),
+                                 [](unsigned char ch){ return std::isspace(ch); }).base();
+
+        tokens.emplace_back(start, it);
+        it = start;
+        ++splits_done;
+    }
+
+    std::reverse(tokens.begin(), tokens.end());
+    return tokens;
+}
+
 std::vector<ustring> split_on(const std::string& text, const std::string& delim, long max_split=-1) {
     std::vector<ustring> tokens;
     size_t start = 0;
@@ -219,6 +253,39 @@ std::vector<ustring> split_on(const std::string& text, const std::string& delim,
     return tokens;
 }
 
+std::vector<ustring> rsplit_on(const std::string& text, const std::string& delim, long max_split=-1) {
+    std::vector<ustring> tokens;
+    size_t end = text.size();
+    size_t splits_done = 0;
+
+    if (delim.empty()) {
+        for (char ch : text) {
+            tokens.push_back(std::string(1, ch));
+        }
+        return tokens;
+    }
+
+    while (end > 0) {
+        if (splits_done > 0 && splits_done == max_split) {
+            tokens.push_back(text.substr(0, end));
+            break;
+        }
+
+        size_t pos = text.rfind(delim, end - 1);
+        if (pos == ustring::npos) {
+            tokens.push_back(text.substr(0, end));
+            break;
+        }
+
+        tokens.push_back(text.substr(pos + delim.size(), end - (pos + delim.size())));
+        end = pos;
+        ++splits_done;
+    }
+
+    std::reverse(tokens.begin(), tokens.end());
+    return tokens;
+}
+
 Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
@@ -233,6 +300,30 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
         splitted = split_whitespace(strv->get_value(), max_splitv->get_value());
     } else {
         splitted = split_on(strv->get_value(), sepv->get_value(), max_splitv->get_value());
+    }
+    std::vector<Value *> splitted_str;
+    splitted_str.reserve(splitted.size());
+    for (const auto &s: splitted) {
+        splitted_str.push_back(StringValue::get(s));
+    }
+
+    return new ListValue(splitted_str);
+}
+
+Value *String::rsplit(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err) {
+    auto strv = dyn_cast<StringValue>(ths);
+    assert(strv && "not string");
+    auto max_splitv = dyn_cast<IntValue>(max_split);
+    assert(max_splitv && "not int");
+
+    StringValue *sepv = dyn_cast<StringValue>(sep);
+    assert((sepv || isa<NilValue>(sep)) && "incorrect type");
+
+    std::vector<ustring> splitted;
+    if (!sepv) {
+        splitted = rsplit_whitespace(strv->get_value(), max_splitv->get_value());
+    } else {
+        splitted = rsplit_on(strv->get_value(), sepv->get_value(), max_splitv->get_value());
     }
     std::vector<Value *> splitted_str;
     splitted_str.reserve(splitted.size());

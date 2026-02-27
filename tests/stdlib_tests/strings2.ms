@@ -190,3 +190,45 @@
 "\n"
 "test".rstrip("")             // "test"
 "\n"
+
+"hello world".partition(" ")                // ["hello", " ", "world"]
+"\n"
+"abcabc".partition("bc")                    // ["a", "bc", "abc"]
+"\n"
+"hello".partition("x")                      // ["hello", "", ""]
+"\n"
+"key=value".partition("=")                  // ["key", "=", "value"]
+"\n"
+"no-separator".partition(":")               // ["no-separator", "", ""]
+"\n"
+"start-middle-end".partition("-")           // ["start", "-", "middle-end"]
+"\n"
+"aaa".partition("a")                        // ["", "a", "aa"]
+"\n"
+"aaa".partition("aa")                       // ["", "aa", "a"]
+"\n"
+"".partition("x")                           // ["", "", ""]
+"\n"
+"long string with spaces".partition(" ")    // ["long", " ", "string with spaces"]
+"\n"
+
+"hello world hello".rpartition(" ")        // ["hello world", " ", "hello"]
+"\n"
+"abcabc".rpartition("bc")                  // ["abca", "bc", ""]
+"\n"
+"hello".rpartition("x")                    // ["", "", "hello"]
+"\n"
+"key=value=123".rpartition("=")            // ["key=value", "=", "123"]
+"\n"
+"no-separator".rpartition(":")             // ["", "", "no-separator"]
+"\n"
+"start-middle-end".rpartition("-")         // ["start-middle", "-", "end"]
+"\n"
+"aaa".rpartition("a")                      // ["aa", "a", ""]
+"\n"
+"aaa".rpartition("aa")                     // ["a", "aa", ""]
+"\n"
+"".rpartition("x")                         // ["", "", ""]
+"\n"
+"long string with spaces".rpartition(" ")  // ["long string with", " ", "spaces"]
+"\n"
