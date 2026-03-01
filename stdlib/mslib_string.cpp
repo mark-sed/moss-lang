@@ -286,6 +286,55 @@ std::vector<ustring> rsplit_on(const std::string& text, const std::string& delim
     return tokens;
 }
 
+std::vector<std::string> splitlines(const std::string& s, bool keep_ends = false) {
+    std::vector<std::string> result;
+    std::string current;
+
+    for (size_t i = 0; i < s.size(); ++i) {
+        char c = s[i];
+
+        if (c == '\n') {
+            if (keep_ends) current += '\n';
+            result.push_back(current);
+            current.clear();
+        } else if (c == '\r') {
+            if (i + 1 < s.size() && s[i + 1] == '\n') {
+                if (keep_ends) current += "\r\n";
+                result.push_back(current);
+                current.clear();
+                ++i; // skip '\n'
+            } else {
+                if (keep_ends) current += '\r';
+                result.push_back(current);
+                current.clear();
+            }
+        } else {
+            current += c;
+        }
+    }
+
+    // Python behavior: include last line even if empty
+    if (!current.empty() || (!s.empty() && (s.back() != '\n' && s.back() != '\r'))) {
+        result.push_back(current);
+    }
+
+    return result;
+}
+
+Value *String::split_lines(Interpreter *vm, Value *ths, Value *keep_ends, Value *&err) {
+    auto strv = mslib::get_string(ths);
+    auto keep_ends_b = mslib::get_bool(keep_ends);
+    auto res_vec = splitlines(strv, keep_ends_b);
+    std::vector<Value *> splitted_str;
+    splitted_str.reserve(res_vec.size());
+
+    for (const auto &s: res_vec) {
+        splitted_str.push_back(StringValue::get(s));
+    }
+
+    return new ListValue(splitted_str);
+}
+
 Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");

@@ -232,3 +232,24 @@
 "\n"
 "long string with spaces".rpartition(" ")  // ["long string with", " ", "spaces"]
 "\n"
+
+"hello\nworld".split_lines()               // ["hello", "world"]
+"\n"
+"hello\nworld".split_lines(true)           // ["hello\n", "world"]
+"\n"
+"line1\r\nline2\rline3\n".split_lines()    // ["line1", "line2", "line3"]
+"\n"
+"line1\r\nline2\rline3\n".split_lines(true)// ["line1\r\n", "line2\r", "line3\n"]
+"\n"
+"singleline".split_lines()                 // ["singleline"]
+"\n"
+"endswithnewline\n".split_lines()          // ["endswithnewline"]
+"\n"
+"endswithnewline\n".split_lines(true)      // ["endswithnewline\n"]
+"\n"
+"mix\nof\rvarious\r\nlines".split_lines()  // ["mix", "of", "various", "lines"]
+"\n"
+"mix\nof\rvarious\r\nlines".split_lines(true) // ["mix\n", "of\r", "various\r\n", "lines"]
+"\n"
+"".split_lines()                           // []
+"\n"

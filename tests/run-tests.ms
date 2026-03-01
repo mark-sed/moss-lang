@@ -1497,7 +1497,17 @@ hello\nhello programmer\nhello\nxyz\nhello\nx\nhello\nhello\nhello\nhello\nxyz\n
 ["start", "-", "middle-end"]\n["", "a", "aa"]\n["", "aa", "a"]\n["", "", ""]\n["long", " ", "string with spaces"]
 ["hello world", " ", "hello"]\n["abca", "bc", ""]\n["", "", "hello"]\n["key=value", "=", "123"]
 ["", "", "no-separator"]\n["start-middle", "-", "end"]\n["aa", "a", ""]\n["a", "aa", ""]\n["", "", ""]
-["long string with", " ", "spaces"]\n""", "")
+["long string with", " ", "spaces"]
+["hello", "world"]
+["hello\\n", "world"]
+["line1", "line2", "line3"]
+["line1\\r\\n", "line2\\r", "line3\\n"]
+["singleline"]
+["endswithnewline"]
+["endswithnewline\\n"]
+["mix", "of", "various", "lines"]
+["mix\\n", "of\\r", "various\\r\\n", "lines"]
+[]\n""", "")
 }
 
 fun test_lib_string_is(name) {

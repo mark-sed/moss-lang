@@ -448,6 +448,16 @@ class __String {
         """
     }
 
+    @internal
+    fun split_lines(keep_ends:Bool=false) {
+        d"""
+        Splits string on "\\n", "\\r" or "\\r\\n" and returns list of these
+        values.
+        If `keep_ends` is true then strings in list will contain the end of the
+        line at the end.
+        """
+    }
+
     fun starts_with(prefix:String) {
         d"Returns true if this string has prefix `prefix`."
         return this[0..length(prefix)] == prefix

@@ -1287,6 +1287,18 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             return String::split(vm, arg, cf->get_arg("sep"), cf->get_arg("max_split"), err);
         }},
+        {"split_lines", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 2);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            return String::split_lines(vm, arg, cf->get_arg("keep_ends"), err);
+        }},
         {"String", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             (void)vm;
