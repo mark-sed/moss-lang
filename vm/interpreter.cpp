@@ -145,6 +145,8 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         gf->store(glob_reg, libms_mod);
         gf->store_name(glob_reg, "moss");
         ++glob_reg;
+        // Set Int attributes.
+        IntValue::init_interned_attrs();
     }
     init_global_module_values(glob_reg);
     assert(glob_reg < BC_RESERVED_REGS && "More registers used that is reserved");

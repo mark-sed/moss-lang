@@ -367,6 +367,35 @@ Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
     return res;
 }
 
+Value *Int_bit_count(Interpreter *vm, Value *ths) {
+    auto n = mslib::get_int(ths);
+    // count bits of absolute value
+    uint64_t x = n < 0 ? static_cast<uint64_t>(-n) : static_cast<uint64_t>(n);
+
+    int count = 0;
+    while (x) {
+        x &= (x - 1); // clear lowest set bit
+        ++count;
+    }
+    return IntValue::get(count);
+}
+
+Value *Int_bit_length(Interpreter *vm, Value *ths) {
+    auto n = mslib::get_int(ths);
+    // count bits of absolute value
+    if (n == 0) return ths;
+
+    // Handle absolute value safely (avoid UB for INT64_MIN)
+    uint64_t x = n < 0 ? -(uint64_t)n : (uint64_t)n;
+
+    opcode::IntConst length = 0;
+    while (x) {
+        ++length;
+        x >>= 1;
+    }
+    return IntValue::get(length);
+}
+
 Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     (void)vm;
     IntValue *base_int = nullptr;
@@ -675,11 +704,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             return attrs(vm, obj, err);
         }},
-        {"bin", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
+        {"bin", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1);
             return bin(vm, args[0].value);
+        }},
+        {"bit_count", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return Int_bit_count(vm, args[0].value);
+        }},
+        {"bit_length", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return Int_bit_length(vm, args[0].value);
         }},
         {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 2);

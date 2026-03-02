@@ -335,6 +335,8 @@ public:
         return new IntValue(value);
     }
 
+    static void init_interned_attrs();
+
     virtual Value *clone() override {
         // Int is immutable (and also interned) and there is no need to copy it.
         return this;

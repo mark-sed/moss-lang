@@ -1324,6 +1324,11 @@ fun test_lib_ranges(name) {
 caught\ncaught\ncaught\n""", "")
 }
 
+fun test_lib_int_methods(name) {
+    ~expect_pass("stdlib_tests/int_methods.ms", name, """0\n1\n1\n2\n3\n8\n1\n3\n1\n10\n63\n63
+0\n1\n2\n2\n3\n3\n4\n4\n1\n4\n11\n10\n63\n63\n""", "")
+}
+
 fun test_lib_input(name) {
     ~expect_pass(f"stdlib_tests/input.ms", name, "> // input function test\n// this file is also read\n5//\n", "", prog_args=f"< {::TEST_DIR}/stdlib_tests/input.ms")
     ~expect_pass(f"stdlib_tests/input_eof.ms", name, "caught eof\n", "", prog_args=f"< {::TEST_DIR}/empty.ms")
@@ -2369,6 +2374,7 @@ fun run_all_tests() {
     ~run_test("lib_type_constructors")
     ~run_test("lib_builtin_exceptions")
     ~run_test("lib_ranges")
+    ~run_test("lib_int_methods")
     ~run_test("lib_input")
     ~run_test("lib_copy")
     ~run_test("lib_lists")

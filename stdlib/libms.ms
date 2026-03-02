@@ -27,6 +27,23 @@ class __Int {
     fun Int(v:String, base=10) {
         d"Converts String value `v` of number base `base` into na Int."
     }
+
+    @internal
+    fun bit_count() {
+        d"""
+        Return the number of ones in the binary representation of the absolute
+        value of this integer. This is also known as the population count.
+        """
+    }
+
+    @internal
+    fun bit_length() {
+        d"""
+        Return the number of bits necessary to represent this Int in binary,
+        excluding the sign and leading zeros (so `x.bit_length()` == 
+        `-x.bit_length()`).
+        """
+    }
 }
 
 @internal_bind("Float")

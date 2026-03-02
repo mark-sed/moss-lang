@@ -34,6 +34,14 @@ opcode::IntConst moss::hash(Value *v, Interpreter *vm) {
     return v->hash();
 }
 
+void IntValue::init_interned_attrs() {
+    assert(BuiltIns::Int->get_attrs() && "Initializing interned too soon?");
+    auto attrs = BuiltIns::Int->get_attrs();
+    for (auto v: get_interned()) {
+        v->attrs = attrs->clone();
+    }
+}
+
 Value::Value(TypeKind kind, ustring name, Value *type, MemoryPool *attrs, ModuleValue *owner) 
         : marked(false), kind(kind), type(type), name(name), 
           attrs(attrs), annotations{}, owner(owner) {
