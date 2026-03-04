@@ -396,6 +396,61 @@ Value *Int_bit_length(Interpreter *vm, Value *ths) {
     return IntValue::get(length);
 }
 
+Value *Int_to_bytes(Interpreter *vm, Value *ths, Value *lengthv,
+                    Value *byte_order, Value *is_signedv, Value *&err) {
+    auto value = mslib::get_int(ths);
+    auto bo = mslib::get_string(byte_order);
+    auto length = mslib::get_int(lengthv);
+    auto is_signed = mslib::get_bool(is_signedv);
+
+    if (bo != "big" && bo != "little") {
+        err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TO_BYTES_BAD_BYTEORDER, bo.c_str()));
+        return nullptr;
+    }
+
+    std::vector<uint8_t> result(length, 0);
+
+    if (!is_signed && value < 0) {
+        err = mslib::create_math_error(diags::Diagnostic(*vm->get_src_file(), diags::TO_BYTES_NEG_TO_UNSIGNED));
+        return nullptr;
+    }
+
+    // Compute limits
+    if (length < 8) {
+        int64_t min_val, max_val;
+
+        if (is_signed) {
+            min_val = -(1LL << (length * 8 - 1));
+            max_val =  (1LL << (length * 8 - 1)) - 1;
+        } else {
+            min_val = 0;
+            max_val = (1LL << (length * 8)) - 1;
+        }
+
+        if (value < min_val || value > max_val) {
+            err = mslib::create_math_error(diags::Diagnostic(*vm->get_src_file(), diags::TO_BYTES_TOO_BIG_TO_CONV, value, length, (is_signed ? "signed" : "unsigned")));
+            return nullptr;
+        }
+    }
+
+    uint64_t x;
+
+    if (is_signed) {
+        // Two's complement representation
+        x = static_cast<uint64_t>(value);
+    } else {
+        x = static_cast<uint64_t>(value);
+    }
+
+    for (size_t i = 0; i < length; ++i) {
+        size_t index = (bo == "little") ? i : (length - 1 - i);
+        result[index] = static_cast<uint8_t>(x & 0xFF);
+        x >>= 8;
+    }
+
+    return new BytesValue(result);
+}
+
 Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     (void)vm;
     IntValue *base_int = nullptr;
@@ -1392,6 +1447,16 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         }},
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::tan(cf->get_args()[0].value->as_float()));
+        }},
+        {"to_bytes", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            auto ths = cf->get_arg("this");
+            if (auto lv = get_subtype_value<IntValue>(ths, BuiltIns::Int, vm, err)) {
+                return Int_to_bytes(vm, lv, cf->get_arg("length"), cf->get_arg("byte_order"), cf->get_arg("signed"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
         }},
         {"type", [](Interpreter* vm, CallFrame* cf, Value*& err)  {
             (void)err;

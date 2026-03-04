@@ -24,7 +24,7 @@ class __Int {
     }
 
     @internal
-    fun Int(v:String, base=10) {
+    fun Int(v:String, base:[::Int]=10) {
         d"Converts String value `v` of number base `base` into na Int."
     }
 
@@ -42,6 +42,14 @@ class __Int {
         Return the number of bits necessary to represent this Int in binary,
         excluding the sign and leading zeros (so `x.bit_length()` == 
         `-x.bit_length()`).
+        """
+    }
+
+    // TODO: Add enum for byte_order?
+    @internal
+    fun to_bytes(length:[::Int]=1, byte_order:String="big", signed:Bool=false) {
+        d"""
+        Return Bytes object representing an integer.
         """
     }
 }

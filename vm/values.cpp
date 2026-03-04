@@ -455,12 +455,16 @@ std::list<ClassValue *> ClassValue::get_all_supers() {
 }
 
 opcode::StringConst BytesValue::as_string() const {
-    static const char* hex = "0123456789ABCDEF";
+    static const char* hex = "0123456789abcdef";
 
     opcode::StringConst out;
     out.reserve(value.size() * 2);
 
+    bool first = true;
     for (uint8_t b : value) {
+        if (!first)
+            out.push_back(' ');
+        first = false;
         out.push_back(hex[b >> 4]);   // high nibble
         out.push_back(hex[b & 0x0F]); // low nibble
     }

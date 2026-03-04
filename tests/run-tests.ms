@@ -616,7 +616,7 @@ caught\ncaught\ncaught\n3\na\nint\ncst_cls3
 }
 
 fun test_bytes(name) {
-    ~expect_pass("bytes.ms", name, """68656C6C6F\ntrue\n[b"", b"61"]
+    ~expect_pass("bytes.ms", name, """68 65 6c 6c 6f\ntrue\n[b"", b"61"]
 mm|mo|ms|ms|om|oo|os|os|sm|so|ss|ss|sm|so|ss|ss|\n""", "")
 }
 
@@ -1326,7 +1326,12 @@ caught\ncaught\ncaught\n""", "")
 
 fun test_lib_int_methods(name) {
     ~expect_pass("stdlib_tests/int_methods.ms", name, """0\n1\n1\n2\n3\n8\n1\n3\n1\n10\n62\n62
-0\n1\n2\n2\n3\n3\n4\n4\n1\n4\n11\n10\n62\n62\n""", "")
+0\n1\n2\n2\n3\n3\n4\n4\n1\n4\n11\n10\n62\n62
+00\n01\nff\n01 00\n00 01\n04 01
+01 04\nff\nff ff\n80\nff 7f\n7f\n00 80
+3f ff ff ff ff ff ff ff
+c0 00 00 00 00 00 00 00
+caught\ncaught\ncaught\ncaught\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_input(name) {
@@ -1591,17 +1596,17 @@ Lorem Ipsum
 Lorem |Ipsum
 Lorem Ipsum
 end
-4C6F72656D
-4C6F72656D20497073756D0A4C6F72656D20497073756D0A
+4c 6f 72 65 6d
+4c 6f 72 65 6d 20 49 70 73 75 6d 0a 4c 6f 72 65 6d 20 49 70 73 75 6d 0a
 Lorem Ipsum
 Lorem Ipsum
-FFFF414243
+ff ff 41 42 43
 caught
 caught
 caught
 caught
 caught
-FFAA00\n""", "")
+ff aa 00\n""", "")
 
     ~rm(DATA_FILE, false)
     ~rm(".created_file_t.txt1", false)
