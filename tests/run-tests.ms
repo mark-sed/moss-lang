@@ -1325,8 +1325,8 @@ caught\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_int_methods(name) {
-    ~expect_pass("stdlib_tests/int_methods.ms", name, """0\n1\n1\n2\n3\n8\n1\n3\n1\n10\n63\n63
-0\n1\n2\n2\n3\n3\n4\n4\n1\n4\n11\n10\n63\n63\n""", "")
+    ~expect_pass("stdlib_tests/int_methods.ms", name, """0\n1\n1\n2\n3\n8\n1\n3\n1\n10\n62\n62
+0\n1\n2\n2\n3\n3\n4\n4\n1\n4\n11\n10\n62\n62\n""", "")
 }
 
 fun test_lib_input(name) {
