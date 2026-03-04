@@ -597,7 +597,7 @@ public:
 
     void push(Value *v) { vals.push_back(v); }
     size_t size() { return vals.size(); }
-    void remove(long i) { vals.erase(vals.begin() + i); }
+    void remove(int64_t i) { vals.erase(vals.begin() + i); }
     void clear() {
         vals.clear();
     }

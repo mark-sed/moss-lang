@@ -159,7 +159,7 @@ Value *String::multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value
     return StringValue::get(result);
 }
 
-static std::vector<ustring> split_whitespace(const std::string& text, long max_split=-1) {
+static std::vector<ustring> split_whitespace(const std::string& text, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
     size_t splits_done = 0;
 
@@ -185,7 +185,7 @@ static std::vector<ustring> split_whitespace(const std::string& text, long max_s
     return tokens;
 }
 
-static std::vector<ustring> rsplit_whitespace(const std::string& text, long max_split=-1) {
+static std::vector<ustring> rsplit_whitespace(const std::string& text, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
     size_t splits_done = 0;
 
@@ -219,7 +219,7 @@ static std::vector<ustring> rsplit_whitespace(const std::string& text, long max_
     return tokens;
 }
 
-std::vector<ustring> split_on(const std::string& text, const std::string& delim, long max_split=-1) {
+std::vector<ustring> split_on(const std::string& text, const std::string& delim, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
     size_t start = 0;
     size_t splits_done = 0;
@@ -253,7 +253,7 @@ std::vector<ustring> split_on(const std::string& text, const std::string& delim,
     return tokens;
 }
 
-std::vector<ustring> rsplit_on(const std::string& text, const std::string& delim, long max_split=-1) {
+std::vector<ustring> rsplit_on(const std::string& text, const std::string& delim, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
     size_t end = text.size();
     size_t splits_done = 0;

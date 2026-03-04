@@ -1460,7 +1460,7 @@ void BuildClass::exec(Interpreter *vm) {
     cls->set_attrs(vm->get_top_frame());
 }
 
-std::vector<ustring> get_str_list_annot(Value *args, unsigned long arg_am, ustring an_name, Interpreter *vm) {
+std::vector<ustring> get_str_list_annot(Value *args, uint64_t arg_am, ustring an_name, Interpreter *vm) {
     std::vector<ustring> extr;
     if(auto argl = dyn_cast<ListValue>(args)) {
         for (auto v : argl->get_vals()) {
@@ -1689,7 +1689,7 @@ static Value *exp(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = IntValue::get(static_cast<long>(std::pow(static_cast<double>(i1->get_value()), static_cast<double>(i2->get_value()))));
+        res = IntValue::get(static_cast<opcode::IntConst>(std::pow(static_cast<double>(i1->get_value()), static_cast<double>(i2->get_value()))));
     }
     else if (is_float_expr(s1, s2)) {
         res = FloatValue::get(std::pow(s1->as_float(), s2->as_float()));
@@ -2492,8 +2492,8 @@ static inline ustring str_index(StringValue *s, IntConst i) {
 }
 
 bool opcode::is_oob(StringConst s, IntConst i) {
-    return (i < 0 && static_cast<unsigned long>(i*-1) > s.size()) || 
-              (i > 0 && static_cast<unsigned long>(i) >= s.size());
+    return (i < 0 && static_cast<uint64_t>(i*-1) > s.size()) || 
+              (i > 0 && static_cast<uint64_t>(i) >= s.size());
 }
 
 static inline bool is_oob(StringValue *s, IntConst i) {
@@ -2502,8 +2502,8 @@ static inline bool is_oob(StringValue *s, IntConst i) {
 
 static inline bool is_oob(ListValue *s, IntConst i) {
     auto st = s->get_vals();
-    return (i < 0 && static_cast<unsigned long>(i*-1) > st.size()) || 
-              (i > 0 && static_cast<unsigned long>(i) >= st.size());
+    return (i < 0 && static_cast<uint64_t>(i*-1) > st.size()) || 
+              (i > 0 && static_cast<uint64_t>(i) >= st.size());
 }
 
 static inline Value *list_index(ListValue *s, IntConst i) {
@@ -2543,8 +2543,8 @@ static Value *subsc(Value *s1, Value *s2, Register dst, Interpreter *vm) {
     }
     else if (auto lt1 = dyn_cast<ListValue>(s1)) {
         if (auto i2 = dyn_cast<IntValue>(s2)) {
-            if ((i2->get_value() < 0 && static_cast<unsigned long>(i2->get_value()*-1) > lt1->get_vals().size()) || 
-              (i2->get_value() >= 0 && static_cast<unsigned long>(i2->get_value()) >= lt1->get_vals().size())) {
+            if ((i2->get_value() < 0 && static_cast<uint64_t>(i2->get_value()*-1) > lt1->get_vals().size()) || 
+              (i2->get_value() >= 0 && static_cast<uint64_t>(i2->get_value()) >= lt1->get_vals().size())) {
                 raise(mslib::create_index_error(diags::Diagnostic(*vm->get_src_file(), diags::OUT_OF_BOUNDS, s1->get_type()->get_name().c_str(), i2->get_value())));
             }
             if (i2->get_value() < 0) {

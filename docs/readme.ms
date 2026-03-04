@@ -48,7 +48,7 @@ formats (by specifying `-f` option followed by the desired format).
 md"""
 ## 🐍 Python interoperability
 
-Moss has a built-in Python interoperability to take advantage of a wast library
+Moss has a built-in Python interoperability to take advantage of a vast library
 ecosystem which Python offers. This should also allow for easier implementation
 of Moss into existing projects which rely on existing Python scripts.
 

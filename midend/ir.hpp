@@ -278,7 +278,7 @@ public:
 
 class Space : public Construct {
 private:
-    static unsigned long anonymous_id;
+    static uint64_t anonymous_id;
     bool anonymous;
 public:
     static const IRType ClassType = IRType::SPACE;
@@ -1391,7 +1391,7 @@ public:
 
 class Lambda : public Expression {
 private:
-    static unsigned long anonymous_id;
+    static uint64_t anonymous_id;
     bool anonymous;
     FunctionInfo info;
     Expression *body;
@@ -1697,7 +1697,7 @@ public:
 
 class List : public Expression {
 private:
-    static unsigned long anonymous_id;
+    static uint64_t anonymous_id;
     std::vector<Expression *> value;
     bool comprehension;
     Expression *result;

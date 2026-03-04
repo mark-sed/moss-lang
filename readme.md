@@ -45,7 +45,7 @@ formats (by specifying `-f` option followed by the desired format).
 
 ## 🐍 Python interoperability
 
-Moss has a built-in Python interoperability to take advantage of a wast library
+Moss has a built-in Python interoperability to take advantage of a vast library
 ecosystem which Python offers. This should also allow for easier implementation
 of Moss into existing projects which rely on existing Python scripts.
 
@@ -144,6 +144,6 @@ build\\Release\\moss.exe --version
 ```
 
 -----
-This file was generated on Nov 12 2025 by 
-[Moss](https://github.com/mark-sed/moss-lang) 0.7.0
+This file was generated on Mar 4 2025 by 
+[Moss](https://github.com/mark-sed/moss-lang) 0.7.5
 from [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).

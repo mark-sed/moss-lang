@@ -4,9 +4,9 @@
 using namespace moss;
 using namespace ir;
 
-unsigned long ir::Space::anonymous_id = 0;
-unsigned long ir::Lambda::anonymous_id = 0;
-unsigned long ir::List::anonymous_id = 0;
+uint64_t ir::Space::anonymous_id = 0;
+uint64_t ir::Lambda::anonymous_id = 0;
+uint64_t ir::List::anonymous_id = 0;
 
 std::list<IR *> List::as_for() {
     std::vector<Expression *> empty_list;

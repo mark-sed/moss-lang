@@ -65,7 +65,7 @@ IR *ConstantFoldingPass::visit(BinaryExpr &be) {
                 if (float_op)
                     return new FloatLiteral(std::pow(lf, rf), new_src_i);
                 return new IntLiteral(
-                    static_cast<long>(std::pow(
+                    static_cast<opcode::IntConst>(std::pow(
                         static_cast<double>(li), 
                         static_cast<double>(ri))
                     ), new_src_i);

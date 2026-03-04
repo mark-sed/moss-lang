@@ -104,8 +104,8 @@ ustring error::format_error(diags::Diagnostic msg, bool warning_as_error) {
         ss << std::hex << std::uppercase << msg.id << std::nouppercase << std::dec << "]" 
            << error::colors::reset() << std::endl;
 
-        const long LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
-        const long LINE_LEN_POST = 20;
+        const int64_t LINE_LEN_PRE = 100; // Max length of line to be displayed, but will be cut at first
+        const int64_t LINE_LEN_POST = 20;
 
         assert(msg.scanner->get_src_text().size() > info.get_lines().first && "Getting out of bounds line");
         std::string curr_line = msg.scanner->get_src_text()[info.get_lines().first];
