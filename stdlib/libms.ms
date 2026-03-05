@@ -45,6 +45,14 @@ class __Int {
         """
     }
 
+    @internal
+    @static_method
+    fun from_bytes(bytes:Bytes, byte_order:String="big", signed:Bool=false) {
+        d"""
+        Converts bytes into Int.
+        """
+    }
+
     // TODO: Add enum for byte_order?
     @internal
     fun to_bytes(length:[::Int]=1, byte_order:String="big", signed:Bool=false) {

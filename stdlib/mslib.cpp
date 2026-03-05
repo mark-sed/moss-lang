@@ -396,6 +396,56 @@ Value *Int_bit_length(Interpreter *vm, Value *ths) {
     return IntValue::get(length);
 }
 
+Value *Int_from_bytes(Interpreter *vm, Value *bts,
+                    Value *byte_order, Value *is_signedv, Value *&err) {
+    auto bytesv = dyn_cast<BytesValue>(bts);
+    assert(bytesv);
+    auto bytes = bytesv->get_value();
+    auto bo = mslib::get_string(byte_order);
+    auto is_signed = mslib::get_bool(is_signedv);
+    
+    if (bo != "big" && bo != "little") {
+        err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::TO_BYTES_BAD_BYTEORDER, bo.c_str()));
+        return nullptr;
+    }
+
+    if (bytes.size() > 8) {
+        err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::FROM_BYTES_TOO_BIG, bytes.size()));
+        return nullptr;
+    }
+
+    uint64_t result = 0;
+
+    if (bo == "big") {
+        for (uint8_t b : bytes) {
+            result = (result << 8) | b;
+        }
+    } else { // little
+        for (size_t i = 0; i < bytes.size(); ++i) {
+            result |= (uint64_t(bytes[i]) << (8 * i));
+        }
+    }
+
+    if (is_signed && !bytes.empty()) {
+        size_t bits = bytes.size() * 8;
+        uint64_t sign_bit = uint64_t(1) << (bits - 1);
+
+        if (result & sign_bit) {
+            // two's complement negative number
+            uint64_t mask = (uint64_t(1) << bits) - 1;
+            opcode::IntConst signed_val = static_cast<opcode::IntConst>(result | ~mask);
+            return IntValue::get(signed_val);
+        }
+    }
+
+    if (!is_signed && result > std::numeric_limits<opcode::IntConst>::max()) {
+        err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::FROM_BYTES_TOO_BIG, bytes.size()));
+        return nullptr;
+    }
+
+    return IntValue::get(static_cast<opcode::IntConst>(result));
+}
+
 Value *Int_to_bytes(Interpreter *vm, Value *ths, Value *lengthv,
                     Value *byte_order, Value *is_signedv, Value *&err) {
     auto value = mslib::get_int(ths);
@@ -942,6 +992,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
+        }},
+        {"from_bytes", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return Int_from_bytes(vm, cf->get_arg("bytes"), cf->get_arg("byte_order"), cf->get_arg("signed"), err);
         }},
         {"FunctionListIterator", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             return create_iterator<FunctionListIterator, FunValueList>(vm, cf, BuiltIns::FunctionListIterator, err);

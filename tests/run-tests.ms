@@ -1331,7 +1331,10 @@ fun test_lib_int_methods(name) {
 01 04\nff\nff ff\n80\nff 7f\n7f\n00 80
 3f ff ff ff ff ff ff ff
 c0 00 00 00 00 00 00 00
-caught\ncaught\ncaught\ncaught\ncaught\ncaught\n""", "")
+caught\ncaught\ncaught\ncaught\ncaught\ncaught
+0\n1\n255\n256\n1\n260\n1025\n-1\n-1
+-128\n127\n-129\n9223372036854775807\n0
+caught\ncaught\ncaught\n""", "")
 }
 
 fun test_lib_input(name) {

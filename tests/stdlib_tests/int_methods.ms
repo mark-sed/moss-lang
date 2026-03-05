@@ -130,3 +130,51 @@ try
     (1).to_bytes(1, "middle")               // ValueError (invalid byteorder)
 catch(e:ValueError)
     "caught\n"
+
+Int.from_bytes(Bytes("\x00"), "big")              // 0
+"\n"
+Int.from_bytes(Bytes("\x01"), "big")              // 1
+"\n"
+Int.from_bytes(Bytes("\xff"), "big")              // 255
+"\n"
+
+Int.from_bytes(Bytes("\x01\x00"), "big")          // 256
+"\n"
+Int.from_bytes(Bytes("\x01\x00"), "little")       // 1
+"\n"
+Int.from_bytes(Bytes("\x01\x04"), "big")          // 260
+"\n"
+Int.from_bytes(Bytes("\x01\x04"), "little")       // 1025
+"\n"
+
+Int.from_bytes(Bytes("\xff"), "big", signed=true)     // -1
+"\n"
+Int.from_bytes(Bytes("\xff\xff"), "big", signed=true) // -1
+"\n"
+Int.from_bytes(Bytes("\x80"), "big", signed=true)     // -128
+"\n"
+Int.from_bytes(Bytes("\x7f"), "big", signed=true)     // 127
+"\n"
+Int.from_bytes(Bytes("\xff\x7f"), "big", signed=true) // -129
+"\n"
+
+Int.from_bytes(Bytes("\x7f\xff\xff\xff\xff\xff\xff\xff"), "big")   // 9223372036854775807
+"\n"
+
+Int.from_bytes(Bytes(""), "big")   // 0
+"\n"
+
+try
+    Int.from_bytes(Bytes("\x01\x01\x01\x01\x01\x01\x01\x01\x01"), "big")      // OverflowError (too many bytes for int64)
+catch (e:ValueError)
+    "caught\n"
+
+try
+    Int.from_bytes(Bytes("\xff\xff\xff\xff\xff\xff\xff\xff\xff"), "big")      // OverflowError
+catch (e:ValueError)
+    "caught\n"
+
+try
+    Int.from_bytes(Bytes("\x01"), "middle")     // ValueError (invalid byteorder)
+catch (e:ValueError)
+    "caught\n"
