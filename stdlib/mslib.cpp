@@ -264,13 +264,24 @@ Value *input(Interpreter *vm, Value *prompt, Value *&err) {
 
 Value *hex(Interpreter *vm, Value *number) {
     (void)vm;
-    auto ni = dyn_cast<IntValue>(number);
-    assert(ni);
-    bool is_negative = ni->get_value() < 0;
     std::stringstream ss;
-    ss << std::hex << std::abs(ni->get_value());
-    std::string hex_str = ss.str();
-    return StringValue::get((is_negative ? "-0x" : "0x") + hex_str);
+    if (auto ni = dyn_cast<IntValue>(number)) {
+        bool is_negative = ni->get_value() < 0;
+        ss << std::hex << std::abs(ni->get_value());
+        std::string hex_str = ss.str();
+        return StringValue::get((is_negative ? "-0x" : "0x") + hex_str);
+    } else {
+        auto nf = dyn_cast<FloatValue>(number);
+        assert(nf);
+        auto value = nf->get_value();
+        if (std::isnan(value)) return StringValue::get("nan");
+        if (std::isinf(value))
+            return value > 0 ? StringValue::get("inf") : StringValue::get("-inf");
+
+        std::ostringstream ss;
+        ss << std::hexfloat << value;
+        return StringValue::get(ss.str());
+    }
 }
 
 Value *bin(Interpreter *vm, Value *number) {

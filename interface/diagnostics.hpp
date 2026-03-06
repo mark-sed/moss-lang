@@ -234,6 +234,7 @@ enum DiagID : unsigned {
     TO_BYTES_NEG_TO_UNSIGNED, ///< When in byte_order signed is false and value < 0
     TO_BYTES_TOO_BIG_TO_CONV, ///< When int value cannot fit into bytes
     FROM_BYTES_TOO_BIG,     ///< When value cannot fit into bytes
+    HEX_FLOAT_PARSE_ERR,    ///< When float hex string could not be parsed
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -447,6 +448,7 @@ static const char * DIAG_MSGS[] = {
     "Can't convert negative Int to unsigned",
     "Int '%ld' is too big to fit into '%ld' %s bytes",
     "Too many bytes (%ld) for Int",
+    "Value '%s' could not be parsed as a hexadecimal floating point",
 };
 
 /// \brief ID of diagnostic error

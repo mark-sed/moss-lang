@@ -76,6 +76,8 @@ class __Float {
         Converts value `v` into Float value.
         If `v` is not Float, Int, String or Object which contains __Float
         function then TypeError is raised.
+        If `v` is a String value then it has to be in base 10 format or base 16,
+        but prefixed "0x".
         """
     }
 }
@@ -1371,7 +1373,7 @@ fun ord(c:String) {
 }
 
 @internal
-fun hex(number:Int) {
+fun hex(number:[Int,Float]) {
     d"""
     Returns value of `number` as a hexadecimal string (hexstring).
     If `number` is negative then the hexstring will start with `-`.

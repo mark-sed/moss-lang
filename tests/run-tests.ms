@@ -1279,6 +1279,7 @@ fun test_lib_type_constructors(name) {
     ~expect_pass("stdlib_tests/type_constructors.ms", name, """56\n56\n42\n10\n0\n22\n100\n0\n-8
 caught\ncaught\ncaught\ncaught
 0.000000\n2.500000\n50.000000\n15.000000\ncaught
+1.000000\n2.000000\n0.500000\n3.000000\n10.000000\n0.250000\n0.750000\n0.100000\n-1.000000\n-3.000000\n-0.500000
 false\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue\nfalse\ntrue
 Hi\n55\n<class String>\nnil
 nil
@@ -1334,7 +1335,7 @@ c0 00 00 00 00 00 00 00
 caught\ncaught\ncaught\ncaught\ncaught\ncaught
 0\n1\n255\n256\n1\n260\n1025\n-1\n-1
 -128\n127\n-129\n9223372036854775807\n0
-caught\ncaught\ncaught\n""", "")
+caught\ncaught\ncaught\n42\n""", "")
 }
 
 fun test_lib_input(name) {
@@ -1520,7 +1521,9 @@ hello\nhello programmer\nhello\nxyz\nhello\nx\nhello\nhello\nhello\nhello\nxyz\n
 ["endswithnewline\\n"]
 ["mix", "of", "various", "lines"]
 ["mix\\n", "of\\r", "various\\r\\n", "lines"]
-[]\n""", "")
+[]
+0x0p+0\n0x1p+0\n0x1p+1\n0x1p-1\n0x1.999999999999ap-4\n0x1p-2\n0x1.8p-1\n-0x1p+0
+-0x1p-1\n-0x1.921fb53c8d4f1p+1\ninf\n-inf\nnan\n""", "")
 }
 
 fun test_lib_string_is(name) {

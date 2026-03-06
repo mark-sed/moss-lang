@@ -178,3 +178,6 @@ try
     Int.from_bytes(Bytes("\x01"), "middle")     // ValueError (invalid byteorder)
 catch (e:ValueError)
     "caught\n"
+
+(4).from_bytes(Bytes("\x2a"))
+"\n"

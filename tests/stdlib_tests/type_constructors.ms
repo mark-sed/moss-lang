@@ -49,6 +49,32 @@ try
 catch (e:ValueError)
     "caught\n"
 
+Float("0x1p0")            // 1.0
+"\n"
+Float("0x1p1")            // 2.0
+"\n"
+Float("0x1p-1")           // 0.5
+"\n"
+Float("0x1.8p1")          // 3.0
+"\n"
+Float("0x1.4p3")          // 10.0
+"\n"
+
+Float("0x1p-2")           // 0.25
+"\n"
+Float("0x1.8p-1")         // 0.75
+"\n"
+Float("0x1.999999999999ap-4")  // 0.1
+"\n"
+
+Float("-0x1p0")           // -1.0
+"\n"
+Float("-0x1.8p1")         // -3.0
+"\n"
+Float("-0x1p-1")          // -0.5
+"\n"
+
+
 Bool()
 "\n"
 Bool(true)
