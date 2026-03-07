@@ -1338,6 +1338,11 @@ caught\ncaught\ncaught\ncaught\ncaught\ncaught
 caught\ncaught\ncaught\n42\n""", "")
 }
 
+fun test_lib_float_methods(name) {
+    ~expect_pass("stdlib_tests/float_methods.ms", name, """[1, 2]\n[1, 4]\n[1, 1]\n[2, 1]\n[3, 4]\n[3, 2]
+[3602879701896397, 36028797018963968]\n[-1, 2]\n[-5, 4]\n[0, 1]\ncaught\ncaught\ncaught\n""", "")
+}
+
 fun test_lib_input(name) {
     ~expect_pass(f"stdlib_tests/input.ms", name, "> // input function test\n// this file is also read\n5//\n", "", prog_args=f"< {::TEST_DIR}/stdlib_tests/input.ms")
     ~expect_pass(f"stdlib_tests/input_eof.ms", name, "caught eof\n", "", prog_args=f"< {::TEST_DIR}/empty.ms")
@@ -2386,6 +2391,7 @@ fun run_all_tests() {
     ~run_test("lib_builtin_exceptions")
     ~run_test("lib_ranges")
     ~run_test("lib_int_methods")
+    ~run_test("lib_float_methods")
     ~run_test("lib_input")
     ~run_test("lib_copy")
     ~run_test("lib_lists")

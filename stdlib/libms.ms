@@ -80,6 +80,14 @@ class __Float {
         but prefixed "0x".
         """
     }
+
+    @internal
+    fun as_int_ratio() {
+        d"""
+        Returns a List of two Ints `[numerator, denominator]` such that:
+            this = numerator / denominator
+        """
+    }
 }
 
 @internal_bind("Bool")

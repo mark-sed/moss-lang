@@ -551,6 +551,58 @@ Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     return rval;
 }
 
+Value *Float_as_int_ratio(Interpreter *vm, Value *ths, Value *&err) {
+    auto value = mslib::get_float(ths);
+    if (std::isnan(value)) {
+        err = mslib::create_math_error(diags::Diagnostic(*vm->get_src_file(), diags::HAS_NO_INT_RATIO, "nan"));
+        return nullptr;
+    }
+
+    if (std::isinf(value)) {
+        err = mslib::create_math_error(diags::Diagnostic(*vm->get_src_file(), diags::HAS_NO_INT_RATIO, "inf"));
+        return nullptr;
+    }
+
+    std::vector<Value *> pair;
+    if (value == 0.0) {
+        pair.push_back(IntValue::get(0));
+        pair.push_back(IntValue::get(1));
+        return new ListValue(pair);
+    }
+
+    int exp;
+    double frac = std::frexp(value, &exp);  
+    // value = frac * 2^exp, where 0.5 <= |frac| < 1
+
+    const int mantissa_bits = 53;
+
+    int64_t numerator = std::ldexp(frac, mantissa_bits);
+    int64_t denominator = 1LL << mantissa_bits;
+
+    if (exp > 0)
+        numerator <<= exp;
+    else
+        denominator <<= -exp;
+
+    // reduce fraction
+    auto gcd = [](int64_t a, int64_t b) {
+        while (b != 0) {
+            int64_t t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
+    };
+
+    int64_t g = gcd(std::llabs(numerator), denominator);
+    numerator /= g;
+    denominator /= g;
+
+    pair.push_back(IntValue::get(numerator));
+    pair.push_back(IntValue::get(denominator));
+    return new ListValue(pair);
+}
+
 Value *Float(Interpreter *vm, Value *v, Value *&err) {
     (void)vm;
 
@@ -810,6 +862,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
             }
+        }},
+        {"as_int_ratio", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return Float_as_int_ratio(vm, args[0].value, err);
         }},
         {"attrs", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
