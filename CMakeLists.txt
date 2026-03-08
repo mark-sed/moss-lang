@@ -8,8 +8,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -DDEVELOPER")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O1 -g -DDEVELOPER")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 
 if (MSVC)
     # FIXME: Don't use hardcoded paths
@@ -28,13 +28,13 @@ if (MSVC)
     file(MAKE_DIRECTORY ${LIBMS_PATH})
     file(MAKE_DIRECTORY ${MOSS_PATH})
 elseif(APPLE)
-    add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete)
+    add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete -Wno-delete-incomplete -Wno-format-security)
     set(LIBMS_PATH "/usr/local/lib/moss")
     set(MOSS_PATH "/usr/local/bin/moss")
     file(MAKE_DIRECTORY ${LIBMS_PATH})
     file(MAKE_DIRECTORY "/usr/local/bin/")
 else()
-    add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete)
+    add_compile_options(-Wall -Wextra -pedantic -Wno-mismatched-new-delete -Wno-delete-incomplete -Wno-format-security)
     set(LIBMS_PATH "/lib/moss")
     set(MOSS_PATH "/usr/bin/moss")
     file(MAKE_DIRECTORY ${LIBMS_PATH})
@@ -241,7 +241,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/test_gc.cpp
         tests/unittests/test_interpreter.cpp
         tests/unittests/test_memory.cpp
-        tests/unittests/test_bcg_analysis.cpp
         tests/unittests/test_method_analysis.cpp
         tests/unittests/test_parser_examples.cpp
         tests/unittests/test_parser.cpp

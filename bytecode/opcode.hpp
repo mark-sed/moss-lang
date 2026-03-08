@@ -252,8 +252,6 @@ protected:
     OpCode(OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {
         static_assert(OpCodes::OPCODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
     }
-
-    void check_load(Value *v, Interpreter *vm);
 public:
     virtual ~OpCode() {}
 

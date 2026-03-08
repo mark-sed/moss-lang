@@ -69,7 +69,7 @@ Value *Value::next(Interpreter *vm) {
     return nullptr;
 }
 
-std::ostream& Value::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
+std::ostream& Value::debug(std::ostream& os, unsigned, std::unordered_set<const Value *> &) const {
     return debug(os);
 }
 
@@ -115,6 +115,7 @@ void Value::copy_attrs(MemoryPool *p) {
 
 void Value::set_attr(ustring name, Value *v, bool internal_access) {
     assert((this->is_modifiable() || internal_access) && "Setting attribute for non-modifiable value");
+    (void)internal_access;
     if (!attrs) {
         this->attrs = new MemoryPool(nullptr);
     }
@@ -203,7 +204,7 @@ Value *ObjectValue::next(Interpreter *vm) {
     return retv;
 }
 
-Value *StringValue::iter(Interpreter *vm) {
+Value *StringValue::iter(Interpreter *) {
     return new StringIterator(*this);
 }
 
@@ -217,7 +218,7 @@ Value *StringIterator::next(Interpreter *vm) {
     return StringValue::get(ustring(1, chr));
 }
 
-Value *ListValue::iter(Interpreter *vm) {
+Value *ListValue::iter(Interpreter *) {
     return new ListIterator(*this);
 }
 
@@ -231,7 +232,7 @@ Value *ListIterator::next(Interpreter *vm) {
     return val;
 }
 
-Value *DictValue::iter(Interpreter *vm) {
+Value *DictValue::iter(Interpreter *) {
     return new DictIterator(*this);
 }
 
@@ -266,7 +267,7 @@ Value *BytesIterator::next(Interpreter *) {
     return IntValue::get(static_cast<opcode::IntConst>(val));
 }
 
-Value *FunValueList::iter(Interpreter *vm) {
+Value *FunValueList::iter(Interpreter *) {
     return new FunctionListIterator(*this);
 }
 
@@ -418,12 +419,10 @@ void DictValue::push(Value *k, Value *v, Interpreter *vm) {
     auto value_at_k = vals.find(hash_key);
     if (value_at_k != vals.end()) {
         LOGMAX("Clash of hashes - appending");
-        bool contains = false;
         auto vak = value_at_k->second;
         for (size_t vindex = 0; vindex < vak.size(); ++vindex) {
             if (opcode::eq(vak[vindex].first, k, vm)) {
                 LOGMAX("Overriding index " << vindex << " with " << *vals[hash_key][vindex].first << ": " << *vals[hash_key][vindex].second);
-                contains = true;
                 vals[hash_key][vindex] = std::make_pair(k, v);
                 return;
             }
@@ -472,7 +471,7 @@ opcode::StringConst BytesValue::as_string() const {
     return out;
 }
 
-ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals), iterator(0) {
+ListValue::ListValue(std::vector<Value *> vals) : Value(ClassType, "List", BuiltIns::List), vals(vals) {
     if(BuiltIns::List->get_attrs())
         this->attrs = BuiltIns::List->get_attrs()->clone();
 }

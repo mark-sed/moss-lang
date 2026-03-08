@@ -6,7 +6,7 @@
 #if defined(__windows__)
     #include <windows.h>
 #else
-    extern char **environ; // POSIX global
+    extern "C" char **environ; // POSIX global
 #endif
 
 using namespace moss;
@@ -15,14 +15,12 @@ using namespace sys;
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
-        {"platform", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
+        {"platform", [](Interpreter*, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 0);
-            return sys::platform(vm, cf, err);
+            return sys::platform(cf, err);
         }},
-        {"getenv", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
+        {"getenv", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1 || args.size() == 2);
             return sys::getenv(vm, cf->get_arg("name"), cf->get_arg("def_val"), err);
@@ -93,7 +91,7 @@ void sys::init_constants(Interpreter *vm) {
     // sys.version_info
 }
 
-Value *sys::platform(Interpreter *vm, CallFrame *cf, Value *&err) {
+Value *sys::platform(CallFrame *cf, Value *&err) {
     static bool initialized(false);
     static Value *result = nullptr;
 

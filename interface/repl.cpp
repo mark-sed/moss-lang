@@ -33,7 +33,7 @@ int Repl::run() {
     output_header();
 
     Bytecode *bc = new Bytecode();
-    bcgen::BytecodeGen cgen(bc, &parser);
+    bcgen::BytecodeGen cgen(bc);
 
     Interpreter *interpreter = new Interpreter(bc, &src_file, true);
     ir::IRPipeline ipl(parser);

@@ -25,7 +25,7 @@ namespace Dict {
 
 Value *pop(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err);
 
-Value *get(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err);
+Value *get(Interpreter *vm, Value *ths, Value *key, Value *def_val);
 
 Value *Dict(Interpreter *vm, Value *iterable, Value *&err);
 

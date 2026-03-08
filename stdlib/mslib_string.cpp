@@ -58,7 +58,7 @@ static opcode::IntConst count_substrings(const std::string& str, const std::stri
     return count;
 }
 
-Value *String::count(Interpreter *vm, Value *ths, Value *sub, Value *&err) {
+Value *String::count(Value *ths, Value *sub) {
     auto ths_str = mslib::get_string(ths);
     auto sub_str = mslib::get_string(sub);
     if (sub_str.empty())
@@ -67,7 +67,7 @@ Value *String::count(Interpreter *vm, Value *ths, Value *sub, Value *&err) {
 }
 
 
-Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
+Value *String::capitalize(Value *ths) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring str = strv->get_value();
@@ -87,7 +87,7 @@ Value *String::capitalize(Interpreter *vm, Value *ths, Value *&err) {
     return rv;
 }
 
-Value *String::upper(Interpreter *vm, Value *ths, Value *&err) {
+Value *String::upper(Value *ths) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring str = strv->get_value();
@@ -101,7 +101,7 @@ Value *String::upper(Interpreter *vm, Value *ths, Value *&err) {
     return rv;
 }
 
-Value *String::lower(Interpreter *vm, Value *ths, Value *&err) {
+Value *String::lower(Value *ths) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring str = strv->get_value();
@@ -115,7 +115,7 @@ Value *String::lower(Interpreter *vm, Value *ths, Value *&err) {
     return rv;
 }
 
-Value *String::replace(Interpreter *vm, Value *ths, Value *target, Value *value, Value *count, Value *&err) {
+Value *String::replace(Value *ths, Value *target, Value *value, Value *count) {
     // TODO: Have empty string replace be in between letters:
     // >>> "hello".replace("", "X")
     // 'XhXeXlXlXoX'
@@ -161,7 +161,7 @@ Value *String::multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value
 
 static std::vector<ustring> split_whitespace(const std::string& text, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
-    size_t splits_done = 0;
+    opcode::IntConst splits_done = 0;
 
     auto it = text.begin();
     while (it != text.end()) {
@@ -187,7 +187,7 @@ static std::vector<ustring> split_whitespace(const std::string& text, opcode::In
 
 static std::vector<ustring> rsplit_whitespace(const std::string& text, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
-    size_t splits_done = 0;
+    opcode::IntConst splits_done = 0;
 
     auto it = text.end();
 
@@ -222,7 +222,7 @@ static std::vector<ustring> rsplit_whitespace(const std::string& text, opcode::I
 std::vector<ustring> split_on(const std::string& text, const std::string& delim, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
     size_t start = 0;
-    size_t splits_done = 0;
+    opcode::IntConst splits_done = 0;
 
     if (delim.empty()) {
         // Treat empty delimiter as splitting every character
@@ -256,7 +256,7 @@ std::vector<ustring> split_on(const std::string& text, const std::string& delim,
 std::vector<ustring> rsplit_on(const std::string& text, const std::string& delim, opcode::IntConst max_split=-1) {
     std::vector<ustring> tokens;
     size_t end = text.size();
-    size_t splits_done = 0;
+    opcode::IntConst splits_done = 0;
 
     if (delim.empty()) {
         for (char ch : text) {
@@ -321,7 +321,7 @@ std::vector<std::string> splitlines(const std::string& s, bool keep_ends = false
     return result;
 }
 
-Value *String::split_lines(Interpreter *vm, Value *ths, Value *keep_ends, Value *&err) {
+Value *String::split_lines(Value *ths, Value *keep_ends) {
     auto strv = mslib::get_string(ths);
     auto keep_ends_b = mslib::get_bool(keep_ends);
     auto res_vec = splitlines(strv, keep_ends_b);
@@ -335,7 +335,7 @@ Value *String::split_lines(Interpreter *vm, Value *ths, Value *keep_ends, Value 
     return new ListValue(splitted_str);
 }
 
-Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err) {
+Value *String::split(Value *ths, Value *sep, Value *max_split) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     auto max_splitv = dyn_cast<IntValue>(max_split);
@@ -359,7 +359,7 @@ Value *String::split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, 
     return new ListValue(splitted_str);
 }
 
-Value *String::rsplit(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err) {
+Value *String::rsplit(Value *ths, Value *sep, Value *max_split) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     auto max_splitv = dyn_cast<IntValue>(max_split);
@@ -383,7 +383,7 @@ Value *String::rsplit(Interpreter *vm, Value *ths, Value *sep, Value *max_split,
     return new ListValue(splitted_str);
 }
 
-Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t)> fn, Value *&err) {
+Value *String::isfun(Value *ths, std::function<bool(std::wint_t)> fn) {
     auto strv = dyn_cast<StringValue>(ths);
     assert(strv && "not string");
     ustring str_text = strv->get_value();
@@ -406,7 +406,7 @@ Value *String::isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t
     return BuiltIns::True;
 }
 
-Value *String::swapcase(Interpreter *vm, StringValue *ths, Value *&err) {
+Value *String::swapcase(StringValue *ths) {
     auto str = ths->get_value();
     auto saved_locale = set_locale();
     auto text = utils::str2wstr(str);
@@ -420,7 +420,7 @@ Value *String::swapcase(Interpreter *vm, StringValue *ths, Value *&err) {
     return rv;
 }
 
-Value *String::index(Interpreter *vm, Value *ths, Value *value, Value *&err) {
+Value *String::index(Value *ths, Value *value) {
     auto strv = mslib::get_string(ths);
     ustring subst = mslib::get_string(value);
 
@@ -431,7 +431,7 @@ Value *String::index(Interpreter *vm, Value *ths, Value *value, Value *&err) {
     return IntValue::get(pos);
 }
 
-Value *String::rindex(Interpreter *vm, Value *ths, Value *value, Value *&err) {
+Value *String::rindex(Value *ths, Value *value) {
     auto strv = mslib::get_string(ths);
     ustring subst = mslib::get_string(value);
 

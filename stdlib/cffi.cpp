@@ -32,7 +32,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& cffi::get_regist
             (void)err;
             auto args = cf->get_args();
             assert(args.size() == 2);
-            return cffi::call(vm, cf, cf->get_arg("this"), cf->get_arg("args"), err);
+            return cffi::call(vm, cf->get_arg("this"), cf->get_arg("args"), err);
         }},
         {"cfun", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
@@ -67,7 +67,7 @@ static t_cpp::CVoidStarValue *get_handle(Value *obj, Interpreter *vm, Value *&er
 }
 
 #ifdef __windows__
-static Value *windows_dlopen(Interpreter *vm, ustring path, Value *&err) {
+static Value *windows_dlopen(ustring path, Value *&err) {
     HMODULE handle = LoadLibrary(path.c_str());
     if (!handle) {
         err = create_not_implemented_error("cffi.dlopen failed, but exception is not implemented.\n");
@@ -76,7 +76,7 @@ static Value *windows_dlopen(Interpreter *vm, ustring path, Value *&err) {
     return new t_cpp::CVoidStarValue(handle);
 }
 #else
-static Value *posix_dlopen(Interpreter *vm, ustring path, Value *&err) {
+static Value *posix_dlopen(ustring path, Value *&err) {
     void* handle = dlopen(path.c_str(), RTLD_LAZY);
     if (!handle) {
         const char *dlsym_error = dlerror();
@@ -92,9 +92,9 @@ Value *cffi::dlopen(Interpreter *vm, CallFrame *cf, Value *path, Value *&err) {
     assert(path_str && "non-string");
     Value *handle = nullptr;
 #ifdef __windows__
-    handle = windows_dlopen(vm, path_str->get_value(), err);
+    handle = windows_dlopen(path_str->get_value(), err);
 #else
-    handle = posix_dlopen(vm, path_str->get_value(), err);
+    handle = posix_dlopen(path_str->get_value(), err);
 #endif
     if (!handle)
         return nullptr;
@@ -228,7 +228,7 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     return nullptr;
 }
 
-Value *cffi::call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err) {
+Value *cffi::call(Interpreter *vm, Value *ths, Value *args, Value *&err) {
     auto ptr = mslib::get_attr(ths, "ptr", vm, err);
     if (!ptr)
         return nullptr;

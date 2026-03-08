@@ -19,25 +19,14 @@
 using namespace moss;
 using namespace moss::opcode;
 
-
 /// This macro asserts that condition is true otherwise it raises passed value 
 #define op_assert(cond, msg) do { if(!(cond)) raise(msg); } while(0)
-
-FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err);
 
 std::string OpCode::err_mgs(std::string msg, Interpreter *vm) {
     std::stringstream ss;
     ss << vm->get_bci() << "\t" << *this << " :: " << msg;
     return ss.str();
 }
-
-/*
-When loading unknown value it will be nil, so it cannot be nullptr
-void OpCode::check_load(Value *v, Interpreter *vm) {
-    if (v) return;
-    auto msg = err_mgs("Loading value from non-existent register", vm);
-    error::error(error::ErrorCode::BYTECODE, msg.c_str(), vm->get_src_file(), true);
-}*/
 
 /// True iff one of the values is a float and the other is float or int
 static bool is_float_expr(Value *v1, Value *v2) {
@@ -212,7 +201,7 @@ void End::exec(Interpreter *vm) {
     }
 }
 
-static ClassValue *get_current_class(Interpreter *vm) {
+static ClassValue *get_current_class(Interpreter *) {
     auto stack_frames = Interpreter::get_stack_frames();
     for (auto rfi = stack_frames.rbegin(); rfi != stack_frames.rend(); ++rfi) {
         auto frinf = *rfi;
@@ -1380,7 +1369,7 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
             raise_ir_error(exc);
         }
         bc = new Bytecode();
-        bcgen::BytecodeGen cgen(bc, &parser);
+        bcgen::BytecodeGen cgen(bc);
         try {
             cgen.generate(module_ir);
         } catch (ir::IR *err) {
@@ -1572,7 +1561,7 @@ void Document::exec(Interpreter *vm) {
     auto d = vm->load(dst);
     assert(d && "loading non-existent register");
     auto docv = StringValue::get(val);
-    if (auto fvl = dyn_cast<FunValueList>(d)) {
+    if (isa<FunValueList>(d)) {
         d = load_last_fun(dst, vm);
     }
     d->set_attr(known_names::DOC_STRING, docv, true);

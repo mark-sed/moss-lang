@@ -378,7 +378,7 @@ Value *divmod(Interpreter *vm, Value *x, Value *y, Value *&err) {
     return res;
 }
 
-Value *Int_bit_count(Interpreter *vm, Value *ths) {
+Value *Int_bit_count(Value *ths) {
     auto n = mslib::get_int(ths);
     // count bits of absolute value
     uint64_t x = n < 0 ? static_cast<uint64_t>(-n) : static_cast<uint64_t>(n);
@@ -391,7 +391,7 @@ Value *Int_bit_count(Interpreter *vm, Value *ths) {
     return IntValue::get(count);
 }
 
-Value *Int_bit_length(Interpreter *vm, Value *ths) {
+Value *Int_bit_length(Value *ths) {
     auto n = mslib::get_int(ths);
     // count bits of absolute value
     if (n == 0) return ths;
@@ -503,8 +503,8 @@ Value *Int_to_bytes(Interpreter *vm, Value *ths, Value *lengthv,
         x = static_cast<uint64_t>(value);
     }
 
-    for (size_t i = 0; i < length; ++i) {
-        size_t index = (bo == "little") ? i : (length - 1 - i);
+    for (opcode::IntConst i = 0; i < length; ++i) {
+        opcode::IntConst index = (bo == "little") ? i : (length - 1 - i);
         result[index] = static_cast<uint8_t>(x & 0xFF);
         x >>= 8;
     }
@@ -672,7 +672,7 @@ Value *Note(Interpreter *vm, Value *format, Value *value) {
     return new NoteValue(format->as_string(), str_val);
 }
 
-Value *Bytes(Interpreter *vm, Value *s, Value *&err) {
+Value *Bytes(Value *s) {
     auto str = mslib::get_string(s);
     std::vector<uint8_t> bytes(str.begin(), str.end());
     return new BytesValue(bytes);
@@ -783,7 +783,7 @@ Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(std::wint
         err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
         return nullptr;
     }
-    return String::isfun(vm, arg, fn, err);
+    return String::isfun(arg, fn);
 }
 
 template<class IT, class VT>
@@ -882,15 +882,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(args.size() == 1);
             return bin(vm, args[0].value);
         }},
-        {"bit_count", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
+        {"bit_count", [](Interpreter*, CallFrame* cf, Value*&) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            return Int_bit_count(vm, args[0].value);
+            return Int_bit_count(args[0].value);
         }},
-        {"bit_length", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
+        {"bit_length", [](Interpreter*, CallFrame* cf, Value*&) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            return Int_bit_length(vm, args[0].value);
+            return Int_bit_length(args[0].value);
         }},
         {"Bool", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 2);
@@ -909,7 +909,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"Bytes", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 2);
             auto ths = cf->get_arg("this");
-            auto bv = Bytes(vm, cf->get_arg("s"), err);
+            auto bv = Bytes(cf->get_arg("s"));
             if (ths->get_type() == BuiltIns::Bytes) {
                 return bv;
             }
@@ -933,7 +933,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::capitalize(vm, sv, err);
+            return String::capitalize(sv);
         }},
         {"callable", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)err;
@@ -973,7 +973,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
             return MSFile::close(vm, args[0].value, err);
         }},
-        {"copy", [](Interpreter* vm, CallFrame* cf, Value*&) -> Value* {
+        {"copy", [](Interpreter*, CallFrame *cf, Value*&) -> Value* {
             auto arg = cf->get_arg("obj");
             assert(arg && "mssing arg?");
             return arg->clone();
@@ -984,9 +984,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"count", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
             if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
-                return List::count(vm, arg, cf->get_arg("val"), err);
+                return List::count(vm, lv, cf->get_arg("val"), err);
             } else if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
-                return String::count(vm, arg, cf->get_arg("sub"), err);
+                return String::count(stv, cf->get_arg("sub"));
             } else {
                 if (!err)
                     err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
@@ -1071,7 +1071,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto arg = cf->get_arg("this");
             if (isa<DictValue>(arg)) {
                 assert(cf->get_args().size() == 3);
-                return Dict::get(vm, arg, cf->get_arg("key"), cf->get_arg("def_val"), err);
+                return Dict::get(vm, arg, cf->get_arg("key"), cf->get_arg("def_val"));
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
@@ -1122,7 +1122,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             /*if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
                 return IntValue::get(lv->get_vals().size());
             } else */if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
-                return String::index(vm, arg, cf->get_arg("value"), err);
+                return String::index(stv, cf->get_arg("value"));
             }/* else if (auto dv = get_subtype_value<DictValue>(arg, BuiltIns::Dict, vm, err)) {
                 return IntValue::get(dv->size());
             }*/ else {
@@ -1139,9 +1139,9 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"insert", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
             if (auto lv = get_subtype_value<ListValue>(arg, BuiltIns::List, vm, err)) {
-                return List::insert(vm, arg, cf->get_arg("index"), cf->get_arg("value"), err);
+                return List::insert(vm, lv, cf->get_arg("index"), cf->get_arg("value"), err);
             }/* else if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
-                return String::index(vm, arg, cf->get_arg("value"), err);
+                return String::index(arg, cf->get_arg("value"));
             } else if (auto dv = get_subtype_value<DictValue>(arg, BuiltIns::Dict, vm, err)) {
                 return IntValue::get(dv->size());
             }*/ else {
@@ -1260,7 +1260,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::lower(vm, sv, err);
+            return String::lower(sv);
         }},
         {"lshift", [](Interpreter* vm, CallFrame* cf, Value*& err) {
             (void)vm;
@@ -1400,7 +1400,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto ths = cf->get_arg("this");
             if (auto sv = get_subtype_value<StringValue>(ths, BuiltIns::String, vm, err)) {
                 assert(args.size() == 4);
-                return String::replace(vm, sv, cf->get_arg("target"), cf->get_arg("value"), cf->get_arg("count"), err);
+                return String::replace(sv, cf->get_arg("target"), cf->get_arg("value"), cf->get_arg("count"));
             } else {
                 if (!err)
                     err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
@@ -1410,7 +1410,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"rindex", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");
             if (auto stv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err)) {
-                return String::rindex(vm, arg, cf->get_arg("value"), err);
+                return String::rindex(stv, cf->get_arg("value"));
             } else {
                 if (!err)
                     err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
@@ -1442,7 +1442,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::rsplit(vm, arg, cf->get_arg("sep"), cf->get_arg("max_split"), err);
+            return String::rsplit(arg, cf->get_arg("sep"), cf->get_arg("max_split"));
         }},
         {"rstrip", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 2);
@@ -1499,7 +1499,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::split(vm, arg, cf->get_arg("sep"), cf->get_arg("max_split"), err);
+            return String::split(arg, cf->get_arg("sep"), cf->get_arg("max_split"));
         }},
         {"split_lines", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 2);
@@ -1511,7 +1511,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::split_lines(vm, arg, cf->get_arg("keep_ends"), err);
+            return String::split_lines(arg, cf->get_arg("keep_ends"));
         }},
         {"String", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
@@ -1564,7 +1564,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::swapcase(vm, sv, err);
+            return String::swapcase(sv);
         }},
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::tan(cf->get_args()[0].value->as_float()));
@@ -1595,7 +1595,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
                 return nullptr;
             }
-            return String::upper(vm, sv, err);
+            return String::upper(sv);
         }},
         {"vardump", [](Interpreter* vm, CallFrame* cf, Value*& err)  {
             (void)err;

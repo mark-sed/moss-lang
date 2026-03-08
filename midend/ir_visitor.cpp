@@ -40,6 +40,8 @@ void PassManager::visit_body(Container& nodes) {
 
 template <typename T, typename Setter>
 T* PassManager::visit_child(T* old_child, Setter set_func, const char* err_msg, bool allow_null) {
+    (void) allow_null; // Used in debug
+    (void) err_msg;
     if (!old_child)
         return nullptr;
 
@@ -82,6 +84,7 @@ IR *PassManager::visit(Module &mod) {
     for (auto p: passes) {
         IR *replaced = mod.accept(*p);
         assert(replaced == &mod && "Pass attempted to replace Module node");
+        (void)replaced;
     }
 
     visit_body<IR>(mod.get_body());
@@ -92,6 +95,7 @@ IR *PassManager::visit(Class &cls) {
     for (auto p : passes) {
         IR* replaced = cls.accept(*p);
         assert(replaced == &cls && "Pass attempted to replace Class node");
+        (void)replaced;
     }
 
     visit_body<IR>(cls.get_body());
@@ -102,6 +106,7 @@ IR *PassManager::visit(Space &spc) {
     for (auto p : passes) {
         IR* replaced = spc.accept(*p);
         assert(replaced == &spc && "Pass attempted to replace Space node");
+        (void)replaced;
     }
 
     visit_body<IR>(spc.get_body());
@@ -118,6 +123,7 @@ IR *PassManager::visit(Function &fun) {
     for (auto p : passes) {
         IR* replaced = fun.accept(*p);
         assert(replaced == &fun && "Pass attempted to replace Fun node");
+        (void)replaced;
     }
 
     visit_body<Argument>(fun.get_args());
@@ -177,6 +183,7 @@ IR *PassManager::visit(Catch &ct) {
     for (auto p : passes) {
         IR* replaced = ct.accept(*p);
         assert (replaced == &ct && "Pass attempted to replace Catch node");
+        (void)replaced;
     }
 
     visit_child(ct.get_arg(), [&ct](Argument *new_i) { ct.set_arg(new_i); }, "Catch arg cannot be removed");
@@ -188,6 +195,7 @@ IR *PassManager::visit(Finally &fnl) {
     for (auto p : passes) {
         IR* replaced = fnl.accept(*p);
         assert (replaced == &fnl && "Pass attempted to replace Finally node");
+        (void)replaced;
     }
 
     visit_body<IR>(fnl.get_body());
@@ -198,6 +206,7 @@ IR *PassManager::visit(Try &tr) {
     for (auto p : passes) {
         IR* replaced = tr.accept(*p);
         assert (replaced == &tr && "Pass attempted to replace Try node");
+        (void)replaced;
     }
 
     visit_body<IR>(tr.get_body());
@@ -231,6 +240,7 @@ IR *PassManager::visit(ForLoop &frl) {
     for (auto p : passes) {
         IR* replaced = frl.accept(*p);
         assert (replaced == &frl && "Pass attempted to replace For node");
+        (void)replaced;
     }
 
     visit_child(frl.get_iterator(), [&frl](Expression *new_i) { frl.set_iterator(new_i); }, "For iterator cannot be removed");
@@ -243,6 +253,7 @@ IR *PassManager::visit(Import &imp) {
     for (auto p : passes) {
         IR* replaced = imp.accept(*p);
         assert (replaced == &imp && "Pass attempted to replace Import node");
+        (void)replaced;
     }
 
     visit_body<Expression>(imp.get_names());
@@ -253,6 +264,7 @@ IR *PassManager::visit(Assert &a) {
     for (auto p : passes) {
         IR* replaced = a.accept(*p);
         assert (replaced == &a && "Pass attempted to replace Assert node");
+        (void)replaced;
     }
 
     visit_child(a.get_cond(), [&a](Expression *new_i) { a.set_cond(new_i); }, "Assert cond cannot be removed");
@@ -266,6 +278,7 @@ IR *PassManager::visit(Raise &r) {
     for (auto p : passes) {
         IR* replaced = r.accept(*p);
         assert (replaced == &r && "Pass attempted to replace Raise node");
+        (void)replaced;
     }
 
     visit_child(r.get_exception(), [&r](Expression *new_i) { r.set_exception(new_i); }, "Raise exception cannot be removed");
@@ -326,6 +339,7 @@ IR *PassManager::visit(Multivar &mv) {
     for (auto p : passes) {
         IR* replaced = mv.accept(*p);
         assert (replaced == &mv && "Pass attempted to replace Multivar node");
+        (void)replaced;
     }
 
     visit_body<Expression>(mv.get_vars());

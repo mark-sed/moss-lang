@@ -24,20 +24,20 @@ namespace mslib {
 namespace String {
 
 Value *String_constructor(Interpreter *vm, Value *v, Value *&err);
-Value *capitalize(Interpreter *vm, Value * ths, Value *&err);
-Value *upper(Interpreter *vm, Value * ths, Value *&err);
-Value *lower(Interpreter *vm, Value * ths, Value *&err);
-Value *replace(Interpreter *vm, Value *ths, Value *target, Value *value, Value *count, Value *&err);
+Value *capitalize(Value * ths);
+Value *upper(Value * ths);
+Value *lower(Value * ths);
+Value *replace(Value *ths, Value *target, Value *value, Value *count);
 Value *multi_replace(Interpreter *vm, Value *ths, Value *mappings, Value *&err);
-Value *split_lines(Interpreter *vm, Value *ths, Value *keep_ends, Value *&err);
-Value *split(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err);
-Value *rsplit(Interpreter *vm, Value *ths, Value *sep, Value *max_split, Value *&err);
-Value *index(Interpreter *vm, Value *ths, Value *value, Value *&err);
-Value *rindex(Interpreter *vm, Value *ths, Value *value, Value *&err);
-Value *isfun(Interpreter *vm, Value *ths, std::function<bool(std::wint_t)> fn, Value *&err);
-Value *swapcase(Interpreter *vm, StringValue *ths, Value *&err);
-Value *count(Interpreter *vm, Value *ths, Value *sub, Value *&err);
-//Value *join(Interpreter *vm, Value * ths, Value *iterable, Value *&err);
+Value *split_lines(Value *ths, Value *keep_ends);
+Value *split(Value *ths, Value *sep, Value *max_split);
+Value *rsplit(Value *ths, Value *sep, Value *max_split);
+Value *index(Value *ths, Value *value);
+Value *rindex(Value *ths, Value *value);
+Value *isfun(Value *ths, std::function<bool(std::wint_t)> fn);
+Value *swapcase(StringValue *ths);
+Value *count(Value *ths, Value *sub);
+//Value *join(Value * ths, Value *iterable);
 
 }
 }

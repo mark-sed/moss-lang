@@ -57,7 +57,7 @@ fun foo() {
     auto mod = dyn_cast<ir::Module>(parser.parse());
 
     auto bc = new Bytecode();
-    bcgen::BytecodeGen cgen(bc, &parser);
+    bcgen::BytecodeGen cgen(bc);
     cgen.generate(mod);
 
     Interpreter *i = new Interpreter(bc, &sf, true);
@@ -127,7 +127,7 @@ fun foo() {
     auto mod = dyn_cast<ir::Module>(parser.parse());
 
     auto bc = new Bytecode();
-    bcgen::BytecodeGen cgen(bc, &parser);
+    bcgen::BytecodeGen cgen(bc);
     cgen.generate(mod);
 
     Interpreter *i = new Interpreter(bc, &sf, true);

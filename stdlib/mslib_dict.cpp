@@ -33,7 +33,7 @@ Value *Dict::Dict(Interpreter *vm, Value *iterable, Value *&err) {
     return dc;
 }
 
-Value *Dict::get(Interpreter *vm, Value *ths, Value *key, Value *def_val, Value *&err) {
+Value *Dict::get(Interpreter *vm, Value *ths, Value *key, Value *def_val) {
     auto dt = dyn_cast<DictValue>(ths);
     assert(dt && "Non-dict passed in");
     auto vals = dt->get_vals();

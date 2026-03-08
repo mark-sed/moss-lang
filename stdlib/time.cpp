@@ -11,28 +11,25 @@ using namespace std::chrono;
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& time::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
-        {"time", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
+        {"time", [](Interpreter*, CallFrame* cf, Value*&) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 0);
-            return time::time(vm, err);
+            return time::time();
         }},
         {"localtime", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             auto args = cf->get_args();
             assert(args.size() == 1);
             return time::localtime(vm, cf, args[0].value, err);
         }},
         {"strftime", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
             assert(cf->get_args().size() == 2);
-            return time::strftime(vm, cf, cf->get_arg("format"), cf->get_arg("t"), err);
+            return time::strftime(vm, cf->get_arg("format"), cf->get_arg("t"), err);
         }},
     };
     return registry;
 }
 
-Value *time::time(Interpreter *vm, Value *&err) {
+Value *time::time() {
     double timestamp = duration_cast<duration<double>>(
         system_clock::now().time_since_epoch()
     ).count();
@@ -44,7 +41,7 @@ Value *time::localtime(Interpreter *vm, CallFrame *cf, Value *secs, Value *&err)
     if (isa<NilValue>(secs)) {
         t = std::time(nullptr);
     } else {
-        assert(isa<FloatValue>(secs) || isa<IntValue>(secs) && "Allowed other type than int,float or nil?");
+        assert((isa<FloatValue>(secs) || isa<IntValue>(secs)) && "Allowed other type than int,float or nil?");
         t = static_cast<std::time_t>(secs->as_float());
     }
     std::tm *local = std::localtime(&t);
@@ -90,7 +87,7 @@ static ustring strftime_dynamic(const std::string& format, const std::tm* tm) {
     return result;
 }
 
-Value *time::strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, Value *&err) {
+Value *time::strftime(Interpreter *vm, Value *format, Value *t, Value *&err) {
     auto get_time_int_att = [&](const char *name) -> opcode::IntConst {
         // Early exit if error was set
         if (err)
@@ -127,7 +124,7 @@ Value *time::strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, V
         temp_time.tm_yday = get_time_int_att("tm_yday");
         temp_time.tm_isdst = get_time_int_att("tm_isdst");
         // tm_zone and tm_gmtoff is only on posix
-#ifdef __linux__ // Add also mac
+#ifndef __windows__ // Add also mac
         // Following value might be nil
         Value *tm_gmtoff_v = mslib::get_attr(t, "tm_gmtoff", vm, err);
         if (tm_gmtoff_v && !isa<NilValue>(tm_gmtoff_v))

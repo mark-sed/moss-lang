@@ -97,10 +97,10 @@ std::vector<FunValue *> Interpreter::get_converter(std::pair<ustring, ustring> k
     return {};
 }
 
-FunValue * Interpreter::get_generator(ustring format) {
+FunValue *Interpreter::get_generator(ustring format) {
     auto found = generators.find(format);
     if (found != generators.end()) {
-        return {found->second};
+        return found->second;
     }
     return nullptr;
 }

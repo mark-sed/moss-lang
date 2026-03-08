@@ -12,7 +12,7 @@ using namespace moss::opcode;
 void BytecodeReader::read_raw(char* data, std::size_t size) {
     this->stream->read(data, size);
 
-    if (this->stream->gcount() == size) {
+    if (static_cast<size_t>(this->stream->gcount()) == size) {
         for (size_t i = 0; i < size; ++i) {
             crc_checksum ^= static_cast<unsigned char>(data[i]);
             for (int j = 0; j < 8; ++j)

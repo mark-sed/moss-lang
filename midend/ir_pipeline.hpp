@@ -22,7 +22,6 @@ class IRPipeline {
 private:
     std::list<IRVisitor *> pass_instances;
     PassManager pm;
-    Parser &parser;
 public:
     /// Constructs new default pipeline 
     IRPipeline(Parser &parser);

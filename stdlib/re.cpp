@@ -26,7 +26,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& re::get_registry
         {"replace", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 4);
-            return replace(vm, cf, cf->get_arg("this"), cf->get_arg("repl"),
+            return replace(vm, cf->get_arg("this"), cf->get_arg("repl"),
                            cf->get_arg("text"), cf->get_arg("count"), err);
         }},
     };
@@ -196,9 +196,9 @@ Value *re::Pattern(Interpreter *vm, CallFrame *, Value *ths, Value *pattern, Val
     std::regex *regex = nullptr;
     try {
         regex = new std::regex(patt, extract_syntax_flags(vm, flags, err));
-    } catch (std::regex_error err) {
+    } catch (const std::regex_error &err) {
         // throw moss error
-        outs << "REGEX ERROR!\n";
+        errs << "REGEX ERROR!\n";
         regex = new std::regex(patt);
     }
     ths->set_attr(known_names::REGEX_ATT, new t_cpp::RegexValue(regex));
@@ -227,7 +227,6 @@ Value *re::match_or_search(bool match, Interpreter *vm, CallFrame *cf, Value *th
         matched = std::regex_search(ts, m, *rv->get_re(), extract_runtime_flags(vm, flags, err));
     }
     if (matched) {
-        auto patt = mslib::get_attr(ths, "pattern", vm, err);
         std::vector<Value *> groups;
         groups.reserve(m.size());
 
@@ -240,15 +239,12 @@ Value *re::match_or_search(bool match, Interpreter *vm, CallFrame *cf, Value *th
     return nullptr;
 }
 
-Value *re::replace(Interpreter *vm, CallFrame *cf, Value *ths, Value *repl, Value *text, Value *count, Value *&err) {
+Value *re::replace(Interpreter *vm, Value *ths, Value *repl, Value *text, Value *count, Value *&err) {
     auto regex = mslib::get_attr(ths, known_names::REGEX_ATT, vm, err);
     if (err)
         return nullptr;
     t_cpp::RegexValue *rv = dyn_cast<t_cpp::RegexValue>(regex);
     assert(rv && "__regex is not RegexValue");
-    auto flags = mslib::get_attr(ths, "flags", vm, err);
-    if (err)
-        return nullptr;
     
     auto repl_str = mslib::get_string(repl);
     auto text_str = mslib::get_string(text);

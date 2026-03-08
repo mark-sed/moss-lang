@@ -16,7 +16,7 @@ opcode::IntConst gcd_or_lcm_all(std::vector<opcode::IntConst> vals, Op op) {
     return result;
 }
 
-Value *gcd_or_lcm(Interpreter *vm, CallFrame *cf, bool is_gcd, Value *ints, Value *&err) {
+Value *gcd_or_lcm(Interpreter *vm, bool is_gcd, Value *ints, Value *&err) {
     auto valsv = mslib::get_list(ints);
     if (valsv.empty()) {
         return IntValue::get(0);
@@ -56,7 +56,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& math::get_regist
         {"gcd", [](Interpreter *vm, CallFrame* cf, Value*&err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            return gcd_or_lcm(vm, cf, true, args[0].value, err);
+            return gcd_or_lcm(vm, true, args[0].value, err);
         }},
         {"isnan", [](Interpreter*, CallFrame* cf, Value*&) {
             return BoolValue::get(std::isnan(cf->get_args()[0].value->as_float()));
@@ -64,7 +64,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& math::get_regist
         {"lcm", [](Interpreter *vm, CallFrame* cf, Value*&err) {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            return gcd_or_lcm(vm, cf, false, args[0].value, err);
+            return gcd_or_lcm(vm, false, args[0].value, err);
         }},
         {"sinh", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::sinh(cf->get_args()[0].value->as_float()));

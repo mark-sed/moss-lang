@@ -13,7 +13,6 @@
 #include "bytecode.hpp"
 #include "ir.hpp"
 #include "commons.hpp"
-#include "parser.hpp"
 
 namespace moss {
 
@@ -56,7 +55,7 @@ public:
 class BytecodeGen {
 private:
     Bytecode *code;             ///< Bytecode it will be appending opcodes to
-    Parser *parser;             ///< Parser for error reporting
+    //Parser *parser;             ///< Parser for error reporting
     opcode::Register curr_creg; ///< Current free constant register
     opcode::Register curr_reg;  ///< Current free register
 
@@ -134,8 +133,8 @@ private:
         return regval;
     }
 public:
-    BytecodeGen(Bytecode *code, Parser *parser) : code(code), parser(parser), 
-                curr_creg(BC_RESERVED_CREGS), curr_reg(BC_RESERVED_REGS) {
+    BytecodeGen(Bytecode *code) : code(code), curr_creg(BC_RESERVED_CREGS),
+                                  curr_reg(BC_RESERVED_REGS) {
         assert(code && "Generator requires a non-null Bytecode");
     }
     ~BytecodeGen() {

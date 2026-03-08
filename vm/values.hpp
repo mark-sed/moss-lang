@@ -158,13 +158,13 @@ public:
     virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const;
 
     virtual opcode::StringConst as_string() const = 0;
-    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &visited) const {
+    virtual opcode::StringConst as_string(std::unordered_set<const Value *> &) const {
         return as_string();
     }
     virtual opcode::StringConst dump() {
         return as_string();
     }
-    virtual opcode::StringConst dump(std::unordered_set<const Value *> &visited) {
+    virtual opcode::StringConst dump(std::unordered_set<const Value *> &) {
         return dump();
     }
     /// Converts numeric type to float. The type has to be checked if it is
@@ -579,7 +579,6 @@ class ListValue : public Value {
 private:
     friend class ListIterator;
     std::vector<Value *> vals;
-    size_t iterator;
 public:
     static const TypeKind ClassType = TypeKind::LIST;
 
@@ -1553,7 +1552,7 @@ public:
         return "<Enum " + name + ">";
     }
 
-    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override {
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &) const override {
         os << "Enum {";
         if (vals.empty()) {
             os << "}";

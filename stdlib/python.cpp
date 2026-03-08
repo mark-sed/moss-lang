@@ -91,7 +91,7 @@ Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr,
     auto nobj = new_PythonObject(pyv);
     if (err)
         return nullptr;
-    if (get_bool(cf->get_arg("populate"))) {
+    if (get_bool(popul)) {
         python::populate(vm, cf, nobj, err);
     }
     return nobj;
@@ -351,6 +351,7 @@ Value *python::populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err)
 }
 
 void python::init_constants(Interpreter *vm) {
+    (void)vm;
     LOGMAX("Initialized Python");
 #ifdef __windows__
 #ifdef PYTHON_DLL_PATH

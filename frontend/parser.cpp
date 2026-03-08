@@ -1880,7 +1880,7 @@ static std::string unicode2UTF8(char32_t codepoint) {
 ustring Parser::unescapeString(ustring str) {
     std::stringstream res;
     bool backslash = false;
-    for(int i = 0; str[i] != '\0'; ++i) {
+    for(size_t i = 0; str[i] != '\0'; ++i) {
         char c = str[i];
         if(backslash) {
             switch(c) {

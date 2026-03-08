@@ -6,7 +6,6 @@ using namespace moss;
 using namespace ir;
 
 IR *ExpressionAnalyzer::visit(BinaryExpr &be) {
-    auto left = be.get_left();
     auto right = be.get_right();
     auto opk = be.get_op().get_kind();
     if (opk == OperatorKind::OP_ACCESS) {

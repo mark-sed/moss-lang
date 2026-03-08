@@ -23,9 +23,9 @@ namespace time {
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& get_registry();
 
-Value *time(Interpreter *vm, Value *&err);
+Value *time();
 Value *localtime(Interpreter *vm, CallFrame *cf, Value *secs, Value *&err);
-Value *strftime(Interpreter *vm, CallFrame *cf, Value *format, Value *t, Value *&err);
+Value *strftime(Interpreter *vm, Value *format, Value *t, Value *&err);
 
 }
 }

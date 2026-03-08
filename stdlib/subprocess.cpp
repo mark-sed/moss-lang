@@ -24,14 +24,12 @@ Value *create_subprocess_error(Interpreter *vm, CallFrame *cf, ustring msg, Valu
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& subprocess::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
-        {"system", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
+        {"system", [](Interpreter*, CallFrame* cf, Value*&) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1);
-            return subprocess::system(vm, args[0].value, err);
+            return subprocess::system(args[0].value);
         }},
-        {"run", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
+        {"run", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 3);
             return subprocess::run(vm, cf, cf->get_arg("command"), cf->get_arg("combine_streams"), cf->get_arg("capture_output"), err);
@@ -40,7 +38,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& subprocess::get_
     return registry;
 }
 
-Value *subprocess::system(Interpreter *vm, Value *cmd, Value *&err) {
+Value *subprocess::system(Value *cmd) {
     auto cmds = dyn_cast<StringValue>(cmd);
     assert(cmds && "Non-string value passed in");
     // Flush is needed if stdout is used.
@@ -251,7 +249,7 @@ Value *subprocess::run(Interpreter *vm, CallFrame *cf, Value *command, Value *co
     Value *stdout_v = nullptr;
     Value *stderr_v = nullptr;
     if (!capture_out_b->get_value()) {
-        code_v = subprocess::system(vm, command, err);
+        code_v = subprocess::system(command);
     } else {
         auto cmd_res = run_command_separate(vm, cf, cmds->get_value(), combine_b->get_value(), err);
         code_v = IntValue::get(cmd_res.exit_code);

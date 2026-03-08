@@ -1891,11 +1891,11 @@ void BytecodeGen::emit(ir::Assert *asr) {
     append(new opcode::Assert(free_reg(cnd), free_reg(msg)));
 }
 
-void BytecodeGen::emit(ir::Break *br) {
+void BytecodeGen::emit(ir::Break *) {
     append(new opcode::BreakTo(0, opcode::BreakTo::BreakState::NOT_SET_BREAK));
 }
 
-void BytecodeGen::emit(ir::Continue *ct) {
+void BytecodeGen::emit(ir::Continue *) {
     append(new opcode::BreakTo(0, opcode::BreakTo::BreakState::NOT_SET_CONTINUE));
 }
 

@@ -103,11 +103,10 @@ inline opcode::FloatConst get_float(Value *v) {
 
 /// \brief Extract float from Int or Float
 inline opcode::FloatConst get_number(Value *v) {
+    assert((isa<IntValue>(v) || isa<FloatValue>(v)) && "Value to extract float is not a FloatValue nor IntValue");
     if (isa<IntValue>(v))
         return mslib::get_int(v);
-    else if (isa<FloatValue>(v))
-        return mslib::get_float(v);
-    assert(false && "Value to extract float is not a FloatValue nor IntValue");
+    return mslib::get_float(v);
 }
 
 /// \brief Extracts BoolConst from Value, which has to be BoolValue.
