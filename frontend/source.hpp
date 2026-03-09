@@ -153,6 +153,8 @@ inline std::ostream& operator<< (std::ostream& os, SourceInfo sci) {
 
 std::optional<ustring> get_file_path(ustring file);
 
+std::vector<ustring> get_moss_path();
+
 #ifdef __windows__
 ustring get_local_app_data_path();
 #endif

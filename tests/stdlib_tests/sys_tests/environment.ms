@@ -10,3 +10,8 @@ catch (e:KeyError)
     "caught\n"
 
 sys.getenv("totallynon-existent-envvalue123", "does not exist\n")
+
+assert(sys.path.length() > 0, "No values in path")
+assert("" in sys.path, "./ not in path")
+~sys.path.append("/home/mosslibs")
+assert("/home/mosslibs" in sys.path, "path not appended")

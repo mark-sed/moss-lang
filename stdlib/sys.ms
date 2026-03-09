@@ -3,7 +3,8 @@ This module provides resources tied to current running Moss interpreter and
 the system this interpreter is running on.
 """
 
-version="" //< This value will be set dynamically
+version="" //< Moss version (this value will be set dynamically).
+path = "" //< MOSSPATH as List (this value will be set dynamically).
 
 space version_info {
     major=0

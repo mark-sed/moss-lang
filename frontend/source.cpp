@@ -59,6 +59,33 @@ ustring moss::get_local_app_data_path() {
 }
 #endif
 
+std::vector<ustring> moss::get_moss_path() {
+    std::vector<ustring> paths; // TODO: Make this global static and this function into init
+    // See if there is MOSSPATH
+    if (const char* value = std::getenv("MOSSPATH")) {
+        // On linux and mac the convention for separator is :, on windows it is ;
+#if defined(__linux__) || defined(__APPLE_)
+        paths = utils::split_csv(value, ':');
+#elif defined(__windows__)
+        paths = utils::split_csv(value, ';');
+#endif
+    }
+    // Prepend this dir "./"
+    paths.insert(paths.begin(), "");
+
+    // Look into system path
+#ifdef __linux__
+    paths.push_back("/lib/moss");
+#elif defined(__APPLE__)
+    paths.push_back("/usr/local/lib/moss")
+#elif defined(__windows__)
+    static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");
+    paths.push_back(LIB_PATH)
+#endif
+
+    return paths;
+}
+
 // TODO: Add sys.path (which will have MOSSPATH prepended on startup)
 std::optional<ustring> moss::get_file_path(ustring file) {
     auto filep = std::filesystem::path(file);
@@ -66,37 +93,14 @@ std::optional<ustring> moss::get_file_path(ustring file) {
     if (std::filesystem::exists(global_controls::pwd / filep))
         return (global_controls::pwd / filep).string();
 
-    // See if there is MOSSPATH and look there
-    if (const char* value = std::getenv("MOSSPATH")) {
-        std::vector<ustring> paths;
-        // On linux and mac the convention for separator is :, on windows it is ;
-#if defined(__linux__) || defined(__APPLE_)
-        paths = utils::split_csv(value, ':');
-#elif defined(__windows__)
-        paths = utils::split_csv(value, ';');
-#endif
-        for (auto p: paths) {
-            if (std::filesystem::exists(std::filesystem::path(p) / filep)) {
-                return (std::filesystem::path(p) / filep).string();
-            }
+    for (auto p: get_moss_path()) {
+        std::filesystem::path base = p;
+        if (p.empty())
+            base = global_controls::pwd;
+        if (std::filesystem::exists(base / filep)) {
+            return (base / filep).string();
         }
     }
-
-    // Look into system path
-#ifdef __linux__
-    if (std::filesystem::exists(std::filesystem::path("/lib/moss") / filep)) {
-        return (std::filesystem::path("/lib/moss") / filep).string();
-    }
-#elif defined(__APPLE__)
-    if (std::filesystem::exists(std::filesystem::path("/usr/local/lib/moss") / filep)) {
-        return (std::filesystem::path("/usr/local/lib/moss") / filep).string();
-    }
-#elif defined(__windows__)
-    static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");
-    if (std::filesystem::exists(LIB_PATH / filep)) {
-        return (LIB_PATH / filep).string();
-    }
-#endif
 
     return std::nullopt;
 }

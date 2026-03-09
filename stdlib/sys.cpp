@@ -63,34 +63,6 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
     return vars;
 }*/
 
-void sys::init_constants(Interpreter *vm) {
-    auto gf = vm->get_global_frame();
-    Value *err = nullptr;
-
-    // sys.version:String
-    auto version_reg = mslib::get_global_register_of(vm, "version");
-    ustring version = MOSS_VERSION;
-#ifndef NDEBUG
-    version += " (DEBUG build)";
-#endif
-    gf->store(version_reg, StringValue::get(version));
-    // sys.version
-
-    // sys.version_info
-    auto version_info_space = mslib::get_space("version_info", vm, err);
-    if (err)
-        opcode::raise(err);
-    version_info_space->set_attr("major", IntValue::get(MOSS_VERSION_MAJOR));
-    version_info_space->set_attr("minor", IntValue::get(MOSS_VERSION_MINOR));
-    version_info_space->set_attr("patch", IntValue::get(MOSS_VERSION_PATCH));
-#ifndef NDEBUG
-    version_info_space->set_attr("build_type", StringValue::get("debug"));
-#else
-    version_info_space->set_attr("build_type", StringValue::get("release"));
-#endif
-    // sys.version_info
-}
-
 Value *sys::platform(CallFrame *cf, Value *&err) {
     static bool initialized(false);
     static Value *result = nullptr;
@@ -133,4 +105,41 @@ Value *sys::getenv(Interpreter *vm, Value *name, Value *def_val, Value *&err) {
     }
 
     return StringValue::get(ustring(value));
+}
+
+void sys::init_constants(Interpreter *vm) {
+    auto gf = vm->get_global_frame();
+    Value *err = nullptr;
+
+    // sys.version:String
+    auto version_reg = mslib::get_global_register_of(vm, "version");
+    ustring version = MOSS_VERSION;
+#ifndef NDEBUG
+    version += " (DEBUG build)";
+#endif
+    gf->store(version_reg, StringValue::get(version));
+    // sys.version
+
+    // sys.version_info
+    auto version_info_space = mslib::get_space("version_info", vm, err);
+    if (err)
+        opcode::raise(err);
+    version_info_space->set_attr("major", IntValue::get(MOSS_VERSION_MAJOR));
+    version_info_space->set_attr("minor", IntValue::get(MOSS_VERSION_MINOR));
+    version_info_space->set_attr("patch", IntValue::get(MOSS_VERSION_PATCH));
+#ifndef NDEBUG
+    version_info_space->set_attr("build_type", StringValue::get("debug"));
+#else
+    version_info_space->set_attr("build_type", StringValue::get("release"));
+#endif
+    // sys.version_info
+
+    // sys.path
+    auto path_reg = mslib::get_global_register_of(vm, "path");
+    std::vector<Value *> path_list;
+    for (auto p : get_moss_path()) {
+        path_list.push_back(StringValue::get(p));
+    }
+    gf->store(path_reg, new ListValue(path_list));
+    // sys.path
 }
