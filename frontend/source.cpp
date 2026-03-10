@@ -77,10 +77,10 @@ std::vector<ustring> moss::get_moss_path() {
 #ifdef __linux__
     paths.push_back("/lib/moss");
 #elif defined(__APPLE__)
-    paths.push_back("/usr/local/lib/moss")
+    paths.push_back("/usr/local/lib/moss");
 #elif defined(__windows__)
     static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");
-    paths.push_back(LIB_PATH)
+    paths.push_back(LIB_PATH.string());
 #endif
 
     return paths;
