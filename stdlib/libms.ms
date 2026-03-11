@@ -626,6 +626,14 @@ class __List {
         return this.length() == 0
     }
 
+    fun extend(iterable) {
+        d"""
+        Appends items from `iterable` to the end of this List.
+        """
+        for (i: iterable)
+            ~this.append(i)
+    }
+
     fun index(value) {
         d"""
         Returns index of `value` in this List.
@@ -682,6 +690,16 @@ class __List {
     }
 
     fun reverse() = this[-1..-this.length()-1]
+
+    @internal
+    fun sort(key=nil, reverse:Bool=false) {
+        d"""
+        Sorts this List in place.
+        If `key` is specified then it is called with an element and the result
+        is used for sorting.
+        If `reverse` is true then the order is descending.
+        """
+    }
 
     @internal
     fun __iter() {}

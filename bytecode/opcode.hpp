@@ -221,10 +221,13 @@ bool is_type_eq_or_subtype(Value *t1, Value *t2);
 
 bool eq(Value *s1, Value *s2, Interpreter *vm);
 bool neq(Value *s1, Value *s2, Interpreter *vm);
+bool bt(Value *s1, Value *s2, Interpreter *vm);
+bool lt(Value *s1, Value *s2, Interpreter *vm);
 
 void output_generator_notes(Interpreter *vm);
 
 FunValue *lookup_method(Interpreter *vm, Value *obj, ustring name, std::initializer_list<Value *> args, diags::DiagID &err);
+FunValue *select_function(Value *fun, std::initializer_list<Value *> args, diags::DiagID &err);
 
 Value *runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call);
 Value *runtime_function_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args);

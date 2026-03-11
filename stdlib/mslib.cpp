@@ -1489,6 +1489,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             std::this_thread::sleep_for(std::chrono::milliseconds(seconds));
             return BuiltIns::Nil;
         }},
+        {"sort", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 3 && "incorrect args");
+            auto ths = cf->get_arg("this");
+            if (auto lv = get_subtype_value<ListValue>(ths, BuiltIns::List, vm, err)) {
+                return List::sort(vm, lv, cf->get_arg("key"), cf->get_arg("reverse"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
         {"split", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 3);
             auto arg = cf->get_arg("this");
@@ -1669,8 +1680,12 @@ void mslib::dispatch(Interpreter *vm, ustring module_name, ustring name, Value *
     }
     if (!ret_v)
         ret_v = BuiltIns::Nil;
-    vm->store(return_reg, ret_v);
-    vm->set_bci(caller_addr);
+    if (cf->is_runtime_call()) {
+        cf->set_extern_return_value(ret_v);
+    } else {
+        vm->store(return_reg, ret_v);
+        vm->set_bci(caller_addr);
+    }
 }
 
 void mslib::call_const_initializer(ustring module_name, Interpreter *vm) {

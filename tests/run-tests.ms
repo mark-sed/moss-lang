@@ -1370,7 +1370,24 @@ false\ntrue\nfalse\nfalse\ntrue
 [1, true, 3]
 [nil]
 [1, nil]
-[1, nil, 2]\n""", "")
+[1, nil, 2]
+[1, 2, 2, 3, 4]
+[]
+[[-1, true], [nil, 0], [-2, false], "a", "b", "c"]
+[1, 2, 3]
+[3, 2, 1, 0]
+caught
+["apple", "banana", "kiwi"]
+["kiwi", "apple", "banana"]
+["banana", "apple", "kiwi"]
+caught
+[-1, -2, 4, 5]
+[-1, -2, 4, 5]
+[1, 2, 3, 3]
+[]\n[]\n[1]
+[[1, 1], [1, 2], [1, 3]]
+[[1, 5], [1, 3], [2, 1]]
+["-4", "1", "5", "1000"]\n""", "")
 }
 
 fun test_lib_list_delete(name) {

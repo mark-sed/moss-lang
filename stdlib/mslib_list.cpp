@@ -1,4 +1,5 @@
 #include "mslib_list.hpp"
+#include "opcode.hpp"
 
 using namespace moss;
 using namespace mslib;
@@ -40,6 +41,46 @@ Value *List::pop(Interpreter *vm, Value *ths, Value *index, Value *&err) {
         lv->remove(ivint);
     }
     return removed;
+}
+
+static FunValue *get_key_fun(Interpreter *vm, Value *key, std::initializer_list<Value *> args) {
+    diags::DiagID did = diags::DiagID::UNKNOWN;
+    if (auto f = opcode::select_function(key, args, did))
+        return f;
+    if (did == diags::DiagID::UNKNOWN)
+        opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CALLABLE, key->get_type()->get_name().c_str())));
+    opcode::raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL, known_names::ITERATOR_NEXT, diags::DIAG_MSGS[did])));
+    return nullptr;
+}
+
+Value *List::sort(Interpreter *vm, Value *ths, Value *key, Value *reverse, Value *&err) {
+    auto lstv = dyn_cast<ListValue>(ths);
+    std::vector<Value *> &lst = lstv->get_vals();
+    auto rev = mslib::get_bool(reverse);
+    auto use_key = !isa<NilValue>(key);
+    try {
+        std::sort(lst.begin(), lst.end(), [&](Value *a, Value *b) {
+            if (use_key) {
+                auto fa = get_key_fun(vm, key, {a});
+                // We have fa, because otherwise exception was raised
+                assert(fa && "sanity check");
+                a = opcode::runtime_function_call(vm, fa, {a});
+                assert(a && "sanity check");
+
+                auto fb = get_key_fun(vm, key, {b});
+                assert(fb && "sanity check");
+                b = opcode::runtime_function_call(vm, fb, {b});
+                assert(b && "sanity check");
+            }
+            if (rev)
+                return opcode::bt(a, b, vm);
+            return opcode::lt(a, b, vm);
+        });
+    } catch (Value *e) {
+        err = e;
+        return nullptr;
+    }
+    return nullptr;
 }
 
 Value *List::count(Interpreter *vm, Value *ths, Value *val, Value *&) {

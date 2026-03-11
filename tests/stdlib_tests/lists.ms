@@ -166,3 +166,96 @@ l3
 ~l3.insert(100, 2)
 l3
 "\n"
+
+l = [1, 2]
+~l.extend([2, 3, 4])
+l
+"\n"
+
+l = []
+~l.extend([])
+l
+"\n"
+
+~l.extend({-1: true, -2: false, nil: 0})
+~l.extend("abc")
+l
+"\n"
+
+nums = [3, 1, 2];
+~nums.sort()
+nums
+"\n"
+nums = [3, 0, 1, 2]
+~nums.sort(reverse=true)
+nums
+"\n"
+~nums.append(nil)
+try
+    nums.sort()
+catch (e:TypeError)
+    "caught\n"
+
+
+l = (["banana", "apple", "kiwi"])  // ["apple", "banana", "kiwi"]
+~l.sort()
+l
+"\n"
+
+~l.sort(key=length)  // ["kiwi", "apple", "banana"]
+l
+"\n"
+
+~l.sort(key=length, reverse=true)
+l
+"\n"
+
+~l.append(nil)
+try
+    ~l.sort(key=length)
+catch(e:TypeError)
+    "caught\n"
+
+l2 = [5, -1, 4, -2]
+~l2.sort(key=fun(x)=Math.abs(x))    // [-1, -2, 4, 5]
+l2
+"\n"
+
+l2 = [5, -1, 4, -2]
+~l2.sort(key=Math.abs)    // [-1, -2, 4, 5]
+l2
+"\n"
+
+l = [3, 3, 1, 2]
+~l.sort();             // [1, 2, 3, 3]
+l
+"\n"
+
+nums = []
+~nums.sort()                       // []
+nums
+"\n"
+
+~nums.sort(key=Int)                       // []
+nums
+"\n"
+
+nums = [1]
+~nums.sort()                      // [1]
+nums
+"\n"
+
+pairs = [[1,3],[1,1],[1,2]]
+~pairs.sort(key=fun(x) = x[1])  // [(1,1),(1,2),(1,3)]
+pairs
+"\n"
+
+pairs = [[2,1],[1,5],[1,3]]
+~pairs.sort(key=fun(x) = x[0])  // [(1,1),(1,2),(1,3)]
+pairs
+"\n"
+
+l = ["1", "-4", "5", "1000"]
+~l.sort(key=fun(x)=Int(x))
+l
+"\n"

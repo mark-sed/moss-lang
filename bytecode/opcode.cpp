@@ -98,7 +98,20 @@ Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_li
     }
 
     Value *ret_v = nullptr;
-    if (funV->get_vm() != vm) {
+    if (funV->has_annotation(annots::INTERNAL)) {
+        Value *err = nullptr;
+        cf->set_runtime_call(true);
+        // FIXME: Set default args since only passed args will be set.
+        ustring name = funV->get_name();
+        ustring module_name = funV->get_vm()->get_src_file()->get_module_name();
+        mslib::dispatch(vm, module_name, name, err);
+        if (err) {
+            raise(err);
+            return nullptr;
+        }
+        ret_v = cf->get_extern_return_value();
+    }
+    else if (funV->get_vm() != vm) {
         LOGMAX("Function detected as external, doing cross module call");
         cf->set_extern_module_call(true);
         LOGMAX("Call frame: " << *cf);
@@ -881,7 +894,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
 }
 
-static FunValue *select_function(Value *fun, std::initializer_list<Value *> args, diags::DiagID &err) {
+FunValue *opcode::select_function(Value *fun, std::initializer_list<Value *> args, diags::DiagID &err) {
     assert(fun);
     FunValue *funf = dyn_cast<FunValue>(fun);
     if (!funf && isa<FunValueList>(fun)) {
@@ -2097,90 +2110,112 @@ void Neq3::exec(Interpreter *vm) {
     vm->store(dst, BoolValue::get(res));
 }
 
-static Value *bt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
-    (void) vm;
-    Value *res = nullptr;
+bool opcode::bt(Value *s1, Value *s2, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = BoolValue::get(i1->get_value() > i2->get_value());
+        return i1->get_value() > i2->get_value();
     }
-    else if (is_float_expr(s1, s2)) {
-        res = BoolValue::get(s1->as_float() > s2->as_float());
+    if (is_float_expr(s1, s2)) {
+        return s1->as_float() > s2->as_float();
     }
-    else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
+    if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
-        res = BoolValue::get(st1->get_value() > st2->get_value());
+        return st1->get_value() > st2->get_value();
     }
-    else if (isa<ObjectValue>(s1)) {
-        call_operator(vm, ">", s1, s2, dst);
+    if (isa<ObjectValue>(s1)) {
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        auto op_fun = lookup_method(vm, s1, ">", {s2, s1}, did);
+        if (!op_fun) {
+            if (did == diags::DiagID::UNKNOWN) {
+                raise(mslib::create_type_error(
+                    diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
+                        s1->get_type()->get_name().c_str(), ">")));
+            } else {
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                    "(>)", diags::DIAG_MSGS[did])));
+            }
+        }
+        auto rv = runtime_method_call(vm, op_fun, {s2, s1});
+        BoolValue *boolrv = dyn_cast<BoolValue>(rv);
+        op_assert(boolrv, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_BOOL_FROM_GT,
+            s1->get_type()->get_name().c_str(), rv->get_type()->get_name().c_str())));
+        return boolrv->get_value();
     }
     else {
         raise_operand_exc(vm, ">", s1, s2);
     }
-    return res;
+    return false;
 }
 
 void Bt::exec(Interpreter *vm) {
-    auto res = bt(vm->load(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = bt(vm->load(src1), vm->load(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Bt2::exec(Interpreter *vm) {
-    auto res = bt(vm->load_const(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = bt(vm->load_const(src1), vm->load(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Bt3::exec(Interpreter *vm) {
-    auto res = bt(vm->load(src1), vm->load_const(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = bt(vm->load(src1), vm->load_const(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
-static Value *lt(Value *s1, Value *s2, Register dst, Interpreter *vm) {
-    (void) vm;
-    Value *res = nullptr;
+bool opcode::lt(Value *s1, Value *s2, Interpreter *vm) {
     if (is_int_expr(s1, s2)) {
         IntValue *i1 = dyn_cast<IntValue>(s1);
         IntValue *i2 = dyn_cast<IntValue>(s2);
-        res = BoolValue::get(i1->get_value() < i2->get_value());
+        return i1->get_value() < i2->get_value();
     }
-    else if (is_float_expr(s1, s2)) {
-        res = BoolValue::get(s1->as_float() < s2->as_float());
+    if (is_float_expr(s1, s2)) {
+        return s1->as_float() < s2->as_float();
     }
-    else if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
+    if (isa<StringValue>(s1) && isa<StringValue>(s2)) {
         StringValue *st1 = dyn_cast<StringValue>(s1);
         StringValue *st2 = dyn_cast<StringValue>(s2);
-        res = BoolValue::get(st1->get_value() < st2->get_value());
+        return st1->get_value() < st2->get_value();
     }
-    else if (isa<ObjectValue>(s1)) {
-        call_operator(vm, "<", s1, s2, dst);
+    if (isa<ObjectValue>(s1)) {
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        auto op_fun = lookup_method(vm, s1, "<", {s2, s1}, did);
+        if (!op_fun) {
+            if (did == diags::DiagID::UNKNOWN) {
+                raise(mslib::create_type_error(
+                    diags::Diagnostic(*vm->get_src_file(), diags::OPERATOR_NOT_DEFINED,
+                        s1->get_type()->get_name().c_str(), "<")));
+            } else {
+                raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_CALL,
+                    "(<)", diags::DIAG_MSGS[did])));
+            }
+        }
+        auto rv = runtime_method_call(vm, op_fun, {s2, s1});
+        BoolValue *boolrv = dyn_cast<BoolValue>(rv);
+        op_assert(boolrv, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_BOOL_FROM_GT,
+            s1->get_type()->get_name().c_str(), rv->get_type()->get_name().c_str())));
+        return boolrv->get_value();
     }
     else {
         raise_operand_exc(vm, "<", s1, s2);
     }
-    return res;
+    return false;
 }
 
 void Lt::exec(Interpreter *vm) {
-    auto res = lt(vm->load(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = lt(vm->load(src1), vm->load(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Lt2::exec(Interpreter *vm) {
-    auto res = lt(vm->load_const(src1), vm->load(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = lt(vm->load_const(src1), vm->load(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 void Lt3::exec(Interpreter *vm) {
-    auto res = lt(vm->load(src1), vm->load_const(src2), dst, vm);
-    if (res)
-        vm->store(dst, res);
+    auto res = lt(vm->load(src1), vm->load_const(src2), vm);
+    vm->store(dst, BoolValue::get(res));
 }
 
 static Value *beq(Value *s1, Value *s2, Register dst, Interpreter *vm) {
