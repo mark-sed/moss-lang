@@ -52,11 +52,12 @@ class FooClass {
         this.id = id
     }
 
-    fun (==)(other:FooClass) {
-        return this.id == other.id
-    }
     fun (==)(other) {
         return false
+    }
+
+    fun (==)(other:FooClass) {
+        return this.id == other.id
     }
 }
 

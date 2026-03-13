@@ -64,83 +64,6 @@ ustring get_type_or_name(Value *v) {
     return (ustring("Object of type ")+v->get_type()->get_name());
 }
 
-/// \brief Does a call to a function in the code
-/// \param vm Current vm
-/// \param funV Function which to call
-/// \param args Arguments to pass in there the 0th arg is `this` argument
-/// \param constr_class If set them this is taken as constructor call and object is pushed
-/// \return Value returned by the function
-Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
-    assert(funV && "runtime call to nullptr");
-    LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
-#ifndef NDEBUG
-    auto pre_call_cf_size = vm->get_call_frame_size();
-#endif
-    vm->push_call_frame(funV);
-    auto cf = vm->get_call_frame();
-    cf->set_function(funV);
-    size_t argi = 0;
-    for (auto v: args) {
-        cf->push_back(v);
-        if (argi < funV->get_args().size())
-            cf->get_args().back().name = funV->get_args()[argi]->name;
-        cf->get_args().back().dst = argi;
-        ++argi;
-    }
-    if (constr_class) {
-        LOGMAX("Creating new object for constructor call");
-        auto obj = new ObjectValue(constr_class);
-        cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
-        cf->set_constructor_call(true);
-    } else if (!function_call) {
-        assert(args.size() != 0 && "Missing this argument");
-        cf->get_args().back().name = "this";
-    }
-
-    Value *ret_v = nullptr;
-    if (funV->has_annotation(annots::INTERNAL)) {
-        Value *err = nullptr;
-        cf->set_runtime_call(true);
-        // FIXME: Set default args since only passed args will be set.
-        ustring name = funV->get_name();
-        ustring module_name = funV->get_vm()->get_src_file()->get_module_name();
-        mslib::dispatch(vm, module_name, name, err);
-        if (err) {
-            raise(err);
-            return nullptr;
-        }
-        ret_v = cf->get_extern_return_value();
-    }
-    else if (funV->get_vm() != vm) {
-        LOGMAX("Function detected as external, doing cross module call");
-        cf->set_extern_module_call(true);
-        LOGMAX("Call frame: " << *cf);
-        try {
-            funV->get_vm()->cross_module_call(funV, cf);
-        } catch(Value *v) {
-            LOGMAX("Exception in external function call, dropping frame and rethrowing");
-            LOGMAX("Dropping call frame after exception");
-            vm->drop_call_frame();
-            assert(pre_call_cf_size == vm->get_call_frame_size());
-            throw v;
-        }
-        ret_v = cf->get_extern_return_value();
-        LOGMAX("Popping call frame");
-        vm->pop_call_frame();
-    }
-    else {
-        LOGMAX("Runtime call to method");
-        cf->set_runtime_call(true);
-        LOGMAX("Call frame: " << *cf);
-        vm->runtime_call(funV);
-        ret_v = cf->get_extern_return_value();
-    }
-    LOGMAX("Runtime call finished");
-    assert(pre_call_cf_size == vm->get_call_frame_size());
-    assert(ret_v && "return value not extracted");
-    return ret_v;
-}
-
 Value *opcode::runtime_function_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args) {
     return runtime_call(vm, funV, args, nullptr, true);
 }
@@ -894,12 +817,108 @@ void call(Interpreter *vm, Register dst, Value *funV) {
     }
 }
 
+/// \brief Does a call to a function in the code
+/// \param vm Current vm
+/// \param funV Function which to call
+/// \param args Arguments to pass in there the 0th arg is `this` argument
+/// \param constr_class If set them this is taken as constructor call and object is pushed
+/// \return Value returned by the function
+Value *opcode::runtime_call(Interpreter *vm, FunValue *funV, std::initializer_list<Value *> args, ClassValue *constr_class, bool function_call) {
+    assert(funV && "runtime call to nullptr");
+    LOGMAX("Doing a runtime call to " << *funV << ", Constructor call: " << (constr_class ? "true" : "false"));
+#ifndef NDEBUG
+    auto pre_call_cf_size = vm->get_call_frame_size();
+#endif
+    vm->push_call_frame(funV);
+    auto cf = vm->get_call_frame();
+    cf->set_function(funV);
+    size_t argi = 0;
+    for (auto v: args) {
+        cf->push_back(v);
+        if (argi < funV->get_args().size())
+            cf->get_args().back().name = funV->get_args()[argi]->name;
+        cf->get_args().back().dst = argi;
+        ++argi;
+    }
+
+    // Setup default args and double check correctness.
+    // This has to be done before constructor class or this is pushed.
+    auto err_id = can_call(funV, cf);
+    if (err_id) {
+        auto args = create_fun_args_str(cf->get_args());
+        auto msg = create_fun_errors({{funV, *err_id}});
+        vm->pop_call_frame();
+        raise(mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INCORRECT_RUNTIME_CALL_DETAILED,
+                funV->get_name().c_str(), args.c_str(), msg.c_str())));
+    }
+
+    if (constr_class) {
+        LOGMAX("Creating new object for constructor call");
+        auto obj = new ObjectValue(constr_class);
+        cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
+        cf->set_constructor_call(true);
+    } else if (funV->is_constructor()) {
+        LOGMAX("Creating new object for constructor call even though it was not passed in");
+        assert(funV->get_parent_class() && "Constructor but parent class not set");
+        auto obj = new ObjectValue(funV->get_parent_class());
+        cf->get_args().push_back(CallFrameArg("this", obj, cf->get_args().size()));
+        cf->set_constructor_call(true);
+    } else if (!function_call) {
+        assert(args.size() != 0 && "Missing this argument");
+        cf->get_args().back().name = "this";
+    }
+
+    Value *ret_v = nullptr;
+    if (funV->has_annotation(annots::INTERNAL)) {
+        Value *err = nullptr;
+        cf->set_runtime_call(true);
+        ustring name = funV->get_name();
+        ustring module_name = funV->get_vm()->get_src_file()->get_module_name();
+        mslib::dispatch(vm, module_name, name, err);
+        if (err) {
+            raise(err);
+            return nullptr;
+        }
+        ret_v = cf->get_extern_return_value();
+    }
+    else if (funV->get_vm() != vm) {
+        LOGMAX("Function detected as external, doing cross module call");
+        cf->set_extern_module_call(true);
+        LOGMAX("Call frame: " << *cf);
+        try {
+            funV->get_vm()->cross_module_call(funV, cf);
+        } catch(Value *v) {
+            LOGMAX("Exception in external function call, dropping frame and rethrowing");
+            LOGMAX("Dropping call frame after exception");
+            vm->drop_call_frame();
+            assert(pre_call_cf_size == vm->get_call_frame_size());
+            throw v;
+        }
+        ret_v = cf->get_extern_return_value();
+        LOGMAX("Popping call frame");
+        vm->pop_call_frame();
+    }
+    else {
+        LOGMAX("Runtime call to method");
+        cf->set_runtime_call(true);
+        LOGMAX("Call frame: " << *cf);
+        vm->runtime_call(funV);
+        ret_v = cf->get_extern_return_value();
+    }
+    LOGMAX("Runtime call finished");
+    assert(pre_call_cf_size == vm->get_call_frame_size());
+    assert(ret_v && "return value not extracted");
+    return ret_v;
+}
+
 FunValue *opcode::select_function(Value *fun, std::initializer_list<Value *> args, diags::DiagID &err) {
     assert(fun);
     FunValue *funf = dyn_cast<FunValue>(fun);
     if (!funf && isa<FunValueList>(fun)) {
         auto funflist = dyn_cast<FunValueList>(fun);
-        for (auto f : funflist->get_funs()) {
+        auto fun_vect = funflist->get_funs();
+        for (auto it = fun_vect.rbegin(); it != fun_vect.rend(); ++it) {
+            auto f = *it;
             CallFrame cf;
             for (auto a: args) {
                 cf.push_back(a);
@@ -1529,6 +1548,11 @@ void Annotate::exec(Interpreter *vm) {
             diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
                 "Type", d->get_type()->get_name().c_str())));
         bind_class->bind(ref_class);
+        auto tf = vm->get_top_frame();
+        if (tf->get_pool_owner() == ref_class) {
+            // This is needed so that the method class parent gets set correctly.
+            tf->set_pool_owner(bind_class);
+        }
         // Remove the bound class
         vm->remove_global_name(ref_class->get_name());
     } else if (name == annots::CONVERTER) {

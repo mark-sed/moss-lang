@@ -1305,7 +1305,7 @@ public:
 
     void set_parent_class(ClassValue *c) { this->parent_class = c; }
     ClassValue *get_parent_class() { return this->parent_class; }
-    bool is_constructor() { 
+    bool is_constructor() {
         return this->parent_class != nullptr && parent_class->get_name() == name;
     }
 

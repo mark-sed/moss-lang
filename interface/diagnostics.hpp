@@ -111,6 +111,7 @@ enum DiagID : unsigned {
     NOT_CALLABLE,           ///< Calling non function type
     INCORRECT_CALL,         ///< Cannot call it like this
     INCORRECT_CALL_DETAILED,///< Cannot call function with more details about the call
+    INCORRECT_RUNTIME_CALL_DETAILED, ///< When runtime call cannot match args
     OPERATOR_NOT_DEFINED,   ///< Operator was not created for this class
     NOT_A_TYPE,             ///< Name is not a type or does not exist
     CANNOT_FIND_MODULE,     ///< Module cannot be found on known paths
@@ -328,6 +329,7 @@ static const char * DIAG_MSGS[] = {
     "Type '%s' is not callable",
     "Incorrect call to function '%s' — %s",
     "Incorrect call to function '%s' with arguments '(%s)'%s",
+    "Incorrect runtime call to function '%s' with arguments '(%s)'%s",
     "'%s' has no operator '%s'",
     "'%s' does not name a type",
     "Cannot find module '%s'",

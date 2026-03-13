@@ -219,3 +219,9 @@ fun p(... msg, end="\n", separator=" ") {
 }
 
 ~p(1,2,3,end="!\n", separator=",")
+
+// Runtime call to an internal constructor
+l = ["10","2","-3"]
+~l.sort(key=Int.Int)
+l
+"\n"
