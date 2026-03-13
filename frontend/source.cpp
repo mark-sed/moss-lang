@@ -59,8 +59,9 @@ ustring moss::get_local_app_data_path() {
 }
 #endif
 
-std::vector<ustring> moss::get_moss_path() {
-    std::vector<ustring> paths; // TODO: Make this global static and this function into init
+static std::vector<ustring> paths;
+
+static void init_lookup_path() {
     // See if there is MOSSPATH
     if (const char* value = std::getenv("MOSSPATH")) {
         // On linux and mac the convention for separator is :, on windows it is ;
@@ -82,7 +83,14 @@ std::vector<ustring> moss::get_moss_path() {
     static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");
     paths.push_back(LIB_PATH.string());
 #endif
+}
 
+std::vector<ustring> &moss::get_lookup_path() {
+    static bool initialized = false;
+    if (!initialized) {
+        init_lookup_path();
+        initialized = true;
+    }
     return paths;
 }
 
@@ -93,7 +101,7 @@ std::optional<ustring> moss::get_file_path(ustring file) {
     if (std::filesystem::exists(global_controls::pwd / filep))
         return (global_controls::pwd / filep).string();
 
-    for (auto p: get_moss_path()) {
+    for (auto p: get_lookup_path()) {
         std::filesystem::path base = p;
         if (p.empty())
             base = global_controls::pwd;

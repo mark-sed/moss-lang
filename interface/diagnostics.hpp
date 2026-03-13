@@ -237,6 +237,7 @@ enum DiagID : unsigned {
     FROM_BYTES_TOO_BIG,     ///< When value cannot fit into bytes
     HEX_FLOAT_PARSE_ERR,    ///< When float hex string could not be parsed
     HAS_NO_INT_RATIO,       ///< When extracting as_int_ratio from NaN/Inf
+    SET_PATH_NOT_STR,       ///< When value in list in set_path is not a string
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -453,6 +454,7 @@ static const char * DIAG_MSGS[] = {
     "Too many bytes (%ld) for Int",
     "Value '%s' could not be parsed as a hexadecimal floating point",
     "Float value '%s' has no int ratio",
+    "Path value is expected to be a String (got '%s')",
 };
 
 /// \brief ID of diagnostic error

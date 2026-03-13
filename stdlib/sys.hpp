@@ -27,6 +27,8 @@ void init_constants(Interpreter *vm);
 
 Value *platform(CallFrame *cf, Value *&err);
 Value *getenv(Interpreter *vm, Value *name, Value *def_val, Value *&err);
+Value *set_path(Interpreter *vm, Value *paths, Value *&err);
+Value *add_path(Value *path, Value *prepend);
 
 }
 }

@@ -4,7 +4,6 @@ the system this interpreter is running on.
 """
 
 version="" //< Moss version (this value will be set dynamically).
-path = "" //< MOSSPATH as List (this value will be set dynamically).
 
 space version_info {
     major=0
@@ -29,6 +28,29 @@ fun platform() {}
 fun getenv(name:String) {}
 @internal
 fun getenv(name:String, def_val) {}
+
+@internal
+fun get_path() {
+    d"""
+    Returns the currently used lookup path for modules.
+    """
+}
+
+@internal
+fun set_path(... paths) {
+    d"""
+    Sets the lookup path for modules to passed in values.
+    """
+}
+
+@internal
+fun add_path(path:String, prepend:Bool=true) {
+    d"""
+    Appends `path` to current lookup path for modules.
+    If `prepend` is true then this value is prepended at the front of the full
+    path, when false then at the end.
+    """
+}
 
 // This annotation has to be last so that
 // it can access values defined above.

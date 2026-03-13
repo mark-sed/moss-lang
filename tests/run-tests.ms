@@ -1882,7 +1882,8 @@ fun test_lib_sys_interpreter_info(name) {
 }
 
 fun test_lib_sys_environment(name) {
-    ~expect_pass("stdlib_tests/sys_tests/environment.ms", name, "caught\ndoes not exist\n", "")
+    ~expect_pass("stdlib_tests/sys_tests/environment.ms", name, """caught\ndoes not exist
+["", "/usr-new/lib"]\n["start", "", "/usr-new/lib", "end"]\ncaught\n<module empty>\n""", "", prog_args=f"{::TEST_DIR}")
 }
 
 fun test_lib_time_clock_time(name) {

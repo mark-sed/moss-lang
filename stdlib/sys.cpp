@@ -1,5 +1,6 @@
 #include "sys.hpp"
 #include "moss.hpp"
+#include "source.hpp"
 #include <cstdlib>
 #include <utility>
 
@@ -15,15 +16,36 @@ using namespace sys;
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
-        {"platform", [](Interpreter*, CallFrame* cf, Value *&err) -> Value* {
+        {"add_path", [](Interpreter *, CallFrame* cf, Value *&) -> Value* {
             auto args = cf->get_args();
-            assert(args.size() == 0);
-            return sys::platform(cf, err);
+            assert(args.size() == 2);
+            return sys::add_path(cf->get_arg("path"), cf->get_arg("prepend"));
         }},
         {"getenv", [](Interpreter* vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1 || args.size() == 2);
             return sys::getenv(vm, cf->get_arg("name"), cf->get_arg("def_val"), err);
+        }},
+        {"get_path", [](Interpreter*, CallFrame* cf, Value *&) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 0);
+            auto pth = moss::get_lookup_path();
+            std::vector<Value *> path;
+            path.reserve(pth.size());
+            for (auto p: pth) {
+                path.push_back(StringValue::get(p));
+            }
+            return new ListValue(path);
+        }},
+        {"set_path", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return sys::set_path(vm, cf->get_args()[0].value, err);
+        }},
+        {"platform", [](Interpreter*, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 0);
+            return sys::platform(cf, err);
         }},
     };
     return registry;
@@ -62,6 +84,35 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
 #endif
     return vars;
 }*/
+
+Value *sys::set_path(Interpreter *vm, Value *paths, Value *&err) {
+    auto arg_path = mslib::get_list(paths);
+    std::vector<ustring> new_paths;
+    new_paths.reserve(arg_path.size());
+    for (auto p: arg_path) {
+        auto psv = dyn_cast<StringValue>(p);
+        if (!psv) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::SET_PATH_NOT_STR, p->get_type()->get_name().c_str()));
+            return nullptr;
+        }
+        new_paths.push_back(psv->get_value());
+    }
+    std::vector<ustring> &curr_paths = moss::get_lookup_path();
+    curr_paths = std::move(new_paths);
+    return nullptr;
+}
+
+Value *sys::add_path(Value *path, Value *prepend) {
+    auto arg_path = mslib::get_string(path);
+    auto prep = mslib::get_bool(prepend);
+    std::vector<ustring> &curr_paths = moss::get_lookup_path();
+    if (prep) {
+        curr_paths.insert(curr_paths.begin(), arg_path);
+    } else {
+        curr_paths.push_back(arg_path);
+    }
+    return nullptr;
+}
 
 Value *sys::platform(CallFrame *cf, Value *&err) {
     static bool initialized(false);
@@ -133,13 +184,4 @@ void sys::init_constants(Interpreter *vm) {
     version_info_space->set_attr("build_type", StringValue::get("release"));
 #endif
     // sys.version_info
-
-    // sys.path
-    auto path_reg = mslib::get_global_register_of(vm, "path");
-    std::vector<Value *> path_list;
-    for (auto p : get_moss_path()) {
-        path_list.push_back(StringValue::get(p));
-    }
-    gf->store(path_reg, new ListValue(path_list));
-    // sys.path
 }

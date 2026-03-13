@@ -11,7 +11,28 @@ catch (e:KeyError)
 
 sys.getenv("totallynon-existent-envvalue123", "does not exist\n")
 
-assert(sys.path.length() > 0, "No values in path")
-assert("" in sys.path, "./ not in path")
-~sys.path.append("/home/mosslibs")
-assert("/home/mosslibs" in sys.path, "path not appended")
+// These tests messup imports add other tests before it!
+
+assert(sys.get_path().length() > 0, "No values in path")
+assert("" in sys.get_path(), "./ not in path")
+~sys.add_path("/home/mosslibs")
+assert("/home/mosslibs" in sys.get_path(), "path not appended")
+
+~sys.set_path("", "/usr-new/lib")
+sys.get_path()
+"\n"
+~sys.add_path("start", prepend=true)
+~sys.add_path("end", prepend=false)
+sys.get_path()
+"\n"
+
+~sys.set_path()
+try
+    import empty
+catch (e:ModuleNotFoundError)
+    "caught\n"
+
+~sys.add_path(args[0])
+import empty
+empty
+"\n"
