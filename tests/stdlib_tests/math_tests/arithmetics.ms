@@ -71,3 +71,16 @@ try
     math.lcm(0, nil)
 catch (e:TypeError)
     "caught\n"
+
+math.exp2(0)            // (1+0j)
+"\n"
+math.exp2(1)            // (2+0j)
+"\n"
+math.exp2(5)            // (32+0j)
+"\n"
+math.exp2(0.0)          // (1+0j)
+"\n"
+math.exp2(3.5)          // (11.313708498984761+0j)
+"\n"
+math.exp2(-1.0)         // (0.5+0j)
+"\n"

@@ -50,6 +50,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& math::get_regist
         {"atan2", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::atan2(cf->get_arg("x")->as_float(), cf->get_arg("y")->as_float()));
         }},
+        {"exp", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::exp(cf->get_args()[0].value->as_float()));
+        }},
+        {"exp2", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::exp2(cf->get_args()[0].value->as_float()));
+        }},
         {"cosh", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::cosh(cf->get_args()[0].value->as_float()));
         }},

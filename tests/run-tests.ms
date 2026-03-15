@@ -1870,7 +1870,15 @@ inf\ninf\ntrue\ninf\n-inf\ntrue
 
 fun test_lib_math_arithmetics(name) {
     ~expect_pass("stdlib_tests/math_tests/arithmetics.ms", name, """0\n42\n0\n5\n5\n6\n6\n6\n6\n6\n1\n6\n0\n10\ncaught
-0\n0\n-42\n0\n0\n0\n24\n24\n24\n24\n24\n60\n0\n1\n1001\ncaught\n""", "")
+0\n0\n-42\n0\n0\n0\n24\n24\n24\n24\n24\n60\n0\n1\n1001\ncaught
+1.000000\n2.000000\n32.000000\n1.000000\n11.313708\n0.500000\n""", "")
+}
+
+fun test_lib_math_complex(name) {
+    ~expect_pass("stdlib_tests/math_tests/complex.ms", name, """false
+true\ntrue\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue\nfalse
+1.000000\n2.718282\n7.389056\n1.000000\n4.481689\n0.367879\n1.000000+0.000000i
+0.540302+0.841471i\n1.468694+2.287355i\n-0.153092+0.334512i\ninf\n0.000000\nnan\n""", "")
 }
 
 fun test_lib_sys_platform(name) {
@@ -2460,6 +2468,7 @@ fun run_all_tests() {
     ~run_test("lib_math_goniometrics")
     ~run_test("lib_math_hyperbolics")
     ~run_test("lib_math_arithmetics")
+    ~run_test("lib_math_complex")
 
     // inspect
     ~run_test("lib_inspect_inspect")
