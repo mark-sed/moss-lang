@@ -593,7 +593,6 @@ fun test_lists(name) {
 }
 
 fun test_dicts(name) {
-    // FIXME: The dict order is not stable, needs to be fixed or the test to sort the results
     ~expect_pass("dicts.ms", name, """{:}
 {10: "10", 3: "3"}
 {0: "0", "0_true": "0_true", false: "false", nil: "nil", true: "true"}
@@ -1407,7 +1406,15 @@ caught\ntrue\nnil\nnot in\n1\ncaught\n1\ncaught\n4\nfalse\ntrue\n0\n3
 []
 []
 [1, true]\ncaught
-caught\ncaught\n""", "")
+caught\ncaught
+1\n5\n1\nnil\nnil\n[]\n[1, 2]\n0\nfalse
+{"a": 1, "b": 2}\n{"a": 5}
+{"a": 1, "b": 2, "c": 3}
+{"a": 1, "b": 2, "c": 3}
+{"x": 1, "y": 2}
+{"a": 1}\n{"a": 2}\n{"a": 9}
+{"a": 1, "b": 2, "c": 3}
+{"a": 1, "b": 2, "c": 3}\n""", "")
 }
 
 fun test_lib_strings(name) {

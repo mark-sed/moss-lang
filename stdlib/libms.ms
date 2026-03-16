@@ -5,7 +5,7 @@ copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
            See accompanied LICENSE file.
 """
 
-__LIB_MS_VERSION = "0.1.0"
+__LIB_MS_VERSION = "0.2.0"
 
 @internal_bind("Int")
 class __Int {
@@ -801,16 +801,6 @@ class __Dict {
         return ks
     }
 
-    fun values() {
-        d"Returns list of values in this dict."
-
-        vls = []
-        for (_, v: this) {
-            ~vls.append(v)
-        }
-        return vls
-    }
-
     @internal
     fun length() {
         d"Returns number of items (key and value) in this dictionary."
@@ -847,6 +837,38 @@ class __Dict {
         d"Removes item at key `key` from the dictionary."
         ~this.pop(key)
     }
+
+    fun set_default(key, def_val=nil) {
+        d"""
+        If `key` is in `Dict` return it, if not then insert `def_val` and
+        return it.
+        """
+        if (key in this)
+            return this[key]
+        this[key] = def_val
+        return def_val
+    }
+
+    fun update(other:[Dict, List]) {
+        d"""
+        Updates this dict with values in `other`.
+        If `other` is a List then it is expected to be a list of pairs.
+        """
+        for (k, v : other) {
+            this[k] = v
+        }
+    } 
+
+    fun values() {
+        d"Returns list of values in this dict."
+
+        vls = []
+        for (_, v: this) {
+            ~vls.append(v)
+        }
+        return vls
+    }
+
 
     @internal
     fun __iter() {}

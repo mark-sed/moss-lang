@@ -240,3 +240,45 @@ try
     Dict.from_keys(1)
 catch (e:TypeError)
     "caught\n"
+
+{:}.set_default("a", def_val=1)                     // 1
+"\n"
+d = {"a": 5}
+d.set_default("a", def_val=1)               // 5
+"\n"
+{"a": 5}.set_default("b", def_val=1)               // 1
+"\n"
+{:}.set_default("x", def_val=nil)                  // nil
+"\n"
+{"x": nil}.set_default("x")           // nil
+"\n"
+{"a": []}.set_default("a", def_val=[1, 2])         // []
+"\n"
+{:}.set_default("list", def_val=[1, 2])             // [1, 2]
+"\n"
+{"a": 0}.set_default("a", def_val=5)               // 0
+"\n"
+{"a": false}.set_default("a", def_val=true)        // false
+"\n"
+{"a": ""}.set_default("a", def_val="default")      // ""
+
+d={"a":1}; ~d.update({"b":2}); d                 // {"a":1,"b":2}
+"\n"
+d={"a":1}; ~d.update({"a":5}); d                 // {"a":5}
+"\n"
+d={"a":1}; ~d.update([["b",2],["c",3]]); d       // {"a":1,"b":2,"c":3}
+"\n"
+d={"a":1}; ~d.update({"b" : 2, "c": 3}); d                 // {"a":1,"b":2,"c":3}
+"\n"
+d={:}; ~d.update({"x":1, "y":2}); d                 // {"x":1,"y":2}
+"\n"
+d={"a":1}; ~d.update({:}); d                        // {"a":1}
+"\n"
+d={"a":2}; ~d.update([]); d    
+"\n"
+d={"a":1}; ~d.update([["a",9]]); d               // {"a":9}
+"\n"
+d={"a":1}; ~d.update({"b":2, "c":3}); d            // {"a":1,"b":2,"c":3}
+"\n"
+d={"a":1}; ~d.update([["b",2],["c",3]]); d       // {"a":1,"b":2,"c":3}
+"\n"
