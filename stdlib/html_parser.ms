@@ -196,7 +196,8 @@ class HTMLTable : HTMLToken {
         header_row = this.has_header
         for (row: this.value) {
             t ++= "<tr>\n"
-            for (c, cell: Enumerate(row)) {
+            c = 0
+            for (cell: row) {
                 for (v: cell) {
                     align = ""
                     if (this.alignments != nil && c < this.alignments.length() && this.alignments[c] != CELL_ALIGNMENT.DEFAULT) {
@@ -211,6 +212,7 @@ class HTMLTable : HTMLToken {
                     else
                         t ++= f"<td{align}>{v}</td>\n"
                 }
+                c += 1
             }
             header_row = false
             t ++= "</tr>\n"

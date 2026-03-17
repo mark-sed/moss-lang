@@ -2018,6 +2018,14 @@ fun test_lib_md_parser_to_html(name) {
 </table>
 <p></p>
 <p>The END.</p>\n""", "")
+
+    // This was a failing tests because of the int parsing.
+    ~expect_pass("""
+md\"\"\"
+| a | b |
+| b | 545 |\"\"\"
+""", name, expected_err="", exec=true, args="-f html")
+
 }
 
 fun test_lib_md_parser_tables(name) {

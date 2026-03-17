@@ -1861,7 +1861,7 @@ fun md2html(txt) {
     import md_parser
     parsed = md_parser.parse_md(txt)
     converted = [l.to_html() : l = parsed]
-    return "\n".join([String(x) : x = converted])
+    return Note("\n".join([String(x) : x = converted]), "html")
 }
 
 @converter("csv", "html")

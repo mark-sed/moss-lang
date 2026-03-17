@@ -327,6 +327,7 @@ class MDParser : parsing_utils.TextualParser {
             this.ESCAPE_LIST = "`*_[]()#+-.!>\\~"
         else
             this.ESCAPE_LIST = "`*_[]()#+-.!>\\"
+        this._parsing_table_row = false
     }
 
     fun compact_spaces() {
@@ -583,6 +584,8 @@ class MDParser : parsing_utils.TextualParser {
 
     //@static_method
     fun get_ol_number(text, i) {
+        if (this._parsing_table_row)
+            return nil
         val = ""
         ok = false
         for (j, c : Enumerate(text[i..text.length()], i)) {
@@ -685,7 +688,9 @@ class MDParser : parsing_utils.TextualParser {
         for (a : 2..line.length()) {
             if (line[a] == "|") {
                 cell_str = line[start..a].strip()
+                // TODO: Fix this to not create new parsers
                 cell_parser = MDParser(cell_str, this.allow_strikethrough)
+                cell_parser._parsing_table_row = true
                 v = cell_parser.parse()
                 if (v.empty())
                     ~v.append(MDParagraph([]))
