@@ -256,8 +256,11 @@ class MDTable : MDToken {
         for (r: this.value) {
             t ++= "|"
             for (e: r) {
-                for (me: e)
-                    t ++= me.to_txt() ++ "|"
+                for (me: e) {
+                    as_txt = me.to_txt()
+                    esc_txt = as_txt.replace("|", "\\|")
+                    t ++= esc_txt ++ "|"
+                }
             }
             t ++= "\n"
             if (header && this.has_header) {

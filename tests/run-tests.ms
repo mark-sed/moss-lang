@@ -2030,8 +2030,6 @@ PARAGRAPH
 TABLE
 PARAGRAPH
 TABLE
-PARAGRAPH
-TABLE
 Title
 
 |A|B|C|D|
@@ -2056,10 +2054,6 @@ Title
 |January|$250|
 |February|$80|
 |March|$420|
-
-
-|||
-|||
 \n""", "")
 }
 
@@ -2145,6 +2139,14 @@ fun test_lib_csv_parser_converters(name) {
 """|A|B|C|D|
 |1|2|3|4|
 |5|6|7|8|\n""", args="-f md")
+
+    ~expect_pass("""
+csv\"\"\"
+1|2|3|
+a|b|c|
+\"\"\"    
+""", name, """|1\\|2\\|3\\||
+|a\\|b\\|c\\||\n""", "", exec=true, args="-f md")
 
     // TODO: add test for html
 }

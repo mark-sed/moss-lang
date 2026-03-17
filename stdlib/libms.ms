@@ -399,6 +399,7 @@ class __String {
         Replaces all the substrings equal to `target` with `value`.
         When `count` is specified, then this replacing will happen that many
         times.
+        This returns a new String.
         """
     }
 
