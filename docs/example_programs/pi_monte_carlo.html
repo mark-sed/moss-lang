@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/lib/moss/mossy.css">
+</head>
+<body>
+<p></p>
+<h1>Calculating π using Monte Carlo method</h1>
+<p></p>
+<p>If we inscribe a circle into a square we can determine π from their areas.</p>
+<p></p>
+<p>If we have a square of side length <code>a</code>, then the area will be <code>a²</code> and inscribed circle will have area of <code>π(d/2)²</code>. The ratio of these 2 areas will give us <code>π/4</code>.</p>
+<p></p>
+<p>Here is the equation written in code:</p><pre><code class="language-moss">d = 100
+</code></pre><pre><code class="language-moss">(((Math.pi * (d/2) ^ 2) / (d * d)) * 4)
+</code></pre><div class="moss-output-wrapper"><pre class="moss-output"><code class="moss-output-code">3.141593</code></pre></div><p></p>
+<p>In this example getting π is not so great since we already need it to calculate the area of the inscribed circle, but we can get the area or rather the ratio using random number generator with uniform distribution.</p>
+<p></p>
+<p>If we generate points in the area of the square the point can either be placed inside of the inscribed circle or outside. Since the distribution of the point placements is uniform in infinite time we should get the exact ratio of dots inside of the circle divided by the total amount of dots to be the same ratio as above, which is π. The more dots we generate the more precise the π estimation should be.</p><pre><code class="language-moss">fun generate_points(d:Int, amount:Int) {
+    r = d/2
+    inner = 0 // Counter of how many points were in the circle area.
+    for (i: 0..amount) {
+        // Generate [x, y] of a random point.
+        x = rand_float(0, d)
+        y = rand_float(0, d)
+
+        // Check if the point is inside of the circle, by calculating its
+        // distance from the center and it being <= r.
+        // We get this value using Pythagoras' formula but just offset the
+        // coordinates by the square center.
+        distance = Math.sqrt((x - r) ^ 2 + (y - r) ^ 2)
+        if (distance <= r)
+            inner += 1
+    }
+    return inner
+}
+</code></pre><pre><code class="language-moss">total_points = 100
+</code></pre><pre><code class="language-moss">inner_points = generate_points(d, total_points)
+</code></pre><p></p>
+<p>We have generated all our points and extracted the amount that has landed in the inscribed circle:</p><pre><code class="language-moss">inner_points
+</code></pre><div class="moss-output-wrapper"><pre class="moss-output"><code class="moss-output-code">80</code></pre></div><p></p>
+<p>So if we now divide this number by the total amount of points generated and multiply it by 4 we get:</p><pre><code class="language-moss">"π ≈ " ++ (Float(inner_points) / total_points) * 4
+</code></pre><div class="moss-output-wrapper"><pre class="moss-output"><code class="moss-output-code"><p>π ≈ 3.200000</p>
+</code></pre></div><p></p>
+<p>The more samples we take the more precise result we should get so let&#39s get 1000x more samples now:</p><pre><code class="language-moss">total_points = 100000
+</code></pre><pre><code class="language-moss">inner_points = generate_points(d, total_points)
+</code></pre><pre><code class="language-moss">"π ≈ " ++ (Float(inner_points) / (total_points)) * 4
+</code></pre><div class="moss-output-wrapper"><pre class="moss-output"><code class="moss-output-code"><p>π ≈ 3.147360</p>
+</code></pre></div></body>
+<footer>Page generated on Mar 19 2026 by <a href="https://github.com/mark-sed/moss-lang">Moss</a> 0.7.5.</footer>
+</html>

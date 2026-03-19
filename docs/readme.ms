@@ -92,6 +92,8 @@ md"""
 
 * [Language reference documentation](https://github.com/mark-sed/moss-lang/tree/main/docs/language-reference)
 * [Wiki pages](https://github.com/mark-sed/moss-lang/wiki)
+* [Example programs](docs/example_programs)
+* [Mossy-bench](https://github.com/mark-sed/mossy-bench) - moss benchmarking suite, which also contains interesting example programs.
 """
 
 md"""

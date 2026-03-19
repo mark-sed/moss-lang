@@ -82,6 +82,8 @@ Moss also has built-in interoperability with C and any C-calling convention func
 
 * [Language reference documentation](https://github.com/mark-sed/moss-lang/tree/main/docs/language-reference)
 * [Wiki pages](https://github.com/mark-sed/moss-lang/wiki)
+* [Example programs](docs/example_programs)
+* [Mossy-bench](https://github.com/mark-sed/mossy-bench) - moss benchmarking suite, which also contains interesting example programs.
 
 ## 🛠️ Building Moss
 
@@ -144,6 +146,6 @@ build\\Release\\moss.exe --version
 ```
 
 -----
-This file was generated on Mar 4 2025 by 
+This file was generated on Mar 19 2026 by 
 [Moss](https://github.com/mark-sed/moss-lang) 0.7.5
 from [readme.ms](https://github.com/mark-sed/moss-lang/blob/main/docs/readme.ms).

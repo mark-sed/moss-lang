@@ -1,6 +1,7 @@
 /// Particle swarm optimization.
 /// This algorithm is tested on Ackley's function,
 /// which has global minimum at [0:0]
+/// Run: moss pso.ms
 
 class Particle {
     _W_COEF = 0.5
@@ -71,7 +72,6 @@ fun pso(function, bounds, fitness_function=fun(a, b) = a < b, particle_amount=15
             ~particle.evaluate_position(function, fitness_function)
             if (best_value == nil || fitness_function(particle.get_best_value(), best_value)) {
                 best_value = particle.get_best_value()
-                // TODO: Deepcopy
                 best_position = [particle.get_best_position()[0], particle.get_best_position()[1]]
             }
         }
