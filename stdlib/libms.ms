@@ -1975,8 +1975,20 @@ class __TypeError : Exception {
 
 @internal_bind("AssertionError")
 class __AssertionError : Exception {
+    fun AssertionError(msg, line:Int) {
+        ~super(msg)
+        this.line = line
+    }
+
+    fun AssertionError(msg) {
+        ~super(msg)
+        this.line = 0
+    }
+
     fun __String() {
-        return "AssertionError: " ++ this.msg ++ "\n"
+        if (this.line <= 0)
+            return "AssertionError: " ++ this.msg ++ "\n"
+        return f"AssertionError: at line {this.line}: " ++ this.msg ++ "\n"
     }
 }
 

@@ -1879,6 +1879,9 @@ void BytecodeGen::emit(ir::Try *tcf) {
 
 void BytecodeGen::emit(ir::Assert *asr) {
     auto cnd = emit(asr->get_cond(), true);
+    // Emit line
+    auto line_reg = next_creg();
+    append(new StoreIntConst(line_reg, asr->get_src_info().get_lines().first+1));
     RegValue *msg = nullptr;
     if (asr->get_msg())
         msg = emit(asr->get_msg(), true);
@@ -1888,7 +1891,7 @@ void BytecodeGen::emit(ir::Assert *asr) {
         append(new StoreConst(next_reg(), val_last_creg()));
         msg = last_reg();
     }
-    append(new opcode::Assert(free_reg(cnd), free_reg(msg)));
+    append(new opcode::Assert(free_reg(cnd), line_reg, free_reg(msg)));
 }
 
 void BytecodeGen::emit(ir::Break *) {

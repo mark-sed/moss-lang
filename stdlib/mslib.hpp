@@ -157,8 +157,13 @@ inline Value *create_type_error(diags::Diagnostic dmsg) {
     return create_exception(BuiltIns::TypeError, dmsg);
 }
 
-inline Value *create_assertion_error(ustring msg) {
-    return create_exception(BuiltIns::AssertionError, msg);
+inline Value *create_assertion_error(ustring msg, Value *line) {
+    auto clt = dyn_cast<ClassValue>(BuiltIns::AssertionError);
+    assert(clt && "sanity check");
+    auto err = new ObjectValue(clt);
+    err->set_attr("msg", StringValue::get(msg));
+    err->set_attr("line", line);
+    return err;
 }
 
 inline Value *create_not_implemented_error(diags::Diagnostic dmsg) {

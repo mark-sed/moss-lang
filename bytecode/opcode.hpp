@@ -161,7 +161,7 @@ enum OpCodes : opcode_t {
     NOT, //       %dst, %src1
     NEG, //       %dst, %src1
 
-    ASSERT, //    %src, %msg
+    ASSERT, //    %src, #line, %msg
 
     RAISE, //         %src
     CATCH,       //   "exc_name", addr
@@ -1845,22 +1845,23 @@ public:
 class Assert : public OpCode {
 public:
     Register src;
+    Register line;
     Register msg;
 
     static const OpCodes ClassType = OpCodes::ASSERT;
 
-    Assert(Register src, Register msg) : OpCode(ClassType, "ASSERT"), src(src), msg(msg) {}
+    Assert(Register src, Register line, Register msg) : OpCode(ClassType, "ASSERT"), src(src), line(line), msg(msg) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << src << ", %" << msg;
+        os << mnem << "  %" << src << ", #" << line << ", %" << msg;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Assert>(other);
         if (!casted) return false;
-        return casted->src == src && casted->msg == msg;
+        return casted->src == src && casted->msg == msg && casted->line == line;
     }
 };
 

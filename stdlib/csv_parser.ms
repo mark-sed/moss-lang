@@ -330,5 +330,5 @@ fun dict_reader(f:File, header:[NilType,List]=nil, dialect:Dialects.Dialect=Dial
     is specified (List of Strings).
     """
     s = f.read()
-    return ::dict_reader(String(s), header, dialect)
+    return ::dict_reader(s, header, dialect)
 }

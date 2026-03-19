@@ -171,7 +171,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Not(0, 1));
     bc->push_back(new opcode::Neg(0, 1));
     
-    bc->push_back(new opcode::Assert(7, 4));
+    bc->push_back(new opcode::Assert(7, 2, 4));
 
     bc->push_back(new opcode::Raise(14));
     bc->push_back(new opcode::Catch("e", 204));

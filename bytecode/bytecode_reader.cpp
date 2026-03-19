@@ -724,7 +724,8 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::ASSERT: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();
-                bc->push_back(new Assert(reg1, reg2));
+                auto reg3 = read_register();
+                bc->push_back(new Assert(reg1, reg2, reg3));
             } break;
             case opcode::OpCodes::RAISE: {
                 bc->push_back(new Raise(read_register()));

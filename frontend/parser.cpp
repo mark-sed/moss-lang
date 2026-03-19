@@ -741,7 +741,7 @@ IR *Parser::declaration() {
         parser_assert(exc, create_diag(diags::EXPR_EXPECTED));
         decl = new Raise(exc, curr_src_info());
     }
-    else if (match(TokenType::RETURN)) { // TODO: Check if inside of a function
+    else if (match(TokenType::RETURN)) {
         auto exc = expression();
         if (!exc) {
             decl = new Return(new NilLiteral(curr_src_info()), curr_src_info());

@@ -464,6 +464,11 @@ fun test_iterators(name) {
 <class DictIterator>\n["a", 1]\n<class FunctionListIterator>\nfoo(a:[Int])\n""", "")
 }
 
+fun test_asserts(name) {
+    ~expect_pass("asserts.ms", name, """AssertionError: at line 1: 
+AssertionError: at line 9: assert
+AssertionError: at line 15: x is false\n""", "")
+}
 
 fun test_ifs(name) {
     ~expect_pass("ifs.ms", name, """0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
@@ -2389,6 +2394,7 @@ fun run_all_tests() {
     ~run_test("function_overwriting")
     ~run_test("annotations")
     ~run_test("iterators")
+    ~run_test("asserts")
 
     ~run_test("basic_import")
     ~run_test("import_calls")

@@ -2765,8 +2765,10 @@ void Neg::exec(Interpreter *vm) {
 
 void Assert::exec(Interpreter *vm) {
     auto *s1 = vm->load(src);
+    auto *line_num = vm->load_const(line);
     auto *assert_msg = vm->load(msg);
     assert(s1 && "Nonexistent value");
+    assert(line_num && "No line number");
     assert(assert_msg && "Nonexistent value msg");
     
     auto *check = dyn_cast<BoolValue>(s1);
@@ -2774,7 +2776,7 @@ void Assert::exec(Interpreter *vm) {
     auto str_msg = to_string(vm, assert_msg);
 
     if (!check->get_value()) {
-        raise(mslib::create_assertion_error(str_msg));
+        raise(mslib::create_assertion_error(str_msg, line_num));
     }
 }
 
