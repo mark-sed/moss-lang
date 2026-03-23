@@ -1615,7 +1615,21 @@ class __File {
         If `size` is specified then at most `size` bytes will be read.
         """
     }
-    //fun seek(pos:Int) {}
+    
+    @internal
+    fun seek(pos:Int) {
+        d"""
+        Sets this file's reading/writing position to byte `pos`.
+        """
+    }
+
+    @internal
+    fun seek_offset(offset:Int) {
+        d"""
+        Sets this file's reading/writing position to current byte position +
+        `offset`.
+        """
+    }
 
     @internal
     fun readlines() {

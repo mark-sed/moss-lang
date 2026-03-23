@@ -1481,6 +1481,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             obj->set_attr(name->get_value(), value);
             return BuiltIns::Nil;
         }},
+        {"seek", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto ths = cf->get_arg("this");
+            assert(opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::File));
+            return MSFile::seek(vm, ths, cf->get_arg("pos"), err);
+        }},
+        {"seek_offset", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 2);
+            auto ths = cf->get_arg("this");
+            assert(opcode::is_type_eq_or_subtype(ths->get_type(), BuiltIns::File));
+            return MSFile::seek_offset(vm, ths, cf->get_arg("offset"), err);
+        }},
         {"sin", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::sin(cf->get_args()[0].value->as_float()));
         }},

@@ -68,6 +68,72 @@ Value *MSFile::close(Interpreter *vm, Value *ths, Value *&err) {
     return BuiltIns::Nil;
 }
 
+Value *MSFile::seek(Interpreter *vm, Value *ths, Value *pos, Value *&err) {
+    assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    if (!fsfs) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
+    std::fstream *fstrm = fsfs->get_fs();
+    assert(fstrm && "ptr in fs is nullptr");
+    auto posv = mslib::get_int(pos);
+    
+    auto modev = ths->get_attr("mode", vm);
+    std::ios_base::openmode ios_mode;
+    auto succ = str_to_ios_mode(modev->as_string(), ios_mode);
+    (void) succ;
+    assert(succ && "Mode changed?");
+
+    if (ios_mode & std::ios::in) {
+        // readable
+        fstrm->seekg(posv);
+    } else if (ios_mode & std::ios::out) {
+        // writable
+        fstrm->seekp(posv);
+    } else {
+        assert(false && "Not in nor out??");
+    }
+
+    if (fstrm->fail()) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
+    }
+    return nullptr;
+}
+
+Value *MSFile::seek_offset(Interpreter *vm, Value *ths, Value *offset, Value *&err) {
+    assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    if (!fsfs) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
+    std::fstream *fstrm = fsfs->get_fs();
+    assert(fstrm && "ptr in fs is nullptr");
+    auto offv = mslib::get_int(offset);
+    
+    auto modev = ths->get_attr("mode", vm);
+    std::ios_base::openmode ios_mode;
+    auto succ = str_to_ios_mode(modev->as_string(), ios_mode);
+    (void) succ;
+    assert(succ && "Mode changed?");
+
+    if (ios_mode & std::ios::in) {
+        // readable
+        fstrm->seekg(offv, std::ios::cur);
+    } else if (ios_mode & std::ios::out) {
+        // writable
+        fstrm->seekp(offv, std::ios::cur);
+    }
+    
+    if (fstrm->fail()) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
+    }
+    return nullptr;
+}
+
 Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);

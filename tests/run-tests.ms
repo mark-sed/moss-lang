@@ -1648,6 +1648,8 @@ caught
 caught
 ff aa 00\n""", "")
 
+    ~expect_pass("stdlib_tests/file_seek.ms", name, """Slovakia\na\nSlovakia\ncaught\n""", "", prog_args=".data_file_read.txt")
+
     ~rm(DATA_FILE, false)
     ~rm(".created_file_t.txt1", false)
     ~rm(".created_file_2.txt", false)

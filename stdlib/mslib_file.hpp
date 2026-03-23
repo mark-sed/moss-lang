@@ -29,6 +29,10 @@ Value *open(Interpreter *vm, Value *ths, Value *&err);
 
 Value *close(Interpreter *vm, Value *ths, Value *&err);
 
+Value *seek(Interpreter *vm, Value *ths, Value *pos, Value *&err);
+
+Value *seek_offset(Interpreter *vm, Value *ths, Value *offset, Value *&err);
+
 Value *readlines(Interpreter *vm, Value *ths, Value *&err);
 
 Value *read(Interpreter *vm, Value *ths, Value *size, Value *&err);
