@@ -889,7 +889,7 @@ Bytecode *BytecodeReader::read() {
     std::uint32_t expected = header->checksum;
 
     if (computed != expected) {
-        std::string msg = "Moss bytecode checksum mismatch (corrupted file) " + std::to_string(computed) + " != " + std::to_string(expected);
+        std::string msg = "Moss bytecode checksum mismatch (corrupted file)";
         error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);
     }
 
