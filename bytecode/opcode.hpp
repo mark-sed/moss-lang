@@ -164,9 +164,9 @@ enum OpCodes : opcode_t {
     ASSERT, //    %src, #line, %msg
 
     RAISE, //         %src
-    CATCH,       //   "exc_name", addr
-    CATCH_TYPED, //   "exc_name", "type", addr
-    POP_CATCH,   //   amount
+    CATCH,       //   "exc_name", addr, id
+    CATCH_TYPED, //   "exc_name", "type", addr, id
+    POP_CATCH,   //   id
     FINALLY,     //   addr, #reg
     POP_FINALLY, //
     FINALLY_RETURN, // #reg
@@ -1890,21 +1890,22 @@ class Catch : public OpCode {
 public:
     StringConst name;
     Address addr;
+    IntConst id;
 
     static const OpCodes ClassType = OpCodes::CATCH;
 
-    Catch(StringConst name, Address addr) : OpCode(ClassType, "CATCH"), name(name), addr(addr) {}
+    Catch(StringConst name, Address addr, IntConst id) : OpCode(ClassType, "CATCH"), name(name), addr(addr), id(id) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  \"" << name << "\", " << addr;
+        os << mnem << "  \"" << name << "\", " << addr << ", " << id;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<Catch>(other);
         if (!casted) return false;
-        return casted->name == name && casted->addr == addr;
+        return casted->name == name && casted->addr == addr && casted->id == id;
     }
 };
 
@@ -1913,43 +1914,44 @@ public:
     StringConst name;
     Register type;
     Address addr;
+    IntConst id;
 
     static const OpCodes ClassType = OpCodes::CATCH_TYPED;
 
-    CatchTyped(StringConst name, Register type, Address addr)
-        : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr) {}
+    CatchTyped(StringConst name, Register type, Address addr, IntConst id)
+        : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr), id(id) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  \"" << name << "\", %" << type << ", " << addr;
+        os << mnem << "  \"" << name << "\", %" << type << ", " << addr << ", " << id;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<CatchTyped>(other);
         if (!casted) return false;
-        return casted->name == name && casted->addr == addr && casted->type == type;
+        return casted->name == name && casted->addr == addr && casted->type == type && casted->id == id;
     }
 };
 
 class PopCatch : public OpCode {
 public:
-    IntConst amount;
+    IntConst id;
 
     static const OpCodes ClassType = OpCodes::POP_CATCH;
 
-    PopCatch(IntConst amount) : OpCode(ClassType, "POP_CATCH"), amount(amount) {}
+    PopCatch(IntConst id) : OpCode(ClassType, "POP_CATCH"), id(id) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << " " << amount;
+        os << mnem << " " << id;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<PopCatch>(other);
         if (!casted) return false;
-        return amount == casted->amount;
+        return id == casted->id;
     }
 };
 

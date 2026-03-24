@@ -146,8 +146,8 @@ public:
 
     /// \brief Pushes a new catch exception block into the catch stack.
     void push_catch(ExceptionCatch ec);
-    /// \brief Removes value from top of the stack.
-    void pop_catch(opcode::IntConst amount);
+    /// \brief Removes catches from a stack up until given catch id
+    void pop_catch(opcode::IntConst id);
 
     std::list<ExceptionCatch> &get_catches() {
         return catches;

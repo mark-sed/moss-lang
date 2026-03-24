@@ -733,13 +733,15 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::CATCH: {
                 auto name = read_string();
                 auto addr = read_address();
-                bc->push_back(new Catch(name, addr));
+                auto id = read_const_int();
+                bc->push_back(new Catch(name, addr, id));
             } break;
             case opcode::OpCodes::CATCH_TYPED: {
                 auto name = read_string();
                 auto type = read_register();
                 auto addr = read_address();
-                bc->push_back(new CatchTyped(name, type, addr));
+                auto id = read_const_int();
+                bc->push_back(new CatchTyped(name, type, addr, id));
             } break;
             case opcode::OpCodes::POP_CATCH: {
                 auto val = read_const_int();

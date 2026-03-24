@@ -59,6 +59,8 @@ private:
     opcode::Register curr_creg; ///< Current free constant register
     opcode::Register curr_reg;  ///< Current free register
 
+    opcode::IntConst catch_id_counter;
+
     RegValue *emit(ir::BinaryExpr *expr);
     RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
@@ -134,7 +136,7 @@ private:
     }
 public:
     BytecodeGen(Bytecode *code) : code(code), curr_creg(BC_RESERVED_CREGS),
-                                  curr_reg(BC_RESERVED_REGS) {
+                                  curr_reg(BC_RESERVED_REGS), catch_id_counter(0) {
         assert(code && "Generator requires a non-null Bytecode");
     }
     ~BytecodeGen() {

@@ -2786,27 +2786,27 @@ void Raise::exec(Interpreter *vm) {
     raise(s1);
 }
 
-static void catch_op(Interpreter *vm, Value *type, ustring name, Address addr) {
+static void catch_op(Interpreter *vm, Value *type, ustring name, Address addr, IntConst id) {
     CallFrame *cf = nullptr;
     if (vm->has_call_frame()) {
         cf = vm->get_call_frame();
     }
     auto frm = vm->get_top_frame();
-    vm->push_catch(ExceptionCatch(type, name, addr, cf, frm, frm->get_finally_stack_size()));
+    vm->push_catch(ExceptionCatch(type, name, addr, id, cf, frm, frm->get_finally_stack_size()));
 }
 
 void Catch::exec(Interpreter *vm) {
-    catch_op(vm, nullptr, name, addr);
+    catch_op(vm, nullptr, name, addr, id);
 }
 
 void CatchTyped::exec(Interpreter *vm) {
     auto t = vm->load(type);
     assert(t && "Could not load type");
-    catch_op(vm, t, name, addr);
+    catch_op(vm, t, name, addr, id);
 }
 
 void PopCatch::exec(Interpreter *vm) {
-    vm->pop_catch(amount);
+    vm->pop_catch(id);
 }
 
 void Finally::exec(Interpreter *vm) {

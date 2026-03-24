@@ -160,6 +160,7 @@ struct ExceptionCatch {
     Value *type;
     ustring name;
     opcode::Address addr;
+    opcode::IntConst id;
 
     CallFrame *cf_position;
     MemoryPool *frame_position;
@@ -168,10 +169,11 @@ struct ExceptionCatch {
     ExceptionCatch(Value *type,
                    ustring name,
                    opcode::Address addr,
+                   opcode::IntConst id,
                    CallFrame *cf_position,
                    MemoryPool *frame_position,
                    size_t finally_stack_size)
-        : type(type), name(name), addr(addr), cf_position(cf_position),
+        : type(type), name(name), addr(addr), id(id), cf_position(cf_position),
           frame_position(frame_position), finally_stack_size(finally_stack_size) {
     }
 
@@ -179,7 +181,7 @@ struct ExceptionCatch {
 
     bool operator==(const ExceptionCatch &other) const {
         return type == other.type && name == other.name && addr == other.addr &&
-               cf_position == other.cf_position && 
+               cf_position == other.cf_position && id == other.id &&
                frame_position == other.frame_position &&
                finally_stack_size == other.finally_stack_size;
     }
@@ -371,8 +373,8 @@ public:
     /// \brief Pushes a new catch exception block into the catch stack of a
     // current function or this module.
     void push_catch(ExceptionCatch ec);
-    /// \brief Removes value from top of the stack.
-    void pop_catch(opcode::IntConst amount);
+    /// \brief Pops catches until passed in id (including)
+    void pop_catch(opcode::IntConst id);
 
     /// \brief Pushes a new finally into finally stack.
     void push_finally(opcode::Finally *fnl);

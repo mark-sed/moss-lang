@@ -174,8 +174,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Assert(7, 2, 4));
 
     bc->push_back(new opcode::Raise(14));
-    bc->push_back(new opcode::Catch("e", 204));
-    bc->push_back(new opcode::CatchTyped("e", 5, 206));
+    bc->push_back(new opcode::Catch("e", 204, 2));
+    bc->push_back(new opcode::CatchTyped("e", 5, 206, 1));
     bc->push_back(new opcode::PopCatch(1));
     bc->push_back(new opcode::Finally(12, 8));
     bc->push_back(new opcode::PopFinally());

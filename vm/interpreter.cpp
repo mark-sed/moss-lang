@@ -290,6 +290,7 @@ std::ostream& ExceptionCatch::debug(std::ostream& os) const {
     os << "\ttype: " << (type ? type->get_name() : "*") << "\n"
        << "\tname: " << name << "\n"
        << "\taddr: " << addr << "\n"
+       << "\tid:   " << id   << "\n"
        << "\tname: " << name << "\n";
     return os;
 }
@@ -598,8 +599,8 @@ void Interpreter::push_catch(ExceptionCatch ec) {
     get_local_frame()->push_catch(ec);
 }
 
-void Interpreter::pop_catch(opcode::IntConst amount) {
-    get_local_frame()->pop_catch(amount);
+void Interpreter::pop_catch(opcode::IntConst id) {
+    get_local_frame()->pop_catch(id);
 }
 
 #ifndef NDEBUG
