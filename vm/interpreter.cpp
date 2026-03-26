@@ -486,17 +486,18 @@ void Interpreter::runtime_call(FunValue *fun) {
     this->stop = pre_stop;
 }
 
-void Interpreter::runtime_finally_jump(opcode::Address jmp_bci) {
+void Interpreter::runtime_finally_jump(opcode::Address jmp_bci, opcode::Address offset) {
     auto pre_bci_modified = this->bci_modified;
     auto pre_stop = this->stop;
     
-    this->bci = jmp_bci;
+    this->bci = jmp_bci + offset;
     LOGMAX("Runtime finally jump to " << this->bci);
     this->runtime_finally_cntr += 1;
     run();
     this->runtime_finally_cntr -= 1;
 
-    this->bci -= 1;
+    if (offset == 0)
+        this->bci -= 1;
     LOGMAX("Runtime finally jump ended BCI: " << this->bci);
     this->bci_modified = pre_bci_modified;
     this->stop = pre_stop;
@@ -549,7 +550,7 @@ void Interpreter::call_finally(opcode::Address off) {
     store_const(fnl->caller, IntValue::get(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
     // pop_catch is at this address.
-    runtime_finally_jump(fnl->addr + addr_offset + off);
+    runtime_finally_jump(fnl->addr + addr_offset, off);
 }
 
 bool Interpreter::is_try_not_in_catch() {
@@ -616,7 +617,16 @@ void Interpreter::push_catch(ExceptionCatch ec) {
 }
 
 void Interpreter::pop_catch(opcode::IntConst id) {
-    get_local_frame()->pop_catch(id);
+    bool is_nested = false;
+    while(!get_local_frame()->pop_catch(id)) {
+        is_nested = true;
+        if (has_finally()) {
+            call_finally(1);
+        }
+    }
+    if (has_finally() && is_nested) {
+        call_finally(1);
+    }
 }
 
 #ifndef NDEBUG

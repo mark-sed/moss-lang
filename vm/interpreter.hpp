@@ -258,7 +258,7 @@ public:
     /// Runtime generated call to a function
     void runtime_call(FunValue *fun);
 
-    void runtime_finally_jump(opcode::Address jmp_bci);
+    void runtime_finally_jump(opcode::Address jmp_bci, opcode::Address offset=0);
 
     static ModuleValue *libms_mod;  ///< Standard library as module
 
