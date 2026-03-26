@@ -2824,6 +2824,9 @@ void FinallyReturn::exec(Interpreter *vm) {
         // Set bci only when addr was set (not nil)
         vm->set_bci(addr->get_value());
     }
+    if (vm->runtime_finally_cntr) {
+        vm->set_stop(true);
+    }
 }
 
 void ListPush::exec(Interpreter *vm) {

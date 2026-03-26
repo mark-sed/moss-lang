@@ -108,7 +108,7 @@ FunValue *Interpreter::get_generator(ustring format) {
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
         : code(code), src_file(src_file), vms_module(nullptr), bci(0),
           exit_code(0), bci_modified(false), stop(false), main(main),
-          marked(false), main_to_run(nullptr) {
+          marked(false), main_to_run(nullptr), runtime_finally_cntr(0) {
     if (main && !gc) {
         gc = new gcs::TracingGC(this);
     }
@@ -486,6 +486,22 @@ void Interpreter::runtime_call(FunValue *fun) {
     this->stop = pre_stop;
 }
 
+void Interpreter::runtime_finally_jump(opcode::Address jmp_bci) {
+    auto pre_bci_modified = this->bci_modified;
+    auto pre_stop = this->stop;
+    
+    this->bci = jmp_bci;
+    LOGMAX("Runtime finally jump to " << this->bci);
+    this->runtime_finally_cntr += 1;
+    run();
+    this->runtime_finally_cntr -= 1;
+
+    this->bci -= 1;
+    LOGMAX("Runtime finally jump ended BCI: " << this->bci);
+    this->bci_modified = pre_bci_modified;
+    this->stop = pre_stop;
+}
+
 void Interpreter::collect_garbage() {
     gc->collect_garbage();
 }
@@ -524,7 +540,7 @@ bool Interpreter::has_finally() {
     return !this->get_top_frame()->get_finally_stack().empty();
 }
 
-void Interpreter::call_finally() {
+void Interpreter::call_finally(opcode::Address off) {
     assert(has_finally() && "Getting finally address from empty stack");
     auto fnl = get_top_frame()->get_finally_stack().back();
     int addr_offset = 0;
@@ -533,7 +549,7 @@ void Interpreter::call_finally() {
     store_const(fnl->caller, IntValue::get(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
     // pop_catch is at this address.
-    set_bci(fnl->addr + addr_offset);
+    runtime_finally_jump(fnl->addr + addr_offset + off);
 }
 
 bool Interpreter::is_try_not_in_catch() {
