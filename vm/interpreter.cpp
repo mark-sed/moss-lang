@@ -436,6 +436,13 @@ void Interpreter::pop_frame() {
     LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
     auto f = frames.back();
+    while (has_finally()) {
+        // Call finally but skip popping
+        call_finally(2);
+        // Pop manually
+        pop_finally();
+    }
+    assert(f->get_finally_stack().empty() && "Not all finally have been run");
     frames.pop_back();
     Interpreter::stack_frames.pop_back();
     gc->push_popped_frame(f);
