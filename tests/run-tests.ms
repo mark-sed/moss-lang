@@ -1157,6 +1157,28 @@ fun test_exception_stackframe_report(name) {
     ~expect_fail("exception_tests/stackframe_report.ms", name, """caught\n""", rx_err="Stacktrace:\n  inner.*\n  foo.*\n  top-level scope at.*\n4")
 }
 
+fun test_exception_nested_finally(name) {
+    ~expect_pass("exception_tests/nested_finally.ms", name, """>catch string
+finally 1
+finally 2
+finally 3
+finally 4
+>finally 1
+finally 2
+caught nil
+finally 3
+finally 4
+> exit
+> finally in no raise 1
+finally in no raise 2
+>finally 1
+finally 2
+finally 3
+finally 4
+caught outter
+finally outter\n""", "")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -2425,6 +2447,7 @@ fun run_all_tests() {
 
     ~run_test("exception_mangled_stack")
     ~run_test("exception_stackframe_report")
+    ~run_test("exception_nested_finally")
 
     ~run_test("fibonacci")
     ~run_test("factorial")
