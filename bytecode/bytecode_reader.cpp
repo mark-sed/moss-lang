@@ -759,6 +759,9 @@ Bytecode *BytecodeReader::read() {
                 auto reg = read_register();
                 bc->push_back(new FinallyReturn(reg));
             } break;
+            case opcode::OpCodes::RUN_FINALLY: {
+                bc->push_back(new RunFinally());
+            } break;
             case opcode::OpCodes::LIST_PUSH: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();

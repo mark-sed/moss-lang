@@ -2829,6 +2829,12 @@ void FinallyReturn::exec(Interpreter *vm) {
     }
 }
 
+void RunFinally::exec(Interpreter *vm) {
+    if (vm->has_finally()) {
+        vm->call_finally();
+    }
+}
+
 void ListPush::exec(Interpreter *vm) {
     auto v = vm->load(src);
     assert(v && "non existent source");

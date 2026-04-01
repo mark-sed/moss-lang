@@ -170,6 +170,7 @@ enum OpCodes : opcode_t {
     FINALLY,     //   addr, #reg
     POP_FINALLY, //
     FINALLY_RETURN, // #reg
+    RUN_FINALLY, //
 
     LIST_PUSH, //         %dst, %val
     LIST_PUSH_CONST, //   %dst, #val
@@ -2012,6 +2013,23 @@ public:
         auto casted = dyn_cast<FinallyReturn>(other);
         if (!casted) return false;
         return caller == casted->caller;
+    }
+};
+
+class RunFinally : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::RUN_FINALLY;
+
+    RunFinally() : OpCode(ClassType, "RUN_FINALLY") {}
+
+    void exec(Interpreter *vm) override;
+
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<RunFinally>(other);
     }
 };
 
