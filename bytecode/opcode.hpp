@@ -166,10 +166,11 @@ enum OpCodes : opcode_t {
     RAISE, //         %src
     CATCH,       //   "exc_name", addr, id
     CATCH_TYPED, //   "exc_name", "type", addr, id
-    POP_CATCH,   //   id
+    POP_CATCH,   //   amount
     FINALLY,     //   addr, #reg
     POP_FINALLY, //
     FINALLY_RETURN, // #reg
+    RUN_FINALLY, //
 
     LIST_PUSH, //         %dst, %val
     LIST_PUSH_CONST, //   %dst, #val
@@ -1936,22 +1937,22 @@ public:
 
 class PopCatch : public OpCode {
 public:
-    IntConst id;
+    IntConst amount;
 
     static const OpCodes ClassType = OpCodes::POP_CATCH;
 
-    PopCatch(IntConst id) : OpCode(ClassType, "POP_CATCH"), id(id) {}
+    PopCatch(IntConst amount) : OpCode(ClassType, "POP_CATCH"), amount(amount) {}
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << " " << id;
+        os << mnem << " " << amount;
         return os;
     }
     bool equals(OpCode *other) override {
         auto casted = dyn_cast<PopCatch>(other);
         if (!casted) return false;
-        return id == casted->id;
+        return amount == casted->amount;
     }
 };
 
@@ -2012,6 +2013,23 @@ public:
         auto casted = dyn_cast<FinallyReturn>(other);
         if (!casted) return false;
         return caller == casted->caller;
+    }
+};
+
+class RunFinally : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::RUN_FINALLY;
+
+    RunFinally() : OpCode(ClassType, "RUN_FINALLY") {}
+
+    void exec(Interpreter *vm) override;
+
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        return isa<RunFinally>(other);
     }
 };
 

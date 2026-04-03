@@ -180,6 +180,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Finally(12, 8));
     bc->push_back(new opcode::PopFinally());
     bc->push_back(new opcode::FinallyReturn(8));
+    bc->push_back(new opcode::RunFinally());
 
     bc->push_back(new opcode::ListPush(7, 5));
     bc->push_back(new opcode::ListPushConst(7, 6));

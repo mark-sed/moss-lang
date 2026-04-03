@@ -1157,6 +1157,47 @@ fun test_exception_stackframe_report(name) {
     ~expect_fail("exception_tests/stackframe_report.ms", name, """caught\n""", rx_err="Stacktrace:\n  inner.*\n  foo.*\n  top-level scope at.*\n4")
 }
 
+fun test_exception_nested_finally(name) {
+    ~expect_pass("exception_tests/nested_finally_caller.ms", name, """>catch string\nfinally 1\nfinally 2\nfinally 3\nfinally 4
+>catch bool\nfinally 1\nfinally 2\nfinally 3\nfinally 4
+>finally 1\ncaught float\nfinally 2\nfinally 3\nfinally 4
+>finally 1\nfinally 2\ncaught nil\nfinally 3\nfinally 4
+>finally 1\nfinally 2\nfinally 3\ncatch exception\nfinally 4
+> exit
+> finally in no raise 1\nfinally in no raise 2
+>finally 1\nfinally 2\nfinally 3\nfinally 4\ncaught outter\nfinally outter
+---
+>finally 1\ncaught float\nfinally 2\nfinally 3\nfinally 4
+>catch string\nfinally 1\nfinally 2\nfinally 3\nfinally 4
+> exit
+> finally in no raise 1\nfinally in no raise 2
+>finally 1\nfinally 2\nfinally 3\nfinally 4\ncaught in other mod\nfinally in other module\n""", "")
+}
+
+fun test_exception_general_catch_finally(name) {
+    ~expect_pass("exception_tests/general_catch_finally.ms", name, """caught generic\nfinally
+---
+inner catch\ninner finally\nouter catch\nouter finally
+---
+inner caught\nfinally before throw\nouter caught: from finally\nouter finally
+---
+in try\nfinally runs?\nouter finally runs?
+---
+try block\nfinally overrides\nouter finally\n5
+---
+ok\nfinally loop\ncaught\nfinally loop
+---
+inner caught\nfinally A\nmiddle caught\nfinally B\nouter caught\nfinally C
+---
+string\nfinally\nbool\nfinally\nfloat\nfinally\nnil\nfinally
+---
+inner caught, rethrow\nfinally still runs\ntop caught\ntop finally
+---
+in catch\nfinally inner\nouter caught\nouter finally
+---
+no error\nfinally inner\nfinally outer\n""", "")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -2425,6 +2466,8 @@ fun run_all_tests() {
 
     ~run_test("exception_mangled_stack")
     ~run_test("exception_stackframe_report")
+    ~run_test("exception_nested_finally")
+    ~run_test("exception_general_catch_finally")
 
     ~run_test("fibonacci")
     ~run_test("factorial")

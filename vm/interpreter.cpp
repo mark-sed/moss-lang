@@ -108,7 +108,7 @@ FunValue *Interpreter::get_generator(ustring format) {
 Interpreter::Interpreter(Bytecode *code, File *src_file, bool main) 
         : code(code), src_file(src_file), vms_module(nullptr), bci(0),
           exit_code(0), bci_modified(false), stop(false), main(main),
-          marked(false), main_to_run(nullptr) {
+          marked(false), main_to_run(nullptr), runtime_finally_cntr(0) {
     if (main && !gc) {
         gc = new gcs::TracingGC(this);
     }
@@ -436,6 +436,17 @@ void Interpreter::pop_frame() {
     LOGMAX("Frame popped");
     assert(frames.size() > 1 && "Trying to pop global frame");
     auto f = frames.back();
+    // Call finally only when frame is not global as global can be popped only
+    // if it was pushed because of a runtime call.
+    if (!f->is_global()) {
+        while (has_finally()) {
+            // Call finally but skip popping
+            call_finally(2);
+            // Pop manually
+            pop_finally();
+        }
+        assert(f->get_finally_stack().empty() && "Not all finally have been run");
+    }
     frames.pop_back();
     Interpreter::stack_frames.pop_back();
     gc->push_popped_frame(f);
@@ -486,6 +497,23 @@ void Interpreter::runtime_call(FunValue *fun) {
     this->stop = pre_stop;
 }
 
+void Interpreter::runtime_finally_jump(opcode::Address jmp_bci, opcode::Address offset) {
+    auto pre_bci_modified = this->bci_modified;
+    auto pre_stop = this->stop;
+    
+    this->bci = jmp_bci + offset;
+    LOGMAX("Runtime finally jump to " << this->bci);
+    this->runtime_finally_cntr += 1;
+    run();
+    this->runtime_finally_cntr -= 1;
+
+    if (offset == 0)
+        this->bci -= 1;
+    LOGMAX("Runtime finally jump ended BCI: " << this->bci);
+    this->bci_modified = pre_bci_modified;
+    this->stop = pre_stop;
+}
+
 void Interpreter::collect_garbage() {
     gc->collect_garbage();
 }
@@ -524,7 +552,7 @@ bool Interpreter::has_finally() {
     return !this->get_top_frame()->get_finally_stack().empty();
 }
 
-void Interpreter::call_finally() {
+void Interpreter::call_finally(opcode::Address off) {
     assert(has_finally() && "Getting finally address from empty stack");
     auto fnl = get_top_frame()->get_finally_stack().back();
     int addr_offset = 0;
@@ -533,7 +561,7 @@ void Interpreter::call_finally() {
     store_const(fnl->caller, IntValue::get(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
     // pop_catch is at this address.
-    set_bci(fnl->addr + addr_offset);
+    runtime_finally_jump(fnl->addr + addr_offset, off);
 }
 
 bool Interpreter::is_try_not_in_catch() {
@@ -599,8 +627,8 @@ void Interpreter::push_catch(ExceptionCatch ec) {
     get_local_frame()->push_catch(ec);
 }
 
-void Interpreter::pop_catch(opcode::IntConst id) {
-    get_local_frame()->pop_catch(id);
+void Interpreter::pop_catch(opcode::IntConst amount) {
+    get_local_frame()->pop_catch(amount);
 }
 
 #ifndef NDEBUG
@@ -691,6 +719,7 @@ void Interpreter::run() {
 
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
+        //outs << bci << " " << *opc << "\n";
         try {
             opc->exec(this);
             // If we get to exectute opcode and unwound stack is not empty, then
@@ -726,8 +755,17 @@ void Interpreter::run() {
                         }
                     }
                     auto catches = frm->get_catches();
+                    opcode::IntConst prev_id = -1;
                     for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
                         auto ec = *riter;
+                        if (prev_id < 0) {
+                            prev_id = ec.id;
+                        } else if (prev_id != ec.id) {
+                            if (has_finally()) {
+                                call_finally();
+                            }
+                            prev_id = ec.id;
+                        }
                         if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
                             LOGMAX("Caught exception");
                             handle_exception(ec, v);

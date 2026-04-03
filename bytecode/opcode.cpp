@@ -2806,7 +2806,7 @@ void CatchTyped::exec(Interpreter *vm) {
 }
 
 void PopCatch::exec(Interpreter *vm) {
-    vm->pop_catch(id);
+    vm->pop_catch(amount);
 }
 
 void Finally::exec(Interpreter *vm) {
@@ -2823,6 +2823,15 @@ void FinallyReturn::exec(Interpreter *vm) {
     if (addr && addr->get_value() > 0) {
         // Set bci only when addr was set (not nil)
         vm->set_bci(addr->get_value());
+    }
+    if (vm->runtime_finally_cntr) {
+        vm->set_stop(true);
+    }
+}
+
+void RunFinally::exec(Interpreter *vm) {
+    if (vm->has_finally()) {
+        vm->call_finally();
     }
 }
 

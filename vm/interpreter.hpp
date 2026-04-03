@@ -241,6 +241,7 @@ private:
 public:
     static bool running_generator; ///< When true it means that the currently run code is generator of the output
     FunValue *main_to_run;         ///< Function annotated as @main (set only if this is main vm)
+    int runtime_finally_cntr;
 
     Interpreter(Bytecode *code, File *src_file=nullptr, bool main=false);
     ~Interpreter();
@@ -256,6 +257,8 @@ public:
 
     /// Runtime generated call to a function
     void runtime_call(FunValue *fun);
+
+    void runtime_finally_jump(opcode::Address jmp_bci, opcode::Address offset=0);
 
     static ModuleValue *libms_mod;  ///< Standard library as module
 
@@ -388,7 +391,7 @@ public:
     /// \returns true if there is any finally in the stack.
     bool has_finally();
     /// \brief Initializes needed flags and jumps to top of the finally stack finally block.
-    void call_finally();
+    void call_finally(opcode::Address off=0);
     /// \returns true if we are currently executing inside of a catch.
     bool is_try_not_in_catch();
 

@@ -296,7 +296,7 @@ void BytecodeWriter::write(Bytecode *code) {
             write_int(o->id);
         }
         else if (auto o = dyn_cast<opcode::PopCatch>(op_gen)){
-            write_int(o->id);
+            write_int(o->amount);
         }
         else if (auto o = dyn_cast<opcode::Finally>(op_gen)){
             write_address(o->addr);
@@ -307,6 +307,9 @@ void BytecodeWriter::write(Bytecode *code) {
         }
         else if (auto o = dyn_cast<opcode::FinallyReturn>(op_gen)){
             write_register(o->caller);
+        }
+        else if (isa<opcode::RunFinally>(op_gen)){
+            // Nothing to do
         }
         else if (auto o = dyn_cast<opcode::ListPush>(op_gen)){
             write_register(o->dst);
