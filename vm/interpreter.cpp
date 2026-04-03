@@ -627,17 +627,8 @@ void Interpreter::push_catch(ExceptionCatch ec) {
     get_local_frame()->push_catch(ec);
 }
 
-void Interpreter::pop_catch(opcode::IntConst id) {
-    bool is_nested = false;
-    while(!get_local_frame()->pop_catch(id)) {
-        is_nested = true;
-        if (has_finally()) {
-            call_finally(1);
-        }
-    }
-    if (has_finally() && is_nested) {
-        call_finally(1);
-    }
+void Interpreter::pop_catch(opcode::IntConst amount) {
+    get_local_frame()->pop_catch(amount);
 }
 
 #ifndef NDEBUG
@@ -728,6 +719,7 @@ void Interpreter::run() {
 
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
+        //outs << bci << " " << *opc << "\n";
         try {
             opc->exec(this);
             // If we get to exectute opcode and unwound stack is not empty, then
@@ -763,8 +755,17 @@ void Interpreter::run() {
                         }
                     }
                     auto catches = frm->get_catches();
+                    opcode::IntConst prev_id = -1;
                     for (auto riter = catches.rbegin(); riter != catches.rend(); ++riter) {
                         auto ec = *riter;
+                        if (prev_id < 0) {
+                            prev_id = ec.id;
+                        } else if (prev_id != ec.id) {
+                            if (has_finally()) {
+                                call_finally();
+                            }
+                            prev_id = ec.id;
+                        }
                         if (!ec.type || opcode::is_type_eq_or_subtype(v->get_type(), ec.type)) {
                             LOGMAX("Caught exception");
                             handle_exception(ec, v);

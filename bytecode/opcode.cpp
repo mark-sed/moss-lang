@@ -2806,7 +2806,7 @@ void CatchTyped::exec(Interpreter *vm) {
 }
 
 void PopCatch::exec(Interpreter *vm) {
-    vm->pop_catch(id);
+    vm->pop_catch(amount);
 }
 
 void Finally::exec(Interpreter *vm) {

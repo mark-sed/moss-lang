@@ -1795,6 +1795,7 @@ void BytecodeGen::emit(ir::Try *tcf) {
     // It is 2D to handle typed arguments
     auto curr_counter = catch_id_counter++;
     std::vector<std::vector<opcode::OpCode *>> gen_catches{};
+    unsigned catch_am = 0;
     for (auto riter = tcf->get_catches().rbegin(); riter != tcf->get_catches().rend(); ++riter) {
         auto ctch = *riter; 
         Argument *a = ctch->get_arg();
@@ -1807,12 +1808,14 @@ void BytecodeGen::emit(ir::Try *tcf) {
                 auto c = new opcode::CatchTyped(a->get_name(), free_reg(type_reg), 0, curr_counter);
                 typed_catches.push_back(c);
                 append(c);
+                ++catch_am;
             }
             gen_catches.push_back(typed_catches);
         } else {
             auto c = new opcode::Catch(a->get_name(), 0, curr_counter);
             gen_catches.push_back(std::vector<opcode::OpCode *>{c});
             append(c);
+            ++catch_am;
         }
     }
 
@@ -1845,7 +1848,7 @@ void BytecodeGen::emit(ir::Try *tcf) {
         }
         
         // Generating pop_catch
-        append(new opcode::PopCatch(curr_counter));
+        append(new opcode::PopCatch(catch_am));
         // Set finally caller register to a -1 to convey it being in catch
         append(new opcode::StoreIntConst(finally_register, -1));
         emit(ctch->get_body());
@@ -1859,7 +1862,7 @@ void BytecodeGen::emit(ir::Try *tcf) {
 
     // NOTE: This pop catch needs to be right before fnl_op->addr so that
     //       try knows where to jump (it subtracts 1 if in try body).
-    append(new opcode::PopCatch(curr_counter));
+    append(new opcode::PopCatch(catch_am));
     // Finnally opcode need to be updated
     fnl_op->addr = get_curr_address() + 1;
 

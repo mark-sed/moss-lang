@@ -52,7 +52,10 @@ fun no_raise() {
 }
 
 ~raise_value("i")
+~raise_value(true)
+~raise_value(4.2)
 ~raise_value(nil)
+~raise_value(TypeError("ohoh"))
 
 ~raise_value("i", early_exit=true)
 
@@ -64,3 +67,4 @@ catch (e)
     "caught outter\n"
 finally
     "finally outter\n"
+

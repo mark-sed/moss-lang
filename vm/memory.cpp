@@ -156,21 +156,9 @@ void MemoryPool::push_catch(ExceptionCatch ec) {
     this->catches.push_back(ec);
 }
 
-bool MemoryPool::pop_catch(opcode::IntConst id) {
-    assert(!this->catches.empty() && "Popping empty catch stack");
-    auto top_id = catches.back().id;
-    while (!catches.empty()) {
-        if (catches.back().id != id) {
-            if (catches.back().id != top_id) {
-                return false;
-            }
-            catches.pop_back();
-        } else {
-            catches.pop_back();
-            return true;
-        }
-    }
-    assert(false && "ID of catch not in the stack");    
+void MemoryPool::pop_catch(opcode::IntConst amount) {
+    assert(this->catches.size() >= static_cast<size_t>(amount) && "Popping empty catch stack or more values than are in the stack");
+    this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
 }
 
 void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
