@@ -88,6 +88,7 @@ set(SOURCES
     bytecode/bytecode_reader.cpp
     bytecode/bytecode_writer.cpp
     bytecode/opcode.cpp
+    bytecode/optimizer/bc_pipeline.cpp
     vm/gc.cpp
     vm/interpreter.cpp
     vm/memory.cpp

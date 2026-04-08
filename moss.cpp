@@ -15,6 +15,7 @@
 #include "opcode.hpp"
 #include "mslib.hpp"
 #include "ir_pipeline.hpp"
+#include "optimizer/bc_pipeline.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -174,6 +175,9 @@ int main(int argc, const char *argv[]) {
             report_ir_exception(ir_err, "SemanticsError");
         }
     }
+
+    opcode::BCPipeline pipeline(bc, opcode::O1Pipeline);
+    pipeline.run();
 
     if (parser != nullptr)
         delete parser;

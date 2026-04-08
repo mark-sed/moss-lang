@@ -16,11 +16,11 @@ IRPipeline::IRPipeline(Parser &parser) : pm(parser) {
     add_pass(new ExpressionAnalyzer(parser));
 
     // Transforms
-    LOGMAX("Running DeadCodeElimination pass");
+    LOG2("Adding DeadCodeElimination pass");
     add_pass(new DeadCodeEliminationPass(parser));
-    LOGMAX("Running ConstantFolding pass");
+    LOG2("Adding ConstantFolding pass");
     add_pass(new ConstantFoldingPass(parser));
-    LOGMAX("Running DeadBranchElimination pass");
+    LOG2("Adding DeadBranchElimination pass");
     add_pass(new DeadBranchEliminationPass(parser));
 }
 
@@ -39,7 +39,7 @@ ir::IR *IRPipeline::run(ir::IR *decl) {
     return nullptr;
 }
 
-void IRPipeline::add_pass(IRVisitor *p) { 
+void IRPipeline::add_pass(IRVisitor *p) {
     pm.add_pass(p);
     this->pass_instances.push_back(p);
 }
