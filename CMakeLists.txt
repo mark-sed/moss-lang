@@ -84,6 +84,7 @@ set(SOURCES
     interface/repl.cpp
     interface/utils.cpp
     bytecode/bytecode.cpp
+    bytecode/bytecode_blob.cpp
     bytecode/bytecodegen.cpp
     bytecode/bytecode_reader.cpp
     bytecode/bytecode_writer.cpp
@@ -232,6 +233,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Test source files
     set(TEST_SRCS
         tests/unittests/testing_utils.cpp
+        tests/unittests/test_bytecode_blob.cpp
         tests/unittests/test_bytecode_rw.cpp
         tests/unittests/test_bytecode.cpp
         tests/unittests/test_clopts.cpp

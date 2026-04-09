@@ -260,6 +260,7 @@ public:
     virtual ~OpCode() {}
 
     OpCodes get_type() { return this->op_type; }
+    ustring get_mnem() { return this->mnem; }
     virtual inline std::ostream& debug(std::ostream& os) const {
         os << mnem;
         return os;

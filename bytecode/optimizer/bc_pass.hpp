@@ -11,13 +11,14 @@
 #define _BC_PASS_HPP_
 
 #include "bytecode.hpp"
+#include "bytecode_blob.hpp"
 
 namespace moss {
 namespace opcode {
 
 class BCPass {
 public:
-    virtual void run(Bytecode *bc) = 0;
+    virtual void run(BCBlob *bcb) = 0;
 };
 
 }

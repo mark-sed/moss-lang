@@ -28,9 +28,6 @@ public:
 
     void run() {
         LOG1("Running BC optimization pipeline");
-        for (auto pass: pipeline) {
-            pass->run(bc);
-        }        
     }
 };
 

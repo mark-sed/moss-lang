@@ -15,16 +15,20 @@
 #include <cstdint>
 #include <vector>
 #include <map>
+#include <optional>
 
 namespace moss {
 
 namespace opcode {
-    class OpCode;    
+    class OpCode;
+    class BCBlob;
 }
 
 /// \brief Class holding bytecode program
 /// It consists of a vector of opcodes and API to work with it. 
 class Bytecode {
+private:
+    friend class opcode::BCBlob;
 private:
     std::vector<opcode::OpCode *> code;
     bc_header::BytecodeHeader *header;
@@ -35,7 +39,7 @@ public:
     Bytecode() : header(nullptr) {}
     ~Bytecode();
 
-    std::ostream& debug(std::ostream& os);
+    std::ostream& debug(std::ostream& os, std::optional<opcode::Address> start=std::nullopt, std::optional<opcode::Address> end=std::nullopt);
 
     /// Pushes a new opcode into the bytecode list.
     void push_back(opcode::OpCode *op) {
