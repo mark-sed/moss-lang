@@ -1374,12 +1374,8 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         append(fn_end_jmp);
         comment("lambda fun "+lmb->get_name()+"(" + arg_names + ") body start");
         append(new PopCallFrame());
-        // Registers need to be reset, store them and restore after whole
-        // function is generated
-        auto pre_function_reg = curr_reg;
-        auto pre_function_creg = curr_creg;
         // We add one for possible "this" argument
-        reset_regs(lmb->get_args().size()+1);
+        push_reg_scope(lmb->get_args().size()+1);
         // Generate function body
         auto rval = emit(lmb->get_body());
         if (rval->is_const())
@@ -1388,8 +1384,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             append(new opcode::Return(free_reg(rval)));
         fn_end_jmp->addr = get_curr_address() + 1;
 
-        this->curr_reg = pre_function_reg;
-        this->curr_creg = pre_function_creg;
+        pop_reg_scope();
         bcv = new RegValue(fun_reg, false);
         bcv->set_silent(true);
     }
@@ -1704,12 +1699,8 @@ void BytecodeGen::emit(ir::Function *fun) {
     append(fn_end_jmp);
     comment("fun "+fun->get_name()+"(" + arg_names + ") body start");
     append(new PopCallFrame());
-    // Registers need to be reset, store them and restore after whole
-    // function is generated
-    auto pre_function_reg = curr_reg;
-    auto pre_function_creg = curr_creg;
     // We add one for possible "this" argument
-    reset_regs(fun->get_args().size()+1);
+    push_reg_scope(fun->get_args().size()+1);
     // Generate function body
     emit(fun->get_body());
     // TODO: Generate return in function IR body if needed, not here
@@ -1717,8 +1708,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     append(new opcode::ReturnConst(val_last_creg()));
     fn_end_jmp->addr = get_curr_address() + 1;
 
-    this->curr_reg = pre_function_reg;
-    this->curr_creg = pre_function_creg;
+    pop_reg_scope();
 }
 
 void BytecodeGen::emit(ir::Class *cls) {
@@ -1728,6 +1718,7 @@ void BytecodeGen::emit(ir::Class *cls) {
         append(new PushParent(free_reg(p_reg)));
     }
     append(new BuildClass(next_reg(), cls->get_name()));
+    push_reg_scope();
     // Add annotations
     // Since BuildClass will push a new frame we need to load the class by name
     auto cls_reg = next_reg();
@@ -1750,12 +1741,14 @@ void BytecodeGen::emit(ir::Class *cls) {
         emit(d);
     }*/
     append(new PopFrame());
+    pop_reg_scope();
     comment("class " + cls->get_name() + " end");
 }
 
 void BytecodeGen::emit(ir::Space *spc) {
     comment("space " + spc->get_name() + " start");
     append(new BuildSpace(next_reg(), spc->get_name(), spc->is_anonymous()));
+    // push_reg_scope();
     // Add annotations
     // Since BuildSpace will push a new frame we need to load the space by name
     auto spc_reg = next_reg();
@@ -1770,6 +1763,7 @@ void BytecodeGen::emit(ir::Space *spc) {
     emit(spc->get_body());
 
     append(new PopFrame());
+    // pop_reg_scope();
     comment("space " + spc->get_name() + " end");
 }
 

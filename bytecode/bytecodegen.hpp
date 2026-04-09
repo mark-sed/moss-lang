@@ -55,9 +55,19 @@ public:
 class BytecodeGen {
 private:
     Bytecode *code;             ///< Bytecode it will be appending opcodes to
-    //Parser *parser;             ///< Parser for error reporting
-    opcode::Register curr_creg; ///< Current free constant register
-    opcode::Register curr_reg;  ///< Current free register
+    std::list<std::pair<opcode::Register, opcode::Register>> reg_stack; ///< Stack of register pairs <reg, creg>
+
+    /// Current free register 
+    opcode::Register curr_reg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return reg_stack.back().first;
+    }
+
+    /// Current free constant register
+    opcode::Register curr_creg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return reg_stack.back().second;
+    }
 
     opcode::IntConst catch_id_counter;
 
@@ -104,25 +114,49 @@ private:
 
     inline opcode::Address get_curr_address() { return (code->empty() ? 0 : code->size()-1); }
 
-    inline opcode::Register next_creg() { return this->curr_creg++; }
-    inline opcode::Register next_reg() { return this->curr_reg++; }
+    inline opcode::Register next_creg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return this->reg_stack.back().second++;
+    }
+    inline opcode::Register next_reg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return this->reg_stack.back().first++;
+    }
 
-    inline RegValue *last_creg() { return new RegValue(this->curr_creg-1, true); }
-    inline RegValue *last_reg() { return new RegValue(this->curr_reg-1, false); }
+    inline RegValue *last_creg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return new RegValue(this->reg_stack.back().second - 1, true);
+    }
 
-    inline opcode::Register val_last_creg() { return this->curr_creg-1; }
-    inline opcode::Register val_last_reg() { return this->curr_reg-1; }
+    inline RegValue *last_reg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return new RegValue(this->reg_stack.back().first - 1, false);
+    }
 
-    void reset_regs(opcode::Register cr=0, opcode::Register ccr=0) {
-        curr_reg = cr;
-        curr_creg = ccr;
+    inline opcode::Register val_last_creg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return this->reg_stack.back().second - 1;
+    }
+    inline opcode::Register val_last_reg() {
+        assert(!reg_stack.empty() && "Empty reg stack?");
+        return this->reg_stack.back().first - 1;
+    }
+
+    void push_reg_scope(opcode::Register cr=0, opcode::Register ccr=0) {
+        this->reg_stack.push_back({cr, ccr});
+    }
+
+    void pop_reg_scope() {
+        assert(reg_stack.size() > 1 && "popping from empty or global reg scope");
+        this->reg_stack.pop_back();
     }
 
     inline RegValue *get_ncreg(RegValue *val) {
         assert(val && "sanity check");
         if (val->is_const()) {
             append(new opcode::StoreConst(next_reg(), val->reg()));
-            val->set_reg(this->curr_reg-1);
+            assert(!reg_stack.empty() && "Empty reg stack?");
+            val->set_reg(this->reg_stack.back().first - 1);
             val->set_const(false);
         }
         return val;
@@ -135,9 +169,9 @@ private:
         return regval;
     }
 public:
-    BytecodeGen(Bytecode *code) : code(code), curr_creg(BC_RESERVED_CREGS),
-                                  curr_reg(BC_RESERVED_REGS), catch_id_counter(0) {
+    BytecodeGen(Bytecode *code) : code(code), catch_id_counter(0) {
         assert(code && "Generator requires a non-null Bytecode");
+        reg_stack.push_back({BC_RESERVED_REGS, BC_RESERVED_CREGS});
     }
     ~BytecodeGen() {
         // Code is to be deleted by the creator of it
