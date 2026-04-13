@@ -64,6 +64,9 @@ TEST(BytecodeBlob, BlobCreation) {
     EXPECT_EQ(ss4.str(), "");
     EXPECT_EQ(bcb4.size(), 0);
 
+    EXPECT_TRUE(bcb4.isa_blob());
+    EXPECT_FALSE(bcb4.isa_class());
+
     delete bc;
 }
 
