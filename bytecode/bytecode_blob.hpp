@@ -22,10 +22,24 @@ enum BlobType {
     CLASS_BLOB,
 };
 
+inline ustring BlobType2string(BlobType type) {
+    switch(type) {
+        case BlobType::BC_BLOB: return "Blob";
+        case BlobType::FUN_BLOB: return "Function blob";
+        case BlobType::SPACE_BLOB: return "Space blob";
+        case BlobType::CLASS_BLOB: return "Class blob";
+        default: {
+            assert(false && "Missing blob type to string convertor");
+            return "Unknown blob";
+        }
+    }
+}
+
 /// Blob is a span into bytecode from [start, end)
 class BCBlob {
 protected:
     BlobType blob_type;
+
     Bytecode &bc;
     Address start_;
     Address end_;
@@ -43,7 +57,13 @@ public:
         assert(end >= start && "Blob end bci is before start bci");
     }
     virtual ~BCBlob() {}
+
+private:
+    static BCBlob *parse_bc_impl(Bytecode &bc, Address start, Address end, BlobType type, bool is_glob=false);
+
 public:
+    static BCBlob *parse_bc(Bytecode &bc);
+
     auto begin() {
         return bc.code.begin() + start_;
     }
@@ -64,7 +84,21 @@ public:
     OpCode* front() const { return bc.code[start_]; }
     OpCode* back()  const { return bc.code[end_-1]; }
 
+    void print_bc_tree(std::ostream &os) {
+        size_t i = 0;
+        for (auto b: inner_blobs) {
+            if (i == inner_blobs.size()-1)
+                os << "; └─ ";
+            else
+                os << "; ├─ ";
+            os << BlobType2string(b->get_type()) << " [" << b->start_ << "; " << b->end_ << ")\n";
+            ++i;
+        }
+    }
+
     std::ostream& debug(std::ostream& os) {
+        os << "; " << BlobType2string(blob_type) << "\n";
+        print_bc_tree(os);
         return bc.debug(os, start_, end_);
     }
 

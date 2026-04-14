@@ -40,7 +40,7 @@ TEST(BytecodeBlob, BlobCreation) {
     EXPECT_EQ(ss.str(), "STORE_INT_CONST\nSTORE_INT_CONST\nSTORE_CONST\nJMP\nSTORE_NAME\nEND\n");
     std::stringstream ss2;
     ss2 << bcb;
-    EXPECT_EQ(ss2.str(), "0\tSTORE_INT_CONST  #300, 7\n1\tSTORE_INT_CONST  #301, 42\n2\tSTORE_CONST  %0,  #301\n3\tJMP  5\n4\tSTORE_NAME  %0, \"a\"\n5\tEND\n");
+    EXPECT_EQ(ss2.str(), "; Blob\n0\tSTORE_INT_CONST  #300, 7\n1\tSTORE_INT_CONST  #301, 42\n2\tSTORE_CONST  %0,  #301\n3\tJMP  5\n4\tSTORE_NAME  %0, \"a\"\n5\tEND\n");
 
     BCBlob bcb2(*bc, 2, 5);
     EXPECT_EQ(get_bcb_mnems(bcb2), "STORE_CONST\nJMP\nSTORE_NAME\n");
@@ -55,13 +55,13 @@ TEST(BytecodeBlob, BlobCreation) {
     BCBlob bcb3(*bc, 5, 6);
     std::stringstream ss3;
     ss3 << bcb3;
-    EXPECT_EQ(ss3.str(), "5\tEND\n");
+    EXPECT_EQ(ss3.str(), "; Blob\n5\tEND\n");
     EXPECT_EQ(bcb3.size(), 1);
 
     BCBlob bcb4(*bc, 0, 0);
     std::stringstream ss4;
     ss4 << bcb4;
-    EXPECT_EQ(ss4.str(), "");
+    EXPECT_EQ(ss4.str(), "; Blob\n");
     EXPECT_EQ(bcb4.size(), 0);
 
     EXPECT_TRUE(bcb4.isa_blob());
