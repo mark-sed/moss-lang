@@ -18,6 +18,7 @@
 namespace moss {
 namespace opcode {
 
+
 class BCPipeline {
 private:
     Bytecode *bc;
@@ -29,6 +30,8 @@ public:
     void run() {
         LOG1("Running BC optimization pipeline");
         auto mod_blob = BCBlob::parse_bc(*bc);
+        (void) mod_blob; // TODO
+        // mod_blob->print_bc_tree(outs);
         // outs << *mod_blob << "\n---Inner:---\n";
         // 
         // for (auto b: mod_blob->get_inner_blobs()) {

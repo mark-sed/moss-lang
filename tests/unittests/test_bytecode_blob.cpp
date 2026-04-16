@@ -4,6 +4,8 @@
 #include "bytecode.hpp"
 #include "opcode.hpp"
 #include "values.hpp"
+#include "parser.hpp"
+#include "bytecodegen.hpp"
 #include "testing_utils.hpp"
 
 namespace{
@@ -68,6 +70,80 @@ TEST(BytecodeBlob, BlobCreation) {
     EXPECT_FALSE(bcb4.isa_class());
 
     delete bc;
+}
+
+TEST(BytecodeBlob, BCParsing) {
+    ustring code = R"(
+d"Testing code"
+
+space Space2Extend {
+    fun foo() {
+        fun inner(c) {
+            class InnerClass {
+
+            }
+            return 4
+        }
+        return "new fun\n"
+    }
+
+    fun spcfun(o) = o + 1
+}
+
+fun goo(a) {
+    a = 13
+    fun o1(b) = b * $a
+    return o1(a) 
+}
+
+space FooSpace {
+    class Foo {
+        fun Foo(a, b) {
+            this.a = a
+            this.b = b
+        }
+
+        fun __String() {
+            return "Foo " ++ this.a ++ ", " ++ this.b
+        }
+    }
+}
+
+goo(4)
+)";
+
+    ustring expected = R"(
+; ├─ Space blob [3; 32)
+;   ├─ Function blob [5; 24)
+;     └─ Function blob [9; 20)
+;       └─ Class blob [13; 15)
+;   └─ Function blob [24; 32)
+; ├─ Function blob [33; 56)
+;   └─ Function blob [40; 48)
+; └─ Space blob [56; 89)
+;   └─ Class blob [58; 88)
+;     ├─ Function blob [60; 72)
+;     └─ Function blob [72; 88)
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<ir::Module>(parser.parse());
+
+    auto bc = new Bytecode();
+    bcgen::BytecodeGen cgen(bc);
+    cgen.generate(mod);
+    BCBlob *bcb = BCBlob::parse_bc(*bc);
+
+    std::stringstream ss;
+    ss << "\n";
+    bcb->print_bc_tree(ss);
+    EXPECT_EQ(ss.str(), expected);
+
+    delete bcb;
+    delete bc;
+    delete mod;
 }
 
 }

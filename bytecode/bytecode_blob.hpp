@@ -84,14 +84,15 @@ public:
     OpCode* front() const { return bc.code[start_]; }
     OpCode* back()  const { return bc.code[end_-1]; }
 
-    void print_bc_tree(std::ostream &os) {
+    void print_bc_tree(std::ostream &os, int indent = 0) {
         size_t i = 0;
         for (auto b: inner_blobs) {
             if (i == inner_blobs.size()-1)
-                os << "; └─ ";
+                os << ";" << std::string(indent, ' ') << " └─ ";
             else
-                os << "; ├─ ";
+                os << ";" << std::string(indent, ' ') << " ├─ ";
             os << BlobType2string(b->get_type()) << " [" << b->start_ << "; " << b->end_ << ")\n";
+            b->print_bc_tree(os, indent + 2);
             ++i;
         }
     }
