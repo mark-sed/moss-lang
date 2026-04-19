@@ -31,3 +31,28 @@ std::ostream& Bytecode::debug(std::ostream& os, std::optional<Address> start, st
     }
     return os;
 }
+
+void Bytecode::insert(opcode::OpCode *op, opcode::Address bci) {
+    assert(bci <= code.size() && "Inserting way after last BC");
+    if (bci == code.size()) {
+        push_back(op);
+        return;
+    }
+    for (auto i: code) {
+        i->update_addrs(bci, 1);
+    }
+    code.insert(code.begin() + bci, op);
+}
+
+void Bytecode::erase(Address bci) {
+    assert(bci < code.size() && "Deleting bci out of bounds");
+    OpCode *op = code[bci];
+    // No need to optimize for popping last, since it is END and there is no
+    // reason to pop it.
+    code.erase(code.begin() + bci);
+    for (auto i: code) {
+        i->update_addrs(bci, -1);
+    }
+    assert(op && "Sanity check");
+    delete op;
+}

@@ -268,6 +268,10 @@ public:
     std::string err_mgs(std::string msg, Interpreter *vm);
     virtual bool equals(OpCode *other) = 0;
     virtual void exec(Interpreter *vm) = 0;
+    virtual void update_addrs(Address update_bci, Address add_amount) {
+        (void)update_bci;
+        (void)add_amount;
+    }
 };
 
 /// Binary expression opcode
@@ -772,6 +776,11 @@ public:
     Jmp(Address addr) : OpCode(ClassType, "JMP"), addr(addr) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  " << addr;
@@ -798,6 +807,11 @@ public:
     BreakTo(Address addr, BreakState state=BreakState::SET) : OpCode(ClassType, "BREAK_TO"), addr(addr), state(state) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  " << addr;
@@ -820,6 +834,11 @@ public:
     JmpIfTrue(Register src, Address addr) : OpCode(ClassType, "JMP_IF_TRUE"), src(src), addr(addr) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << src << ", " << addr;
@@ -842,6 +861,11 @@ public:
     JmpIfFalse(Register src, Address addr) : OpCode(ClassType, "JMP_IF_FALSE"), src(src), addr(addr) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << src << ", " << addr;
@@ -1899,6 +1923,11 @@ public:
     Catch(StringConst name, Address addr, IntConst id) : OpCode(ClassType, "CATCH"), name(name), addr(addr), id(id) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  \"" << name << "\", " << addr << ", " << id;
@@ -1924,6 +1953,11 @@ public:
         : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr), id(id) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  \"" << name << "\", %" << type << ", " << addr << ", " << id;
@@ -1967,6 +2001,11 @@ public:
     Finally(Address addr, Register caller) : OpCode(ClassType, "FINALLY"), addr(addr), caller(caller) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << " " << addr << ", #" << caller;
@@ -2409,6 +2448,11 @@ public:
         : OpCode(ClassType, "FOR"), index(index), collection(collection), addr(addr) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << index << ", %" << collection << ", " << addr;
@@ -2434,6 +2478,11 @@ public:
         : OpCode(ClassType, "FOR_MULTI"), vars(vars), collection(collection), addr(addr), unpack(unpack) {}
     
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        if (addr >= update_bci) {
+            addr += add_amount;
+        }
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << vars << ", %" << collection << ", " << addr << ", #" << unpack;

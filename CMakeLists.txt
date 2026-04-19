@@ -235,6 +235,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/testing_utils.cpp
         tests/unittests/test_bytecode_blob.cpp
         tests/unittests/test_bytecode_rw.cpp
+        tests/unittests/test_bytecode_transforms.cpp
         tests/unittests/test_bytecode.cpp
         tests/unittests/test_clopts.cpp
         tests/unittests/test_constant_folding.cpp

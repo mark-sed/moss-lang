@@ -46,6 +46,10 @@ public:
         code.push_back(op);
     }
 
+    void insert(opcode::OpCode *op, opcode::Address bci);
+
+    void erase(opcode::Address bci);
+
     bool empty() { return code.empty(); }
 
 #ifndef NDEBUG
