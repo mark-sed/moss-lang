@@ -72,6 +72,14 @@ public:
         return bc.code.begin() + end_;
     }
 
+    void insert(OpCode *opc, Address i) {
+        bc.insert(opc, start_ + i);
+    }
+
+    void erase(Address i) {
+        bc.erase(start_ + i);
+    }
+
     OpCode* operator[](size_t i) const {
         assert(start_ + i < end_ && "Accessing blob with [] out of bounds");
         return bc.code[start_ + i];
