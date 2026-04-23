@@ -18,6 +18,7 @@
 namespace moss {
 namespace opcode {
 
+std::vector<BCBlob*> collect_all_blobs(BCBlob* root);
 
 class BCPipeline {
 private:
@@ -30,13 +31,13 @@ public:
     void run() {
         LOG1("Running BC optimization pipeline");
         auto mod_blob = BCBlob::parse_bc(*bc);
-        (void) mod_blob; // TODO
-        // mod_blob->print_bc_tree(outs);
-        // outs << *mod_blob << "\n---Inner:---\n";
-        // 
-        // for (auto b: mod_blob->get_inner_blobs()) {
-        //     outs << *b << "\n---\n";
-        // }
+        // TODO: Perhaps drop very short blobs?
+        std::vector<BCBlob *> all_blobs = collect_all_blobs(mod_blob);
+        for (auto p: pipeline) {
+            for (auto bcblb: all_blobs) {
+                p->run(bcblb);
+            }
+        }
     }
 };
 

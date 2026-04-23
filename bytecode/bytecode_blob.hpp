@@ -92,6 +92,10 @@ public:
     OpCode* front() const { return bc.code[start_]; }
     OpCode* back()  const { return bc.code[end_-1]; }
 
+    ustring get_debug_name() {
+        return BlobType2string(blob_type) + " [" + std::to_string(start_) + "; " + std::to_string(end_) + ")";
+    }
+
     void print_bc_tree(std::ostream &os, int indent = 0) {
         size_t i = 0;
         for (auto b: inner_blobs) {
@@ -99,7 +103,7 @@ public:
                 os << ";" << std::string(indent, ' ') << " └─ ";
             else
                 os << ";" << std::string(indent, ' ') << " ├─ ";
-            os << BlobType2string(b->get_type()) << " [" << b->start_ << "; " << b->end_ << ")\n";
+            os << b->get_debug_name() << "\n";
             b->print_bc_tree(os, indent + 2);
             ++i;
         }

@@ -90,6 +90,7 @@ set(SOURCES
     bytecode/bytecode_writer.cpp
     bytecode/opcode.cpp
     bytecode/optimizer/bc_pipeline.cpp
+    bytecode/optimizer/register_reuse_pass.cpp
     vm/gc.cpp
     vm/interpreter.cpp
     vm/memory.cpp
