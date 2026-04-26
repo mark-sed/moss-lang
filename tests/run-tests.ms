@@ -1220,6 +1220,10 @@ fun test_ascending_primes(name) {
     ~expect_pass("ascending_primes.ms", name, """[2, 3, 5, 7, 13, 17, 19, 23, 29, 37, 47, 59, 67, 79, 89, 127, 137, 139, 149, 157, 167, 179, 239, 257, 269, 347, 349, 359, 367, 379, 389, 457, 467, 479, 569, 1237, 1249, 1259, 1279, 1289, 1367, 1459, 1489, 1567, 1579, 1789, 2347, 2357, 2389, 2459, 2467, 2579, 2689, 2789, 3457, 3467, 3469, 4567, 4679, 4789, 5689, 12347, 12379, 12457, 12479, 12569, 12589, 12689, 13457, 13469, 13567, 13679, 13789, 15679, 23459, 23567, 23689, 23789, 25679, 34589, 34679, 123457, 123479, 124567, 124679, 125789, 134789, 145679, 234589, 235679, 235789, 245789, 345679, 345689, 1234789, 1235789, 1245689, 1456789, 12356789, 23456789]""", "")
 }
 
+fun test_huge_list(name) {
+    ~expect_pass("huge_list.ms", name, """[22.063854, false, 712.144509, 43633, 935832, 420.586901, 418.708096, nil, "6qteqnlevcm.cmhcfcr6yjfzqz009b0z6h-06t05e8ndtsm92o", 644.417562, 990360, "ly_wpm8_22m60m0pxyfxntn6pq152rm9erpthboij0pmjtgcim", nil, nil, nil, 525.033178, 653.299782, 781176, false, "70y9g9-ol03jtzouu1nr0k1v3efw0n3eze6u1mnah7k5a_afjy", 19.717585, 313838, 717752, "_d5bkhsudfykqm.4m954r6_2tngvercx_var532je6c_jhczbi", 272410, 141.663605, "4e281g1q7dx6zecgbte3265zfi635.7o70570qcl_xhfi30mez", "pxjlelv6o4vxos7r-iw2o4c7v_hqt8tjyfnrgai5vovupms-3y", "f.qtgaj8zoh1b18j8df_los26bi1bj0eq-oc.2k_4vgx9r9hnm", 168146, "2iwc7u6fchtfn5.npbmx.1vwbbvx9zqxu04bij1soem.w.9c9f", 31.147747, "pihsqf3sxvkuddcg-1ksv6i47o1e60nq8vm3zvx7a6adc24xx5", false, false, false, "7es1n.ov6h57n5vfgevyzid6krt6wr62we-4k7b-24aj392yu2", nil, 410218, true, false, 462.201227, nil, nil, 443598, nil, "lk-idz3c9iehdl98zn3_vl_iuc27fs1cbfju3j-910oa9nt04e", false, nil, "y69ffpro_tmp-_8bpsot03z36bp0l_bc_s93sv.iexk.k27lin", 423.564703, 7570, 62.530116, 282.457469, nil, 309281, nil, nil, nil, 315549, 14891, "k-o6o8nqe9x.yl3-ex4_gg2h_k_j-13aajtb7.-jqilvlcb_hb", "ttqhj4je76x25uj224zt1h.m753qnmytjux8whyzc.3m6bd_lx", 706.097607, nil, nil, nil, 65188, 262.544959, 387835, true, 90207, false, 178181, nil, 515.672563, false, "vywt1g0n8i_20qh1k_or2u66-43osqpwg4p01n1b2suboggn9t", 3.305594, true, false, 152.852302, 245880, true, 861.251704, "9pfnppcbekm3tv1m8_753_knph-thgtz_cx1zs6o_je8-j_wii", nil, nil, nil, nil, 21.767723, "v2jdiywc_4j87jsypbovnscfx18.1yed9eu0yod73koc38rnq4", nil, "s9gj-5hisfrdtzlhujjz2o_06-ix176kdyhwkvrim7zsk-5xvf", nil, false, 609732, 6.122235, true, 81.510215]\n""", "")
+}
+
 fun test_lib_moss_module(name) {
     ~expect_pass("stdlib_tests/moss_module.ms", name, """<module libms>\n<space Math>\n3\ntrue\n""", "")
 }
@@ -2474,6 +2478,7 @@ fun run_all_tests() {
     ~run_test("collatz")
     ~run_test("pso")
     ~run_test("ascending_primes")
+    ~run_test("huge_list")
 
     // stdlib tests
     ~run_test("lib_moss_module")
