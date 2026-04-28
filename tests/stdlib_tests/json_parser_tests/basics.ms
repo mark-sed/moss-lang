@@ -41,3 +41,21 @@ try {
 } catch(e: js.JSONParsingError) {
     "caught\n"
 }
+
+js.dict_reader("""
+{
+    "a": 42,
+    "b": -0.0001,
+    "c": -200,
+    "d": 20e-7
+}
+""")
+"\n"
+
+js.dict_reader("""
+{"a": "00",
+    "a12": 23,
+    "b1": ",",
+    "b45": 0.00}
+""")
+"\n"

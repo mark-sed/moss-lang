@@ -2229,7 +2229,9 @@ fun test_lib_json_parser_basics(name) {
 {:}
 caught
 caught
-caught\n""", "")
+caught
+{"a": 42, "b": -0.000100, "c": -200, "d": 0.000002}
+{"a": "00", "a12": 23, "b1": ",", "b45": 0.000000}\n""", "")
 }
 
 fun test_gc_local_vars(name) {

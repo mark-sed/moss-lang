@@ -111,6 +111,38 @@ class JSONParser : parsing_utils.TextualParser {
         return "".join(value)
     }
 
+    fun parse_number() {
+        value = []
+        while (this.i < this.text.length()) {
+            // TODO: This could be optimized by checking if there are float chars
+            c = this.text[this.i]
+            if (c == "," || c == "}" || c.isspace()) {
+                break
+            }
+            ~value.append(c)
+            ~this.advance();
+        }
+        joined = "".join(value)
+        try {
+            return Int(joined)
+        } catch (e:[TypeError,ValueError]) {}
+        try {
+            return Float(joined)
+        } catch (e:[TypeError,ValueError]) {}
+
+        raise JSONParsingError(this.line, this.column, 
+                        f"Value '{joined}' could not be parsed as a number")
+    }
+
+    fun parse_value() {
+        // TODO: Add null support
+        if (this.check_adv("\"")) {
+            return this.parse_string()
+        } else {
+            return this.parse_number()
+        }
+    }
+
     fun parse_object() {
         result = {:}
         while (this.i < this.text.length()) {
@@ -138,10 +170,13 @@ class JSONParser : parsing_utils.TextualParser {
                     ~this.skip_json_ws()
                     ~this.expect(":", "Expecting ':' after member name")
                     ~this.skip_json_ws()
-                    //value =
-
-                    // TODO: Finish
-
+                    value = this.parse_value()
+                    result[name] = value
+                    ~this.skip_json_ws()
+                    if (this.check_adv("}")) {
+                        break
+                    }
+                    ~this.expect(",", "Expecting ',' or '}' after a member")
                     continue
                 }
             }
