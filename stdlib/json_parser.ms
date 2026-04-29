@@ -116,11 +116,15 @@ class JSONParser : parsing_utils.TextualParser {
         while (this.i < this.text.length()) {
             // TODO: This could be optimized by checking if there are float chars
             c = this.text[this.i]
-            if (c == "," || c == "}" || c.isspace()) {
+            if (c == "," || c == "}" || c == "]" || c.isspace()) {
                 break
             }
             ~value.append(c)
             ~this.advance();
+        }
+        if (value.empty()) {
+            raise JSONParsingError(this.line, this.column, 
+                        f"Expected a number")
         }
         joined = "".join(value)
         try {
@@ -138,13 +142,13 @@ class JSONParser : parsing_utils.TextualParser {
         values = []
         while (this.i < this.text.length()) {
             ~this.skip_json_ws()
-            if (this.check_adv("]")) {
+            if (this.match("]")) {
                 break;
             }
             v = this.parse_value()
             ~values.append(v)
             ~this.skip_json_ws()
-            if (this.check_adv("]")) {
+            if (this.match("]")) {
                 break;
             }
             ~this.expect(",", "Expecting ',' or ']' after an array value")
@@ -152,14 +156,34 @@ class JSONParser : parsing_utils.TextualParser {
         return values
     }
 
+    fun parse_constant() {
+        if (this.text.length() >= this.i+5) {
+            if (this.text[this.i..this.i+5] == "false") {
+                this.i += 5
+                this.column += 5
+                return false
+            }
+        }
+        if (this.text.length() >= this.i+4) {
+            v = this.text[this.i..this.i+4]
+            if (v == "null" || v == "true") {
+                this.i += 4
+                this.column += 4
+                return v == "null" ? nil : true
+            }
+        }
+        raise JSONParsingError(this.line, this.column, "Unexpected symbol")
+    }
+
     fun parse_value() {
-        // TODO: Add null support
-        if (this.check_adv("\"")) {
+        if (this.match("\"")) {
             return this.parse_string()
-        } else if (this.check_adv("{")) {
+        } else if (this.match("{")) {
             return this.parse_object()
-        } else if (this.check_adv("[")) {
+        } else if (this.match("[")) {
             return this.parse_array()
+        } else if (this.check("n") || this.check("t") || this.check("f")) {
+            return this.parse_constant()
         } else {
             return this.parse_number()
         }
@@ -195,7 +219,7 @@ class JSONParser : parsing_utils.TextualParser {
                     value = this.parse_value()
                     result[name] = value
                     ~this.skip_json_ws()
-                    if (this.check_adv("}")) {
+                    if (this.match("}")) {
                         break
                     }
                     ~this.expect(",", "Expecting ',' or '}' after a member")
@@ -214,9 +238,7 @@ class JSONParser : parsing_utils.TextualParser {
         result = {:}
         ~this.skip_json_ws()
         while (this.i < this.text.length()) {
-            // Starting '{' match
-            ~this.expect("{", "JSON must start with white space or '{'") // "}"
-            result = this.parse_object()
+            result = this.parse_value()
             ~this.skip_json_ws()
             if (this.i < this.text.length()) {
                 // If reached here it means that there are some symbols after main

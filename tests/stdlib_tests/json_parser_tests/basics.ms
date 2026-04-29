@@ -98,3 +98,46 @@ try {
 } catch (e:js.JSONParsingError) {
     "caught\n"
 }
+
+try {
+js.dict_reader("""
+{
+    "obj": {
+        "a": 4,
+        "b": 5,
+        "c": null 44
+    }
+}
+""")
+} catch (e:js.JSONParsingError) {
+    "caught\n"
+}
+
+js.dict_reader("""
+{
+    "obj": {
+        "a": 4,
+        "b": 5,
+        "c": null,
+        "f": null
+    },
+    "obj2": {},
+    "arr": [null, null, true, false]
+}
+""")
+"\n"
+
+js.dict_reader("""43""")
+"\n"
+js.dict_reader("""\"hello\"""")
+"\n"
+js.dict_reader("""[1, 2, [], 3.0]""")
+"\n"
+js.dict_reader("""3.0""")
+"\n"
+js.dict_reader("""null""")
+"\n"
+js.dict_reader("""true""")
+"\n"
+js.dict_reader("""false""")
+"\n"

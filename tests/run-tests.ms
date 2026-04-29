@@ -2223,7 +2223,6 @@ true\n""", "", prog_args=f"{FILE1} {FILE2}")
     ~rm(FILE2, false)
 }
 
-
 fun test_lib_json_parser_basics(name) {
     ~expect_pass("stdlib_tests/json_parser_tests/basics.ms", name, """{:}
 {:}
@@ -2234,7 +2233,14 @@ caught
 {"a": "00", "a12": 23, "b1": ",", "b45": 0.000000}
 {"obj": {"a": 4, "b": 5}, "obj2": {:}}
 {"obj": {"a": [3, {"b": 3.400000}, 0.000000, [], "a"]}, "arr": [1, 2, 3.300000, [2, "hello"]]}
-caught\ncaught\n""", "")
+caught\ncaught\ncaught
+{"obj": {"a": 4, "b": 5, "c": nil, "f": nil}, "obj2": {:}, "arr": [nil, nil, true, false]}
+43\nhello\n[1, 2, [], 3.000000]\n3.000000\nnil\ntrue\nfalse\n""", "")
+}
+
+fun test_lib_json_parser_complex(name) {
+    ~expect_pass("stdlib_tests/json_parser_tests/complex.ms", name, """3
+editor\n60200\n15.500000\nnil\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/json_parser_tests/complex_json.js")
 }
 
 fun test_gc_local_vars(name) {
@@ -2581,6 +2587,7 @@ fun run_all_tests() {
 
     // json_parser
     ~run_test("lib_json_parser_basics")
+    ~run_test("lib_json_parser_complex")
 
     // gc tests
     ~run_test("gc_local_vars")
