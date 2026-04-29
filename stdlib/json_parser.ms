@@ -134,10 +134,32 @@ class JSONParser : parsing_utils.TextualParser {
                         f"Value '{joined}' could not be parsed as a number")
     }
 
+    fun parse_array() {
+        values = []
+        while (this.i < this.text.length()) {
+            ~this.skip_json_ws()
+            if (this.check_adv("]")) {
+                break;
+            }
+            v = this.parse_value()
+            ~values.append(v)
+            ~this.skip_json_ws()
+            if (this.check_adv("]")) {
+                break;
+            }
+            ~this.expect(",", "Expecting ',' or ']' after an array value")
+        }
+        return values
+    }
+
     fun parse_value() {
         // TODO: Add null support
         if (this.check_adv("\"")) {
             return this.parse_string()
+        } else if (this.check_adv("{")) {
+            return this.parse_object()
+        } else if (this.check_adv("[")) {
+            return this.parse_array()
         } else {
             return this.parse_number()
         }
