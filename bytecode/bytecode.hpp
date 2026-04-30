@@ -22,6 +22,7 @@ namespace moss {
 namespace opcode {
     class OpCode;
     class BCBlob;
+    class BCBlobIterator;
 }
 
 /// \brief Class holding bytecode program
@@ -29,6 +30,7 @@ namespace opcode {
 class Bytecode {
 private:
     friend class opcode::BCBlob;
+    friend class opcode::BCBlobIterator;
 private:
     std::vector<opcode::OpCode *> code;
     bc_header::BytecodeHeader *header;

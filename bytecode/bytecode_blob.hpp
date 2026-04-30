@@ -35,6 +35,8 @@ inline ustring BlobType2string(BlobType type) {
     }
 }
 
+class BCBlobIterator;
+
 /// Blob is a span into bytecode from [start, end)
 class BCBlob {
 protected:
@@ -59,18 +61,15 @@ public:
     virtual ~BCBlob() {}
 
 private:
+    friend class opcode::BCBlobIterator;
     static BCBlob *parse_bc_impl(Bytecode &bc, Address start, Address end, BlobType type, bool is_glob=false);
 
 public:
     static BCBlob *parse_bc(Bytecode &bc);
 
-    auto begin() {
-        return bc.code.begin() + start_;
-    }
+    BCBlobIterator begin();
 
-    auto end() {
-        return bc.code.begin() + end_;
-    }
+    BCBlobIterator end();
 
     void insert(OpCode *opc, Address i) {
         bc.insert(opc, start_ + i);
@@ -116,6 +115,10 @@ public:
     }
 
     void set_inner_blobs(std::vector<BCBlob *> inner_blobs) {
+        std::sort(inner_blobs.begin(), inner_blobs.end(),
+              [](BCBlob* a, BCBlob* b) {
+                  return a->start_ < b->start_;
+              });
         this->inner_blobs = inner_blobs;
     }
 
@@ -132,6 +135,46 @@ public:
 inline std::ostream& operator<< (std::ostream& os, BCBlob &bcb) {
     return bcb.debug(os);
 }
+
+class BCBlobIterator {
+    Bytecode &bc;
+    size_t i;
+    size_t end;
+
+    const std::vector<BCBlob*> *blobs;
+    size_t blob_idx = 0;
+
+public:
+    BCBlobIterator(Bytecode &bc, size_t start, size_t end,
+                   const std::vector<BCBlob*> *blobs, size_t blob_idx = 0)
+        : bc(bc), i(start), end(end), blobs(blobs), blob_idx(blob_idx) {}
+
+    OpCode* operator*() const {
+        return bc.code[i];
+    }
+
+    BCBlobIterator& operator++() {
+        ++i;
+        // skip blobs
+        while (blob_idx < blobs->size()) {
+            auto *b = (*blobs)[blob_idx];
+
+            if (i < b->start_) break;
+
+            if (i >= b->start_ && i < b->end_) {
+                i = b->end_;
+            }
+
+            ++blob_idx;
+        }
+
+        return *this;
+    }
+
+    bool operator!=(const BCBlobIterator &other) const {
+        return i != other.i;
+    }
+};
 
 // class FunBlob : public BCBlob {
 // private:

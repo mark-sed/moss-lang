@@ -3,6 +3,14 @@
 using namespace moss;
 using namespace opcode;
 
+BCBlobIterator BCBlob::begin() {
+    return BCBlobIterator(bc, start_, end_, &inner_blobs);
+}
+
+BCBlobIterator BCBlob::end() {
+    return BCBlobIterator(bc, end_, end_, &inner_blobs);
+}
+
 BCBlob *BCBlob::parse_bc_impl(Bytecode &bc, Address start, Address end, BlobType type, bool is_glob) {
     std::vector<BCBlob *> inner_blobs;
 

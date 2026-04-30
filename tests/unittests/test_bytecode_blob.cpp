@@ -146,4 +146,50 @@ goo(4)
     delete mod;
 }
 
+TEST(BytecodeBlob, BlobIteration) {
+    ustring code = R"(
+a = 1
+fun foo() {
+    b = 4
+    fun foo_inner() {
+        a = 44
+    }
+    return 45
+}
+a = 3
+)";
+
+    // We should not see any of the function code, just the global scope
+    ustring expected = R"(
+STORE_INT_CONST
+STORE_CONST
+STORE_NAME
+STORE_INT_CONST
+STORE_CONST
+STORE_NAME
+END
+)";
+
+    SourceFile sf(code, SourceFile::SourceType::STRING);
+    Parser parser(sf);
+
+    auto mod = dyn_cast<ir::Module>(parser.parse());
+
+    auto bc = new Bytecode();
+    bcgen::BytecodeGen cgen(bc);
+    cgen.generate(mod);
+    BCBlob *bcb = BCBlob::parse_bc(*bc);
+
+    std::stringstream ss;
+    ss << "\n";
+    for (auto o: *bcb) {
+        ss << o->get_mnem() << "\n";
+    }
+    EXPECT_EQ(ss.str(), expected);
+
+    delete bcb;
+    delete bc;
+    delete mod;
+}
+
 }
