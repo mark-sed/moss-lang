@@ -22,6 +22,9 @@ void MemoryPool::store(opcode::Register reg, Value *v) {
 }
 
 Value *MemoryPool::load(opcode::Register reg) {
+    if (pool.find(reg) == pool.end()) {
+        outs << "\nREG: " << reg << "\n";
+    }
     assert(pool.find(reg) != pool.end() && "Pool access of unknown register");
     Value *v = pool[reg];
     assert(v && "Loading non-existent value");

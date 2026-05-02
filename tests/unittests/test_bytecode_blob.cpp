@@ -35,24 +35,24 @@ TEST(BytecodeBlob, BlobCreation) {
     
     EXPECT_EQ(get_bcb_mnems(bcb), "STORE_INT_CONST\nSTORE_INT_CONST\nSTORE_CONST\nJMP\nSTORE_NAME\nEND\n");
     
-    std::stringstream ss;
-    for (unsigned i = 0; i < bcb.size(); ++i) {
-        ss << bcb[i]->get_mnem() << "\n";
-    }
-    EXPECT_EQ(ss.str(), "STORE_INT_CONST\nSTORE_INT_CONST\nSTORE_CONST\nJMP\nSTORE_NAME\nEND\n");
+    // std::stringstream ss;
+    // for (unsigned i = 0; i < bcb.size(); ++i) {
+    //     ss << bcb[i]->get_mnem() << "\n";
+    // }
+    // EXPECT_EQ(ss.str(), "STORE_INT_CONST\nSTORE_INT_CONST\nSTORE_CONST\nJMP\nSTORE_NAME\nEND\n");
     std::stringstream ss2;
     ss2 << bcb;
     EXPECT_EQ(ss2.str(), "; Blob\n0\tSTORE_INT_CONST  #300, 7\n1\tSTORE_INT_CONST  #301, 42\n2\tSTORE_CONST  %0,  #301\n3\tJMP  5\n4\tSTORE_NAME  %0, \"a\"\n5\tEND\n");
 
     BCBlob bcb2(*bc, 2, 5);
     EXPECT_EQ(get_bcb_mnems(bcb2), "STORE_CONST\nJMP\nSTORE_NAME\n");
-    EXPECT_EQ(bcb2[0]->get_mnem(), "STORE_CONST");
-    EXPECT_EQ(bcb2[1]->get_mnem(), "JMP");
-    EXPECT_EQ(bcb2[2]->get_mnem(), "STORE_NAME");
+    // EXPECT_EQ(bcb2[0]->get_mnem(), "STORE_CONST");
+    // EXPECT_EQ(bcb2[1]->get_mnem(), "JMP");
+    // EXPECT_EQ(bcb2[2]->get_mnem(), "STORE_NAME");
     EXPECT_EQ(bcb2.front()->get_mnem(), "STORE_CONST");
-    EXPECT_EQ(bcb2.front(), bcb2[0]);
+    // EXPECT_EQ(bcb2.front(), bcb2[0]);
     EXPECT_EQ(bcb2.back()->get_mnem(), "STORE_NAME");
-    EXPECT_EQ(bcb2.back(), bcb2[bcb2.size()-1]);
+    // EXPECT_EQ(bcb2.back(), bcb2[bcb2.size()-1]);
 
     BCBlob bcb3(*bc, 5, 6);
     std::stringstream ss3;

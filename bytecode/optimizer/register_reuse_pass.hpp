@@ -19,7 +19,7 @@ namespace opcode {
 
 class RegisterReusePass : public BCPass {
 public:
-    virtual void run(BCBlob *bcb) override;
+    virtual bool run(BCBlob *bcb) override;
 };
 
 }

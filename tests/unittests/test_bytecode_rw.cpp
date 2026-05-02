@@ -48,6 +48,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     Bytecode *bc = new Bytecode();
     // This bytecode is incorrect and should not be interpreted nor verified
 
+    bc->push_back(new opcode::Nop());
     bc->push_back(new opcode::End());
 
     bc->push_back(new opcode::Load(0, "some_name"));

@@ -7,7 +7,7 @@ using namespace moss;
 using namespace opcode;
 
 std::list<BCPass *> moss::opcode::O1Pipeline{
-    new RegisterReusePass()
+    //new RegisterReusePass()
 };
 
 std::vector<BCBlob*> opcode::collect_all_blobs(BCBlob* root) {

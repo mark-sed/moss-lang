@@ -71,18 +71,29 @@ public:
 
     BCBlobIterator end();
 
-    void insert(OpCode *opc, Address i) {
-        bc.insert(opc, start_ + i);
+    // void insert(OpCode *opc, Address i) {
+    //     bc.insert(opc, start_ + i);
+    // }
+
+    //void erase(OpCode *opc) {
+    //    auto it = std::find(bc.code.begin(), bc.code.end(), opc);
+    //    if (it != bc.code.end()) {
+    //        bc.code.erase(it);
+    //    }
+    //}
+
+    BCBlobIterator erase(BCBlobIterator opc);
+
+    void replace_with_nop(Address bci) {
+        auto op = bc.code[bci];
+        bc.code[bci] = new Nop();
+        delete op;
     }
 
-    void erase(Address i) {
-        bc.erase(start_ + i);
-    }
-
-    OpCode* operator[](size_t i) const {
-        assert(start_ + i < end_ && "Accessing blob with [] out of bounds");
-        return bc.code[start_ + i];
-    }
+    // OpCode* operator[](size_t i) const {
+    //     assert(start_ + i < end_ && "Accessing blob with [] out of bounds");
+    //     return bc.code[start_ + i];
+    // }
 
     size_t size() const {
         return end_ - start_;
@@ -90,6 +101,10 @@ public:
 
     OpCode* front() const { return bc.code[start_]; }
     OpCode* back()  const { return bc.code[end_-1]; }
+
+    Bytecode &get_bc() { return this->bc; }
+
+    void replace_register(Register prev, Register replacement, bool constant_reg);
 
     ustring get_debug_name() {
         return BlobType2string(blob_type) + " [" + std::to_string(start_) + "; " + std::to_string(end_) + ")";
@@ -137,7 +152,7 @@ inline std::ostream& operator<< (std::ostream& os, BCBlob &bcb) {
 }
 
 class BCBlobIterator {
-    Bytecode &bc;
+    Bytecode *bc;
     size_t i;
     size_t end;
 
@@ -145,12 +160,12 @@ class BCBlobIterator {
     size_t blob_idx = 0;
 
 public:
-    BCBlobIterator(Bytecode &bc, size_t start, size_t end,
+    BCBlobIterator(Bytecode *bc, size_t start, size_t end,
                    const std::vector<BCBlob*> *blobs, size_t blob_idx = 0)
         : bc(bc), i(start), end(end), blobs(blobs), blob_idx(blob_idx) {}
 
     OpCode* operator*() const {
-        return bc.code[i];
+        return bc->code[i];
     }
 
     BCBlobIterator& operator++() {
@@ -170,6 +185,8 @@ public:
 
         return *this;
     }
+
+    size_t index() const { return i; }
 
     bool operator!=(const BCBlobIterator &other) const {
         return i != other.i;

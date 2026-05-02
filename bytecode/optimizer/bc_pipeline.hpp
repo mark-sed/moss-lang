@@ -35,7 +35,9 @@ public:
         std::vector<BCBlob *> all_blobs = collect_all_blobs(mod_blob);
         for (auto p: pipeline) {
             for (auto bcblb: all_blobs) {
-                p->run(bcblb);
+                if (p->run(bcblb)) {
+                    
+                }
             }
         }
     }

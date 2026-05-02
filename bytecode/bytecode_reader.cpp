@@ -141,6 +141,9 @@ Bytecode *BytecodeReader::read() {
             break;
 
         switch (opcode) {
+            case opcode::OpCodes::NOP: {
+                bc->push_back(new Nop());
+            } break;
             case opcode::OpCodes::END: {
                 bc->push_back(new End());
             } break;

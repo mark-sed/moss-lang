@@ -18,7 +18,7 @@ namespace opcode {
 
 class BCPass {
 public:
-    virtual void run(BCBlob *bcb) = 0;
+    virtual bool run(BCBlob *bcb) = 0;
 };
 
 }

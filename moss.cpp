@@ -176,8 +176,11 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    opcode::BCPipeline pipeline(bc, opcode::O1Pipeline);
-    pipeline.run();
+    if (clopts::O1) {
+        opcode::BCPipeline pipeline(bc, opcode::O1Pipeline);
+        pipeline.run();
+        LOG1("IR after optimization pipeline:\n" << *bc);
+    }
 
     if (parser != nullptr)
         delete parser;

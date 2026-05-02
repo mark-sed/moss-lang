@@ -15,6 +15,7 @@
 #include "utils.hpp"
 #include "diagnostics.hpp"
 #include <cstdint>
+#include <initializer_list>
 
 namespace moss {
 
@@ -39,7 +40,8 @@ namespace opcode {
 
 /// Opcode names and their corresponding number
 enum OpCodes : opcode_t {
-    END = 0, // End of code
+    NOP = 0, // No operation
+    END, // End of code
 
     LOAD,        //   %dst, "name"
     LOAD_ATTR,   //   %dst, %src, "name"
@@ -252,9 +254,29 @@ class OpCode {
 protected:
     OpCodes op_type;
     ustring mnem;
+    std::vector<Register *> operands;
+    std::vector<Register *> const_operands;
+    std::vector<Register *> defined_registers;
+    std::vector<Register *> defined_const_registers;
 
     OpCode(OpCodes op_type, ustring mnem) : op_type(op_type), mnem(mnem) {
         static_assert(OpCodes::OPCODES_AMOUNT <= 0xFF && "Opcodes cannot fit into 1 byte");
+    }
+
+    void set_operands(std::initializer_list<Register*> ops) {
+        operands = ops;
+    }
+
+    void set_const_operands(std::initializer_list<Register*> ops) {
+        const_operands = ops;
+    }
+
+    void set_defined_registers(std::initializer_list<Register*> ops) {
+        defined_registers = ops;
+    }
+
+    void set_defined_const_registers(std::initializer_list<Register*> ops) {
+        defined_const_registers = ops;
     }
 public:
     virtual ~OpCode() {}
@@ -272,6 +294,22 @@ public:
         (void)update_bci;
         (void)add_amount;
     }
+    void replace_register(Register prev, Register replacement, bool constant_reg) {
+        if (!constant_reg) {
+            for (auto *r: operands) {
+                if (*r == prev) {
+                    *r = replacement;
+                }
+            }
+        } else {
+            for (auto *r: const_operands) {
+                if (*r == prev) {
+                    *r = replacement;
+                }
+            }
+        }
+    }
+    std::vector<Register *> &get_defined_registers() { return this->defined_registers; }
 };
 
 /// Binary expression opcode
@@ -283,7 +321,9 @@ public:
 
 protected:
     BinExprOpCode(OpCodes code, ustring mnem, Register dst, Register src1, Register src2) 
-        : OpCode(code, mnem), dst(dst), src1(src1), src2(src2) {}
+            : OpCode(code, mnem), dst(dst), src1(src1), src2(src2) {
+        this->set_defined_registers({&this->dst});
+    }
 
 public:
     virtual ~BinExprOpCode() {}
@@ -312,6 +352,18 @@ inline bool operator==(OpCode &a, OpCode &b) {
     return a.equals(&b);
 }
 
+class Nop : public OpCode {
+public:
+    static const OpCodes ClassType = OpCodes::NOP;
+
+    Nop() : OpCode(ClassType, "NOP") {}
+
+    void exec(Interpreter *) override {};
+    bool equals(OpCode *other) override {
+        return isa<Nop>(other);
+    }
+};
+
 class End : public OpCode {
 public:
     static const OpCodes ClassType = OpCodes::END;
@@ -331,7 +383,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::LOAD;
 
-    Load(Register dst, StringConst name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {}
+    Load(Register dst, StringConst name) : OpCode(ClassType, "LOAD"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << dst << ", \"" << name << "\"";
@@ -352,7 +407,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::LOAD_ATTR;
 
-    LoadAttr(Register dst, Register src, StringConst name) : OpCode(ClassType, "LOAD_ATTR"), dst(dst), src(src), name(name) {}
+    LoadAttr(Register dst, Register src, StringConst name) : OpCode(ClassType, "LOAD_ATTR"), dst(dst), src(src), name(name) {
+        this->set_operands({&this->dst, &this->src});
+        this->set_defined_registers({&this->dst});
+    }
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << dst << ", %" << src << ", \"" << name << "\"";
@@ -372,7 +430,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::LOAD_GLOBAL;
 
-    LoadGlobal(Register dst, StringConst name) : OpCode(ClassType, "LOAD_GLOBAL"), dst(dst), name(name) {}
+    LoadGlobal(Register dst, StringConst name) : OpCode(ClassType, "LOAD_GLOBAL"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << dst << ", \"" << name << "\"";
@@ -392,7 +453,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::LOAD_NONLOC;
 
-    LoadNonLoc(Register dst, StringConst name) : OpCode(ClassType, "LOAD_NONLOC"), dst(dst), name(name) {}
+    LoadNonLoc(Register dst, StringConst name) : OpCode(ClassType, "LOAD_NONLOC"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << dst << ", \"" << name << "\"";
@@ -412,7 +476,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE;
 
-    Store(Register dst, Register src) : OpCode(ClassType, "STORE"), dst(dst), src(src) {}
+    Store(Register dst, Register src) : OpCode(ClassType, "STORE"), dst(dst), src(src) {
+        this->set_operands({&this->dst, &this->src});
+        this->set_defined_registers({&this->dst});
+    }
     void exec(Interpreter *vm) override;
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << dst << ", %" << src;
@@ -432,7 +499,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_NAME;
 
-    StoreName(Register dst, StringConst name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {}
+    StoreName(Register dst, StringConst name) : OpCode(ClassType, "STORE_NAME"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -454,7 +524,11 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_CONST;
 
-    StoreConst(Register dst, Register csrc) : OpCode(ClassType, "STORE_CONST"), dst(dst), csrc(csrc) {}
+    StoreConst(Register dst, Register csrc) : OpCode(ClassType, "STORE_CONST"), dst(dst), csrc(csrc) {
+        this->set_operands({&this->dst});
+        this->set_const_operands({&this->csrc});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -477,7 +551,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_ATTR;
 
-    StoreAttr(Register src, Register obj, StringConst name) : OpCode(ClassType, "STORE_ATTR"), src(src), obj(obj), name(name) {}
+    StoreAttr(Register src, Register obj, StringConst name) : OpCode(ClassType, "STORE_ATTR"), src(src), obj(obj), name(name) {
+        this->set_operands({&this->src, &this->obj});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -500,7 +576,11 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_CONST_ATTR;
 
-    StoreConstAttr(Register csrc, Register obj, StringConst name) : OpCode(ClassType, "STORE_CONST_ATTR"), csrc(csrc), obj(obj), name(name) {}
+    StoreConstAttr(Register csrc, Register obj, StringConst name)
+            : OpCode(ClassType, "STORE_CONST_ATTR"), csrc(csrc), obj(obj), name(name) {
+        this->set_operands({&this->obj});
+        this->set_const_operands({&this->csrc});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -523,7 +603,9 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_GLOBAL;
 
     StoreGlobal(Register src, StringConst name)
-        : OpCode(ClassType, "STORE_GLOBAL"), src(src), name(name) {}
+            : OpCode(ClassType, "STORE_GLOBAL"), src(src), name(name) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -546,7 +628,9 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_NONLOC;
 
     StoreNonLoc(Register src, StringConst name)
-        : OpCode(ClassType, "STORE_NONLOC"), src(src), name(name) {}
+            : OpCode(ClassType, "STORE_NONLOC"), src(src), name(name) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -570,7 +654,9 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_SUBSC;
 
     StoreSubsc(Register src, Register obj, Register key) 
-        : OpCode(ClassType, "STORE_SUBSC"), src(src), obj(obj), key(key) {}
+            : OpCode(ClassType, "STORE_SUBSC"), src(src), obj(obj), key(key) {
+        this->set_operands({&this->src, &this->obj, &this->key});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -594,7 +680,10 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_CONST_SUBSC;
 
     StoreConstSubsc(Register csrc, Register obj, Register key) 
-        : OpCode(ClassType, "STORE_CONST_SUBSC"), csrc(csrc), obj(obj), key(key) {}
+            : OpCode(ClassType, "STORE_CONST_SUBSC"), csrc(csrc), obj(obj), key(key) {
+        this->set_operands({&this->obj, &this->key});
+        this->set_const_operands({&this->csrc});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -618,7 +707,10 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_SUBSC_CONST;
 
     StoreSubscConst(Register src, Register obj, Register ckey) 
-        : OpCode(ClassType, "STORE_SUBSC_CONST"), src(src), obj(obj), ckey(ckey) {}
+            : OpCode(ClassType, "STORE_SUBSC_CONST"), src(src), obj(obj), ckey(ckey) {
+        this->set_operands({&this->src, &this->obj});
+        this->set_const_operands({&this->ckey});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -642,7 +734,10 @@ public:
     static const OpCodes ClassType = OpCodes::STORE_C_SUBSC_C;
 
     StoreConstSubscConst(Register csrc, Register obj, Register ckey) 
-        : OpCode(ClassType, "STORE_C_SUBSC_C"), csrc(csrc), obj(obj), ckey(ckey) {}
+            : OpCode(ClassType, "STORE_C_SUBSC_C"), csrc(csrc), obj(obj), ckey(ckey) {
+        this->set_operands({&this->obj});
+        this->set_const_operands({&this->csrc, &this->ckey});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -664,7 +759,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_INT_CONST;
 
-    StoreIntConst(Register dst, IntConst val) : OpCode(ClassType, "STORE_INT_CONST"), dst(dst), val(val) {}
+    StoreIntConst(Register dst, IntConst val) : OpCode(ClassType, "STORE_INT_CONST"), dst(dst), val(val) {
+        this->set_const_operands({&this->dst});
+        this->set_defined_const_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -686,7 +784,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_FLOAT_CONST;
 
-    StoreFloatConst(Register dst, FloatConst val) : OpCode(ClassType, "STORE_FLOAT_CONST"), dst(dst), val(val) {}
+    StoreFloatConst(Register dst, FloatConst val) : OpCode(ClassType, "STORE_FLOAT_CONST"), dst(dst), val(val) {
+        this->set_const_operands({&this->dst});
+        this->set_defined_const_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -710,7 +811,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_BOOL_CONST;
 
-    StoreBoolConst(Register dst, BoolConst val) : OpCode(ClassType, "STORE_BOOL_CONST"), dst(dst), val(val) {}
+    StoreBoolConst(Register dst, BoolConst val) : OpCode(ClassType, "STORE_BOOL_CONST"), dst(dst), val(val) {
+        this->set_const_operands({&this->dst});
+        this->set_defined_const_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -732,7 +836,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_STRING_CONST;
 
-    StoreStringConst(Register dst, StringConst val) : OpCode(ClassType, "STORE_STRING_CONST"), dst(dst), val(val) {}
+    StoreStringConst(Register dst, StringConst val) : OpCode(ClassType, "STORE_STRING_CONST"), dst(dst), val(val) {
+        this->set_const_operands({&this->dst});
+        this->set_defined_const_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -753,7 +860,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::STORE_NIL_CONST;
 
-    StoreNilConst(Register dst) : OpCode(ClassType, "STORE_NIL_CONST"), dst(dst) {}
+    StoreNilConst(Register dst) : OpCode(ClassType, "STORE_NIL_CONST"), dst(dst) {
+        this->set_const_operands({&this->dst});
+        this->set_defined_const_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -831,7 +941,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::JMP_IF_TRUE;
 
-    JmpIfTrue(Register src, Address addr) : OpCode(ClassType, "JMP_IF_TRUE"), src(src), addr(addr) {}
+    JmpIfTrue(Register src, Address addr) : OpCode(ClassType, "JMP_IF_TRUE"), src(src), addr(addr) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     void update_addrs(Address update_bci, Address add_amount) override {
@@ -858,7 +970,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::JMP_IF_FALSE;
 
-    JmpIfFalse(Register src, Address addr) : OpCode(ClassType, "JMP_IF_FALSE"), src(src), addr(addr) {}
+    JmpIfFalse(Register src, Address addr) : OpCode(ClassType, "JMP_IF_FALSE"), src(src), addr(addr) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     void update_addrs(Address update_bci, Address add_amount) override {
@@ -885,7 +999,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::CALL;
 
-    Call(Register dst, Register src) : OpCode(ClassType, "CALL"), dst(dst), src(src) {}
+    Call(Register dst, Register src) : OpCode(ClassType, "CALL"), dst(dst), src(src) {
+        this->set_operands({&this->dst, &this->src});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -908,7 +1025,10 @@ public:
     static const OpCodes ClassType = OpCodes::CALL_FORMATTER;
 
     CallFormatter(Register dst, StringConst name)
-        : OpCode(ClassType, "CALL_FORMATTER"), dst(dst), name(name) {}
+            : OpCode(ClassType, "CALL_FORMATTER"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -997,7 +1117,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::RETURN;
 
-    Return(Register src) : OpCode(ClassType, "RETURN"), src(src) {}
+    Return(Register src) : OpCode(ClassType, "RETURN"), src(src) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1018,7 +1140,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::RETURN_CONST;
 
-    ReturnConst(Register csrc) : OpCode(ClassType, "RETURN_CONST"), csrc(csrc) {}
+    ReturnConst(Register csrc) : OpCode(ClassType, "RETURN_CONST"), csrc(csrc) {
+        this->set_const_operands({&this->csrc});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1039,7 +1163,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::PUSH_ARG;
 
-    PushArg(Register src) : OpCode(ClassType, "PUSH_ARG"), src(src) {}
+    PushArg(Register src) : OpCode(ClassType, "PUSH_ARG"), src(src) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1060,7 +1186,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::PUSH_CONST_ARG;
 
-    PushConstArg(Register csrc) : OpCode(ClassType, "PUSH_CONST_ARG"), csrc(csrc) {}
+    PushConstArg(Register csrc) : OpCode(ClassType, "PUSH_CONST_ARG"), csrc(csrc) {
+        this->set_const_operands({&this->csrc});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1082,7 +1210,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::PUSH_NAMED_ARG;
 
-    PushNamedArg(Register src, StringConst name) : OpCode(ClassType, "PUSH_NAMED_ARG"), src(src), name(name) {}
+    PushNamedArg(Register src, StringConst name) : OpCode(ClassType, "PUSH_NAMED_ARG"), src(src), name(name) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1103,7 +1233,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::PUSH_UNPACKED;
 
-    PushUnpacked(Register src) : OpCode(ClassType, "PUSH_UNPACKED"), src(src) {}
+    PushUnpacked(Register src) : OpCode(ClassType, "PUSH_UNPACKED"), src(src) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1127,7 +1259,10 @@ public:
     static const OpCodes ClassType = OpCodes::CREATE_FUN;
 
     CreateFun(Register fun, StringConst name, StringConst arg_names) 
-                : OpCode(ClassType, "CREATE_FUN"), fun(fun), name(name), arg_names(arg_names) {}
+            : OpCode(ClassType, "CREATE_FUN"), fun(fun), name(name), arg_names(arg_names) {
+        this->set_operands({&this->fun});
+        this->set_defined_registers({&this->fun});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1148,7 +1283,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::FUN_BEGIN;
 
-    FunBegin(Register fun) : OpCode(ClassType, "FUN_BEGIN"), fun(fun) {}
+    FunBegin(Register fun) : OpCode(ClassType, "FUN_BEGIN"), fun(fun) {
+        this->set_operands({&this->fun});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1172,7 +1309,9 @@ public:
     static const OpCodes ClassType = OpCodes::SET_DEFAULT;
 
     SetDefault(Register fun, IntConst index, Register src) 
-                : OpCode(ClassType, "SET_DEFAULT"), fun(fun), index(index), src(src) {}
+            : OpCode(ClassType, "SET_DEFAULT"), fun(fun), index(index), src(src) {
+        this->set_operands({&this->fun, &this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1196,7 +1335,10 @@ public:
     static const OpCodes ClassType = OpCodes::SET_DEFAULT_CONST;
 
     SetDefaultConst(Register fun, IntConst index, Register csrc) 
-                : OpCode(ClassType, "SET_DEFAULT_CONST"), fun(fun), index(index), csrc(csrc) {}
+            : OpCode(ClassType, "SET_DEFAULT_CONST"), fun(fun), index(index), csrc(csrc) {
+        this->set_operands({&this->fun});
+        this->set_const_operands({&this->csrc});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1220,7 +1362,9 @@ public:
     static const OpCodes ClassType = OpCodes::SET_TYPE;
 
     SetType(Register fun, IntConst index, Register type) 
-                : OpCode(ClassType, "SET_TYPE"), fun(fun), index(index), type(type) {}
+            : OpCode(ClassType, "SET_TYPE"), fun(fun), index(index), type(type) {
+        this->set_operands({&this->fun, &this->type});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1242,7 +1386,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::SET_VARARG;
 
-    SetVararg(Register fun, IntConst index) : OpCode(ClassType, "SET_VARARG"), fun(fun), index(index) {}
+    SetVararg(Register fun, IntConst index) : OpCode(ClassType, "SET_VARARG"), fun(fun), index(index) {
+        this->set_operands({&this->fun});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1264,7 +1410,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::IMPORT;
 
-    Import(Register dst, StringConst name) : OpCode(ClassType, "IMPORT"), dst(dst), name(name) {}
+    Import(Register dst, StringConst name) : OpCode(ClassType, "IMPORT"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1285,7 +1434,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::IMPORT_ALL;
 
-    ImportAll(Register src) : OpCode(ClassType, "IMPORT_ALL"), src(src) {}
+    ImportAll(Register src) : OpCode(ClassType, "IMPORT_ALL"), src(src) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1306,7 +1457,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::PUSH_PARENT;
 
-    PushParent(Register parent) : OpCode(ClassType, "PUSH_PARENT"), parent(parent) {}
+    PushParent(Register parent) : OpCode(ClassType, "PUSH_PARENT"), parent(parent) {
+        this->set_operands({&this->parent});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1329,7 +1482,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::BUILD_CLASS;
 
-    BuildClass(Register dst, StringConst name) : OpCode(ClassType, "BUILD_CLASS"), dst(dst), name(name) {}
+    BuildClass(Register dst, StringConst name) : OpCode(ClassType, "BUILD_CLASS"), dst(dst), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1352,7 +1508,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::ANNOTATE;
 
-    Annotate(Register dst, StringConst name, Register val) : OpCode(ClassType, "ANNOTATE"), dst(dst), name(name), val(val) {}
+    Annotate(Register dst, StringConst name, Register val) : OpCode(ClassType, "ANNOTATE"), dst(dst), name(name), val(val) {
+        this->set_operands({&this->dst, &this->val});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1374,7 +1533,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::ANNOTATE_MOD;
 
-    AnnotateMod(StringConst name, Register val) : OpCode(ClassType, "ANNOTATE_MOD"), name(name), val(val) {}
+    AnnotateMod(StringConst name, Register val) : OpCode(ClassType, "ANNOTATE_MOD"), name(name), val(val) {
+        this->set_operands({&this->val});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1396,7 +1557,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::DOCUMENT;
 
-    Document(Register dst, StringConst val) : OpCode(ClassType, "DOCUMENT"), dst(dst), val(val) {}
+    Document(Register dst, StringConst val) : OpCode(ClassType, "DOCUMENT"), dst(dst), val(val) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1417,7 +1581,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::OUTPUT;
 
-    Output(Register src) : OpCode(ClassType, "OUTPUT"), src(src) {}
+    Output(Register src) : OpCode(ClassType, "OUTPUT"), src(src) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1435,392 +1601,542 @@ public:
 class Concat : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::CONCAT;
-    Concat(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "CONCAT", dst, src1, src2) {}
+    Concat(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "CONCAT", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Concat2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::CONCAT2;
-    Concat2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "CONCAT2", dst, csrc1, src2) {}
+    Concat2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "CONCAT2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Concat3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::CONCAT3;
-    Concat3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "CONCAT3", dst, src1, csrc2) {}
+    Concat3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "CONCAT3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Exp : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::EXP;
-    Exp(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "EXP", dst, src1, src2) {}
+    Exp(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "EXP", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Exp2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::EXP2;
-    Exp2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "EXP2", dst, csrc1, src2) {}
+    Exp2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "EXP2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Exp3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::EXP3;
-    Exp3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EXP3", dst, src1, csrc2) {}
+    Exp3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EXP3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Add : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::ADD;
-    Add(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "ADD", dst, src1, src2) {}
+    Add(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "ADD", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Add2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::ADD2;
-    Add2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "ADD2", dst, csrc1, src2) {}
+    Add2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "ADD2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Add3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::ADD3;
-    Add3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "ADD3", dst, src1, csrc2) {}
+    Add3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "ADD3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Sub : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUB;
-    Sub(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "SUB", dst, src1, src2) {}
+    Sub(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "SUB", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Sub2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUB2;
-    Sub2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SUB2", dst, csrc1, src2) {}
+    Sub2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SUB2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Sub3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUB3;
-    Sub3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUB3", dst, src1, csrc2) {}
+    Sub3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUB3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Div : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::DIV;
-    Div(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "DIV", dst, src1, src2) {}
+    Div(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "DIV", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Div2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::DIV2;
-    Div2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "DIV2", dst, csrc1, src2) {}
+    Div2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "DIV2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Div3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::DIV3;
-    Div3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "DIV3", dst, src1, csrc2) {}
+    Div3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "DIV3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Mul : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MUL;
-    Mul(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "MUL", dst, src1, src2) {}
+    Mul(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "MUL", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Mul2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MUL2;
-    Mul2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "MUL2", dst, csrc1, src2) {}
+    Mul2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "MUL2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Mul3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MUL3;
-    Mul3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MUL3", dst, src1, csrc2) {}
+    Mul3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MUL3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Mod : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MOD;
-    Mod(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "MOD", dst, src1, src2) {}
+    Mod(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "MOD", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Mod2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MOD2;
-    Mod2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "MOD2", dst, csrc1, src2) {}
+    Mod2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "MOD2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Mod3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::MOD3;
-    Mod3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MOD3", dst, src1, csrc2) {}
+    Mod3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "MOD3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Eq : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::EQ;
-    Eq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "EQ", dst, src1, src2) {}
+    Eq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "EQ", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Eq2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::EQ2;
-    Eq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "EQ2", dst, csrc1, src2) {}
+    Eq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "EQ2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Eq3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::EQ3;
-    Eq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EQ3", dst, src1, csrc2) {}
+    Eq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "EQ3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Neq : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::NEQ;
-    Neq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "NEQ", dst, src1, src2) {}
+    Neq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "NEQ", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Neq2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::NEQ2;
-    Neq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "NEQ2", dst, csrc1, src2) {}
+    Neq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "NEQ2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Neq3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::NEQ3;
-    Neq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "NEQ3", dst, src1, csrc2) {}
+    Neq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "NEQ3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Bt : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::BT;
-    Bt(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "BT", dst, src1, src2) {}
+    Bt(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "BT", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Bt2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::BT2;
-    Bt2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "BT2", dst, csrc1, src2) {}
+    Bt2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "BT2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Bt3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::BT3;
-    Bt3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "BT3", dst, src1, csrc2) {}
+    Bt3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "BT3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Lt : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::LT;
-    Lt(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "LT", dst, src1, src2) {}
+    Lt(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "LT", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Lt2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::LT2;
-    Lt2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "LT2", dst, csrc1, src2) {}
+    Lt2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "LT2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Lt3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::LT3;
-    Lt3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "LT3", dst, src1, csrc2) {}
+    Lt3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "LT3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Beq : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::BEQ;
-    Beq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "BEQ", dst, src1, src2) {}
+    Beq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "BEQ", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Beq2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::BEQ2;
-    Beq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "BEQ2", dst, csrc1, src2) {}
+    Beq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "BEQ2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Beq3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::BEQ3;
-    Beq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "BEQ3", dst, src1, csrc2) {}
+    Beq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "BEQ3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Leq : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::LEQ;
-    Leq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "LEQ", dst, src1, src2) {}
+    Leq(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "LEQ", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Leq2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::LEQ2;
-    Leq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "LEQ2", dst, csrc1, src2) {}
+    Leq2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "LEQ2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Leq3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::LEQ3;
-    Leq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "LEQ3", dst, src1, csrc2) {}
+    Leq3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "LEQ3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class In : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::IN;
-    In(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "IN", dst, src1, src2) {}
+    In(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "IN", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class In2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::IN2;
-    In2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "IN2", dst, csrc1, src2) {}
+    In2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "IN2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class In3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::IN3;
-    In3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "IN3", dst, src1, csrc2) {}
+    In3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "IN3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class And : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::AND;
-    And(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "AND", dst, src1, src2) {}
+    And(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "AND", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class And2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::AND2;
-    And2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "AND2", dst, csrc1, src2) {}
+    And2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "AND2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class And3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::AND3;
-    And3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "AND3", dst, src1, csrc2) {}
+    And3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "AND3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Or : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::OR;
-    Or(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "OR", dst, src1, src2) {}
+    Or(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "OR", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Or2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::OR2;
-    Or2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "OR2", dst, csrc1, src2) {}
+    Or2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "OR2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Or3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::OR3;
-    Or3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "OR3", dst, src1, csrc2) {}
+    Or3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "OR3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Xor : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::XOR;
-    Xor(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "XOR", dst, src1, src2) {}
+    Xor(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "XOR", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Xor2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::XOR2;
-    Xor2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "XOR2", dst, csrc1, src2) {}
+    Xor2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "XOR2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Xor3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::XOR3;
-    Xor3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "XOR3", dst, src1, csrc2) {}
+    Xor3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "XOR3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Subsc : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSC;
-    Subsc(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "SUBSC", dst, src1, src2) {}
+    Subsc(Register dst, Register src1, Register src2) : BinExprOpCode(ClassType, "SUBSC", dst, src1, src2) {
+        this->set_operands({&this->dst, &this->src1, &this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Subsc2 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSC2;
-    Subsc2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SUBSC2", dst, csrc1, src2) {}
+    Subsc2(Register dst, Register csrc1, Register src2) : BinExprOpCode(ClassType, "SUBSC2", dst, csrc1, src2) {
+        this->set_operands({&this->dst, &this->src2});
+        this->set_const_operands({&this->src1});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class Subsc3 : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSC3;
-    Subsc3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSC3", dst, src1, csrc2) {}
+    Subsc3(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSC3", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class SubscLast : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSCLAST;
-    SubscLast(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSCLAST", dst, src1, csrc2) {}
+    SubscLast(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSCLAST", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
 class SubscRest : public BinExprOpCode {
 public:
     static const OpCodes ClassType = OpCodes::SUBSCREST;
-    SubscRest(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSCREST", dst, src1, csrc2) {}
+    SubscRest(Register dst, Register src1, Register csrc2) : BinExprOpCode(ClassType, "SUBSCREST", dst, src1, csrc2) {
+        this->set_operands({&this->dst, &this->src1});
+        this->set_const_operands({&this->src2});
+    }
     void exec(Interpreter *vm) override;
 };
 
@@ -1831,7 +2147,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::NOT;
 
-    Not(Register dst, Register src) : OpCode(ClassType, "NOT"), dst(dst), src(src) {}
+    Not(Register dst, Register src) : OpCode(ClassType, "NOT"), dst(dst), src(src) {
+        this->set_operands({&this->dst, &this->src});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1853,7 +2172,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::NEG;
 
-    Neg(Register dst, Register src) : OpCode(ClassType, "NEG"), dst(dst), src(src) {}
+    Neg(Register dst, Register src) : OpCode(ClassType, "NEG"), dst(dst), src(src) {
+        this->set_operands({&this->dst, &this->src});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1876,7 +2198,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::ASSERT;
 
-    Assert(Register src, Register line, Register msg) : OpCode(ClassType, "ASSERT"), src(src), line(line), msg(msg) {}
+    Assert(Register src, Register line, Register msg) : OpCode(ClassType, "ASSERT"), src(src), line(line), msg(msg) {
+        this->set_operands({&this->src, &this->msg});
+        this->set_const_operands({&this->line});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1897,7 +2222,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::RAISE;
 
-    Raise(Register src) : OpCode(ClassType, "RAISE"), src(src) {}
+    Raise(Register src) : OpCode(ClassType, "RAISE"), src(src) {
+        this->set_operands({&this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -1950,7 +2277,9 @@ public:
     static const OpCodes ClassType = OpCodes::CATCH_TYPED;
 
     CatchTyped(StringConst name, Register type, Address addr, IntConst id)
-        : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr), id(id) {}
+            : OpCode(ClassType, "CATCH_TYPED"), name(name), type(type), addr(addr), id(id) {
+        this->set_operands({&this->type});
+    }
     
     void exec(Interpreter *vm) override;
     void update_addrs(Address update_bci, Address add_amount) override {
@@ -1998,7 +2327,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::FINALLY;
 
-    Finally(Address addr, Register caller) : OpCode(ClassType, "FINALLY"), addr(addr), caller(caller) {}
+    Finally(Address addr, Register caller) : OpCode(ClassType, "FINALLY"), addr(addr), caller(caller) {
+        this->set_const_operands({&this->caller});
+    }
     
     void exec(Interpreter *vm) override;
     void update_addrs(Address update_bci, Address add_amount) override {
@@ -2041,7 +2372,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::FINALLY_RETURN;
 
-    FinallyReturn(Register caller) : OpCode(ClassType, "FINALLY_RETURN"), caller(caller) {}
+    FinallyReturn(Register caller) : OpCode(ClassType, "FINALLY_RETURN"), caller(caller) {
+        this->set_const_operands({&this->caller});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2080,7 +2413,9 @@ public:
 
     static const OpCodes ClassType = OpCodes::LIST_PUSH;
 
-    ListPush(Register dst, Register src) : OpCode(ClassType, "LIST_PUSH"), dst(dst), src(src) {}
+    ListPush(Register dst, Register src) : OpCode(ClassType, "LIST_PUSH"), dst(dst), src(src) {
+        this->set_operands({&this->dst, &this->src});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2102,7 +2437,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::LIST_PUSH_CONST;
 
-    ListPushConst(Register dst, Register csrc) : OpCode(ClassType, "LIST_PUSH_CONST"), dst(dst), csrc(csrc) {}
+    ListPushConst(Register dst, Register csrc) : OpCode(ClassType, "LIST_PUSH_CONST"), dst(dst), csrc(csrc) {
+        this->set_operands({&this->dst});
+        this->set_const_operands({&this->csrc});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2123,7 +2461,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::BUILD_LIST;
 
-    BuildList(Register dst) : OpCode(ClassType, "BUILD_LIST"), dst(dst) {}
+    BuildList(Register dst) : OpCode(ClassType, "BUILD_LIST"), dst(dst) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2147,7 +2488,10 @@ public:
     static const OpCodes ClassType = OpCodes::BUILD_DICT;
 
     BuildDict(Register dst, Register keys, Register vals) 
-              : OpCode(ClassType, "BUILD_DICT"), dst(dst), keys(keys), vals(vals) {}
+            : OpCode(ClassType, "BUILD_DICT"), dst(dst), keys(keys), vals(vals) {
+        this->set_operands({&this->dst, &this->keys, &this->vals});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2171,7 +2515,10 @@ public:
     static const OpCodes ClassType = OpCodes::BUILD_ENUM;
 
     BuildEnum(Register dst, Register vals, StringConst name)
-        : OpCode(ClassType, "BUILD_ENUM"), dst(dst), vals(vals), name(name) {}
+            : OpCode(ClassType, "BUILD_ENUM"), dst(dst), vals(vals), name(name) {
+        this->set_operands({&this->dst, &this->vals});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2195,7 +2542,10 @@ public:
     static const OpCodes ClassType = OpCodes::BUILD_SPACE;
 
     BuildSpace(Register dst, StringConst name, bool anonymous)
-        : OpCode(ClassType, "BUILD_SPACE"), dst(dst), name(name), anonymous(anonymous) {}
+            : OpCode(ClassType, "BUILD_SPACE"), dst(dst), name(name), anonymous(anonymous) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2219,8 +2569,11 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE;
 
-    CreateRange(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->start, &this->next, &this->end});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2244,8 +2597,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE2;
 
-    CreateRange2(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE2"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange2(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE2"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->next, &this->end});
+        this->set_const_operands({&this->start});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2269,8 +2626,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE3;
 
-    CreateRange3(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE3"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange3(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE3"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->start, &this->end});
+        this->set_const_operands({&this->next});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2294,8 +2655,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE4;
 
-    CreateRange4(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE4"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange4(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE4"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->start, &this->next});
+        this->set_const_operands({&this->end});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2319,8 +2684,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE5;
 
-    CreateRange5(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE5"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange5(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE5"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->end});
+        this->set_const_operands({&this->start, &this->next});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2344,8 +2713,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE6;
 
-    CreateRange6(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE6"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange6(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE6"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->next});
+        this->set_const_operands({&this->start, &this->end});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2369,8 +2742,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE7;
 
-    CreateRange7(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE7"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange7(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE7"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst, &this->start});
+        this->set_const_operands({&this->next, &this->end});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2394,8 +2771,12 @@ public:
 
     static const OpCodes ClassType = OpCodes::CREATE_RANGE8;
 
-    CreateRange8(Register dst, Register start, Register next, Register end) :
-        OpCode(ClassType, "CREATE_RANGE8"), dst(dst), start(start), next(next), end(end) {}
+    CreateRange8(Register dst, Register start, Register next, Register end)
+            : OpCode(ClassType, "CREATE_RANGE8"), dst(dst), start(start), next(next), end(end) {
+        this->set_operands({&this->dst});
+        this->set_const_operands({&this->start, &this->next, &this->end});
+        this->set_defined_registers({&this->dst});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2419,9 +2800,11 @@ public:
 
     static const OpCodes ClassType = OpCodes::SWITCH;
 
-    Switch(Register src, Register vals, Register addrs, Register default_addr) :
-        OpCode(ClassType, "SWITCH"), src(src), vals(vals), addrs(addrs), default_addr(default_addr) {}
-    
+    Switch(Register src, Register vals, Register addrs, Register default_addr)
+            : OpCode(ClassType, "SWITCH"), src(src), vals(vals), addrs(addrs), default_addr(default_addr) {
+        this->set_operands({&this->src, &this->vals, &this->addrs, &this->default_addr});
+    }
+
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
@@ -2445,7 +2828,10 @@ public:
     static const OpCodes ClassType = OpCodes::FOR;
 
     For(Register index, Register collection, Address addr)
-        : OpCode(ClassType, "FOR"), index(index), collection(collection), addr(addr) {}
+            : OpCode(ClassType, "FOR"), index(index), collection(collection), addr(addr) {
+        this->set_operands({&this->index, &this->collection});
+        this->set_defined_registers({&this->index});
+    }
     
     void exec(Interpreter *vm) override;
     void update_addrs(Address update_bci, Address add_amount) override {
@@ -2475,7 +2861,11 @@ public:
     static const OpCodes ClassType = OpCodes::FOR_MULTI;
 
     ForMulti(Register vars, Register collection, Address addr, Register unpack)
-        : OpCode(ClassType, "FOR_MULTI"), vars(vars), collection(collection), addr(addr), unpack(unpack) {}
+            : OpCode(ClassType, "FOR_MULTI"), vars(vars), collection(collection), addr(addr), unpack(unpack) {
+        this->set_operands({&this->vars, &this->collection});
+        this->set_const_operands({&this->unpack});
+        // Here we write into all the registers in vars
+    }
     
     void exec(Interpreter *vm) override;
     void update_addrs(Address update_bci, Address add_amount) override {
@@ -2502,7 +2892,10 @@ public:
 
     static const OpCodes ClassType = OpCodes::ITER;
 
-    Iter(Register iterator, Register collection) : OpCode(ClassType, "ITER"), iterator(iterator), collection(collection) {}
+    Iter(Register iterator, Register collection) : OpCode(ClassType, "ITER"), iterator(iterator), collection(collection) {
+        this->set_operands({&this->iterator, &this->collection});
+        this->set_defined_registers({&this->iterator});
+    }
     
     void exec(Interpreter *vm) override;
     
@@ -2550,6 +2943,11 @@ public:
         return isa<LoopEnd>(other);
     }
 };
+
+inline bool modifies_CFG(OpCode *opc) {
+    return isa<Jmp>(opc) || isa<BreakTo>(opc) ||  isa<JmpIfTrue>(opc) 
+        || isa<JmpIfFalse>(opc) || isa<LoopBegin>(opc);
+}
 
 }
 
