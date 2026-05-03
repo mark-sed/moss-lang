@@ -2818,7 +2818,7 @@ void PopFinally::exec(Interpreter *vm) {
 }
 
 void FinallyReturn::exec(Interpreter *vm) {
-    auto addrv = vm->load_const(caller);
+    auto addrv = vm->load(caller);
     auto addr = dyn_cast<IntValue>(addrv);
     if (addr && addr->get_value() > 0) {
         // Set bci only when addr was set (not nil)

@@ -1815,8 +1815,9 @@ void BytecodeGen::emit(ir::Try *tcf) {
 
     // Finally and its register -- it needs to be called even when it was
     // not defined by the user because catches need to be popped
-    Register finally_register = next_creg();
-    append(new opcode::StoreNilConst(finally_register));
+    Register finally_register = next_reg();
+    append(new opcode::StoreNilConst(next_creg()));
+    append(new opcode::StoreConst(finally_register, val_last_creg()));
     opcode::Finally *fnl_op = new opcode::Finally(0, finally_register);
     append(fnl_op);
 
@@ -1844,7 +1845,8 @@ void BytecodeGen::emit(ir::Try *tcf) {
         // Generating pop_catch
         append(new opcode::PopCatch(catch_am));
         // Set finally caller register to a -1 to convey it being in catch
-        append(new opcode::StoreIntConst(finally_register, -1));
+        append(new opcode::StoreIntConst(next_creg(), -1));
+        append(new opcode::StoreConst(finally_register, val_last_creg()));
         emit(ctch->get_body());
 
         append(new opcode::RunFinally());

@@ -2328,7 +2328,7 @@ public:
     static const OpCodes ClassType = OpCodes::FINALLY;
 
     Finally(Address addr, Register caller) : OpCode(ClassType, "FINALLY"), addr(addr), caller(caller) {
-        this->set_const_operands({&this->caller});
+        this->set_operands({&this->caller});
     }
     
     void exec(Interpreter *vm) override;
@@ -2339,7 +2339,7 @@ public:
     }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << " " << addr << ", #" << caller;
+        os << mnem << " " << addr << ", %" << caller;
         return os;
     }
     bool equals(OpCode *other) override {
@@ -2373,13 +2373,13 @@ public:
     static const OpCodes ClassType = OpCodes::FINALLY_RETURN;
 
     FinallyReturn(Register caller) : OpCode(ClassType, "FINALLY_RETURN"), caller(caller) {
-        this->set_const_operands({&this->caller});
+        this->set_operands({&this->caller});
     }
     
     void exec(Interpreter *vm) override;
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << ", #" << caller;
+        os << mnem << ", %" << caller;
         return os;
     }
     bool equals(OpCode *other) override {

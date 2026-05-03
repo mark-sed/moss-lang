@@ -91,6 +91,7 @@ set(SOURCES
     bytecode/opcode.cpp
     bytecode/optimizer/bc_pipeline.cpp
     bytecode/optimizer/register_reuse_pass.cpp
+    bytecode/optimizer/LICM_pass.cpp
     vm/gc.cpp
     vm/interpreter.cpp
     vm/memory.cpp
