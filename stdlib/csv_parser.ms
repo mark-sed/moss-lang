@@ -143,7 +143,7 @@ class CSVParser : parsing_utils.TextualParser {
         for (row: parsed) {
             t = []
             for (cell: row) {
-                ~t.append(cell)
+                ~t.append([cell])
             }
             ~tbl.append(t)
         }

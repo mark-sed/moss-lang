@@ -309,7 +309,7 @@ class MDTable : MDToken {
                 }
             }
             return html_parser.HTMLTable(lst, alignments=align)
-        } 
+        }
         return html_parser.HTMLTable(lst)
     }
 
