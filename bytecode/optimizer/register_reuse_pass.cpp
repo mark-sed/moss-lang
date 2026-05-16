@@ -7,9 +7,9 @@ using namespace opcode;
 
 bool RegisterReusePass::run(BCBlob *bcb) {
     LOGMAX("Running register reuse pass on " << bcb->get_debug_name());
-    // TODO: Keep track of constant registers (which dont change) and if value
+    // Keep track of constant registers (which dont change) and if value
     // is needed that is already in some const register, then reuse it.
-    // This table has to be reset on merging of CFG (we have to be sure that
+    // These tables have to be reset on merging of CFG (we have to be sure that
     // the value we expect was really assigned).
     // Exceptions should not be an issue as the const register should not be
     // overwritten.
@@ -23,6 +23,7 @@ bool RegisterReusePass::run(BCBlob *bcb) {
     std::list<Address> jmp_targets;
     bool modified = false;
     bool reached_fun_start = false;
+    std::vector<Address> switch_defaults{};
 
     auto clear_maps = [&]() {
         int_map.clear();
@@ -45,6 +46,11 @@ bool RegisterReusePass::run(BCBlob *bcb) {
         }
         bool erased = false;
         Address bci = oit.index();
+        if (!switch_defaults.empty()) {
+            while (switch_defaults.back() == bci) {
+                switch_defaults.pop_back();
+            }
+        }
         // Invalidate if this is a merging path (target of a jump)
         // TODO: Add check if register assigment dominates current use and use
         // that for reuse rather than clearing the table on merging paths.
@@ -58,9 +64,19 @@ bool RegisterReusePass::run(BCBlob *bcb) {
             clear_maps();
             jmp_targets.erase(target_it);
         }
-        // No need to invalidate constants on reaching a jump since the constant
-        // register cannot be overwritten.
-        if (opcode::modifies_CFG(o)) {
+        
+        if (auto swtch = dyn_cast<opcode::Switch>(o)) {
+            // Switch has to be tracked separately as we don't know all the
+            // target addresses.
+            switch_defaults.push_back(swtch->default_addr);
+        } else if (opcode::modifies_CFG(o)) {
+            // If we're inside of a switch then we have to clear on every jmp
+            // since we don't know merging points (those are inside of a list).
+            if (!switch_defaults.empty()) {
+                clear_maps();
+            }
+            // No need to invalidate constants on reaching a jump since the constant
+            // register cannot be overwritten.
             if (auto jmp = dyn_cast<Jmp>(o)) {
                 jmp_targets.push_back(jmp->addr);
             } else if (auto jmp = dyn_cast<JmpIfTrue>(o)) {

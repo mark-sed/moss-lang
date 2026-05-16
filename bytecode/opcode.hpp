@@ -2946,7 +2946,7 @@ public:
 
 inline bool modifies_CFG(OpCode *opc) {
     return isa<Jmp>(opc) || isa<BreakTo>(opc) ||  isa<JmpIfTrue>(opc) 
-        || isa<JmpIfFalse>(opc) || isa<LoopBegin>(opc);
+        || isa<JmpIfFalse>(opc) || isa<LoopBegin>(opc) || isa<Switch>(opc);
 }
 
 }
