@@ -4,11 +4,11 @@ using namespace moss;
 using namespace opcode;
 
 BCBlobIterator BCBlob::begin() {
-    return BCBlobIterator(bc, start_, end_, &inner_blobs);
+    return BCBlobIterator(&bc, start_, end_, &inner_blobs);
 }
 
 BCBlobIterator BCBlob::end() {
-    return BCBlobIterator(bc, end_, end_, &inner_blobs);
+    return BCBlobIterator(&bc, end_, end_, &inner_blobs);
 }
 
 BCBlob *BCBlob::parse_bc_impl(Bytecode &bc, Address start, Address end, BlobType type, bool is_glob) {
@@ -63,4 +63,46 @@ BCBlob *BCBlob::parse_bc_impl(Bytecode &bc, Address start, Address end, BlobType
 
 BCBlob *BCBlob::parse_bc(Bytecode &bc) {
     return parse_bc_impl(bc, 0, bc.size(), BlobType::BC_BLOB, true);
+}
+
+void BCBlob::replace_register(Register prev, Register replacement, bool constant_reg) {
+    for (auto o: *this) {
+        o->replace_register(prev, replacement, constant_reg);
+    }
+}
+
+BCBlobIterator BCBlob::erase(BCBlobIterator it) {
+    size_t idx = it.index();
+
+    bc.erase(idx);
+    --end_;
+
+    for (auto* b : inner_blobs) {
+        if (b->start_ > idx) {
+            --b->start_;
+            --b->end_;
+        } else if (b->end_ > idx) {
+            --b->end_;
+        }
+    }
+
+    // construct final iterator directly (no assignment)
+    BCBlobIterator next(&bc, idx, end_, &inner_blobs);
+
+    // normalize without assignment
+    while (true) {
+        bool jumped = false;
+
+        for (auto* b : inner_blobs) {
+            if (next.index() >= b->start_ && next.index() < b->end_) {
+                next = BCBlobIterator(&bc, b->end_, end_, &inner_blobs);
+                jumped = true;
+                break;
+            }
+        }
+
+        if (!jumped) break;
+    }
+
+    return next;
 }

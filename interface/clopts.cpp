@@ -15,6 +15,7 @@ static std::ostream *output_note_file = nullptr; ///< Stream into which output n
 
 static std::vector<ustring> program_args;
 static WarningLevel warn_level = WarningLevel::WL_IGNORE;
+static int opt_level_parsed;
 
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     args::HelpFlag help(interface_group, "help", "Display available options", {'h', "help"});
@@ -65,6 +66,16 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
             // TODO: Word more nicely and add explanation for the levels
             error::error(error::ErrorCode::ARGUMENT, ustring("Unknown -W value '" + args::get(warning) + "'! Value can be one for these: all, error, ignore").c_str());
         }
+    }
+
+    if (opt_level) {
+        opt_level_parsed = args::get(opt_level);
+        if (opt_level_parsed < 0 || opt_level_parsed > 2) {
+            ustring msg = "Incorrect optimization level ('" + std::to_string(opt_level_parsed) + "'). Currently moss supports optimization levels 0 and 1";
+            error::error(error::ErrorCode::ARGUMENT, msg.c_str());
+        }
+    } else {
+        opt_level_parsed = 0;
     }
 }
 
@@ -119,4 +130,8 @@ ustring moss::clopts::get_note_format() {
 
 WarningLevel moss::clopts::get_warning_level() {
     return warn_level;
+}
+
+int moss::clopts::get_opt_level() {
+    return opt_level_parsed;
 }

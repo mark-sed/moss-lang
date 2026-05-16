@@ -172,6 +172,16 @@ Interpreter::~Interpreter() {
         // is created, like in unit test case
         Interpreter::gc = nullptr;
 
+        // With interning and register reuse some notes might be duplicated
+        // and have to be deleted only once.
+        std::unordered_set<Value*> seen;
+        auto it = std::remove_if(generator_notes.begin(), generator_notes.end(),
+            [&](Value* ptr) {
+                return !seen.insert(ptr).second;
+            }
+        );
+        generator_notes.erase(it, generator_notes.end());
+
         for (auto v: generator_notes) {
             delete v;
         }
@@ -558,7 +568,7 @@ void Interpreter::call_finally(opcode::Address off) {
     int addr_offset = 0;
     if (is_try_not_in_catch())
         addr_offset = -1;
-    store_const(fnl->caller, IntValue::get(get_bci()));
+    store(fnl->caller, IntValue::get(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
     // pop_catch is at this address.
     runtime_finally_jump(fnl->addr + addr_offset, off);
@@ -567,7 +577,7 @@ void Interpreter::call_finally(opcode::Address off) {
 bool Interpreter::is_try_not_in_catch() {
     assert(has_finally() && "Getting finally address from empty stack");
     auto fnl = get_top_frame()->get_finally_stack().back();
-    auto val = load_const(fnl->caller);
+    auto val = load(fnl->caller);
     return isa<NilValue>(val);
 }
 

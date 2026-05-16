@@ -60,7 +60,7 @@ void BytecodeWriter::write(Bytecode *code) {
     for (opcode::OpCode *op_gen: code->get_code()) {
         opcode_t opc = op_gen->get_type();
         write_raw(reinterpret_cast<char *>(&opc), BC_OPCODE_SIZE);
-        if (isa<opcode::End>(op_gen)){
+        if (isa<opcode::End>(op_gen) || isa<opcode::Nop>(op_gen)){
             // Nothing to do
         }
         else if (auto o = dyn_cast<opcode::Load>(op_gen)){

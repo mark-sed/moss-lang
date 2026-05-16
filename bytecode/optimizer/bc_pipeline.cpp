@@ -1,5 +1,6 @@
 #include "bc_pipeline.hpp"
 #include "register_reuse_pass.hpp"
+#include "LICM_pass.hpp"
 #include <vector>
 #include <unordered_set>
 
@@ -7,7 +8,13 @@ using namespace moss;
 using namespace opcode;
 
 std::list<BCPass *> moss::opcode::O1Pipeline{
-    new RegisterReusePass()
+    new RegisterReusePass(),
+    new LICMPass()
+};
+
+std::list<BCPass *> moss::opcode::O2Pipeline{
+    new RegisterReusePass(true),
+    new LICMPass()
 };
 
 std::vector<BCBlob*> opcode::collect_all_blobs(BCBlob* root) {

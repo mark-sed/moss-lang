@@ -18,8 +18,12 @@ namespace moss {
 namespace opcode {
 
 class RegisterReusePass : public BCPass {
+private:
+    bool reuse_strings;
 public:
-    virtual void run(BCBlob *bcb) override;
+    RegisterReusePass(bool reuse_strings=false) : BCPass(), reuse_strings(reuse_strings) {}
+
+    virtual bool run(BCBlob *bcb) override;
 };
 
 }

@@ -1,7 +1,7 @@
 /// 
 /// \file clopts.hpp
 /// \author Marek Sedlacek
-/// \copyright Copyright 2024-2025 Marek Sedlacek. All rights reserved.
+/// \copyright Copyright 2024-2026 Marek Sedlacek. All rights reserved.
 ///            See accompanied LICENSE file.
 /// 
 /// \brief Command line options handler
@@ -35,6 +35,8 @@ inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecod
 
 inline args::Flag input_bc(bc_group, "bytecode", "Treats input file as bytecode file", {"bytecode"});
 inline args::Flag print_bc_info(bc_group, "print-bc-header", "Prints bytecode file (.msb) header and exits", {"print-bc-header"});
+
+inline args::ValueFlag<int> opt_level(bc_group, "level", "Optimization level for bytecode optimizer", {'x', "opt"});
 
 // Note flags
 inline args::Group note_group(arg_parser, "Note and output options:");
@@ -106,6 +108,9 @@ std::vector<ustring> get_program_args();
 
 /// \return Wargning level selected by user
 WarningLevel get_warning_level();
+
+/// \return Opt level specified
+int get_opt_level();
 
 }
 

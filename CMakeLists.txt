@@ -91,6 +91,7 @@ set(SOURCES
     bytecode/opcode.cpp
     bytecode/optimizer/bc_pipeline.cpp
     bytecode/optimizer/register_reuse_pass.cpp
+    bytecode/optimizer/LICM_pass.cpp
     vm/gc.cpp
     vm/interpreter.cpp
     vm/memory.cpp
@@ -251,6 +252,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/test_parser_examples.cpp
         tests/unittests/test_parser.cpp
         tests/unittests/test_passes.cpp
+        tests/unittests/test_register_reuse_pass.cpp
         tests/unittests/test_scanner.cpp
         )
 
