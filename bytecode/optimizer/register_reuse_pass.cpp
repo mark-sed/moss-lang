@@ -14,18 +14,34 @@ bool RegisterReusePass::run(BCBlob *bcb) {
     // Exceptions should not be an issue as the const register should not be
     // overwritten.
     
+    // TODO: Fill this for global frame with known values from builtin.
     std::map<IntConst, Register> int_map;
-    //std::map<IntConst, Register> float_map;
+    std::map<FloatConst, Register> float_map;
+    std::map<BoolConst, Register> bool_map;
+    std::optional<Register> nil_reg{};
     std::list<Address> jmp_targets;
     bool modified = false;
+    bool reached_fun_start = false;
 
     auto clear_maps = [&]() {
         int_map.clear();
-        //float_map.clear();
+        float_map.clear();
+        bool_map.clear();
+        nil_reg = std::nullopt;
     };
     
     for (BCBlobIterator oit = bcb->begin(); oit != bcb->end();) {
         auto o = *oit;
+        // If function blob, then skip until frame start, which is at pop call
+        // frame.
+        if (bcb->get_type() == BlobType::FUN_BLOB && !reached_fun_start && !isa<PopCallFrame>(o)) {
+            ++oit;
+            continue;
+        } else {
+            reached_fun_start = true;
+            ++oit;
+            continue;
+        }
         bool erased = false;
         Address bci = oit.index();
         // Invalidate if this is a merging path (target of a jump)
@@ -67,6 +83,29 @@ bool RegisterReusePass::run(BCBlob *bcb) {
                 bcb->replace_with_nop(bci);
             } else {
                 int_map[si->val] = si->dst;
+            }
+        } else if (auto si = dyn_cast<StoreFloatConst>(o)) {
+            auto it = float_map.find(si->val);
+            if (it != float_map.end()) {
+                bcb->replace_register(si->dst, it->second, true);
+                bcb->replace_with_nop(bci);
+            } else {
+                float_map[si->val] = si->dst;
+            }
+        } else if (auto si = dyn_cast<StoreBoolConst>(o)) {
+            auto it = bool_map.find(si->val);
+            if (it != bool_map.end()) {
+                bcb->replace_register(si->dst, it->second, true);
+                bcb->replace_with_nop(bci);
+            } else {
+                bool_map[si->val] = si->dst;
+            }
+        } else if (auto si = dyn_cast<StoreNilConst>(o)) {
+            if (nil_reg.has_value()) {
+                bcb->replace_register(si->dst, nil_reg.value(), true);
+                bcb->replace_with_nop(bci);
+            } else {
+                nil_reg = si->dst;
             }
         }
         if (!erased) {
