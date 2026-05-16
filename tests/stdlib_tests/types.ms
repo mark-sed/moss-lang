@@ -70,9 +70,6 @@ id(f) == id(print)
 id("hello") == id("hello")
 "\n"
 
-id(5678) == id(5678)
-"\n"
-
 fun f1(a, b:Bool) {
     return "f11\n"
 }

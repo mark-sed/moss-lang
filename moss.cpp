@@ -176,7 +176,7 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    if (clopts::O1) {
+    if (clopts::get_opt_level() == 1) {
         opcode::BCPipeline pipeline(bc, opcode::O1Pipeline);
         pipeline.run();
         LOG1("IR after optimization pipeline:\n" << *bc);
