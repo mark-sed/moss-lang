@@ -44,6 +44,7 @@ public:
 };
 
 extern std::list<BCPass *> O1Pipeline;
+extern std::list<BCPass *> O2Pipeline;
 
 }
 }

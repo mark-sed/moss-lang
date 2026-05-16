@@ -18,6 +18,7 @@ bool RegisterReusePass::run(BCBlob *bcb) {
     std::map<IntConst, Register> int_map;
     std::map<FloatConst, Register> float_map;
     std::map<BoolConst, Register> bool_map;
+    std::map<StringConst, Register> string_map;
     std::optional<Register> nil_reg{};
     std::list<Address> jmp_targets;
     bool modified = false;
@@ -28,6 +29,8 @@ bool RegisterReusePass::run(BCBlob *bcb) {
         float_map.clear();
         bool_map.clear();
         nil_reg = std::nullopt;
+        if (this->reuse_strings)
+            string_map.clear();
     };
     
     for (BCBlobIterator oit = bcb->begin(); oit != bcb->end();) {
@@ -39,8 +42,6 @@ bool RegisterReusePass::run(BCBlob *bcb) {
             continue;
         } else {
             reached_fun_start = true;
-            ++oit;
-            continue;
         }
         bool erased = false;
         Address bci = oit.index();
@@ -106,6 +107,15 @@ bool RegisterReusePass::run(BCBlob *bcb) {
                 bcb->replace_with_nop(bci);
             } else {
                 nil_reg = si->dst;
+            }
+        } else if (this->reuse_strings && isa<StoreStringConst>(o)) {
+            auto si = dyn_cast<StoreStringConst>(o);
+            auto it = string_map.find(si->val);
+            if (it != string_map.end()) {
+                bcb->replace_register(si->dst, it->second, true);
+                bcb->replace_with_nop(bci);
+            } else {
+                string_map[si->val] = si->dst;
             }
         }
         if (!erased) {

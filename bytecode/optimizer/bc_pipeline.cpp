@@ -12,6 +12,11 @@ std::list<BCPass *> moss::opcode::O1Pipeline{
     new LICMPass()
 };
 
+std::list<BCPass *> moss::opcode::O2Pipeline{
+    new RegisterReusePass(true),
+    new LICMPass()
+};
+
 std::vector<BCBlob*> opcode::collect_all_blobs(BCBlob* root) {
     std::vector<BCBlob*> result;
     if (!root)

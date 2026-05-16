@@ -172,6 +172,16 @@ Interpreter::~Interpreter() {
         // is created, like in unit test case
         Interpreter::gc = nullptr;
 
+        // With interning and register reuse some notes might be duplicated
+        // and have to be deleted only once.
+        std::unordered_set<Value*> seen;
+        auto it = std::remove_if(generator_notes.begin(), generator_notes.end(),
+            [&](Value* ptr) {
+                return !seen.insert(ptr).second;
+            }
+        );
+        generator_notes.erase(it, generator_notes.end());
+
         for (auto v: generator_notes) {
             delete v;
         }

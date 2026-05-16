@@ -176,10 +176,14 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    if (clopts::get_opt_level() == 1) {
-        opcode::BCPipeline pipeline(bc, opcode::O1Pipeline);
+    if (clopts::get_opt_level() > 0) {
+        auto ppln = opcode::O1Pipeline;
+        if (clopts::get_opt_level() == 2) {
+            ppln = opcode::O2Pipeline;
+        }
+        opcode::BCPipeline pipeline(bc, ppln);
         pipeline.run();
-        LOG1("IR after optimization pipeline:\n" << *bc);
+        LOG1("IR after optimization pipeline level " << clopts::get_opt_level << ": " << *bc);
     }
 
     if (parser != nullptr)

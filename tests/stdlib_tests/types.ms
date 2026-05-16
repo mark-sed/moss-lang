@@ -67,8 +67,6 @@ f = print
 id(f) == id(print)
 
 "\n"
-id("hello") == id("hello")
-"\n"
 
 fun f1(a, b:Bool) {
     return "f11\n"
