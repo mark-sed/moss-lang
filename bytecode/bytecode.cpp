@@ -1,5 +1,6 @@
 #include "bytecode.hpp"
 #include "clopts.hpp"
+#include <algorithm>
 
 using namespace moss;
 using namespace opcode;
@@ -55,4 +56,11 @@ void Bytecode::erase(Address bci) {
     }
     assert(op && "Sanity check");
     delete op;
+}
+
+void Bytecode::erase_nops() {
+    code.erase(
+        std::remove_if(code.begin(), code.end(),
+                       [](opcode::OpCode *o) { return isa<opcode::Nop>(o); }),
+        code.end());
 }

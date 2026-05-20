@@ -50,7 +50,9 @@ public:
 
     void insert(opcode::OpCode *op, opcode::Address bci);
 
+    /// \note this invalidates any blobs parsed before this.
     void erase(opcode::Address bci);
+    void erase_nops();
 
     bool empty() { return code.empty(); }
 

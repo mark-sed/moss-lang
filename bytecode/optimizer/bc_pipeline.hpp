@@ -40,6 +40,13 @@ public:
                 }
             }
         }
+        // Erase blobs here since they will be invalidated anyway
+        for (auto b: all_blobs) {
+            delete b;
+        }
+        all_blobs.clear();
+
+        bc->erase_nops();
     }
 };
 
