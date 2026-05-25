@@ -2806,6 +2806,9 @@ public:
     }
 
     void exec(Interpreter *vm) override;
+    void update_addrs(Address update_bci, Address add_amount) override {
+        assert(false && "TODO: Update switch addresses");
+    }
     
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << mnem << "  %" << src << ", %" << vals << ", %" << addrs << ", %" << default_addr;

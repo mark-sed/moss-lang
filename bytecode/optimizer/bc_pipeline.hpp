@@ -46,7 +46,8 @@ public:
         }
         all_blobs.clear();
 
-        bc->erase_nops();
+        // TODO: Enable once switch addresses can be updated
+        //bc->erase_nops();
     }
 };
 

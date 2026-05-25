@@ -59,8 +59,17 @@ void Bytecode::erase(Address bci) {
 }
 
 void Bytecode::erase_nops() {
-    code.erase(
-        std::remove_if(code.begin(), code.end(),
-                       [](opcode::OpCode *o) { return isa<opcode::Nop>(o); }),
-        code.end());
+    // We have to update addresses so delete one by one
+    while (true) {
+        size_t i = 0;
+        for (i = 0; i < code.size(); ++i) {
+            if (isa<Nop>(code[i])) {
+                erase(i);
+                break;
+            }
+        }
+        if (i == code.size()) {
+            break;
+        }
+    }
 }
