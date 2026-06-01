@@ -289,7 +289,7 @@ public:
     std::string err_mgs(std::string msg, Interpreter *vm);
     virtual bool equals(OpCode *other) = 0;
     virtual void exec(Interpreter *vm) = 0;
-    virtual void update_addrs(Address update_bci, Address add_amount) {
+    virtual void update_addrs(Address update_bci, int32_t add_amount) {
         (void)update_bci;
         (void)add_amount;
     }
@@ -885,8 +885,8 @@ public:
     Jmp(Address addr) : OpCode(ClassType, "JMP"), addr(addr) {}
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -916,8 +916,8 @@ public:
     BreakTo(Address addr, BreakState state=BreakState::SET) : OpCode(ClassType, "BREAK_TO"), addr(addr), state(state) {}
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -945,8 +945,8 @@ public:
     }
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -974,8 +974,8 @@ public:
     }
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -2249,8 +2249,8 @@ public:
     Catch(StringConst name, Address addr, IntConst id) : OpCode(ClassType, "CATCH"), name(name), addr(addr), id(id) {}
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -2281,8 +2281,8 @@ public:
     }
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -2331,8 +2331,8 @@ public:
     }
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -2805,8 +2805,8 @@ public:
     }
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
@@ -2839,8 +2839,8 @@ public:
     }
     
     void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        if (addr >= update_bci) {
+    void update_addrs(Address update_bci, int32_t add_amount) override {
+        if (addr > update_bci) {
             addr += add_amount;
         }
     }
