@@ -9,13 +9,15 @@
 using namespace moss::clopts;
 
 args::ValueFlag<bool> opt_use_color(interface_group, "0 or 1", "Enables colored error messages", {"use-color"});
-args::ValueFlag<std::string> note_format(note_group, "<format-name>", "Converts moss notes to selected format", {'f', "format"});
+args::ValueFlag<ustring> note_format(note_group, "<format-name>", "Converts moss notes to selected format", {'f', "format"});
+args::ValueFlag<std::string> output_msb(bc_group, "<msb file name>", "Outputs moss bytecode for input program", {'O', "output-msb"});
 
 static std::ostream *output_note_file = nullptr; ///< Stream into which output notes, this has to be explicitly deleted
 
 static std::vector<ustring> program_args;
 static WarningLevel warn_level = WarningLevel::WL_IGNORE;
 static int opt_level_parsed;
+static std::optional<ustring> output_msb_file;
 
 void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     args::HelpFlag help(interface_group, "help", "Display available options", {'h', "help"});
@@ -68,6 +70,12 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
         }
     }
 
+    if (output_msb) {
+        output_msb_file = args::get(output_msb);
+    } else if (compile_only || dump_text_bc) {
+        output_msb_file = args::get(file_name) + ".msb";
+    }
+
     if (opt_level) {
         opt_level_parsed = args::get(opt_level);
         if (opt_level_parsed < 0 || opt_level_parsed > 2) {
@@ -75,7 +83,10 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
             error::error(error::ErrorCode::ARGUMENT, msg.c_str());
         }
     } else {
-        opt_level_parsed = 0;
+        if (compile_only)
+            opt_level_parsed = 2;
+        else
+            opt_level_parsed = 0;
     }
 }
 
@@ -134,4 +145,8 @@ WarningLevel moss::clopts::get_warning_level() {
 
 int moss::clopts::get_opt_level() {
     return opt_level_parsed;
+}
+
+std::optional<ustring> moss::clopts::get_output_msb_file() {
+    return output_msb_file;
 }

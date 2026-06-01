@@ -140,7 +140,7 @@ fun compile(test:String,
     if (::PLATFORM == sys.Platform.Windows)
         path = path.replace("/", "\\")
     com_onl = compile_only ? "--compile-only" : ""
-    return subprocess.run(f"{::MOSS_PATH} -o {::TEST_DIR++output_msb} {com_onl} {args} {::EXTRA_FLAGS} {path} {prog_args}")
+    return subprocess.run(f"{::MOSS_PATH} -O {::TEST_DIR++output_msb} {com_onl} {args} {::EXTRA_FLAGS} {path} {prog_args}")
 }
 
 fun expect_str_eq_file(txt:String, file:String, name:String) {
@@ -394,19 +394,19 @@ fun test_note_options(name) {
     ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args="-q")
     ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args="--disable-notes")
 
-    // -O option
+    // -o option
     OUTF="._note_opts_out.ms"
-    ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args=f"-O {::TEST_DIR}{OUTF}")
+    ~expect_pass("simple_notes.ms", name, "Start\nEnd\n", "", args=f"-o {::TEST_DIR}{OUTF}")
     ~expect_str_eq_file("# Title1\nParagraph1\n\n# Title2\nParagraph2", OUTF, name)
     ~rm(OUTF)
 
-    // -O and -p
-    ~expect_pass("simple_notes.ms", name, "Start\n# Title1\nParagraph1\n\n# Title2\nParagraph2\nEnd\n", "", args=f"-O {::TEST_DIR}{OUTF} -p")
+    // -o and -p
+    ~expect_pass("simple_notes.ms", name, "Start\n# Title1\nParagraph1\n\n# Title2\nParagraph2\nEnd\n", "", args=f"-o {::TEST_DIR}{OUTF} -p")
     ~expect_str_eq_file("# Title1\nParagraph1\n\n# Title2\nParagraph2", OUTF, name)
     ~rm(OUTF)
 
     // Invalid combination
-    ~expect_fail("simple_notes.ms", name, "", rx_err=".*Invalid combination of arguments.*", args=f"-q -O {::TEST_DIR}{OUTF}")
+    ~expect_fail("simple_notes.ms", name, "", rx_err=".*Invalid combination of arguments.*", args=f"-q -o {::TEST_DIR}{OUTF}")
     ~expect_fail("simple_notes.ms", name, "", rx_err=".*Invalid combination of arguments.*", args=f"-q -p")
     ~rm(OUTF)
 }

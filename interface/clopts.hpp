@@ -13,6 +13,7 @@
 #include "args.hpp"
 #include "commons.hpp"
 #include <string>
+#include <optional>
 
 namespace moss {
 
@@ -27,20 +28,21 @@ inline args::ValueFlag<std::string> code(interpreter_group, "<code>", "String of
 inline args::ValueFlag<std::string> warning(interpreter_group, "[all, error, ignore]", "Warning level", {'W', "warning"});
 
 // Bytecode flags
+// Bytecode flags should aim to use capital letters and note/file output flags lowercase, but
+// mainly when there is a chance for confusion (like -o and -O).
 inline args::Group bc_group(arg_parser, "Moss bytecode options:");
-inline args::ValueFlag<std::string> output(bc_group, "<msb file name>", "Outputs moss bytecode for input program", {'o', "output-msb"});
 inline args::Flag dump_text_bc(bc_group, "S", "Outputs bytecode in textual form", {'S', "textual-msb"});
-inline args::Flag compile_only(bc_group, "compile-only", "Outputs bytecode and does not interpret it", {"compile-only"});
+inline args::Flag compile_only(bc_group, "compile-only", "Outputs bytecode and does not interpret it", {'C', "compile-only"});
 inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
 
 inline args::Flag input_bc(bc_group, "bytecode", "Treats input file as bytecode file", {"bytecode"});
 inline args::Flag print_bc_info(bc_group, "print-bc-header", "Prints bytecode file (.msb) header and exits", {"print-bc-header"});
 
-inline args::ValueFlag<int> opt_level(bc_group, "level", "Optimization level for bytecode optimizer", {'x', "opt"});
+inline args::ValueFlag<int> opt_level(bc_group, "level", "Optimization level for bytecode optimizer", {'X', "opt"});
 
 // Note flags
 inline args::Group note_group(arg_parser, "Note and output options:");
-inline args::ValueFlag<std::string> note_file(note_group, "<note file name>", "Outputs moss notes to this file", {'O', "output-file"});
+inline args::ValueFlag<std::string> note_file(note_group, "<note file name>", "Outputs moss notes to this file", {'o', "output-file"});
 inline args::Flag disable_notes(note_group, "disable-notes", "Disables outputting notes (prints will still output)", {'q', "disable-notes"});
 inline args::Flag print_notes(note_group, "print-notes", "Outputs notes also to stdout", {'p', "print-notes"});
 
@@ -111,6 +113,8 @@ WarningLevel get_warning_level();
 
 /// \return Opt level specified
 int get_opt_level();
+
+std::optional<ustring> get_output_msb_file();
 
 }
 

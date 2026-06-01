@@ -119,8 +119,8 @@ int Repl::run() {
         }
     }
 
-    if (clopts::output) {
-        std::filesystem::path bcpath = args::get(clopts::output);
+    if (clopts::get_output_msb_file()) {
+        std::filesystem::path bcpath = *clopts::get_output_msb_file();
         if (bcpath.extension() != ".msb") {
             bcpath += ".msb";
         }

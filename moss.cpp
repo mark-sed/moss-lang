@@ -86,11 +86,8 @@ int main(int argc, const char *argv[]) {
     if (!clopts::file_name && clopts::input_bc) {
         error::error(error::ErrorCode::ARGUMENT, "Input msb file needs to be specified for '--bytecode' option", nullptr, true);
     }
-    if (input_is_msb && clopts::output && !clopts::dump_text_bc) {
+    if (input_is_msb && clopts::get_output_msb_file() && !clopts::dump_text_bc) {
         error::error(error::ErrorCode::ARGUMENT, "Trying to dump bytecode for bytecode input", nullptr, true);
-    }
-    if (clopts::dump_text_bc && !clopts::output) {
-        error::error(error::ErrorCode::ARGUMENT, "Option -S requires -o specified", nullptr, true);
     }
     if (clopts::disable_notes && clopts::note_file) {
         error::error(error::ErrorCode::ARGUMENT, "Invalid combination of arguments '-q' ('--disable-notes') and '-O' ('--output-file')", nullptr, true);
@@ -195,9 +192,9 @@ int main(int argc, const char *argv[]) {
     }
 
     // Bytecode output
-    if (clopts::output) {
+    if (clopts::get_output_msb_file()) {
         // Bytecode output
-        std::filesystem::path bcpath = args::get(clopts::output);
+        std::filesystem::path bcpath = *clopts::get_output_msb_file();
         if (bcpath.extension() != ".msb" && !clopts::dump_text_bc) {
             bcpath += ".msb";
         }
