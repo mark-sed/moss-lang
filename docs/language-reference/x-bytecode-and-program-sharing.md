@@ -205,7 +205,6 @@ xxh - CREATE_RANGE6     %dst, #start, %step, #end
 xxh - CREATE_RANGE7     %dst, %start, #step, #end
 xxh - CREATE_RANGE8     %dst, #start, #step, #end
 
-xxh - SWITCH        %listvals, %listaddr, addr_def
 xxh - FOR           %i, %iterator, addr
 xxh - FOR_MULTI     %vars, %iterator, addr, #unpack
 xxh - ITER          %iterator, %collection
@@ -407,33 +406,6 @@ x   JMP_IF_FALSE    %1, <bc of else>
 x   STORE_CONST     %0, #2
 x   JMP             <bc after else>
 x   STORE_CONST     %0, #0
-```
-
-### Switch
-
-```go
-switch(a) {
-case 1, 2: return 4
-case 3: return 0
-default: return -1
-}
-```
-
-```
-x       BUILD_LIST      %1
-x       LIST_PUSH_CONST %1, #1
-x       LIST_PUSH_CONST %1, #2
-x       LIST_PUSH_CONST %1, #3
-x       BUILD_LIST      %0
-x       LIST_PUSH_ADDR  %1, add1
-x       LIST_PUSH_ADDR  %1, add1
-x       LIST_PUSH_ADDR  %1, add2
-x       LOAD_NAME       %3, "a"
-
-x       SWITCH %3, %0, %1, addr3
-add1    RETURN_CONST #4
-add2    RETURN_CONST #0
-add3    RETURN_CONST #200
 ```
 
 ### Enum

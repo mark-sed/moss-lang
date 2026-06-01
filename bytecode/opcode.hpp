@@ -191,7 +191,6 @@ enum OpCodes : opcode_t {
     CREATE_RANGE7, //     %dst, %start, #next, #end
     CREATE_RANGE8, //     %dst, #start, #next, #end
 
-    SWITCH, //    %src, %listvals, %listaddr, addr_def
     FOR, //       %i, %iterator, addr
     FOR_MULTI, // %vars, %iterator, addr, #index
     ITER, // %iterator, %collection
@@ -2791,37 +2790,6 @@ public:
     }
 };
 
-class Switch : public OpCode {
-public:
-    Register src;
-    Register vals;
-    Register addrs;
-    Register default_addr;
-
-    static const OpCodes ClassType = OpCodes::SWITCH;
-
-    Switch(Register src, Register vals, Register addrs, Register default_addr)
-            : OpCode(ClassType, "SWITCH"), src(src), vals(vals), addrs(addrs), default_addr(default_addr) {
-        this->set_operands({&this->src, &this->vals, &this->addrs, &this->default_addr});
-    }
-
-    void exec(Interpreter *vm) override;
-    void update_addrs(Address update_bci, Address add_amount) override {
-        assert(false && "TODO: Update switch addresses");
-    }
-    
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << mnem << "  %" << src << ", %" << vals << ", %" << addrs << ", %" << default_addr;
-        return os;
-    }
-    bool equals(OpCode *other) override {
-        auto casted = dyn_cast<Switch>(other);
-        if (!casted) return false;
-        return casted->src == src && casted->vals == vals 
-            && casted->addrs == addrs && casted->default_addr == default_addr;
-    }
-};
-
 class For : public OpCode {
 public:
     Register index;
@@ -2949,7 +2917,7 @@ public:
 
 inline bool modifies_CFG(OpCode *opc) {
     return isa<Jmp>(opc) || isa<BreakTo>(opc) ||  isa<JmpIfTrue>(opc) 
-        || isa<JmpIfFalse>(opc) || isa<LoopBegin>(opc) || isa<Switch>(opc);
+        || isa<JmpIfFalse>(opc) || isa<LoopBegin>(opc);
 }
 
 }

@@ -853,13 +853,6 @@ Bytecode *BytecodeReader::read() {
                 auto reg4 = read_register();
                 bc->push_back(new CreateRange8(reg1, reg2, reg3, reg4));
             } break;
-            case opcode::OpCodes::SWITCH: {
-                auto reg1 = read_register();
-                auto reg2 = read_register();
-                auto reg3 = read_register();
-                auto addr = read_address();
-                bc->push_back(new Switch(reg1, reg2, reg3, addr));
-            } break;
             case opcode::OpCodes::FOR: {
                 auto reg1 = read_register();
                 auto reg2 = read_register();

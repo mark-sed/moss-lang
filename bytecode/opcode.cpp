@@ -2986,57 +2986,6 @@ void CreateRange8::exec(Interpreter *vm) {
     range(vm->load_const(start), vm->load_const(next), vm->load_const(end), dst, vm);
 }
 
-void Switch::exec(Interpreter *vm) {
-    auto cv = vm->load(this->src);
-    assert(cv && "sanity check");
-    
-    auto v_vals = vm->load(this->vals);
-    assert(v_vals && "sanity check");
-    auto val_list = dyn_cast<ListValue>(v_vals);
-    assert(val_list && "switch value list is not a list");
-
-    auto v_addr = vm->load(this->addrs);
-    assert(v_addr && "sanity check");
-    auto addr_list = dyn_cast<ListValue>(v_addr);
-    assert(addr_list && "switch addr list is not a list");
-
-    auto lvals = val_list->get_vals();
-    bool matched = false;
-    for (size_t i = 0; i < lvals.size() && !matched; ++i) {
-        Value *res = nullptr;
-        if (isa<ObjectValue>(lvals[i])) {
-            auto objv = dyn_cast<ObjectValue>(lvals[i]);
-            auto eq_op = objv->get_attr("==", vm);
-            if (eq_op && (isa<FunValue>(eq_op) || isa<FunValueList>(eq_op))) {
-                diags::DiagID did = diags::DiagID::UNKNOWN;
-                FunValue *funv = lookup_method(vm, lvals[i], "==", {cv, lvals[i]}, did);
-                if (!funv) {
-                    res = BoolValue::get(eq(lvals[i], cv, vm)); 
-                } else {
-                    res = runtime_method_call(vm, funv, {cv, lvals[i]});
-                    assert(res && "runtime call did not return");
-                }
-            } else {
-                res = BoolValue::get(eq(lvals[i], cv, vm));
-            }
-        } else {
-            res = BoolValue::get(eq(lvals[i], cv, vm));
-        }
-        assert(res && "sanity check");
-        auto resbool = dyn_cast<BoolValue>(res);
-        if (!resbool)
-            continue;
-        if (resbool->get_value()) {
-            auto addr_int = dyn_cast<IntValue>(addr_list->get_vals()[i]);
-            assert(addr_int && "switch address is not an int");
-            vm->set_bci(addr_int->get_value());
-            matched = true;
-        }
-    }
-    if (!matched)
-        vm->set_bci(default_addr);
-}
-
 static void unpack_val(Interpreter *vm, Value *v, Register index, IntValue *unpack) {
     // ths is ignored so lets not create extra value
     Value *err = nullptr;

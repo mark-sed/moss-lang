@@ -65,11 +65,7 @@ bool RegisterReusePass::run(BCBlob *bcb) {
             jmp_targets.erase(target_it);
         }
         
-        if (auto swtch = dyn_cast<opcode::Switch>(o)) {
-            // Switch has to be tracked separately as we don't know all the
-            // target addresses.
-            switch_defaults.push_back(swtch->default_addr);
-        } else if (opcode::modifies_CFG(o)) {
+        if (opcode::modifies_CFG(o)) {
             // If we're inside of a switch then we have to clear on every jmp
             // since we don't know merging points (those are inside of a list).
             if (!switch_defaults.empty()) {

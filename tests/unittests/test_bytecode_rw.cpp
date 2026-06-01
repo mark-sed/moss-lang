@@ -203,7 +203,6 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::CreateRange7(1, 2, 3, 4));
     bc->push_back(new opcode::CreateRange8(1, 2, 3, 4));
 
-    bc->push_back(new opcode::Switch(0, 4, 5, -3));
     bc->push_back(new opcode::For(10, 11, 55));
     bc->push_back(new opcode::ForMulti(10, 11, 55, 66));
     bc->push_back(new opcode::Iter(11, 14));

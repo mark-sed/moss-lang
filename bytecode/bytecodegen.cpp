@@ -1438,66 +1438,58 @@ void BytecodeGen::emit(ir::If *ifstmt) {
 
 void BytecodeGen::emit(ir::Switch *swch) {
     auto cond = emit(swch->get_cond(), true);
-    auto val_list = next_reg();
-    auto addr_list = next_reg();
     auto body = swch->get_body();
-    append(new opcode::BuildList(val_list));
 
-    std::vector<ir::Case *> cases;
+    std::vector<opcode::Jmp *> end_jmps;
+    ir::Case *def_case = nullptr;
     for (auto i: body) {
         auto c = dyn_cast<ir::Case>(i);
         assert(c && "Non-case value in switch");
-        cases.push_back(c);
-        for (auto cv: c->get_values()) {
-            auto v = emit(cv);
-            if (v->is_const())
-                append(new opcode::ListPushConst(val_list, free_reg(v)));
-            else
-                append(new opcode::ListPush(val_list, free_reg(v)));
-        }
-    }
-    append(new opcode::BuildList(addr_list));
 
-    std::vector<opcode::StoreIntConst *> addr_stores;
-    for (auto c: cases) {
-        for (size_t i = 0; i < c->get_values().size(); ++i) {
-            auto a = new opcode::StoreIntConst(next_creg(), 0); 
-            addr_stores.push_back(a);
-            append(a);
-            append(new opcode::ListPushConst(addr_list, val_last_creg()));
-        }
-    }
-
-    auto swch_op = new opcode::Switch(free_reg(cond), val_list, addr_list, 0);
-    append(swch_op);
-
-    std::vector<opcode::Jmp *> end_jmps;
-    // Body generation
-    size_t addr_index = 0;
-    for (auto c: cases) {
         if (c->is_default_case()) {
-            swch_op->default_addr = get_curr_address() + 1;
+            def_case = c;
         } else {
-            for (size_t i = 0; i < c->get_values().size(); ++i) {
-                // Set addresses as there are duplicate values, but only 1 body
-                // We store the address as if it was a register
-                addr_stores[addr_index++]->val = get_curr_address() + 1;
+            Register acc = 0;
+            bool first = true;
+            for (auto cv : c->get_values()) {
+                auto v = emit(cv);
+
+                Register eq = next_reg();
+                if (v->is_const()) {
+                    append(new opcode::Eq3(eq, cond->reg(), free_reg(v)));
+                } else {
+                    append(new opcode::Eq(eq, cond->reg(), free_reg(v)));
+                }
+
+                if (first) {
+                    acc = eq;
+                    first = false;
+                } else {
+                    Register tmp = next_reg();
+                    append(new opcode::Or(tmp, acc, eq));
+                    acc = tmp;
+                }
             }
+
+            auto jmp_to_next = new opcode::JmpIfFalse(acc, 0);
+            append(jmp_to_next);
+            emit(c->get_body());
+            auto jmp_to_end = new opcode::Jmp(0);
+            append(jmp_to_end);
+            end_jmps.push_back(jmp_to_end);
+            jmp_to_next->addr = get_curr_address() + 1;
         }
-        emit(c->get_body());
-        auto jmp = new opcode::Jmp(0);
-        end_jmps.push_back(jmp);
-        append(jmp);
+    }
+    // Emit default last to optimize some jumps
+    if (def_case) {
+        emit(def_case->get_body());
     }
 
     auto end_addr = get_curr_address() + 1;
     for (auto ej : end_jmps) {
         ej->addr = end_addr;
     }
-    // default addr cannot be 0 as there are list generations and such in the
-    // very least
-    if (swch_op->default_addr == 0)
-        swch_op->default_addr = end_addr;
+    free_reg(cond);
 }
 
 void BytecodeGen::update_jmps(Address start, Address end, Address brk, Address cont) {
