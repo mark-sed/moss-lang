@@ -371,7 +371,7 @@ std::ostream& ObjectValue::debug(std::ostream& os) const {
 
 std::ostream& SpaceValue::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
     // TODO: Output all needed debug info
-    os << "Space : " << name << " {"; 
+    os << "Space " << name << " {"; 
     if (!attrs || attrs->is_empty_sym_table()) {
         os << "}";
     }
@@ -394,12 +394,48 @@ std::ostream& SpaceValue::debug(std::ostream& os) const {
     return debug(os, tab_depth, visited);
 }
 
-std::ostream& ModuleValue::debug(std::ostream& os) const {
-    // TODO: Output all attributes and so on
-    os << "(Module)" << name;
-    if (attrs)
-        os << ": " << *attrs;
+std::ostream& ModuleValue::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
+    // TODO: Output all needed debug info
+    os << "Module " << name << " {"; 
+    if (!attrs || attrs->is_empty_sym_table()) {
+        os << "}";
+    }
+    else {
+        if (visited.count(this)) {
+            os << "...}";
+        } else {
+            visited.insert(this);
+            attrs->debug_sym_table(os, tab_depth, visited);
+            visited.erase(this);
+            os << "\n" << std::string(tab_depth*2, ' ') << "}";
+        }
+    }
+
     return os;
+}
+
+std::ostream& ModuleValue::debug(std::ostream& os) const {
+    std::unordered_set<const Value *> visited{};
+    return debug(os, tab_depth, visited);
+}
+
+std::ostream& FunValueList::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
+    os << "fun " << funs.front()->get_name() << " [\n";
+    bool first = true;
+    for (auto f: funs) {
+        if (!first) {
+            os << ",\n";
+        }
+        first = false;
+        os << std::string((tab_depth+1)*2, ' ') << *f;
+    }
+    os << "\n" << std::string(tab_depth*2, ' ') << "]";
+    return os;
+}
+
+std::ostream& FunValueList::debug(std::ostream& os) const {
+    std::unordered_set<const Value *> visited{};
+    return debug(os, tab_depth, visited);
 }
 
 EnumValue::EnumValue(EnumTypeValue *type, ustring name) : Value(ClassType, name, type) {

@@ -1181,6 +1181,7 @@ public:
     Interpreter *get_vm() { return vm; }
 
     virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class NoteValue : public StringValue{
@@ -1395,18 +1396,16 @@ public:
     }
 
     virtual std::ostream& debug(std::ostream& os) const override {
-        os << "Fun(" << name << "(" << get_args_as_str() << ") @" << body_addr;
         if (!annotations.empty()) {
-            os << " annots[";
             bool first = true;
             for (auto [k, v]: annotations) {
                 if (!first) os << ", ";
-                os << "\"" << k << "\": " << *v;
+                os << "@" << k << "(" << *v << ")";
                 first = false;
             }
-            os << "]";
+            os << " ";
         }
-        os << ")";
+        os << "fun " << get_signature() << " @" << body_addr;
         return os;
     }
 };
@@ -1448,21 +1447,8 @@ public:
         return "<function " + funs[0]->get_name() + " with " + std::to_string(funs.size()) + " overloads>";
     }
 
-    virtual std::ostream& debug(std::ostream& os) const override {
-        os << "FunValueList(";
-        bool first = true;
-        for (auto f: funs) {
-            if (first) {
-                os << *f;
-                first = false;
-            }
-            else {
-                os << ", " << *f;
-            }
-        }
-        os << ")";
-        return os;
-    }
+    virtual std::ostream& debug(std::ostream& os) const override;
+    virtual std::ostream& debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const override;
 };
 
 class FunctionListIterator : public Value {

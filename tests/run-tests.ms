@@ -1275,9 +1275,9 @@ List(1) [
 ]
 Enum {}
 Class MyClass : A, B {
-  "MyClass": Fun(MyClass(n:[Int, Float]) @110),
+  "MyClass": fun MyClass(n:[Int, Float]) @110,
   "NAME": String("myclass"),
-  "get_n": Fun(get_n(this) @119)
+  "get_n": fun get_n(this) @119
 }
 Object : FooCls {
   "NAME": String("FooCls"),
@@ -1289,12 +1289,12 @@ Object : FooCls {
     "me": Class FooCls {...}
   }
 }
-Space : FooSpc {
+Space FooSpc {
   "foo_class": Class FooCls {
     "NAME": String("FooCls"),
     "me": Class FooCls {...}
   },
-  "me": Space : FooSpc {...},
+  "me": Space FooSpc {...},
   "pi": Float(3.14)
 }
 Dict(4) {
@@ -1318,6 +1318,15 @@ List(4) [
   ],
   Int(2),
   List(4) [...]
+]
+Module empty_module {
+  "__FILE": String("tests/stdlib_tests/empty_module.ms"),
+  "__NAME": String("empty_module"),
+  "__doc": String("\\nEmpty module.\\nDoes nothing.\\n")
+}
+fun foo [
+  fun foo() @258,
+  fun foo(a) @264
 ]\n""", "")
 }
 
