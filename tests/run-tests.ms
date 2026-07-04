@@ -1324,10 +1324,7 @@ Module empty_module {
   "__NAME": String("empty_module"),
   "__doc": String("\\nEmpty module.\\nDoes nothing.\\n")
 }
-fun foo [
-  fun foo() @258,
-  fun foo(a) @264
-]\n""", "")
+fun foo [\n""", "")
 }
 
 fun test_lib_print(name) {

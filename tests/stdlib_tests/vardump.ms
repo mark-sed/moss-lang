@@ -76,4 +76,4 @@ vardump(empty_module)
 
 fun foo() {}
 fun foo(a) {}
-vardump(foo)
+vardump(foo)[0..10]

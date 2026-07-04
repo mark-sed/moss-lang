@@ -71,9 +71,13 @@ public:
 
     BCBlobIterator end();
 
-    // void insert(OpCode *opc, Address i) {
-    //     bc.insert(opc, start_ + i);
-    // }
+    void insert_blob_index(OpCode *opc, Address i) {
+        bc.insert(opc, start_ + i);
+    }
+
+    void insert_at_bci(OpCode *opc, Address bci) {
+        bc.insert(opc, bci);
+    }
 
     //void erase(OpCode *opc) {
     //    auto it = std::find(bc.code.begin(), bc.code.end(), opc);
@@ -84,10 +88,11 @@ public:
 
     BCBlobIterator erase(BCBlobIterator opc);
 
-    void replace_with_nop(Address bci) {
+    void replace_with_nop(Address bci, bool no_delete=false) {
         auto op = bc.code[bci];
         bc.code[bci] = new Nop();
-        delete op;
+        if (!no_delete)
+            delete op;
     }
 
     // OpCode* operator[](size_t i) const {

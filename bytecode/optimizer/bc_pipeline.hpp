@@ -31,12 +31,16 @@ public:
     void run() {
         LOG1("Running BC optimization pipeline");
         auto mod_blob = BCBlob::parse_bc(*bc);
+
         // TODO: Perhaps drop very short blobs?
         std::vector<BCBlob *> all_blobs = collect_all_blobs(mod_blob);
         for (auto p: pipeline) {
-            for (auto bcblb: all_blobs) {
+            for (size_t i = 0; i < all_blobs.size(); ++i) {
+                auto bcblb = all_blobs[i];
                 if (p->run(bcblb)) {
-                    
+                    // Modifications were done, reparse
+                    mod_blob = BCBlob::parse_bc(*bc);
+                    all_blobs = collect_all_blobs(mod_blob);
                 }
             }
         }

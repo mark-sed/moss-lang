@@ -1168,8 +1168,8 @@ fun type(obj) {
 fun id(obj) {
     d"""
     Returns unique id of `obj`.
-    Note that some values, such as Ints might be interned and 2 separately
-    created Ints might return same id.
+    Immutable constants may be shared/interned, meaning that id() on primitive
+    constants (e.g: `id(4242)`) is not stable or guaranteed unique.
     Note id of nil, true and false is always the same for each instance of these
     values in one run.
     """

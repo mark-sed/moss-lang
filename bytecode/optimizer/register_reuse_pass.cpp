@@ -6,6 +6,10 @@ using namespace moss;
 using namespace opcode;
 
 bool RegisterReusePass::run(BCBlob *bcb) {
+    if (clopts::opt_no_register_reuse) {
+        LOGMAX("Skipping register reuse pass (no-licm-pass option set)");
+        return false;
+    }
     LOGMAX("Running register reuse pass on " << bcb->get_debug_name());
     // Keep track of constant registers (which dont change) and if value
     // is needed that is already in some const register, then reuse it.
@@ -21,7 +25,6 @@ bool RegisterReusePass::run(BCBlob *bcb) {
     std::map<StringConst, Register> string_map;
     std::optional<Register> nil_reg{};
     std::list<Address> jmp_targets;
-    bool modified = false;
     bool reached_fun_start = false;
     std::vector<Address> switch_defaults{};
 
@@ -34,17 +37,15 @@ bool RegisterReusePass::run(BCBlob *bcb) {
             string_map.clear();
     };
     
-    for (BCBlobIterator oit = bcb->begin(); oit != bcb->end();) {
+    for (BCBlobIterator oit = bcb->begin(); oit != bcb->end(); ++oit) {
         auto o = *oit;
         // If function blob, then skip until frame start, which is at pop call
         // frame.
         if (bcb->get_type() == BlobType::FUN_BLOB && !reached_fun_start && !isa<PopCallFrame>(o)) {
-            ++oit;
             continue;
         } else {
             reached_fun_start = true;
         }
-        bool erased = false;
         Address bci = oit.index();
         if (!switch_defaults.empty()) {
             while (switch_defaults.back() == bci) {
@@ -130,10 +131,7 @@ bool RegisterReusePass::run(BCBlob *bcb) {
                 string_map[si->val] = si->dst;
             }
         }
-        if (!erased) {
-            ++oit;
-        }
     }
     
-    return modified;
+    return false; // We don't insert nor delete.
 }

@@ -30,7 +30,7 @@ inline args::ValueFlag<std::string> warning(interpreter_group, "[all, error, ign
 // Bytecode flags
 // Bytecode flags should aim to use capital letters and note/file output flags lowercase, but
 // mainly when there is a chance for confusion (like -o and -O).
-inline args::Group bc_group(arg_parser, "Moss bytecode options:");
+inline args::Group bc_group(arg_parser, "Bytecode options:");
 inline args::Flag dump_text_bc(bc_group, "S", "Outputs bytecode in textual form", {'S', "textual-msb"});
 inline args::Flag compile_only(bc_group, "compile-only", "Outputs bytecode and does not interpret it", {'C', "compile-only"});
 inline args::Flag annotate_bc(bc_group, "annotate-bc", "Adds comments to bytecode output", {"annotate-bc"});
@@ -39,6 +39,11 @@ inline args::Flag input_bc(bc_group, "bytecode", "Treats input file as bytecode 
 inline args::Flag print_bc_info(bc_group, "print-bc-header", "Prints bytecode file (.msb) header and exits", {"print-bc-header"});
 
 inline args::ValueFlag<int> opt_level(bc_group, "level", "Optimization level for bytecode optimizer", {'X', "opt"});
+
+// Optimizer flags
+inline args::Group opt_group(arg_parser, "Optimizations options:");
+inline args::Flag opt_no_licm(opt_group, "no-licm-pass", "Skips LICM pass (if it were to run)", {"no-licm-pass"});
+inline args::Flag opt_no_register_reuse(opt_group, "no-register-reuse-pass", "Skips register reuse pass (if it were to run)", {"no-register-reuse-pass"});
 
 // Note flags
 inline args::Group note_group(arg_parser, "Note and output options:");
