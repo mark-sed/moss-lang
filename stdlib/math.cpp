@@ -42,6 +42,22 @@ Value *gcd_or_lcm(Interpreter *vm, bool is_gcd, Value *ints, Value *&err) {
     return IntValue::get(result);
 }
 
+Value *factorial(Interpreter *vm, Value *value, Value *&err) {
+    auto n = mslib::get_int(value);
+    if (n < 0) {
+        err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::FACTORIAL_NEGATIVE));
+        return nullptr;
+    }
+    if (n > 20) {
+        err = mslib::create_math_error(diags::Diagnostic(*vm->get_src_file(), diags::FACTORIAL_OVERFLOW, n));
+        return nullptr;
+    }
+    opcode::IntConst result = 1;
+    for (opcode::IntConst i = 2; i <= n; ++i)
+        result *= i;
+    return IntValue::get(result);
+}
+
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& math::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
         {"atan", [](Interpreter*, CallFrame* cf, Value*&) {
@@ -50,14 +66,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& math::get_regist
         {"atan2", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::atan2(cf->get_arg("x")->as_float(), cf->get_arg("y")->as_float()));
         }},
+        {"cosh", [](Interpreter*, CallFrame* cf, Value*&) {
+            return FloatValue::get(std::cosh(cf->get_args()[0].value->as_float()));
+        }},
         {"exp", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::exp(cf->get_args()[0].value->as_float()));
         }},
         {"exp2", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::exp2(cf->get_args()[0].value->as_float()));
         }},
-        {"cosh", [](Interpreter*, CallFrame* cf, Value*&) {
-            return FloatValue::get(std::cosh(cf->get_args()[0].value->as_float()));
+        {"factorial", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            return factorial(vm, cf->get_args()[0].value, err);
         }},
         {"gcd", [](Interpreter *vm, CallFrame* cf, Value*&err) {
             auto args = cf->get_args();

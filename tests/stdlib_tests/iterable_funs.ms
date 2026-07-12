@@ -35,3 +35,16 @@ length(ic)
 ic2 = IterClass(1, 0)
 length(ic2)
 "\n"
+
+s = "Hello"
+i = iter(s)
+l = [0,0,0,0,0]
+for (j: 0..l.length()) {
+    l[j] = next(i)
+}
+l
+"\n"
+try
+    next(i)
+catch (e:StopIteration)
+    "end\n"

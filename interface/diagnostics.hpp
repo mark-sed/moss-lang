@@ -240,6 +240,8 @@ enum DiagID : unsigned {
     HEX_FLOAT_PARSE_ERR,    ///< When float hex string could not be parsed
     HAS_NO_INT_RATIO,       ///< When extracting as_int_ratio from NaN/Inf
     SET_PATH_NOT_STR,       ///< When value in list in set_path is not a string
+    FACTORIAL_NEGATIVE,     ///< When factorial is called on negative Int
+    FACTORIAL_OVERFLOW,     ///< When factorial cannot fit into Int
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -459,6 +461,8 @@ static const char * DIAG_MSGS[] = {
     "Value '%s' could not be parsed as a hexadecimal floating point",
     "Float value '%s' has no int ratio",
     "Path value is expected to be a String (got '%s')",
+    "Factorial is not defined for negative values",
+    "Factorial of %ld cannot fit into Int",
 };
 
 /// \brief ID of diagnostic error

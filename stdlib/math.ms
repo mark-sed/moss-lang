@@ -69,6 +69,17 @@ fun exp2(x:[Int,Float]) {
 }
 
 @internal
+fun factorial(x:Int) {
+    d"""
+    Calculates !x - the product of all positive integers less than or equal
+    to `x`.
+    This function will raise ValueError if `x` is negative.
+    MathError is raised if !x would overflow or underflow Int (x > 20).
+    """
+    // TODO: factorial for real and complex using gamma function
+}
+
+@internal
 fun cosh(x:[Int,Float]) {
     d"""
     Returns a hyperbolic cosine.

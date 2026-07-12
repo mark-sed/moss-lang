@@ -1357,6 +1357,20 @@ fun filter(func, iterable) {
     return result
 }
 
+fun iter(iterable) {
+    d"""
+    Returns iterator for `iterable`.
+    """
+    return iterable.__iter()
+}
+
+fun next(iterator) {
+    d"""
+    Calls __next on `iterator`.
+    """
+    return iterator.__next()
+}
+
 space {
     enum ValType {
         MISSING,

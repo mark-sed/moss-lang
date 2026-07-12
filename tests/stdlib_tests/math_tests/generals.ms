@@ -52,3 +52,56 @@ math.isnan(Float("inf"))
 "\n"
 math.isnan(0.005)
 "\n"
+
+math.factorial(0);   // 1
+"\n"
+math.factorial(1);   // 1
+"\n"
+math.factorial(2);   // 2
+"\n"
+math.factorial(3);   // 6
+"\n"
+math.factorial(4);   // 24
+"\n"
+math.factorial(5);   // 120
+"\n"
+math.factorial(6);   // 720
+"\n"
+math.factorial(7);   // 5040
+"\n"
+math.factorial(8);   // 40320
+"\n"
+math.factorial(9);   // 362880
+"\n"
+math.factorial(10);  // 3628800
+"\n"
+math.factorial(11);  // 39916800
+"\n"
+math.factorial(12);  // 479001600
+"\n"
+math.factorial(13);  // 6227020800
+"\n"
+math.factorial(14);  // 87178291200
+"\n"
+math.factorial(15);  // 1307674368000
+"\n"
+math.factorial(16);  // 20922789888000
+"\n"
+math.factorial(17);  // 355687428096000
+"\n"
+math.factorial(18);  // 6402373705728000
+"\n"
+math.factorial(19);  // 121645100408832000
+"\n"
+math.factorial(20);  // 2432902008176640000
+"\n"
+
+try
+    math.factorial(-1)
+catch(e:ValueError)
+    "caught\n"
+
+try
+    math.factorial(100)
+catch(e:MathError)
+    "caught\n"

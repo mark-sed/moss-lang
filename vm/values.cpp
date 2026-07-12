@@ -419,7 +419,7 @@ std::ostream& ModuleValue::debug(std::ostream& os) const {
     return debug(os, tab_depth, visited);
 }
 
-std::ostream& FunValueList::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
+std::ostream& FunValueList::debug(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &) const {
     os << "fun " << funs.front()->get_name() << " [\n";
     bool first = true;
     for (auto f: funs) {

@@ -1766,7 +1766,8 @@ fun test_lib_enumerate(name) {
 }
 
 fun test_lib_iterable_funs(name) {
-    ~expect_pass("stdlib_tests/iterable_funs.ms", name, """3\n0\ncaught\n5\n5\n0\n""", "")
+    ~expect_pass("stdlib_tests/iterable_funs.ms", name, """3\n0\ncaught\n5\n5\n0
+["H", "e", "l", "l", "o"]\nend\n""", "")
 }
 
 fun test_lib_inspect_inspect(name) {
@@ -1903,7 +1904,10 @@ fun test_lib_math_generals(name) {
     ~expect_pass("stdlib_tests/math_tests/generals.ms", name, """-1.000000\n5.000000
 inf\nnan
 5.000000\n5.000000\n0.000000\n5.000000\n7.000000\n1.414214\n2.828427\ninf\ninf
-true\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue\nfalse\nfalse\n""", "")
+true\ntrue\ntrue\nfalse\nfalse\ntrue\ntrue\nfalse\nfalse
+1\n1\n2\n6\n24\n120\n720\n5040\n40320\n362880\n3628800\n39916800\n479001600\n6227020800\n87178291200
+1307674368000\n20922789888000\n355687428096000\n6402373705728000\n121645100408832000\n2432902008176640000
+caught\ncaught\n""", "")
 }
 
 fun test_lib_math_goniometrics(name) {
