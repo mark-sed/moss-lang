@@ -243,6 +243,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         tests/unittests/test_constant_folding.cpp
         tests/unittests/test_dead_code_elimination.cpp
         tests/unittests/test_ir.cpp # Has to be before function_analysis to not affect lambda numbering
+        tests/unittests/test_licm_pass.cpp
         tests/unittests/test_expression_analysis.cpp
         tests/unittests/test_function_analysis.cpp
         tests/unittests/test_gc.cpp
