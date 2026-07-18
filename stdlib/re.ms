@@ -2,6 +2,19 @@ d"""
 Module for working with regular expressions.
 """
 
+class RegexError : Exception {
+    d"Exception for regex errors such as incorrect syntax."
+
+    fun RegexError(msg, pattern) {
+        this.msg = msg
+        this.pattern = pattern
+    }
+
+    fun __String() {
+        return f"RegexError: (Pattern '{this.pattern}'): {this.msg}.\n"
+    }
+}
+
 class REFlags {
     enum Grammars {
         ECMAScript

@@ -33,6 +33,10 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& re::get_registry
     return registry;
 }
 
+Value *create_regex_error(Interpreter *vm, CallFrame *cf, ustring msg, Value *pattern, Value *&err) {
+    return mslib::call_constructor(vm, cf, "RegexError", {StringValue::get(msg), pattern}, err);
+}
+
 std::regex_constants::syntax_option_type extract_syntax_flags(Interpreter *vm, Value *vflags, Value *&err) {
     using namespace std::regex_constants;
     syntax_option_type flags = syntax_option_type{};
@@ -189,17 +193,16 @@ std::regex_constants::match_flag_type extract_runtime_flags(Interpreter *vm, Val
     return flags;
 }
 
-Value *re::Pattern(Interpreter *vm, CallFrame *, Value *ths, Value *pattern, Value *flags, Value *&err) {
+Value *re::Pattern(Interpreter *vm, CallFrame *cf, Value *ths, Value *pattern, Value *flags, Value *&err) {
     ths->set_attr("flags", flags);
     ths->set_attr("pattern", pattern);
     auto patt = mslib::get_string(pattern);
     std::regex *regex = nullptr;
     try {
         regex = new std::regex(patt, extract_syntax_flags(vm, flags, err));
-    } catch (const std::regex_error &err) {
-        // throw moss error
-        errs << "REGEX ERROR!\n";
-        regex = new std::regex(patt);
+    } catch (const std::regex_error &reg_err) {
+        err = create_regex_error(vm, cf, reg_err.what(), pattern, err);
+        return nullptr;
     }
     ths->set_attr(known_names::REGEX_ATT, new t_cpp::RegexValue(regex));
     return ths;

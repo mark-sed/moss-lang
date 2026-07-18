@@ -26,3 +26,8 @@ gs
 "\n"
 gs[0]
 "\n"
+
+try
+    re.Pattern("a(")
+catch (e:re.RegexError)
+    "caught\n"

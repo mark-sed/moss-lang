@@ -1979,7 +1979,7 @@ HELLO
 ["abc-123", "abc-123", "abc", "123"]
 nil
 ["123"]
-123\n""", "")
+123\ncaught\n""", "")
 }
 
 fun test_lib_re_flags(name) {
