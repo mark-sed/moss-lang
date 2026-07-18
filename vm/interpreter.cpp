@@ -3,6 +3,7 @@
 #include "values.hpp"
 #include "mslib.hpp"
 #include "values.hpp"
+#include "errors.hpp"
 #include <exception>
 #include <utility>
 #include <queue>
@@ -133,7 +134,19 @@ Interpreter::Interpreter(Bytecode *code, File *src_file, bool main)
         // Loading a module will also create an interpreter and so we need to
         // set a flag to not try to load it again
         Interpreter::libms_mod = opcode::load_module(this, "libms");
-        assert(libms_mod && "TODO: Raise Could not load libms");
+        if (!libms_mod) {
+            std::stringstream err_stream;
+            err_stream << "Could not load or find Moss standard library (looked for in: ";
+            bool first = true;
+            for (auto p : moss::get_lookup_path()) {
+                if (!first)
+                    err_stream << ", ";
+                first = false;
+                err_stream << '"' << p << "\"";
+            }
+            err_stream << ")";
+            error::error(error::ErrorCode::ENVIRONMENT, err_stream.str().c_str(), nullptr, true);
+        }
         // Constants should be loaded after libms so that the values can contain
         // libms attributes/methods
         BuiltIns::init_constant_variables(Interpreter::libms_mod->get_vm()->get_global_frame(), libms_mod->get_vm());

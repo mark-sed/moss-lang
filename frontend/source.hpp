@@ -152,6 +152,7 @@ inline std::ostream& operator<< (std::ostream& os, SourceInfo sci) {
 }
 
 std::optional<ustring> get_file_path(ustring file);
+ustring get_moss_lib_path();
 
 std::vector<ustring> &get_lookup_path();
 

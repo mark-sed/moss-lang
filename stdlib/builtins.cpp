@@ -34,14 +34,9 @@ void BuiltIns::init_constant_variables(MemoryPool *gf, Interpreter *vm) {
     store_glob_val(gf->get_free_reg(), "args", new ListValue(largs), gf);
     // end args
 
-    // Generators.html.STYLE_PATH
-#ifdef __linux__
-    ustring style_path = "/lib/moss/mossy.css";
-#elif defined(__APPLE__)
-    ustring style_path = "/usr/local/lib/moss/mossy.css";
-#elif defined(__windows__)
-    ustring style_path = moss::get_local_app_data_path()+"\\moss\\mossy.css";
-#endif
+    // Generators.HTML.STYLE_PATH
+    auto style_path_path = std::filesystem::path(moss::get_moss_lib_path()) / "mossy.css";
+    ustring style_path = style_path_path.string();
     Value *err = nullptr;
     auto generators_space = mslib::get_space("Generators", vm, err);
     assert(!err && "Generators not in libms?");

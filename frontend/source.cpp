@@ -59,6 +59,16 @@ ustring moss::get_local_app_data_path() {
 }
 #endif
 
+ustring moss::get_moss_lib_path() {
+#ifdef __linux__
+    return "/usr/lib/moss/";
+#elif defined(__APPLE__)
+    return "/usr/local/lib/moss/";
+#elif defined(__windows__)
+    return moss::get_local_app_data_path()+"\\moss\\";
+#endif
+}
+
 static std::vector<ustring> paths;
 
 static void init_lookup_path() {
@@ -75,14 +85,7 @@ static void init_lookup_path() {
     paths.insert(paths.begin(), "");
 
     // Look into system path
-#ifdef __linux__
-    paths.push_back("/lib/moss");
-#elif defined(__APPLE__)
-    paths.push_back("/usr/local/lib/moss");
-#elif defined(__windows__)
-    static std::filesystem::path LIB_PATH = std::filesystem::path(get_local_app_data_path()+"/moss");
-    paths.push_back(LIB_PATH.string());
-#endif
+    paths.push_back(get_moss_lib_path());
 }
 
 std::vector<ustring> &moss::get_lookup_path() {

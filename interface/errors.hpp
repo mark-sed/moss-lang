@@ -106,6 +106,7 @@ namespace error {
         RUNTIME,       ///< Error caused by users program
         INTERNAL,      ///< Internal compiler error (such as unable to allocate memory)
         FILE_ACCESS,   ///< Problem opening/writing/working with users files (not internal config files)
+        ENVIRONMENT,   ///< Issue with system environment such as unable to load std lib
         BYTECODE,      ///< Problems with bytecode
         ARGUMENT,      ///< Problems with argument parsing
         UNKNOWN,       ///< Unknown error (shouldn't be really used)

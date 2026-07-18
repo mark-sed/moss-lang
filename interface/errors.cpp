@@ -40,6 +40,7 @@ const char *error::get_code_name(error::ErrorCode code){
         "Runtime",
         "Internal",
         "File access",
+        "Environment",
         "Bytecode",
         "Argument",
         "Unknown"
