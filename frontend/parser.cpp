@@ -53,8 +53,8 @@ static Operator token2operator(TokenType t) {
     }
 }
 
-void Parser::check_code_output(Module *m, ir::IR *decl) {
-    if (enable_code_output && !isa<ir::Note>(decl)) {
+ir::IR *Parser::check_code_output(ir::IR *decl) {
+    if (enable_code_output && !isa<ir::Note>(decl) && !isa<ir::EndOfFile>(decl)) {
         auto annt = dyn_cast<ir::Annotation>(decl);
         if (!annt || annt->get_name() != annots::ENABLE_CODE_OUTPUT) {
             std::stringstream code_str;
@@ -69,9 +69,10 @@ void Parser::check_code_output(Module *m, ir::IR *decl) {
             auto last_line = scanner->get_src_text()[src_i.get_lines().second];
             if (src_i.get_lines().first > src_i.get_lines().second ||
                   src_i.get_cols().second >= last_line.length())
-                m->push_back(new ir::Note("md", new ir::StringLiteral(code_str.str(), src_i), src_i));
+                return new ir::Note("md", new ir::StringLiteral(code_str.str(), src_i), src_i);
         }
     }
+    return nullptr;
 }
 
 IR *Parser::parse() {
@@ -105,7 +106,9 @@ IR *Parser::parse() {
             return raise;
         }
         assert(decl && "Declaration in parser is nullptr");
-        check_code_output(m, decl);
+        if (auto note = check_code_output(decl)) {
+            m->push_back(note);
+        }
         m->push_back(decl);
     }
 
@@ -133,6 +136,10 @@ void Parser::scan_line() {
 }
 
 std::vector<ir::IR *> Parser::parse_line() {
+    if (parents.empty()) {
+        SourceInfo mod_src_i(src_file, 0, 0, 0, 0);
+        parents.push_back(new Module(this->src_file.get_module_name(), mod_src_i));
+    }
     std::vector<ir::IR *> line_decls;
     reading_by_lines = true;
     tokens.clear();
@@ -161,6 +168,9 @@ std::vector<ir::IR *> Parser::parse_line() {
             return line_decls;
         }
         assert(decl && "Declaration in parser is nullptr");
+        if (auto note = check_code_output(decl)) {
+            line_decls.push_back(note);
+        }
         line_decls.push_back(decl);
         if (isa<EndOfFile>(decl))
             break;

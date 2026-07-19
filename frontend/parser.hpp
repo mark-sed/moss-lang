@@ -55,7 +55,7 @@ private:
     ir::IR *declaration();
     
     bool bind_docstring();
-    void check_code_output(ir::Module *m, ir::IR *decl);
+    ir::IR *check_code_output(ir::IR *decl);
 
     /// Tries to parse an expression
     /// 
