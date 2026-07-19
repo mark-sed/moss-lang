@@ -544,6 +544,9 @@ IR *Parser::declaration() {
         annot = annotation();
     }
 
+    // source info to update starts of nested parsings
+    auto start_parse_src = curr_src_info();
+
     // import
     if (match(TokenType::IMPORT)) {
         auto importsrci = curr_src_info();
@@ -919,6 +922,7 @@ IR *Parser::declaration() {
             for (auto ann : outter_annots) {
                 decl->add_annotation(ann);
             }
+            decl->get_src_info().update_starts(start_parse_src);
             outter_annots.clear();
         }
         else {
@@ -929,6 +933,8 @@ IR *Parser::declaration() {
     // expression
     else if (auto expr = expression(true)) {
         decl = expr;
+        if (decl) // update start source info
+            decl->get_src_info().update_starts(start_parse_src);
     }
 
     if (!decl && !outter_annots.empty()) {

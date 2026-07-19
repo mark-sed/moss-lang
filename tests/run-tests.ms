@@ -1022,6 +1022,55 @@ fun test_enable_code_output(name) {
     ~exp_out.close()
 }
 
+fun test_enable_code_output_multiline(name) {
+    ~expect_pass(f"enable_code_output_multiline.ms", name, """```moss
+class Foo {
+    fun Foo() {}
+    "hi\\n"
+}
+```
+_[Output]:_
+```
+hi
+```
+```moss
+a = (
+    4 + 5 *
+    8
+)
+```
+```moss
+fun foo(a,
+b, c) = 21
+```
+```moss
+fun foo1() {
+    a
+    22
+    return
+}
+```
+```moss
+if (a == 5
+    || a == 9) {
+  a
+} else if (a == 1) {
+    a -= 1
+} else {
+    1
+    2
+}
+```
+_[Output]:_
+```
+1
+```
+_[Output]:_
+```
+2
+```\n""", "", args="-f md")
+}
+
 fun test_static_methods(name) {
     ~expect_pass("static_methods.ms", name, """caught\nid, 6\ncaught\n""", "")
 }
@@ -2482,6 +2531,7 @@ fun run_all_tests() {
     ~run_test("memberships")
     ~run_test("escaping")
     ~run_test("enable_code_output")
+    ~run_test("enable_code_output_multiline")
     ~run_test("static_methods")
     ~run_test("type_casting")
     ~run_test("warnings")

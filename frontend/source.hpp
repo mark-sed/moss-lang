@@ -139,6 +139,10 @@ public:
         this->lines = std::make_pair(this->lines.first, srci.lines.second);
         this->cols = std::make_pair(this->cols.first, srci.cols.second);
     }
+    void update_starts(SourceInfo srci) {
+        this->lines = std::make_pair(srci.lines.first, this->lines.second);
+        this->cols = std::make_pair(srci.cols.first, this->cols.second);
+    }
 
     std::ostream& debug(std::ostream& os) {
         os << "SourceInfo {\n  File: " << file.get_name() << "\n  Lines: <" << lines.first << ", " << lines.second
