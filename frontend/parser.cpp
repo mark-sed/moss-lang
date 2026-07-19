@@ -64,7 +64,12 @@ void Parser::check_code_output(Module *m, ir::IR *decl) {
                 code_str << scanner->get_src_text()[l] << "\n";
             }
             code_str << "```\n";
-            m->push_back(new ir::Note("md", new ir::StringLiteral(code_str.str(), src_i), src_i));
+            // Check that this IR end at the actual line end so that one line
+            // is not outputted more than once if there is ;
+            auto last_line = scanner->get_src_text()[src_i.get_lines().second];
+            if (src_i.get_lines().first > src_i.get_lines().second ||
+                  src_i.get_cols().second >= last_line.length())
+                m->push_back(new ir::Note("md", new ir::StringLiteral(code_str.str(), src_i), src_i));
         }
     }
 }
