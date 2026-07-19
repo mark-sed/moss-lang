@@ -279,11 +279,17 @@ Token *Parser::advance() {
 }
 
 void Parser::put_back() {
-    assert(curr_token > 0 && "take back before any advance");
-    while (tokens[--curr_token]->get_type() == TokenType::WS) {
+    do {
         assert(curr_token > 0 && "take back before any non-ws advance");
         --curr_token;
-    }
+        auto t = tokens[curr_token];
+        // Inc or dec parenth depth when putting back (, ), [ or ]
+        if (t->get_type() == TokenType::LEFT_PAREN || t->get_type() == TokenType::LEFT_SQUARE) {
+            --parenth_depth;
+        } else if (t->get_type() == TokenType::RIGHT_PAREN || t->get_type() == TokenType::RIGHT_SQUARE) {
+            ++parenth_depth;
+        }
+    } while (tokens[curr_token]->get_type() == TokenType::WS);
 }
 
 void moss::parser_error(diags::Diagnostic err_msg) {
