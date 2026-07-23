@@ -894,9 +894,7 @@ Back in module
 Hi, from msb greet
 <module greet>
 <module greet_compiled>
-Hello, from greet.ms
 greet's name: greet.ms (greet.ms)
-Hello, from greet.ms
 greet.ms
 Ending module.ms\n""")
     }
@@ -908,7 +906,7 @@ Ending module.ms\n""")
 
 fun test_import_calls(name) {
     ~expect_pass("module_tests/square.ms", name, """mod1 ran!\nanon_space_value\nsquare\nmod2fun\ngot result\n25\n9\n100\n49
-mod1 ran!\nanon_space_value\nsquare_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n""", "")
+square_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n""", "")
 }
 
 fun test_main_in_import(name) {
@@ -2364,17 +2362,37 @@ gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: FUN(mod2fun)
+gc.cpp::sweep: Deleting: FUN_LIST(FunctionList)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: FUN(mod2fun)
+gc.cpp::sweep: Deleting: FUN_LIST(FunctionList)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: FUN(mod2fun)
+gc.cpp::sweep: Deleting: FUN_LIST(FunctionList)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: STRING(String)
+gc.cpp::sweep: Deleting frame
+gc.cpp::sweep: Deleting: FUN_LIST(FunctionList)
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
@@ -2396,40 +2414,11 @@ gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting: STRING(String)
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting: MODULE(external_module)
-gc.cpp::sweep: Deleting: CLASS(Mod1Cls)
-gc.cpp::sweep: Deleting: FUN(foo)
-gc.cpp::sweep: Deleting: SPACE(ModSpace)
-gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting: FUN(get_name)
-gc.cpp::sweep: Deleting: FUN(mod1fun)
-gc.cpp::sweep: Deleting: FUN(get_list)
-gc.cpp::sweep: Deleting: FUN(get_mod2)
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting VM external_module
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
 gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting: MODULE(external_module)
-gc.cpp::sweep: Deleting: CLASS(Mod1Cls)
-gc.cpp::sweep: Deleting: FUN(foo)
-gc.cpp::sweep: Deleting: SPACE(ModSpace)
-gc.cpp::sweep: Deleting: STRING(String)
-gc.cpp::sweep: Deleting: FUN(get_name)
-gc.cpp::sweep: Deleting: FUN(mod1fun)
-gc.cpp::sweep: Deleting: FUN(get_list)
-gc.cpp::sweep: Deleting: FUN(get_mod2)
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting frame
-gc.cpp::sweep: Deleting VM external_module\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
+gc.cpp::sweep: Deleting frame\n""", args="--v5=gc.cpp::sweep --stress-test-gc")
 }
 
 

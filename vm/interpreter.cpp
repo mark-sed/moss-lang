@@ -23,8 +23,31 @@ T_Generators Interpreter::generators{};
 std::vector<Value *> Interpreter::generator_notes{};
 std::list<FrameInfo> Interpreter::stack_frames{};
 std::vector<Value *> Interpreter::unwound_funs{};
+std::unordered_map<ustring, ModuleValue *> Interpreter::imported_modules{};
 bool Interpreter::running_generator = false;
 bool Interpreter::enable_code_output = false;
+
+ModuleValue *Interpreter::has_loaded_module(ustring path) {
+    auto it = imported_modules.find(path);
+    if (it != imported_modules.end())
+        return it->second;
+    return nullptr;
+}
+
+void Interpreter::register_loaded_module(ustring path, ModuleValue *mod) {
+    assert(imported_modules.find(path) == imported_modules.end() && "Registering already registered module");
+    imported_modules[path] = mod;
+}
+
+void Interpreter::remove_loaded_module(ModuleValue *mod) {
+    auto it = std::find_if(imported_modules.begin(), imported_modules.end(),
+        [&](const auto& pair) {
+            return pair.second == mod;
+        });
+
+    assert(it != imported_modules.end() && "Removing module that is not registered");
+    imported_modules.erase(it);
+}
 
 void Interpreter::add_converter(ustring from, ustring to, FunValue *fun) {
     LOGMAX("Adding a converter " << from << " to " << to << " on " << fun->get_name());

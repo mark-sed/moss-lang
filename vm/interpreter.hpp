@@ -21,6 +21,7 @@
 #include "values.hpp"
 #include <cstdint>
 #include <optional>
+#include <unordered_map>
 #include <list>
 
 namespace moss {
@@ -217,6 +218,7 @@ private:
     static T_Converters converters; ///< Mapping of formats and their converters
     static T_Generators generators; ///< Mapping of formats and their generators
     static std::vector<Value *> generator_notes; ///< List of notes to be passed to a generator
+    static std::unordered_map<ustring, ModuleValue *> imported_modules;
     static bool enable_code_output; ///< When enabled then output will be enclosed as the output of code notes
     
     opcode::Address bci; ///< Current bytecode index
@@ -249,6 +251,12 @@ public:
     /// Runs interpreter
     void run();
     void run_from_external(MemoryPool *caller_frame);
+
+    /// Returns module if it was loaded (with passed in path), otherwise nullptr
+    static ModuleValue *has_loaded_module(ustring path);
+    /// Registers new loaded module to list of known loaded modules.
+    static void register_loaded_module(ustring path, ModuleValue *mod);
+    static void remove_loaded_module(ModuleValue *mod);
 
     /// Call to another VM's function
     /// \param fun Function that is called

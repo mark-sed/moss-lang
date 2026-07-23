@@ -1161,9 +1161,7 @@ public:
         : Value(ClassType, name, BuiltIns::Module), vm(vm) {}
     ModuleValue(ustring name, MemoryPool *frm, Interpreter *vm)
         : Value(ClassType, name, BuiltIns::Module, frm), vm(vm) {}
-    ~ModuleValue() {
-        // vm cannot be deleted here as it migth be used in other values.
-    }
+    ~ModuleValue();
 
     virtual Value *clone() override {
         return this;

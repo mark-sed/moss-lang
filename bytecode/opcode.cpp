@@ -1372,6 +1372,10 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
         }
     }
     ustring path = *path_opt;
+    if (auto ldd_mod = Interpreter::has_loaded_module(path)) {
+        LOGMAX("Module " << path << " is already loaded, returning it");
+        return ldd_mod;
+    }
     Bytecode *bc = nullptr;
     File *input_file = nullptr;
 
@@ -1424,6 +1428,7 @@ ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
     }
     assert(vm->top_currently_imported_module() == gen_mod && "Currently generated incorrectly popped?");
     vm->pop_currently_imported_module();
+    Interpreter::register_loaded_module(path, gen_mod);
     return gen_mod;
 }
 
