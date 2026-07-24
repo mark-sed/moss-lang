@@ -37,15 +37,25 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& sys::get_registr
             }
             return new ListValue(path);
         }},
+        {"platform", [](Interpreter*, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 0);
+            return sys::platform(cf, err);
+        }},
         {"set_path", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 1);
             return sys::set_path(vm, cf->get_args()[0].value, err);
         }},
-        {"platform", [](Interpreter*, CallFrame* cf, Value *&err) -> Value* {
+        {"setenv", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value* {
             auto args = cf->get_args();
-            assert(args.size() == 0);
-            return sys::platform(cf, err);
+            assert(args.size() == 3);
+            return sys::setenv(vm, cf->get_arg("name"), cf->get_arg("value"), cf->get_arg("overwrite"), err);
+        }},
+        {"unsetenv", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return sys::unsetenv(vm, cf->get_args()[0].value, err);
         }},
     };
     return registry;
@@ -142,6 +152,40 @@ Value *sys::platform(CallFrame *cf, Value *&err) {
     }
     assert(result && "No platform was matched");
     return result;
+}
+
+Value *sys::setenv(Interpreter *vm, Value *name, Value *value, Value *overwrite, Value *&err) {
+    auto name_s = mslib::get_string(name);
+    auto value_s = mslib::get_string(value);
+    auto overw = mslib::get_bool(overwrite);
+
+#ifdef __windows__
+    if (!overw && std::getenv(name_s.c_str()))
+        return BoolValue::True();
+    auto result = _putenv_s(name_s.c_str(), value_s.c_str());
+#else
+    auto result = ::setenv(name_s.c_str(), value_s.c_str(), overw);
+#endif
+
+    // Zero is returned on success. 
+    return BoolValue::get(result == 0);
+}
+
+Value *sys::unsetenv(Interpreter *vm, Value *name, Value *&err) {
+    auto name_s = mslib::get_string(name);
+
+#ifdef __windows__
+    auto result = _putenv_s(name_s.c_str(), "");
+#else
+    auto result = ::unsetenv(name_s.c_str());
+    if (!result) {
+        // On error errno is set (such case is string with =)
+        errno = 0;
+    }
+#endif
+
+    // Zero is returned on success. 
+    return BoolValue::get(result == 0);
 }
 
 Value *sys::getenv(Interpreter *vm, Value *name, Value *def_val, Value *&err) {

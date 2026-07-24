@@ -30,6 +30,18 @@ fun getenv(name:String) {}
 fun getenv(name:String, def_val) {}
 
 @internal
+fun setenv(name:String, value:String, overwrite:Bool=true) {}
+
+@internal
+fun unsetenv(name:String) {
+    d"""
+    Unsets environmental variable `name`.
+    Returns true on completion and false on error.
+    Note that unsetting not set variable will still return true.
+    """
+}
+
+@internal
 fun get_path() {
     d"""
     Returns the currently used lookup path for modules.

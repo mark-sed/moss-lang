@@ -36,3 +36,26 @@ catch (e:ModuleNotFoundError)
 import empty
 empty
 "\n"
+
+sys.setenv("MY_VAR_HIHI", "42")
+"\n"
+sys.getenv("MY_VAR_HIHI")
+"\n"
+sys.setenv("MY_VAR_HIHI", "-2", false)
+"\n"
+sys.getenv("MY_VAR_HIHI")
+"\n"
+sys.setenv("MY_VAR_HIHI", "0", true)
+"\n"
+sys.getenv("MY_VAR_HIHI")
+"\n"
+
+sys.unsetenv("MY_VAR_HIHI")
+"\n"
+try
+    sys.getenv("MY_VAR_HIHI")
+catch(e:KeyError)
+    "unset\n"
+
+sys.unsetenv("nonexistentvariable_3532")
+"\n"
