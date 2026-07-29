@@ -896,7 +896,7 @@ public:
                 const auto &v = vals.at(k);
                 for (auto vl: v) {
                     os << (first ? "" : ",") << "\n" << std::string(tab_depth*2, ' ') 
-                    << "(" << k << ")" << *vl.first << ": ";
+                    << *vl.first << ": ";
                     vl.second->debug(os, tab_depth, visited);
                     first = false;
                 }

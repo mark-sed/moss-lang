@@ -1345,10 +1345,10 @@ Space FooSpc {
   "pi": Float(3.14)
 }
 Dict(4) {
-  (4993892634952068459)String("a"): Int(1),
-  (-7608462621679433859)String("b"): Int(2),
-  (3176031829589892468)String("dct"): Dict(4) {...},
-  (-6906085509080617442)String("l"): List(3) [
+  String("a"): Int(1),
+  String("b"): Int(2),
+  String("dct"): Dict(4) {...},
+  String("l"): List(3) [
     Int(1),
     List(2) [
       Int(0),
