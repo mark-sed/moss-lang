@@ -42,12 +42,15 @@ sudo bash install.sh
 """
 } else if (platform == Platform.Windows) {
     md"""
-From inside of the release folder in your command line run:
+From inside of the release folder you can try double clicking install.ps1 or in your command line run:
 ```
-.\\install.ps1
+.\install.ps1
 ```
-
-Or just double click on the `install.ps1` file.
+If you get an error `cannot be loaded because running scripts is disabled on this system`, then you can run:
+```
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+.\install.ps1
+```
 """
 }
 

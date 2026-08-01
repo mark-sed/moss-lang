@@ -15,6 +15,7 @@ try {
     # Copy executable
     Write-Host "Copying moss.exe..."
     Copy-Item "moss.exe" $BinDir -Force -ErrorAction Stop
+    Copy-Item "python*.dll" $BinDir -Force -ErrorAction Stop
 
     # Copy .msb files
     Write-Host "Copying .msb files..."

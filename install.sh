@@ -73,8 +73,8 @@ elif [ "${TARGET}" == "docs" ]; then
     mv docs/readme.md ./ 2>/dev/null
     echo "Done regenerating docs."
 elif [ "${TARGET}" == "package" ]; then
-    if ! [[ $2 = "linux" || $2 = "darwin" ]]; then
-        echo "Expected platform as the second argument ([linux/darwin])."
+    if ! [[ $2 = "linux" || $2 = "darwin" || $2 = "windows" ]]; then
+        echo "Expected platform as the second argument ([linux/darwin/windows])."
         exit 1
     fi
     platform_name=$2
@@ -83,30 +83,55 @@ elif [ "${TARGET}" == "package" ]; then
     fi
 
     echo "Creating general release build package..."
-    sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release || exit 1
-    sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss
-    version=$(./$BUILD_DIR/moss --version | grep -oP '(?<=moss )\d+\.\d+\.\d+')
+    MOSS_BIN=$BUILD_DIR/moss
+    if [ $2 = "windows" ]; then
+        cmake --build build --config Release --target moss
+        MOSS_BIN=$BUILD_DIR/Release/moss.exe
+        version=$(./$MOSS_BIN --version | grep -oP '(?<=moss )\d+\.\d+\.\d+')
+    else
+        sudo -u $SUDO_USER cmake -S . -B $MOSS_DIR -DCMAKE_BUILD_TYPE=Release || exit 1
+        sudo -u $SUDO_USER cmake --build $MOSS_DIR -j $(nproc) --target moss
+        version=$(./$MOSS_BIN --version | grep -oP '(?<=moss )\d+\.\d+\.\d+')
+    fi
 
     echo "Compiling moss libraries..."
     output_name=moss-${version}-release-${platform_name}_x86
     release_dir=$BUILD_DIR/$output_name
+    rm -rf $release_dir
     
     mkdir -p $release_dir
+    license_dir=$release_dir/THIRD_PARTY_LICENSES
+    mkdir $license_dir
     # Copy all needed
-    cp $BUILD_DIR/moss $release_dir
+    cp $MOSS_BIN $release_dir
     cp LICENSE $release_dir
-    ./$BUILD_DIR/moss -f md -o $release_dir/readme.md docs/releases/release_readme.ms $2
-    cp docs/releases/release_install.sh $release_dir/install.sh
+    ./$MOSS_BIN -f md -o $release_dir/readme.md docs/releases/release_readme.ms $2
+    if [ $2 = "windows" ]; then
+        cp docs/releases/release_install.ps1 $release_dir/install.ps1
+        cp docs/releases/python3.LICENSE.txt $license_dir/python3.txt
+        cp $BUILD_DIR/Release/python311.dll $release_dir
+    else
+        cp docs/releases/release_install.sh $release_dir/install.sh
+    fi
     cp stdlib/mossy.css $release_dir
-    cp stdlib/waters.css.LICENSE $release_dir
+    cp stdlib/waters.css.LICENSE $license_dir/waters.txt
     # Compile all stdlib files
     for file in stdlib/*.ms; do
         file_base=$(basename "$file" .ms)
-        ./$BUILD_DIR/moss -W all -X2 --compile-only -O "$release_dir/$file_base.msb" "$file"
+        ./$MOSS_BIN -W all -X2 --compile-only -O "$release_dir/$file_base.msb" "$file"
     done
     # Change permissions on release folder to not be sudo
-    sudo chown -R "$SUDO_USER:$SUDO_USER" $release_dir
+    if ! [ $2 = "windows" ]; then
+        sudo chown -R "$SUDO_USER:$SUDO_USER" $release_dir
+    fi
     echo "Creating archive..."
-    sudo -u $SUDO_USER tar -czf "$output_name.tar.gz" -C "$release_dir" .
-    echo "Created package: ${output_name}.tar.gz"
+    if [ $2 = "windows" ]; then
+        cd "$release_dir"
+        tar -a -c -f "../../$output_name.zip" *
+        cd -
+        echo "Created package: ${output_name}.zip"
+    else
+        sudo -u $SUDO_USER tar -czf "$output_name.tar.gz" -C "$release_dir" .
+        echo "Created package: ${output_name}.tar.gz"
+    fi
 fi
