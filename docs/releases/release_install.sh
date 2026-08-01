@@ -9,18 +9,17 @@
 #
 # Usage: sudo bash install.sh
 
-if ! [ -w /bin ]; then
-    echo "ERROR: This script requires root privileges to write into /bin/ and /usr/lib"
-    echo "Usage: sudo bash install.sh"
-    exit 1
-fi
-
 LIB_PATH=""
 BIN_PATH=""
 if [[ "$(uname -s)" == "Darwin" ]]; then
     LIB_PATH="/usr/local/lib/moss"
     BIN_PATH="/usr/local/bin/moss"
 elif [[ "$(uname -s)" == "Linux" ]]; then
+    if ! [ -w /bin ]; then
+        echo "ERROR: This script requires root privileges to write into /bin/ and /usr/lib"
+        echo "Usage: sudo bash install.sh"
+        exit 1
+    fi
     LIB_PATH="/usr/lib/moss"
     BIN_PATH="/usr/bin/moss"
 else

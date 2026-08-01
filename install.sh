@@ -91,7 +91,7 @@ elif [ "${TARGET}" == "package" ]; then
     else
         sudo -u $SUDO_USER cmake -S . -B build -DCMAKE_BUILD_TYPE=Release || exit 1
         sudo -u $SUDO_USER cmake --build build -j $(nproc) --target moss
-        version=$(./$MOSS_BIN --version | grep -oP '(?<=moss )\d+\.\d+\.\d+')
+        version=$(./$MOSS_BIN --version | sed -nE 's/.*moss ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
     fi
 
     echo "Compiling moss libraries..."

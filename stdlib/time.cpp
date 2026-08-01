@@ -143,7 +143,7 @@ Value *time::strftime(Interpreter *vm, Value *format, Value *t, Value *&err) {
         }
         // tm_zone might be empty string
         if (tm_zone_str->get_value().length() > 0)
-            temp_time.tm_zone = tm_zone_str->get_value().c_str();
+            temp_time.tm_zone = const_cast<char *>(tm_zone_str->get_value().c_str());
 #endif
     }
     
