@@ -1564,18 +1564,31 @@ fun help(a) {
     return txt
 }
 
-/*fun help() {
+fun help() {
     d"""
     Interactive help utility.
     This function queries for input and runs `help` on it.
     """
+    ~print("""Moss help utility
+-----------------
+This is an interactive moss REPL shell.
+Any statement will be immediately interpreted and its output printed.
+If you don't want to see the results of an expression, you can prefix it
+with silent operator `~` (e.g.: `~print("hi")` and `nil` won't be printed).
+
+Type:
+  - `exit()` to quit.
+  - `help(<symbol>)` to get information about symbols.
+  - `info(<symbol>)` to get documentation string of a symbol.
+""")
+/*    
     ~print("""Moss interactive help utility.
 ------------------------------
 You can enter a name of a module to get more information on it.
 Currently this tool cannot work with expressions (e.g. "Int.Int").
 Enter "q" or "quit" to exit this tool.
-""")
-}*/
+""")*/
+}
 
 @internal_bind("File")
 class __File {

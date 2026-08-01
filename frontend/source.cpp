@@ -4,6 +4,14 @@
 #include <cstring>
 #include <fstream>
 #include <filesystem>
+#ifdef __windows__
+#include <windows.h>
+#elif defined(__linux__)
+#include <unistd.h>
+#include <limits.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
 
 using namespace moss;
 
@@ -69,6 +77,75 @@ ustring moss::get_moss_lib_path() {
 #endif
 }
 
+std::optional<std::filesystem::path> get_executable_path() {
+#ifdef __windows__
+    std::vector<wchar_t> buffer(1024);
+
+    while (true) {
+        DWORD size = GetModuleFileNameW(
+            nullptr,
+            buffer.data(),
+            static_cast<DWORD>(buffer.size())
+        );
+
+        if (size == 0) {
+            return std::nullopt;
+        }
+
+        // Buffer was too small
+        if (size < buffer.size() - 1) {
+            return std::filesystem::path(buffer.data());
+        }
+
+        buffer.resize(buffer.size() * 2);
+    }
+#elif defined(__linux__)
+    std::vector<char> buffer(PATH_MAX);
+
+    while (true) {
+        ssize_t size = readlink(
+            "/proc/self/exe",
+            buffer.data(),
+            buffer.size()
+        );
+
+        if (size == -1) {
+            return std::nullopt;
+        }
+
+        // Buffer was too small
+        if (static_cast<size_t>(size) < buffer.size()) {
+            return std::filesystem::path(
+                std::string(buffer.data(), size)
+            );
+        }
+
+        buffer.resize(buffer.size() * 2);
+    }
+#elif defined(__APPLE__)
+    uint32_t size = 0;
+
+    _NSGetExecutablePath(nullptr, &size);
+
+    std::vector<char> buffer(size);
+
+    if (_NSGetExecutablePath(buffer.data(), &size) != 0) {
+        return std::nullopt;
+    }
+
+    // Resolve symlinks and normalize the path
+    return std::filesystem::canonical(buffer.data());
+#endif
+    return std::nullopt;
+}
+
+std::optional<std::filesystem::path> get_executable_directory() {
+    auto p = get_executable_path();
+    if (p)
+        return p->parent_path();
+    return std::nullopt;
+}
+
 static std::vector<ustring> paths;
 
 static void init_lookup_path() {
@@ -86,6 +163,10 @@ static void init_lookup_path() {
 
     // Look into system path
     paths.push_back(get_moss_lib_path());
+
+    // Append path to the current exectuable
+    if (auto edp = get_executable_directory())
+        paths.push_back(edp->string());
 }
 
 std::vector<ustring> &moss::get_lookup_path() {
