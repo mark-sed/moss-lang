@@ -35,7 +35,7 @@ Value *PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr, Value *
 
 Value *PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *&err);
 
-Value *PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *args, Value *&err);
+Value *PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err);
 
 Value *to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err);
 

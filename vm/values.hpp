@@ -194,7 +194,7 @@ public:
     /// Adds an annotation to the value (if possible)
     void annotate(ustring name, Value *val);
     std::map<ustring, Value *> get_annotations() { return this->annotations; }
-    bool has_annotation(ustring name) {
+    bool has_annotation(ustring name) const {
         return annotations.find(name) != annotations.end();
     }
     Value *get_annotation(ustring name) {
@@ -1228,8 +1228,31 @@ public:
                : name(name), types(types), default_value(default_value), vararg(vararg) {}
 
     bool is_typed() { return types.empty(); }
-    // TODO: Debug
+
+    virtual std::ostream& debug(std::ostream& os) const {
+        std::stringstream ss;
+        ss << "[";
+        bool first = true;
+        for (auto v: types) {
+            if (!first)
+                ss << ", ";
+            first = false;
+            ss << *v;
+        }
+        ss << "]";
+        os << "Argument(name=\"" << name << "\", types=" << ss.str() << ", default=";
+        if (default_value)
+            os << *default_value;
+        else
+            os << "nullptr";
+        os << ", vararg=" << (vararg ? "true" : "false") << ")";
+        return os;
+    }
 };
+
+inline std::ostream& operator<< (std::ostream& os, FunValueArg &v) {
+    return v.debug(os);
+}
 
 struct ExceptionCatch;
 
@@ -1319,6 +1342,7 @@ public:
     opcode::Address get_body_addr() { return this->body_addr; }
 
     std::vector<FunValueArg *> get_args() { return this->args; }
+    void set_args(std::vector<FunValueArg *> args) { this->args = args; }
 
     Interpreter *get_vm() { return this->vm; }
 
@@ -1403,7 +1427,9 @@ public:
             }
             os << " ";
         }
-        os << "fun " << get_signature() << " @" << body_addr;
+        os << "fun " << get_signature();
+        if (!this->has_annotation(annots::INTERNAL))
+            os << " @" << body_addr;
         return os;
     }
 };

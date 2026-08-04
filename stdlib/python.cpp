@@ -12,16 +12,22 @@ using namespace python;
 bool PYTHON_INITIALIZED = false;
 
 static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err);
-static Value *new_PythonObject(PyObject *ptr);
+static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err);
+static Value *new_PythonObject(Interpreter *vm, CallFrame *cf, PyObject *ptr, Value *&err);
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+        {"()", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return python::PyObj_call(vm, cf, err);
+        }},
         {"call", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            auto args = cf->get_args();
-            assert(args.size() == 2);
-            auto ths = cf->get_arg("this");
-            auto val = cf->get_arg("args");
-            return python::PyObj_call(vm, cf, ths, val, err);
+            return python::PyObj_call(vm, cf, err);
+        }},
+        {"call_moss", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto rval = python::PyObj_call(vm, cf, err);
+            if (err)
+                return nullptr;
+            return python::to_moss(vm, cf, rval, err);
         }},
         {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
@@ -48,7 +54,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
                 auto pyv = moss2py(vm, cf, cf->get_arg("v"), err);
                 if (err)
                     return nullptr;
-                auto nobj = new_PythonObject(pyv);
+                auto nobj = new_PythonObject(vm, cf, pyv, err);
                 if (err)
                     return nullptr;
                 if (get_bool(cf->get_arg("populate"))) {
@@ -67,11 +73,227 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
     return registry;
 }
 
-static Value *new_PythonObject(PyObject *ptr) {
+static std::optional<std::vector<FunValueArg *>> get_function_args(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err) {
+    if (!PyCallable_Check(obj))
+        return std::nullopt;
+
+    PyObject *inspect = PyImport_ImportModule("inspect");
+    if (!inspect)
+        return std::nullopt;
+
+    PyObject *signature_fn = PyObject_GetAttrString(inspect, "signature");
+    Py_DECREF(inspect);
+
+    if (!signature_fn)
+        return std::nullopt;
+
+    PyObject *sig = PyObject_CallFunctionObjArgs(signature_fn, obj, nullptr);
+    Py_DECREF(signature_fn);
+
+    if (!sig) {
+        PyErr_Clear();
+        return std::nullopt;
+    }
+
+    PyObject *parameters = PyObject_GetAttrString(sig, "parameters");
+    Py_DECREF(sig);
+
+    if (!parameters)
+        return std::nullopt;
+
+    // Ordered mapping -> values() gives Parameter objects in declaration order.
+    PyObject *values = PyObject_CallMethod(parameters, "values", nullptr);
+    Py_DECREF(parameters);
+
+    if (!values)
+        return std::nullopt;
+
+    PyObject *iter = PyObject_GetIter(values);
+    Py_DECREF(values);
+
+    if (!iter)
+        return std::nullopt;
+
+    PyObject *inspect_parameter =
+        PyObject_GetAttrString(PyImport_ImportModule("inspect"), "Parameter");
+
+    PyObject *empty =
+        PyObject_GetAttrString(inspect_parameter, "empty");
+
+    PyObject *VAR_POSITIONAL =
+        PyObject_GetAttrString(inspect_parameter, "VAR_POSITIONAL");
+
+    std::vector<FunValueArg *> args;
+    while (PyObject *param = PyIter_Next(iter)) {
+        // name
+        PyObject *nameObj = PyObject_GetAttrString(param, "name");
+        const char *name = PyUnicode_AsUTF8(nameObj);
+
+        // default
+        PyObject *defaultObj = PyObject_GetAttrString(param, "default");
+
+        Value *default_value = nullptr;
+
+        if (!defaultObj) {
+            PyErr_Print();
+            // handle error
+        }
+        else if (defaultObj != empty) {
+            default_value = py2moss(vm, cf, defaultObj, err);
+
+            if (err) {
+                // If we cannot convert to moss it might be because it is some
+                // internal value like class or such, so for that case, lets
+                // just convert it to general PyObject
+                err = nullptr;
+                default_value = new_PythonObject(vm, cf, defaultObj, err);
+                if (err) {
+                    Py_DECREF(defaultObj);
+                    return std::nullopt;
+                }
+            }
+        }
+
+        Py_DECREF(defaultObj);
+
+        // kind
+        PyObject *kind = PyObject_GetAttrString(param, "kind");
+
+        bool vararg = (PyObject_RichCompareBool(kind, VAR_POSITIONAL, Py_EQ) == 1);
+
+        args.emplace_back(new FunValueArg(
+            opcode::StringConst(name),
+            {},                  // types
+            default_value,
+            vararg));
+
+        Py_DECREF(kind);
+        Py_DECREF(nameObj);
+        Py_DECREF(param);
+    }
+
+    Py_DECREF(VAR_POSITIONAL);
+    Py_DECREF(empty);
+    Py_DECREF(inspect_parameter);
+    Py_DECREF(iter);
+
+    return args;
+}
+
+// TODO: handle errors not just return false;
+static bool is_arg_positional(PyObject *ptr, size_t index) {
+    PyObject *inspect = PyImport_ImportModule("inspect");
+    if (!inspect) {
+        PyErr_Clear();
+        return false;
+    }
+
+    PyObject *signature_fn = PyObject_GetAttrString(inspect, "signature");
+
+    if (!signature_fn) {
+        PyErr_Clear();
+        return false;
+    }
+
+    PyObject *sig = PyObject_CallFunctionObjArgs(signature_fn, ptr, nullptr);
+    Py_DECREF(signature_fn);
+
+    if (!sig) {
+        PyErr_Clear();
+        return false;
+    }
+
+    PyObject *parameters = PyObject_GetAttrString(sig, "parameters");
+    Py_DECREF(sig);
+
+    if (!parameters) {
+        PyErr_Clear();
+        return false;
+    }
+
+    PyObject *values = PyObject_CallMethod(parameters, "values", nullptr);
+    Py_DECREF(parameters);
+
+    if (!values) {
+        PyErr_Clear();
+        return false;
+    }
+
+    PyObject *list = PySequence_List(values);
+    Py_DECREF(values);
+
+    if (!list) {
+        PyErr_Clear();
+        return false;
+    }
+
+    PyObject *param = PyList_GetItem(list, index);
+    Py_XINCREF(param); // PyList_GetItem borrows reference
+    Py_DECREF(list);
+
+    PyObject *kind = PyObject_GetAttrString(param, "kind");
+
+    PyObject *Parameter = PyObject_GetAttrString(inspect, "Parameter");
+
+    PyObject *POSITIONAL_ONLY =
+        PyObject_GetAttrString(Parameter, "POSITIONAL_ONLY");
+
+    PyObject *POSITIONAL_OR_KEYWORD =
+        PyObject_GetAttrString(Parameter, "POSITIONAL_OR_KEYWORD");
+
+    bool result =
+        PyObject_RichCompareBool(kind, POSITIONAL_ONLY, Py_EQ) == 1 ||
+        PyObject_RichCompareBool(kind, POSITIONAL_OR_KEYWORD, Py_EQ) == 1;
+
+    Py_DECREF(POSITIONAL_ONLY);
+    Py_DECREF(POSITIONAL_OR_KEYWORD);
+    Py_DECREF(Parameter);
+    Py_DECREF(inspect);
+    Py_DECREF(kind);
+
+    return result;
+}
+
+// FIXME: Rewrite this! Very ugly handling
+static Value *new_PythonObject(Interpreter *vm, CallFrame *cf, PyObject *ptr, Value *&err) {
     auto pyocls = dyn_cast<ClassValue>(BuiltIns::PythonObject);
     auto obj = new ObjectValue(pyocls);
     // NOTE: If the name ptr is changed than it needs to be changed also in ~ObjectValue.
     obj->set_attr("ptr", new t_cpp::CVoidStarValue(ptr));
+    if (auto fargs = get_function_args(vm, cf, ptr, err)) {
+        fargs->push_back(new FunValueArg("this", {}));
+        auto old_call = obj->get_attr("call", vm);
+        FunValue *old_call_fun = dyn_cast<FunValue>(old_call);
+        assert(old_call_fun && "Call function is not a function? Perhaps a FunList");
+
+        auto owner = dyn_cast<ModuleValue>(old_call_fun->get_owner());
+        assert(owner && "owner of python module function not set?");
+        // A new function as to be created otherwise we would override it for all the objects as they
+        // share the one FunValue for call.
+        auto new_call_fun = new FunValue("call", *fargs, owner->get_vm(), old_call_fun->get_body_addr(), owner);
+        for (auto [k, v]: old_call_fun->get_annotations())
+            new_call_fun->annotate(k, v);
+        obj->set_attr("call", new_call_fun);
+
+        auto old_op_call = obj->get_attr("()", vm);
+        FunValue *old_op_call_fun = dyn_cast<FunValue>(old_op_call);
+        assert(old_op_call_fun && "() function is not a function? Perhaps a FunList");
+        auto new_op_fun = new FunValue("()", *fargs, owner->get_vm(), old_op_call_fun->get_body_addr(), owner);
+        for (auto [k, v]: old_op_call_fun->get_annotations())
+            new_op_fun->annotate(k, v);
+        obj->set_attr("()", new_op_fun);
+
+        auto old_call_moss = obj->get_attr("call_moss", vm);
+        FunValue *old_call_moss_fun = dyn_cast<FunValue>(old_call_moss);
+        assert(old_call_moss_fun && "call_moss function is not a function? Perhaps a FunList");
+        auto new_call_moss_fun = new FunValue("call_moss", *fargs, owner->get_vm(), old_call_moss_fun->get_body_addr(), owner);
+        for (auto [k, v]: old_call_moss_fun->get_annotations())
+            new_call_moss_fun->annotate(k, v);
+        obj->set_attr("call_moss", new_call_moss_fun);
+    }
+    // TODO: Add the same for classes and their constructors (such as zip)
+    // TODO: Add the same for built-ins (such as vars) - best is to probably
+    //       hardcode the known ones - if (obj == PyEval_GetBuiltins()["vars"])
     return obj;
 }
 
@@ -88,7 +310,7 @@ Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr,
     auto cvs = dyn_cast<t_cpp::CVoidStarValue>(ptr);
     assert(cvs);
     auto pyv = static_cast<PyObject *>(cvs->get_value());
-    auto nobj = new_PythonObject(pyv);
+    auto nobj = new_PythonObject(vm, cf, pyv, err);
     if (err)
         return nullptr;
     if (get_bool(popul)) {
@@ -131,7 +353,9 @@ static ustring get_py_exception(PyObject **exc_out) {
 static Value *extract_py_exception(Interpreter *vm, CallFrame *cf, Value *&err) {
     PyObject *exc_obj = nullptr;
     auto msg = get_py_exception(&exc_obj);
-    Value *ms_exc_obj = new_PythonObject(exc_obj);
+    Value *ms_exc_obj = new_PythonObject(vm, cf, exc_obj, err);
+    if (err)
+        return nullptr;
     return mslib::call_constructor(vm, cf, "PythonException", {StringValue::get(msg), ms_exc_obj}, err);
 }
 
@@ -157,7 +381,7 @@ Value *python::module(Interpreter *vm, CallFrame *cf, Value *name, Value *popul,
         return nullptr;
     }
 
-    auto nobj = new_PythonObject(p_module);
+    auto nobj = new_PythonObject(vm, cf, p_module, err);
     if (err)
         return nullptr;
     if (get_bool(popul)) {
@@ -178,7 +402,7 @@ Value *python::PyObj_get(Interpreter *vm, CallFrame *cf, Value *ths, Value *name
             err = exc; 
         return nullptr;
     }
-    return new_PythonObject(att);
+    return new_PythonObject(vm, cf, att, err);
 }
 
 static PyObject *moss2py(Interpreter *vm, CallFrame *cf, Value *v, Value *&err) {
@@ -268,7 +492,7 @@ static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err
         auto dc = new DictValue();
         dc->push(keys, vals, vm);
         return dc;
-    } else if (t == &PySet_Type) {
+    } else if (t == &PySet_Type || t == &PyTuple_Type) {
         PyObject *it = PyObject_GetIter(obj);
         PyObject *item;
         auto lst = new ListValue();
@@ -287,29 +511,92 @@ static Value *py2moss(Interpreter *vm, CallFrame *cf, PyObject *obj, Value *&err
     return nullptr;
 }
 
-Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *ths, Value *call_args, Value *&err) {
+// TODO: Allow for python arg called this
+// TODO: Make calls to functions with kwargs work
+Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err) {
+    auto args = cf->get_args();
+    auto ths = cf->get_arg("this");
     auto ptr = get_PyObject(vm, ths, err);
     if (err)
         return nullptr;
-    auto args = mslib::get_list(call_args);
-    
-    PyObject *py_args = PyTuple_New(args.size());
+
+    auto call_attr = ths->get_attr("call", vm);
+    auto call_fn = dyn_cast<FunValue>(call_attr);
+    assert(call_fn && "call is not a function");
+
+    PyObject *positional = PyTuple_New(0);
+    PyObject *kwargs = PyDict_New();
+
+    std::vector<PyObject *> pos;
+
+    auto offset = 0;
     for (size_t i = 0; i < args.size(); ++i) {
-        PyTuple_SetItem(py_args, i, moss2py(vm, cf, args[i], err));
+        if (args[i].name == "this") {
+            ++offset;
+            continue;
+        }
+        PyObject *py = moss2py(vm, cf, args[i].value, err);
         if (err) {
-            Py_DECREF(py_args);
+            Py_DECREF(positional);
+            Py_DECREF(kwargs);
             return nullptr;
         }
+        
+        auto is_pos = is_arg_positional(ptr, i-offset);
+        // TODO: Optimize this
+        // We cannot use index as that will not much in all the cases.
+        bool is_vararg = false;
+        for (auto fa: call_fn->get_args()) {
+            if (fa->name == args[i].name && fa->vararg) {
+                PyObject *seq = PySequence_Fast(py, "vararg must be iterable");
+                if (!seq) {
+                    Py_DECREF(py);
+                    Py_DECREF(positional);
+                    Py_DECREF(kwargs);
+                    return nullptr;
+                }
+
+                Py_ssize_t extra = PySequence_Size(seq);
+
+                for (Py_ssize_t j = 0; j < extra; j++) {
+                    PyObject *item = PySequence_GetItem(seq, j);
+                    pos.push_back(item);   // steals later into final tuple
+                }
+
+                Py_DECREF(seq);
+                Py_DECREF(py);
+                is_vararg = true;
+                continue;
+            }
+        }
+        if (!is_vararg) {
+            if (is_pos) {
+                pos.push_back(py);
+            } else {
+                PyDict_SetItemString(kwargs, args[i].name.c_str(), py);
+                Py_DECREF(py); // Dict doesn't steal the reference.
+            }
+        }
     }
-    auto rval = PyObject_CallObject(ptr, py_args);
-    Py_DECREF(py_args);
+
+    Py_DECREF(positional);
+    positional = PyTuple_New(pos.size());
+
+    for (Py_ssize_t i = 0; i < (Py_ssize_t)pos.size(); ++i)
+        PyTuple_SetItem(positional, i, pos[i]); // steals reference
+
+    PyObject *rval = PyObject_Call(ptr, positional, kwargs);
+
+    Py_DECREF(positional);
+    Py_DECREF(kwargs);
+
     if (!rval || PyErr_Occurred()) {
         auto exc = extract_py_exception(vm, cf, err);
         if (!err)
             err = exc; 
         return nullptr;
     }
-    return new_PythonObject(rval);
+    return new_PythonObject(vm, cf, rval, err);
 }
 
 Value *python::to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err) {
@@ -342,7 +629,7 @@ Value *python::populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err)
                 err = exc; 
             return nullptr;
         }
-        ths->set_attr(name, new_PythonObject(att));
+        ths->set_attr(name, new_PythonObject(vm, cf, att, err));
         if (err)
             return nullptr;
     }

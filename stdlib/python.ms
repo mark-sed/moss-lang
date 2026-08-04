@@ -69,17 +69,19 @@ class __PythonObject {
         """
     }
 
+    @internal
     fun call_moss(... args) {
         d"""
         Function call to this object and then conversion of returned value into
         a Moss value.
         """
-        rval = this.call(<<args)
-        return rval.to_moss()
     }
 
+    @internal
     fun (())(...args) {
-        return this.call(<<args)
+        d"""
+        Equivalent to function `call`.
+        """
     }
 }
 
@@ -137,5 +139,4 @@ fun to_py(v, populate:Bool=true) {
 }
 
 // Python stdlib builtins (implicitly imported values)
-builtins = module("builtins")
-~builtins.populate()
+builtins = module("builtins", true)
