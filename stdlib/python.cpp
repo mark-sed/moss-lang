@@ -139,18 +139,10 @@ static std::optional<std::vector<FunValueArg *>> get_function_args(Interpreter *
             // handle error
         }
         else if (defaultObj != empty) {
-            default_value = py2moss(vm, cf, defaultObj, err);
-
+            default_value = new_PythonObject(vm, cf, defaultObj, err);
             if (err) {
-                // If we cannot convert to moss it might be because it is some
-                // internal value like class or such, so for that case, lets
-                // just convert it to general PyObject
-                err = nullptr;
-                default_value = new_PythonObject(vm, cf, defaultObj, err);
-                if (err) {
-                    Py_DECREF(defaultObj);
-                    return std::nullopt;
-                }
+                Py_DECREF(defaultObj);
+                return std::nullopt;
             }
         }
 

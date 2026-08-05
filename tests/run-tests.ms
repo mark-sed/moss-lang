@@ -91,6 +91,27 @@ fun rm(path:String, relative_path:Bool=true) {
         ~subprocess.system(f"rm -f {full_path}")
 }
 
+fun cp(from:String, to:String, relative_path:Bool=true) {
+    if (relative_path) {
+        full_path_from = ::TEST_DIR++from
+        full_path_to = ::TEST_DIR++to
+    } else {
+        full_path_from = from
+        full_path_to = to
+    }
+
+    // For Windows replace slashes
+    if (::PLATFORM == sys.Platform.Windows) {
+        full_path_from = full_path_from.replace("/", "\\")
+        full_path_to = full_path_to.replace("/", "\\")
+    }
+
+    if (::PLATFORM == sys.Platform.Windows)
+        ~subprocess.system(f"copy {full_path_from} {full_path_to}")
+    else
+        ~subprocess.system(f"cp {full_path_from} {full_path_to}")
+}
+
 fun run(test:String,
         name:String,
         args:String="",
@@ -1947,6 +1968,36 @@ fun test_lib_python_type_conversions(name) {
 {1, 2, 3, 4, 5}\n[33, 11, 22]\n""", "")
 }
 
+fun test_lib_python_calls(name) {
+    ~cp(f"{::TEST_DIR}/stdlib_tests/python_tests/py_calls_python.py", "./py_calls_python.py", false)
+    ~expect_pass("stdlib_tests/python_tests/py_calls.ms", name, """@internal(NilType(nil)) fun call(a, b, c, d=<object of class PythonObject>, ... ff, e=<object of class PythonObject>, f=<object of class PythonObject>, this)
+@internal(NilType(nil)) fun call_moss(a, b, c, d=<object of class PythonObject>, ... ff, e=<object of class PythonObject>, f=<object of class PythonObject>, this)
+@internal(NilType(nil)) fun call(a=<object of class PythonObject>, b=<object of class PythonObject>, this)
+Hi from foo
+1 2 3 4 9 2 (5, 6, 7)
+3
+Hi from foo
+1 2 3 4 9 -2 (5, 6, 7)
+3
+Hi from foo
+1 2 3 4 9 -2 (5, 6, 7)
+3
+5
+5
+5
+Hello, Alice!
+Hi, Alice!
+Hello, Bob!
+Bob, Hey!
+20
+15
+12
+[]
+[1]
+[1, 2, 3]\n""", "")
+    ~rm("./py_calls_python.py", false)
+}
+
 fun test_lib_math_generals(name) {
     ~expect_pass("stdlib_tests/math_tests/generals.ms", name, """-1.000000\n5.000000
 inf\nnan
@@ -2597,6 +2648,7 @@ fun run_all_tests() {
     ~run_test("lib_python_module_imports")
     ~run_test("lib_python_attrs_calls")
     ~run_test("lib_python_type_conversions")
+    ~run_test("lib_python_calls")
 
     // math
     ~run_test("lib_math_generals")

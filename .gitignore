@@ -38,3 +38,4 @@ docs/html
 examples/
 .vscode/
 .vs/
+__pycache__/
