@@ -484,7 +484,6 @@ static std::optional<diags::DiagID> can_call(FunValue *f, CallFrame *cf) {
         CallFrameArg &arg = call_args[i];
         if (named_args || !arg.name.empty()) {
             // Argument with name specified (e.g. a=3)
-            assert(!arg.name.empty() && "Non-named arg after a named one");
             bool matched = false;
             for (unsigned j = 0; j < fun_args.size(); ++j) {
                 if (fun_args[j]->name == arg.name) {

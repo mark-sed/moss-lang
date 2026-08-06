@@ -100,3 +100,7 @@ test.everything(<<arg, d=5, e=6, kwargs=kwarg).to_moss()
 "\n"
 // {"a":1, "b":2, "c":3, "args":(4,), "d":5, "e":6, "kwargs":{"x":7}}
 
+try
+    test.mixed(1, c=3, {"hello": 42}, b=8).to_moss()
+catch(e:TypeError)
+    "caught\n"

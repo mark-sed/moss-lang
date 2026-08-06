@@ -2001,7 +2001,7 @@ Hi back, 42! {'a': 1, 'b': 2, 'args': (), 'c': 3, 'd': 4, 'kwargs': {'hello': 42
 30
 Hello, Charlie!
 Hi, Dana!
-{"a": 1, "b": 2, "c": 3, "args": [4], "d": 5, "e": 6, "kwargs": {"x": 7}}\n""", "")
+{"a": 1, "b": 2, "c": 3, "args": [4], "d": 5, "e": 6, "kwargs": {"x": 7}}\ncaught\n""", "")
     ~rm("./py_calls_python.py", false)
 }
 

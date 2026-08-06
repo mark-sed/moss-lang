@@ -159,7 +159,8 @@ static std::optional<std::vector<FunValueArg *>> get_function_args(Interpreter *
 
         std::vector<Value *> types;
         if (kwarg) {
-            default_value = new DictValue();
+            if (!default_value)
+                default_value = new DictValue();
             types.push_back(BuiltIns::Dict);
         }
 
@@ -238,6 +239,11 @@ static PyArgType get_argument_type(PyObject *ptr, size_t index) {
     }
 
     PyObject *param = PyList_GetItem(list, index);
+    if (!param) {
+        Py_DECREF(list);
+        PyErr_Clear();   // or propagate the IndexError
+        return PyArgType::ERROR;
+    }
     Py_XINCREF(param); // PyList_GetItem borrows reference
     Py_DECREF(list);
 
@@ -571,10 +577,8 @@ Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err) {
 
     std::vector<PyObject *> pos;
 
-    auto offset = 0;
     for (size_t i = 0; i < args.size(); ++i) {
         if (args[i].name == "this") {
-            ++offset;
             continue;
         }
         PyObject *py = moss2py(vm, cf, args[i].value, err);
@@ -617,12 +621,17 @@ Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err) {
         if (!is_vararg) {
             auto arg_t = get_argument_type(ptr, python_index);
             assert(arg_t != PyArgType::VARARG && "Vararg not handled");
-            if (arg_t == PyArgType::POSITIONAL) {
+            if (arg_t == PyArgType::ERROR) {
+                // Ugly ignore of ERROR arguments. This is needed for libraries
+                // such as matplotlib which rewrites function signatures upon
+                // backend-load, so `show(*args, **kwargs)` will be
+                // `_Backend.show(*, block=None)`
+                continue;
+            } else if (arg_t == PyArgType::POSITIONAL) {
                 pos.push_back(py);
             } else if (arg_t == PyArgType::KWARGS) {
                 PyDict_Update(kwargs, py);
             } else {
-                assert(arg_t != PyArgType::ERROR && "Error type of arg");
                 PyDict_SetItemString(kwargs, args[i].name.c_str(), py);
                 Py_DECREF(py); // Dict doesn't steal the reference.
             }
