@@ -1981,20 +1981,27 @@ Hi from foo
 3
 Hi from foo
 1 2 3 4 9 -2 (5, 6, 7)
-3
-5
-5
-5
+3\n5\n5\n5
 Hello, Alice!
 Hi, Alice!
 Hello, Bob!
 Bob, Hey!
-20
-15
-12
-[]
-[1]
-[1, 2, 3]\n""", "")
+20\n15\n12
+[]\n[1]\n[1, 2, 3]
+{:}
+{"a": 1}
+{"a": 1, "b": 2}
+{"a": 1, "b": 2, "args": [], "c": 3, "d": 4, "kwargs": {:}}
+{"a": 1, "b": 5, "args": [6, 7], "c": 8, "d": 4, "kwargs": {:}}
+Hi back, 42! {'a': 1, 'b': 2, 'args': (), 'c': 3, 'd': 4, 'kwargs': {'hello': 42}}
+{"a": 1, "b": 5, "args": [6], "c": 7, "d": 8, "kwargs": {"x": 9, "y": 10}}
+{"a": 1, "b": 2, "c": 3, "args": [], "d": 10, "e": 5, "kwargs": {:}}
+{"a": 1, "b": 20, "c": 30, "args": [40, 50], "d": 60, "e": 5, "kwargs": {:}}
+{"a": 1, "b": 20, "c": 3, "args": [], "d": 30, "e": 40, "kwargs": {"foo": 50}}
+30
+Hello, Charlie!
+Hi, Dana!
+{"a": 1, "b": 2, "c": 3, "args": [4], "d": 5, "e": 6, "kwargs": {"x": 7}}\n""", "")
     ~rm("./py_calls_python.py", false)
 }
 

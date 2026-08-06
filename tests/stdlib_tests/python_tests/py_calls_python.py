@@ -21,14 +21,23 @@ def kw_only(*, x, y=10):
 
 
 def mixed(a, b=2, *args, c, d=4, **kwargs):
+    if "hello" in kwargs:
+        return "Hi back, " + str(kwargs["hello"]) + "! " + str({
+            "a": a,
+            "b": b,
+            "args": args,
+            "c": c,
+            "d": d,
+            "kwargs": kwargs,
+        })
     return {
-        "a": a,
-        "b": b,
-        "args": args,
-        "c": c,
-        "d": d,
-        "kwargs": kwargs,
-    }
+            "a": a,
+            "b": b,
+            "args": args,
+            "c": c,
+            "d": d,
+            "kwargs": kwargs,
+        }
 
 
 def collect(*args):

@@ -123,6 +123,9 @@ static std::optional<std::vector<FunValueArg *>> get_function_args(Interpreter *
     PyObject *VAR_POSITIONAL =
         PyObject_GetAttrString(inspect_parameter, "VAR_POSITIONAL");
 
+    PyObject *KWARGS =
+        PyObject_GetAttrString(inspect_parameter, "VAR_KEYWORD");
+
     std::vector<FunValueArg *> args;
     while (PyObject *param = PyIter_Next(iter)) {
         // name
@@ -152,10 +155,17 @@ static std::optional<std::vector<FunValueArg *>> get_function_args(Interpreter *
         PyObject *kind = PyObject_GetAttrString(param, "kind");
 
         bool vararg = (PyObject_RichCompareBool(kind, VAR_POSITIONAL, Py_EQ) == 1);
+        bool kwarg = (PyObject_RichCompareBool(kind, KWARGS, Py_EQ) == 1);
+
+        std::vector<Value *> types;
+        if (kwarg) {
+            default_value = new DictValue();
+            types.push_back(BuiltIns::Dict);
+        }
 
         args.emplace_back(new FunValueArg(
             opcode::StringConst(name),
-            {},                  // types
+            types,                  // types
             default_value,
             vararg));
 
@@ -172,19 +182,27 @@ static std::optional<std::vector<FunValueArg *>> get_function_args(Interpreter *
     return args;
 }
 
+enum class PyArgType {
+    ERROR,
+    POSITIONAL,
+    VARARG,
+    KEYWORD_ONLY,
+    KWARGS
+};
+
 // TODO: handle errors not just return false;
-static bool is_arg_positional(PyObject *ptr, size_t index) {
+static PyArgType get_argument_type(PyObject *ptr, size_t index) {
     PyObject *inspect = PyImport_ImportModule("inspect");
     if (!inspect) {
         PyErr_Clear();
-        return false;
+        return PyArgType::ERROR;
     }
 
     PyObject *signature_fn = PyObject_GetAttrString(inspect, "signature");
 
     if (!signature_fn) {
         PyErr_Clear();
-        return false;
+        return PyArgType::ERROR;
     }
 
     PyObject *sig = PyObject_CallFunctionObjArgs(signature_fn, ptr, nullptr);
@@ -192,7 +210,7 @@ static bool is_arg_positional(PyObject *ptr, size_t index) {
 
     if (!sig) {
         PyErr_Clear();
-        return false;
+        return PyArgType::ERROR;
     }
 
     PyObject *parameters = PyObject_GetAttrString(sig, "parameters");
@@ -200,7 +218,7 @@ static bool is_arg_positional(PyObject *ptr, size_t index) {
 
     if (!parameters) {
         PyErr_Clear();
-        return false;
+        return PyArgType::ERROR;
     }
 
     PyObject *values = PyObject_CallMethod(parameters, "values", nullptr);
@@ -208,7 +226,7 @@ static bool is_arg_positional(PyObject *ptr, size_t index) {
 
     if (!values) {
         PyErr_Clear();
-        return false;
+        return PyArgType::ERROR;
     }
 
     PyObject *list = PySequence_List(values);
@@ -216,7 +234,7 @@ static bool is_arg_positional(PyObject *ptr, size_t index) {
 
     if (!list) {
         PyErr_Clear();
-        return false;
+        return PyArgType::ERROR;
     }
 
     PyObject *param = PyList_GetItem(list, index);
@@ -233,17 +251,49 @@ static bool is_arg_positional(PyObject *ptr, size_t index) {
     PyObject *POSITIONAL_OR_KEYWORD =
         PyObject_GetAttrString(Parameter, "POSITIONAL_OR_KEYWORD");
 
-    bool result =
+    PyObject *VAR_POSITIONAL =
+        PyObject_GetAttrString(Parameter, "VAR_POSITIONAL");
+
+    PyObject *KEYWORD_ONLY =
+        PyObject_GetAttrString(Parameter, "KEYWORD_ONLY");
+
+    PyObject *VAR_KEYWORD =
+        PyObject_GetAttrString(Parameter, "VAR_KEYWORD");
+
+    bool positional =
         PyObject_RichCompareBool(kind, POSITIONAL_ONLY, Py_EQ) == 1 ||
         PyObject_RichCompareBool(kind, POSITIONAL_OR_KEYWORD, Py_EQ) == 1;
 
+    bool vararg =
+        PyObject_RichCompareBool(kind, VAR_POSITIONAL, Py_EQ) == 1;
+
+    bool keyword_only =
+        PyObject_RichCompareBool(kind, KEYWORD_ONLY, Py_EQ) == 1;
+
+    bool kwargs =
+        PyObject_RichCompareBool(kind, VAR_KEYWORD, Py_EQ) == 1;
+
+
     Py_DECREF(POSITIONAL_ONLY);
     Py_DECREF(POSITIONAL_OR_KEYWORD);
+    Py_DECREF(VAR_POSITIONAL);
+    Py_DECREF(KEYWORD_ONLY);
+    Py_DECREF(VAR_KEYWORD);
     Py_DECREF(Parameter);
     Py_DECREF(inspect);
     Py_DECREF(kind);
 
-    return result;
+    if (keyword_only)
+        return PyArgType::KEYWORD_ONLY;
+    if (positional)
+        return PyArgType::POSITIONAL;
+    if (vararg)
+        return PyArgType::VARARG;
+    if (kwargs)
+        return PyArgType::KWARGS;
+        
+    assert(false && "missing py argument type");
+    return PyArgType::ERROR;
 }
 
 // FIXME: Rewrite this! Very ugly handling
@@ -534,10 +584,10 @@ Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err) {
             return nullptr;
         }
         
-        auto is_pos = is_arg_positional(ptr, i-offset);
         // TODO: Optimize this
         // We cannot use index as that will not much in all the cases.
         bool is_vararg = false;
+        size_t python_index = 0;
         for (auto fa: call_fn->get_args()) {
             if (fa->name == args[i].name && fa->vararg) {
                 PyObject *seq = PySequence_Fast(py, "vararg must be iterable");
@@ -558,13 +608,21 @@ Value *python::PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err) {
                 Py_DECREF(seq);
                 Py_DECREF(py);
                 is_vararg = true;
-                continue;
+                break;
+            } else if (fa->name == args[i].name) {
+                break;
             }
+            ++python_index;
         }
         if (!is_vararg) {
-            if (is_pos) {
+            auto arg_t = get_argument_type(ptr, python_index);
+            assert(arg_t != PyArgType::VARARG && "Vararg not handled");
+            if (arg_t == PyArgType::POSITIONAL) {
                 pos.push_back(py);
+            } else if (arg_t == PyArgType::KWARGS) {
+                PyDict_Update(kwargs, py);
             } else {
+                assert(arg_t != PyArgType::ERROR && "Error type of arg");
                 PyDict_SetItemString(kwargs, args[i].name.c_str(), py);
                 Py_DECREF(py); // Dict doesn't steal the reference.
             }

@@ -46,55 +46,57 @@ test.collect.call_moss(1, 2, 3)              // (1, 2, 3)
 "\n"
 
 // **kwargs
-/*
 test.collect_kwargs().to_moss()              // {}
 "\n"
-test.collect_kwargs(a=1).to_moss()           // {"a": 1}
+test.collect_kwargs({"a":1}).to_moss()           // {"a": 1}
 "\n"
-test.collect_kwargs(a=1, b=2).to_moss()      // {"a": 1, "b": 2}
+test.collect_kwargs({"a": 1, "b": 2}).to_moss()      // {"a": 1, "b": 2}
 "\n"
 
 // Mixed signature
-test.mixed(1, c=3)
+test.mixed(1, c=3).to_moss()
+"\n"
 // {"a":1, "b":2, "args":(), "c":3, "d":4, "kwargs":{}}
 
-test.mixed(1, 5, 6, 7, c=8)
+test.mixed(1, 5, 6, 7, c=8).to_moss()
+"\n"
 // {"a":1, "b":5, "args":(6,7), "c":8, "d":4, "kwargs":{}}
 
-mixed(1, c=3, hello=42)
+test.mixed(1, c=3, kwargs={"hello": 42}).to_moss()
+"\n"
 // {"a":1, "b":2, "args":(), "c":3, "d":4, "kwargs":{"hello":42}}
 
-mixed(1, 5, 6, c=7, d=8, x=9, y=10)
+test.mixed(1, 5, 6, c=7, d=8, kwargs={"x": 9, "y":10}).to_moss()
+"\n"
 // {"a":1, "b":5, "args":(6,), "c":7, "d":8, "kwargs":{"x":9,"y":10}}
 
 // Everything
-everything(1, d=10)
+test.everything(1, d=10).to_moss()
+"\n"
 // {"a":1, "b":2, "c":3, "args":(), "d":10, "e":5, "kwargs":{}}
 
-everything(1, 20, 30, 40, 50, d=60)
+test.everything(1, 20, 30, 40, 50, d=60).to_moss()
+"\n"
 // {"a":1, "b":20, "c":30, "args":(40,50), "d":60, "e":5, "kwargs":{}}
 
-everything(1, 20, d=30, e=40, foo=50)
+test.everything(1, 20, d=30, e=40, kwargs={"foo": 50}).to_moss()
+"\n"
 // {"a":1, "b":20, "c":3, "args":(), "d":30, "e":40, "kwargs":{"foo":50}}
 
 // Argument unpacking
-args = (10, 20)
-add(*args)                    // 30
+arg = [10, 20]
+test.add.call_moss(<<arg)                    // 30
+"\n"
 
-args = ("Charlie",)
-greet(*args)                  // "Hello, Charlie!"
+arg = ["Charlie"]
+test.greet(<<arg).to_moss()                  // "Hello, Charlie!"
 
 kwargs = {"name": "Dana", "greeting": "Hi"}
-greet(**kwargs)               // "Hi, Dana!"
+test.greet(<<kwargs).to_moss()               // "Hi, Dana!"
 
-args = (1, 2, 3, 4)
-kwargs = {"d": 5, "e": 6, "x": 7}
-everything(*args, **kwargs)
+arg = [1, 2, 3, 4]
+kwarg = {"x": 7}
+test.everything(<<arg, d=5, e=6, kwargs=kwarg).to_moss()
+"\n"
 // {"a":1, "b":2, "c":3, "args":(4,), "d":5, "e":6, "kwargs":{"x":7}}
 
-args = [1]
-kwargs = {"c": 2}
-mixed(<<args, <<kwargs)
-// {"a":1, "b":2, "args":(), "c":2, "d":4, "kwargs":{}}
-
-*/
