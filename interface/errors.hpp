@@ -142,7 +142,7 @@ namespace error {
 
     /// Prints warning to std::cerr if warnings are enabled.
     /// \note If -W error is set then it will also exit with 1 (runtime error)
-    /// \param msg Message to print 
+    /// \param msg Message to print
     void warning(const char *msg);
 
     /// Exits program with passed in code

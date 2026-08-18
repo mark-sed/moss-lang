@@ -76,6 +76,7 @@ set(SOURCES
     stdlib/subprocess.cpp
     stdlib/sys.cpp
     stdlib/time.cpp
+    stdlib/warnings.cpp
     interface/commons.cpp
     interface/clopts.cpp
     interface/diagnostics.cpp
@@ -165,6 +166,7 @@ moss_compile(md_parser)
 moss_compile(html_parser)
 moss_compile(csv_parser)
 moss_compile(json_parser)
+moss_compile(warnings)
 
 copy_lib_file("mossy.css")
 
@@ -184,6 +186,7 @@ add_custom_target(
     DEPENDS build_html_parser
     DEPENDS build_csv_parser
     DEPENDS build_json_parser
+    DEPENDS build_warnings
     DEPENDS copy_mossy.css
 )
 

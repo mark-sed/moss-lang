@@ -16,6 +16,7 @@
 #include "sys.hpp"
 #include "cffi.hpp"
 #include "time.hpp"
+#include "warnings.hpp"
 #include <functional>
 #include <iostream>
 #include <cstdlib>
@@ -1643,6 +1644,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
     static const ModuleRegistryT python_registry = python::get_registry();
     static const ModuleRegistryT re_registry = re::get_registry();
     static const ModuleRegistryT math_registry = math::get_registry();
+    static const ModuleRegistryT warnings_registry = warnings::get_registry();
     static const ModuleRegistryT empty_registry{};
 
     static const std::unordered_map<ustring, ModuleRegistryT> registries_map{
@@ -1655,6 +1657,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"python", python_registry},
         {"re", re_registry},
         {"math", math_registry},
+        {"warnings", warnings_registry},
     };
 
     // Based on module name return correct function registry

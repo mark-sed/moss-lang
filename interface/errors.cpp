@@ -75,7 +75,9 @@ ustring error::format_error(diags::Diagnostic msg, bool warning_as_error) {
             ss << error::colors::colorize(error::colors::YELLOW) << "warning";
         ss << error::colors::reset() << ": "
            << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << error::colors::reset() << ": "
-           << msg.msg << (msg.msg.back() != '?' ? "." : "");
+           << msg.msg;
+        if (msg.msg.back() != '?' && msg.msg.back() != '!' && msg.msg.back() != '.')
+            ss << ".";
         if (!msg.warning)
             ss << error::colors::colorize(error::colors::GRAY) << " [EDx";
         else
@@ -97,7 +99,9 @@ ustring error::format_error(diags::Diagnostic msg, bool warning_as_error) {
            << error::colors::colorize(error::colors::WHITE) << msg.src_f.get_name() << ":" 
            << info.get_lines().first+1 << ":" << info.get_cols().first+1 << error::colors::reset() << ":\n";
 
-        ss << bar << msg.msg << (msg.msg.back() != '?' ? "." : "");
+        ss << bar << msg.msg;
+        if (msg.msg.back() != '?' && msg.msg.back() != '!' && msg.msg.back() != '.')
+            ss << ".";
         if (!msg.warning)
             ss << error::colors::colorize(error::colors::GRAY) << " [EDx";
         else
@@ -178,7 +182,7 @@ void error::warning(const char *msg) {
         return;
     
     errs << error::colors::colorize(error::colors::YELLOW) << "warning"
-         << error::colors::reset() << ": " << msg << ".";
+         << error::colors::reset() << ": " << msg;
 
     if (clopts::get_warning_level() == clopts::WarningLevel::WL_ERROR) {
         LOGMAX("-W error set so exiting with warning");

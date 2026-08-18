@@ -154,7 +154,7 @@ Value *sys::platform(CallFrame *cf, Value *&err) {
     return result;
 }
 
-Value *sys::setenv(Interpreter *vm, Value *name, Value *value, Value *overwrite, Value *&err) {
+Value *sys::setenv(Interpreter *, Value *name, Value *value, Value *overwrite, Value *&) {
     auto name_s = mslib::get_string(name);
     auto value_s = mslib::get_string(value);
     auto overw = mslib::get_bool(overwrite);
@@ -171,7 +171,7 @@ Value *sys::setenv(Interpreter *vm, Value *name, Value *value, Value *overwrite,
     return BoolValue::get(result == 0);
 }
 
-Value *sys::unsetenv(Interpreter *vm, Value *name, Value *&err) {
+Value *sys::unsetenv(Interpreter *, Value *name, Value *&) {
     auto name_s = mslib::get_string(name);
 
 #ifdef __windows__

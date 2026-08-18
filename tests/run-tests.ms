@@ -2120,6 +2120,15 @@ abc
 b123\n""", "")
 }
 
+fun test_lib_warnings_warn(name) {
+    ~expect_pass("stdlib_tests/warnings_tests/warn.ms", name, "done\n", """warning: It's my own warning!
+warning: hello warning: there.\n""", args="-W all --use-color=0")
+
+    ~expect_pass("stdlib_tests/warnings_tests/warn.ms", name, "done\n", "", args="-Wi --use-color=0")
+
+    ~expect_fail("stdlib_tests/warnings_tests/warn.ms", name, "", "warning: It's my own warning!\n", retcode_expected=1, args="-We --use-color=0")
+}
+
 fun test_lib_md_parser_markdown_parsing(name) {
     exp_out = open(f"{::TEST_DIR}/stdlib_tests/md_parser_tests/markdown_parsing_expected_out.txt", "r")
     ~expect_pass(f"stdlib_tests/md_parser_tests/markdown_parsing.ms", name, exp_out, "", prog_args=f"{::TEST_DIR}/stdlib_tests/md_parser_tests/all_constructs.md")
@@ -2679,6 +2688,9 @@ fun run_all_tests() {
     ~run_test("lib_re_match_search")
     ~run_test("lib_re_flags")
     ~run_test("lib_re_replace")
+
+    // warnings
+    ~run_test("lib_warnings_warn")
 
     // md_parser
     ~run_test("lib_md_parser_markdown_parsing")
