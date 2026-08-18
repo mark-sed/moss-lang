@@ -167,13 +167,16 @@ class BCBlobIterator {
 public:
     BCBlobIterator(Bytecode *bc, size_t start, size_t end,
                    const std::vector<BCBlob*> *blobs, size_t blob_idx = 0)
-        : bc(bc), i(start), end(end), blobs(blobs), blob_idx(blob_idx) {}
+            : bc(bc), i(start), end(end), blobs(blobs), blob_idx(blob_idx) {
+        (void)end;
+    }
 
     OpCode* operator*() const {
         return bc->code[i];
     }
 
     BCBlobIterator& operator++() {
+        assert(i < end && "iterating out of blob bounds");
         ++i;
         // skip blobs
         while (blob_idx < blobs->size()) {

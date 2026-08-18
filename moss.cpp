@@ -180,7 +180,7 @@ int main(int argc, const char *argv[]) {
         }
         opcode::BCPipeline pipeline(bc, ppln);
         pipeline.run();
-        LOG1("IR after optimization pipeline level " << clopts::get_opt_level << ":\n" << *bc);
+        LOG1("IR after optimization pipeline level " << clopts::get_opt_level() << ":\n" << *bc);
     }
 
     if (parser != nullptr)

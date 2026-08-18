@@ -11,7 +11,7 @@ case $1 in
         printf "Moss installation script.\nUsage: bash $0\n" 
         exit 256
         ;;
-    release|debug|all|tests|docs|package)
+    release|debug|all|tests|docs|package|clang|gcc)
         [ -z "${TARGET}" ] || {
             echo "Only one install command can be specified"
             exit 1
@@ -50,6 +50,16 @@ elif [ "${TARGET}" = "debug" ]; then
     sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
     sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss
     cmake --build $BUILD_DIR -j $(nproc) --target libms installation
+elif [ "${TARGET}" = "clang" ]; then
+    rm -rf $BUILD_DIR
+    sudo -u $SUDO_USER CC=clang CXX=clang++ cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
+    sudo -u $SUDO_USER CC=clang CXX=clang++ cmake --build $BUILD_DIR -j $(nproc) --target moss
+    CC=clang CXX=clang++ cmake --build $BUILD_DIR -j $(nproc) --target libms installation
+elif [ "${TARGET}" = "gcc" ]; then
+    rm -rf $BUILD_DIR
+    sudo -u $SUDO_USER CC=gcc CXX=g++ cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
+    sudo -u $SUDO_USER CC=gcc CXX=g++ cmake --build $BUILD_DIR -j $(nproc) --target moss
+    CC=gcc CXX=g++ cmake --build $BUILD_DIR -j $(nproc) --target libms installation
 elif [ "${TARGET}" = "tests" ]; then
     sudo -u $SUDO_USER cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Debug || exit 1
     sudo -u $SUDO_USER cmake --build $BUILD_DIR -j $(nproc) --target moss testsmoss || exit 1
