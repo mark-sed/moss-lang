@@ -598,16 +598,27 @@ bool Interpreter::has_finally() {
     return !this->get_top_frame()->get_finally_stack().empty();
 }
 
-void Interpreter::call_finally(opcode::Address off) {
+bool Interpreter::call_finally(opcode::Address off) {
     assert(has_finally() && "Getting finally address from empty stack");
+    bool re_raise_after = false;
     auto fnl = get_top_frame()->get_finally_stack().back();
     int addr_offset = 0;
     if (is_try_not_in_catch())
         addr_offset = -1;
+    
+    auto addrv = load(fnl->caller);
+    auto caller_addr = dyn_cast<IntValue>(addrv);
+    // caller is -1 so we raised while still processing catch in some external
+    // call, we cannot set called to this address otherwise we would re-execute
+    // the call.
+    if (caller_addr && caller_addr->get_value() == -1)
+        re_raise_after = true;
+
     store(fnl->caller, IntValue::get(get_bci()));
     // Subtract 1 instruction if this was called from try body, because
     // pop_catch is at this address.
     runtime_finally_jump(fnl->addr + addr_offset, off);
+    return re_raise_after;
 }
 
 bool Interpreter::is_try_not_in_catch() {
@@ -768,17 +779,19 @@ void Interpreter::run() {
         //outs << bci << " " << *opc << "\n";
         try {
             opc->exec(this);
-            // If we get to exectute opcode and unwound stack is not empty, then
+            // If we get to execute opcode and unwound stack is not empty, then
             // we got here after some exception was handled or reported (repl),
             // so just clear it. The check for empty() for vector is O(1).
             if (!unwound_funs.empty()) {
                 unwound_funs.clear();
             }
-        } catch (Value *v) { 
+        } catch (Value *v) {
+            bool handle_catches = true;
             if (has_finally() && !is_try_not_in_catch()) {
                 LOGMAX("Raise before running finally - run finally");
-                call_finally();
-            } else {
+                handle_catches = call_finally();
+            }
+            if (handle_catches) {
                 // Match to known catches otherwise let fall through to next interpreter
                 // or interpreter owner to print or exit or both
                 bool handled = false;

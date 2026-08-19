@@ -399,8 +399,8 @@ public:
     /// \returns true if there is any finally in the stack.
     bool has_finally();
     /// \brief Initializes needed flags and jumps to top of the finally stack finally block.
-    void call_finally(opcode::Address off=0);
-    /// \returns true if we are currently executing inside of a catch.
+    bool call_finally(opcode::Address off=0);
+    /// \returns true if we are currently not in a catch (caller == nil)
     bool is_try_not_in_catch();
 
     /// \brief Adds a new converter from to type into the list of converters.

@@ -30,3 +30,13 @@ class ran {
         return this
     }
 }
+
+fun exc() {
+    class SomeVal {
+        fun SomeVal(a) {
+            this.a = a
+        }
+        fun __String() = "SomeVal " ++ this.a ++ "\n"
+    }
+    raise SomeVal(22)
+}

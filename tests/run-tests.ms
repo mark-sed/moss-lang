@@ -1267,6 +1267,11 @@ in catch\nfinally inner\nouter caught\nouter finally
 no error\nfinally inner\nfinally outer\n""", "")
 }
 
+fun test_exception_external_raise_crash(name) {
+    ~expect_fail("exception_tests/external_raise_crash.ms", name, """caught 1
+finally 1\ncaught 2\nfinally 2\nend\n""", rx_err="Stacktrace:\n  top-level scope at.*\nSomeVal 22\n")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -2601,6 +2606,7 @@ fun run_all_tests() {
     ~run_test("exception_stackframe_report")
     ~run_test("exception_nested_finally")
     ~run_test("exception_general_catch_finally")
+    ~run_test("exception_external_raise_crash")
 
     ~run_test("fibonacci")
     ~run_test("factorial")
