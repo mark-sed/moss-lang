@@ -167,6 +167,12 @@ public:
         }
         return keys;
     }
+
+    /// Takes current values in the symbol table and moves them all to the
+    /// end of the pool (using get_free_reg) so that spilled extended space
+    /// does not override existing values because bytecode gen is unaware of
+    /// space extending. The old values are not deleted.
+    void reloc_values_to_end();
 };
 
 inline std::ostream& operator<< (std::ostream& os, MemoryPool &pool) {

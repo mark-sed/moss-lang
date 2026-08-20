@@ -163,6 +163,15 @@ void MemoryPool::pop_catch(opcode::IntConst amount) {
     this->catches.erase(std::prev(this->catches.end(), amount), this->catches.end());
 }
 
+void MemoryPool::reloc_values_to_end() {
+    for (auto [name, reg]: sym_table) {
+        auto new_reg = get_free_reg();
+        auto val = load(reg);
+        store(new_reg, val);
+        sym_table[name] = new_reg;
+    }
+}
+
 void MemoryPool::debug_sym_table(std::ostream& os, unsigned tab_depth, std::unordered_set<const Value *> &visited) const {
     bool first = true;
     ++tab_depth;

@@ -2905,6 +2905,7 @@ void BuildSpace::exec(Interpreter *vm) {
         // Extending so just push spaces frame and return.
         auto spc_ex = dyn_cast<SpaceValue>(existing_v);
         assert(spc_ex->get_attrs() && "Space does not have frame set");
+        spc_ex->get_attrs()->reloc_values_to_end();
         vm->push_frame(spc_ex->get_attrs());
         // When space is extended the new Module which extends it needs to be
         // pushed to its list of extra owners for gc to not collect this module
