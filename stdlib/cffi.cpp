@@ -11,6 +11,7 @@
 using namespace moss;
 using namespace mslib;
 using namespace cffi;
+using namespace t_cpp;
 
 union FFIResult {
     int cint;
@@ -181,6 +182,22 @@ static Value *result_to_moss(FFIResult result, Value *type, Value *&err) {
     return nullptr;
 }
 
+static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
+    assert(type != BuiltIns::Cpp::CVoid && "invoked with void");
+    if (type == BuiltIns::Cpp::CLong)
+        return new CLongValue(result.clong);
+    if (type == BuiltIns::Cpp::CDouble)
+        return new CDoubleValue(result.cdouble);
+    if (type == BuiltIns::Cpp::CCharStar)
+        return new CCharStarValue((static_cast<char *>(result.cvoid_star)));
+    if (type == BuiltIns::Cpp::CVoidStar)
+        return new CVoidStarValue(result.cvoid_star);
+
+    // TODO: Change for Type error or some cffi error
+    err = mslib::create_not_implemented_error("Conversion for returned type is not yet implemented in cffi\n");
+    return nullptr;
+}
+
 Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err) {
     auto name_s = mslib::get_string(name);
     auto argst = mslib::get_list(arg_types);
@@ -264,6 +281,6 @@ Value *cffi::call(Interpreter *vm, Value *ths, Value *args, Value *&err) {
     if (void_fun)
         return nullptr;
     else {
-        return result_to_moss(result, return_type, err);
+        return result_to_moss(result, return_type, err); // TODO: new_cpp_value(result, return_type, err);
     }
 }

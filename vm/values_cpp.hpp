@@ -10,6 +10,33 @@
 #ifndef _VALUES_CPP_HPP_
 #define _VALUES_CPP_HPP_
 
+#define DEFINE_C_VALUE(TYPE, CLASS_NAME, MOSS_TYPE, ENUM_NAME)          \
+    class C##CLASS_NAME##Value : public CppValue {                      \
+    private:                                                            \
+        TYPE value;                                                     \
+    public:                                                             \
+        static const TypeKind ClassType = TypeKind::CPP_C##ENUM_NAME;   \
+                                                                        \
+        C##CLASS_NAME##Value(TYPE value)                                \
+            : CppValue(ClassType, #TYPE, BuiltIns::Cpp::C##CLASS_NAME), \
+              value(value) {}                                           \
+        ~C##CLASS_NAME##Value() {}                                      \
+                                                                        \
+        TYPE get_value() { return this->value; }                        \
+                                                                        \
+        virtual Value *to_moss() override {                             \
+            return MOSS_TYPE::get(value);                               \
+        }                                                               \
+                                                                        \
+        virtual void *get_data_pointer() override {                     \
+            return &value;                                              \
+        }                                                               \
+                                                                        \
+        virtual Value *clone() override {                               \
+            return this;                                                \
+        }                                                               \
+    };
+
 #include "values.hpp"
 #include <ffi.h>
 #include <regex>
@@ -96,53 +123,8 @@ namespace t_cpp {
         }
     };
 
-    class CLongValue : public CppValue {
-    private:
-        long value;
-    public:
-        static const TypeKind ClassType = TypeKind::CPP_CLONG;
-    
-        CLongValue(long value) : CppValue(ClassType, "long", BuiltIns::Cpp::CLong), value(value) {}
-        ~CLongValue() { }
-
-        long get_value() { return this->value; }
-
-        virtual Value *to_moss() override {
-            return IntValue::get(value);
-        }
-
-        virtual void *get_data_pointer() override {
-            return &value;
-        }
-    
-        virtual Value *clone() override {
-            return this;
-        }
-    };
-
-    class CDoubleValue : public CppValue {
-    private:
-        double value;
-    public:
-        static const TypeKind ClassType = TypeKind::CPP_CDOUBLE;
-    
-        CDoubleValue(double value) : CppValue(ClassType, "double", BuiltIns::Cpp::CDouble), value(value) {}
-        ~CDoubleValue() { }
-
-        double get_value() { return this->value; }
-
-        virtual Value *to_moss() override {
-            return FloatValue::get(value);
-        }
-
-        virtual void *get_data_pointer() override {
-            return &value;
-        }
-    
-        virtual Value *clone() override {
-            return this;
-        }
-    };
+    DEFINE_C_VALUE(long, Long, IntValue, LONG)
+    DEFINE_C_VALUE(double, Double, FloatValue, DOUBLE)
 
     // TODO: Maybe just having a pointer type is enough?
     class CCharStarValue : public CppValue {
