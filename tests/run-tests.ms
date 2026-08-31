@@ -1931,6 +1931,11 @@ fun test_lib_map(name) {
 ["ABC", "DEF", "GHI"]\n""", "")
 }
 
+fun test_lib_cpp(name) {
+    ~expect_pass("stdlib_tests/cpp.ms", name, """42000000\n-42000000.543210\nHello
+false\n""", "")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -2644,7 +2649,8 @@ fun run_all_tests() {
     ~run_test("lib_help")
     ~run_test("lib_isinstance")
     ~run_test("lib_zip")
-    ~run_test("lib_map")    
+    ~run_test("lib_map")
+    ~run_test("lib_cpp")    
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")

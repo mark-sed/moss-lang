@@ -17,6 +17,7 @@ static void init_cpp_built_ins() {
     CppSpace->set_attr("cvoid", CVoid);
     CppSpace->set_attr("cvoid_star", CVoidStar);
     CppSpace->set_attr("clong", CLong);
+    CppSpace->set_attr("cbool", CBool);
     CppSpace->set_attr("cdouble", CDouble);
     CppSpace->set_attr("cchar_star", CCharStar);
     CppSpace->set_attr("fstream", FStream);
@@ -162,6 +163,7 @@ Value *BuiltIns::Cpp::CVoid = new ClassValue("cvoid");
 Value *BuiltIns::Cpp::CVoidStar = new ClassValue("cvoid_star");
 Value *BuiltIns::Cpp::CLong = new ClassValue("clong");
 Value *BuiltIns::Cpp::CDouble = new ClassValue("cdouble");
+Value *BuiltIns::Cpp::CBool = new ClassValue("cbool");
 Value *BuiltIns::Cpp::CCharStar = new ClassValue("cchar_star");
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 Value *BuiltIns::Cpp::Ffi_cif = new ClassValue("ffi_cif");

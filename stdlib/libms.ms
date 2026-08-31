@@ -1748,6 +1748,25 @@ class __clong {
 }
 
 @sealed
+@internal_bind(cpp.cbool)
+class __cbool {
+    d"""
+    Moss representation of C++ bool type.
+    """
+
+    @internal
+    fun cbool(v:Bool) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cbool into Bool.
+        This conversion is lossless.
+        """
+    }
+}
+
+@sealed
 @internal_bind(cpp.cchar_star)
 class __cchar_star {
     d"""

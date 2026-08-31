@@ -995,18 +995,22 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
+        {"cbool", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CBoolValue(mslib::get_bool(cf->get_args()[0].value));
+        }},
         {"cchar_star", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
-            //assert(cf->get_args().size() == 1);
+            assert(cf->get_args().size() == 2);
             auto val = mslib::get_string(cf->get_args()[0].value);
             auto c_str = const_cast<char *>(val.c_str());
             return new t_cpp::CCharStarValue(c_str);
         }},
         {"cdouble", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
-            assert(cf->get_args().size() == 1);
+            assert(cf->get_args().size() == 2);
             return new t_cpp::CDoubleValue(mslib::get_float(cf->get_args()[0].value));
         }},
         {"clong", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
-            assert(cf->get_args().size() == 1);
+            assert(cf->get_args().size() == 2);
             return new t_cpp::CLongValue(mslib::get_int(cf->get_args()[0].value));
         }},
         {"delattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{

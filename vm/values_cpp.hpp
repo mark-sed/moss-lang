@@ -129,10 +129,18 @@ namespace t_cpp {
         virtual Value *clone() override {
             return this;
         }
+
+        virtual std::ostream& debug(std::ostream& os) const override {
+            std::stringstream ss;
+            ss << type->get_name() << "(" << std::hex << value << ")";
+            os << ss.str();
+            return os;
+        }
     };
 
     DEFINE_C_VALUE(long, Long, IntValue, LONG)
     DEFINE_C_VALUE(double, Double, FloatValue, DOUBLE)
+    DEFINE_C_VALUE(bool, Bool, BoolValue, BOOL)
 
     // TODO: Maybe just having a pointer type is enough?
     class CCharStarValue : public CppValue {

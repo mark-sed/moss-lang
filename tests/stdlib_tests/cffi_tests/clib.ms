@@ -63,7 +63,7 @@ r.to_moss()
 
 c_lib.add.call_moss(0.5, 1.5)
 "\n"
-c_lib.add(1.5, 3.5).to_moss()
+c_lib.add(3.0, r).to_moss()
 "\n"
 
 try {

@@ -133,6 +133,7 @@ namespace BuiltIns {
         extern Value *CLong;
         extern Value *CDouble;
         extern Value *CCharStar;
+        extern Value *CBool;
 
         extern Value *FStream;
         extern Value *Ffi_cif;
