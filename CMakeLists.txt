@@ -63,6 +63,7 @@ set(SOURCES
     midend/analysis/method_analyzer.cpp
     midend/transforms/constant_folding.cpp
     midend/transforms/dead_code_elimination.cpp
+    stdlib/mslib_cpp.cpp
     stdlib/mslib_dict.cpp
     stdlib/mslib_file.cpp
     stdlib/mslib_list.cpp

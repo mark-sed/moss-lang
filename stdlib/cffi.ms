@@ -17,6 +17,10 @@ class FFHandle {
     @internal
     fun call(... args) {}
 
+    fun call_moss(... args) {
+        return this.call(<<args).to_moss()
+    }
+
     fun (())(... args) {
         return this.call(<<args)
     }

@@ -1707,6 +1707,65 @@ fun with_open(path:String, func, mode:String="r") {
     }
 }
 
+@sealed
+@internal_bind(cpp.cdouble)
+class __cdouble {
+    d"""
+    Moss representation of C/C++ double type.
+    """
+
+    @internal
+    fun cdouble(v:Float) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cdouble into Float.
+        This conversion is lossless as long as C double is 64b or less on this
+        machine.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.clong)
+class __clong {
+    d"""
+    Moss representation of C/C++ long type.
+    """
+
+    @internal
+    fun clong(v:Int) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts clong into Int.
+        This conversion is lossless as long as C long is 64b or less on this
+        machine.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cchar_star)
+class __cchar_star {
+    d"""
+    Moss representation of C/C++ char* type.
+    """
+
+    @internal
+    fun cchar_star(v:String) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts C char* into String.
+        This conversion is lossless.
+        """
+    }
+}
+
 @internal
 fun rand_int(min:Int, max:Int) {
     d"""

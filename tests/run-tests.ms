@@ -1952,6 +1952,12 @@ Hello from C!
 45.000000
 Hello from moss to C!
 CLIB
+<C++ value of type double>
+2.000000
+2.000000
+5.000000
+caught
+Hello
 done\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.so")
 }
 

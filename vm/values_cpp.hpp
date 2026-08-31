@@ -19,7 +19,10 @@
                                                                         \
         C##CLASS_NAME##Value(TYPE value)                                \
             : CppValue(ClassType, #TYPE, BuiltIns::Cpp::C##CLASS_NAME), \
-              value(value) {}                                           \
+              value(value) {                                            \
+            if(BuiltIns::Cpp::C##CLASS_NAME->get_attrs())               \
+                this->attrs = BuiltIns::Cpp::C##CLASS_NAME->get_attrs()->clone(); \
+        }                                                               \
         ~C##CLASS_NAME##Value() {}                                      \
                                                                         \
         TYPE get_value() { return this->value; }                        \
@@ -35,7 +38,12 @@
         virtual Value *clone() override {                               \
             return this;                                                \
         }                                                               \
-    };
+                                                                        \
+        virtual std::ostream& debug(std::ostream& os) const override {  \
+            os << type->get_name() << "(" << value << ")";              \
+            return os;                                                  \
+        }                                                               \
+    };                                                                  \
 
 #include "values.hpp"
 #include <ffi.h>
@@ -133,8 +141,15 @@ namespace t_cpp {
     public:
         static const TypeKind ClassType = TypeKind::CPP_CCHAR_STAR;
     
-        CCharStarValue(char *value) : CppValue(ClassType, "char*", BuiltIns::Cpp::CDouble), value(value) {}
-        ~CCharStarValue() { }
+        CCharStarValue(char *v) : CppValue(ClassType, "char*", BuiltIns::Cpp::CCharStar),
+                                        value(new char[std::strlen(v) + 1]) {
+            std::strcpy(value, v);
+            if(BuiltIns::Cpp::CCharStar->get_attrs())
+                this->attrs = BuiltIns::Cpp::CCharStar->get_attrs()->clone();
+        }
+        ~CCharStarValue() {
+            delete[] value;
+        }
 
         char *get_value() { return this->value; }
 
@@ -148,6 +163,11 @@ namespace t_cpp {
     
         virtual Value *clone() override {
             return this;
+        }
+
+        virtual std::ostream& debug(std::ostream& os) const override {
+            os << type->get_name() << "(" << value << ")";
+            return os;
         }
     };
     

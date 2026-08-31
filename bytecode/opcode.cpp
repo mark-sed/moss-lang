@@ -1539,14 +1539,6 @@ void Annotate::exec(Interpreter *vm) {
     // TODO: Change to to use map once it gets too big
     if (name == annots::INTERNAL_BIND) {
         LOGMAX("Internal binding");
-        //auto bind_name = StringValue::get(v->get_name()); //dyn_cast<StringValue>(v);
-        //// If we assert before typeError is created in mslib then this fails.
-        //op_assert(bind_name, mslib::create_type_error(
-        //    diags::Diagnostic(*vm->get_src_file(), diags::MISSING_ANNOT_TYPE_ARGUMENT,
-        //        annots::INTERNAL_BIND, "String")));
-        //auto bind_val = vm->load_name(bind_name->get_value());
-        //op_assert(bind_val, mslib::create_name_error(
-        //    diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, bind_name->get_value().c_str())));
         auto bind_class = dyn_cast<ClassValue>(v);
         op_assert(bind_class, mslib::create_type_error(
             diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,

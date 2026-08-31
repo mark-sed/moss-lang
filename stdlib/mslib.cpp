@@ -4,6 +4,7 @@
 #include "errors.hpp"
 #include "diagnostics.hpp"
 #include "logging.hpp"
+#include "mslib_cpp.hpp"
 #include "mslib_list.hpp"
 #include "mslib_string.hpp"
 #include "mslib_file.hpp"
@@ -994,6 +995,20 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return nullptr;
             }
         }},
+        {"cchar_star", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            //assert(cf->get_args().size() == 1);
+            auto val = mslib::get_string(cf->get_args()[0].value);
+            auto c_str = const_cast<char *>(val.c_str());
+            return new t_cpp::CCharStarValue(c_str);
+        }},
+        {"cdouble", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 1);
+            return new t_cpp::CDoubleValue(mslib::get_float(cf->get_args()[0].value));
+        }},
+        {"clong", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 1);
+            return new t_cpp::CLongValue(mslib::get_int(cf->get_args()[0].value));
+        }},
         {"delattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;
             assert(cf->get_args().size() == 2);
@@ -1600,6 +1615,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto ths = cf->get_arg("this");
             if (auto lv = get_subtype_value<IntValue>(ths, BuiltIns::Int, vm, err)) {
                 return Int_to_bytes(vm, lv, cf->get_arg("length"), cf->get_arg("byte_order"), cf->get_arg("signed"), err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
+        {"to_moss", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            auto ths = cf->get_arg("this");
+            if (auto c = dyn_cast<t_cpp::CppValue>(ths)) {
+                // C++ classes are marked sealed so we can just check with isa
+                return c->to_moss();
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;
