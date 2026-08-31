@@ -64,14 +64,14 @@ try {
 
 // NameError
 try {
-    @internal_bind("SomeFooClass")
+    @internal_bind(SomeFooClass)
     class ClsFoo {}
 } catch (_:NameError) "OK\n"
 
 // TypeError
 try {
     a = 2
-    @internal_bind("a")
+    @internal_bind(a)
     class ClasFoo {}
 } catch (_:TypeError) "OK\n"
 

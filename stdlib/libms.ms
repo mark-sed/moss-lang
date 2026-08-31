@@ -7,7 +7,7 @@ copyright: Copyright 2024 Marek Sedlacek. All rights reserved.
 
 __LIB_MS_VERSION = "0.2.0"
 
-@internal_bind("Int")
+@internal_bind(Int)
 class __Int {
     d"""
     Integer (whole number) value.
@@ -62,7 +62,7 @@ class __Int {
     }
 }
 
-@internal_bind("Float")
+@internal_bind(Float)
 class __Float {
     d"""
     Floating point value.
@@ -90,7 +90,7 @@ class __Float {
     }
 }
 
-@internal_bind("Bool")
+@internal_bind(Bool)
 class __Bool {
     d"""
     Boolean value with 2 possible singleton values - true or false. 
@@ -113,7 +113,7 @@ class __Bool {
     }
 }
 
-@internal_bind("String")
+@internal_bind(String)
 class __String {
     d"""
     String value which can contain UNICODE values.
@@ -538,7 +538,7 @@ class __String {
     fun __iter() {}
 }
 
-@internal_bind("StringIterator")
+@internal_bind(StringIterator)
 class __StringIterator {
     d"Iterator for String objects."
 
@@ -552,7 +552,7 @@ class __StringIterator {
     fun __iter() {}
 }
 
-@internal_bind("Note")
+@internal_bind(Note)
 class __Note : String {
     d"""
     Value for outputting moss notes.
@@ -567,7 +567,7 @@ class __Note : String {
     }
 }
 
-@internal_bind("NilType")
+@internal_bind(NilType)
 class __NilType {
     d"""
     Class for singleton value nil.
@@ -579,7 +579,7 @@ class __NilType {
     }
 }
 
-@internal_bind("List")
+@internal_bind(List)
 class __List {
     d"""
     A mutable, dynamically sized, ordered sequence type that can hold
@@ -706,7 +706,7 @@ class __List {
     fun __iter() {}
 }
 
-@internal_bind("ListIterator")
+@internal_bind(ListIterator)
 class __ListIterator {
     d"Iterator for List object"
     
@@ -720,7 +720,7 @@ class __ListIterator {
     fun __iter() {}
 }
 
-@internal_bind("Dict")
+@internal_bind(Dict)
 class __Dict {
     d"""
     A mutable, dynamically sized, unordered mapping type that associates
@@ -875,7 +875,7 @@ class __Dict {
     fun __iter() {}
 }
 
-@internal_bind("DictIterator")
+@internal_bind(DictIterator)
 class __DictIterator {
     d"Iterator for Dict object."
     
@@ -889,7 +889,7 @@ class __DictIterator {
     fun __iter() {}
 }
 
-@internal_bind("Bytes")
+@internal_bind(Bytes)
 class __Bytes {
     d"""
     Represents linear sequence of bytes.
@@ -907,7 +907,7 @@ class __Bytes {
     fun __iter() {}
 }
 
-@internal_bind("BytesIterator")
+@internal_bind(BytesIterator)
 class __BytesIterator {
     d"Iterator for Bytes object."
     
@@ -921,7 +921,7 @@ class __BytesIterator {
     fun __iter() {}
 }
 
-@internal_bind("FunctionListIterator")
+@internal_bind(FunctionListIterator)
 class __FunctionListIterator {
     d"Iterator for FunctionList."
     
@@ -935,7 +935,7 @@ class __FunctionListIterator {
     fun __iter() {}
 }
 
-@internal_bind("Range")
+@internal_bind(Range)
 class __Range {
     d"""
     Represents arithmetic progression of integers.
@@ -1091,7 +1091,7 @@ class Complex {
     }
 }
 
-@internal_bind("Type")
+@internal_bind(Type)
 class __Type {
     d"""
     Class for representing class type.
@@ -1590,7 +1590,7 @@ Enter "q" or "quit" to exit this tool.
 """)*/
 }
 
-@internal_bind("File")
+@internal_bind(File)
 class __File {
     d"""
     This class works with and represents system files.
@@ -1967,7 +1967,7 @@ fun html_gen(txts) {
 }
 
 /// Exceptions
-@internal_bind("Exception")
+@internal_bind(Exception)
 class __Exception {
     d"""
     Base class from Moss exceptions.
@@ -1984,14 +1984,14 @@ class __Exception {
     }
 }
 
-@internal_bind("NameError")
+@internal_bind(NameError)
 class __NameError : Exception {
     fun __String() {
         return "NameError: " ++ this.msg
     }
 }
 
-@internal_bind("AttributeError")
+@internal_bind(AttributeError)
 class __AttributeError : NameError {
     // TODO: Perhaps set `obj` and `name` attrs
     // for easy extraction
@@ -2000,21 +2000,21 @@ class __AttributeError : NameError {
     }
 }
 
-@internal_bind("ModuleNotFoundError")
+@internal_bind(ModuleNotFoundError)
 class __ModuleNotFoundError : NameError {
     fun __String() {
         return "ModuleNotFoundError: " ++ this.msg
     }
 }
 
-@internal_bind("TypeError")
+@internal_bind(TypeError)
 class __TypeError : Exception {
     fun __String() {
         return "TypeError: " ++ this.msg
     }
 }
 
-@internal_bind("AssertionError")
+@internal_bind(AssertionError)
 class __AssertionError : Exception {
     fun AssertionError(msg, line:Int) {
         ~super(msg)
@@ -2033,102 +2033,102 @@ class __AssertionError : Exception {
     }
 }
 
-@internal_bind("NotImplementedError")
+@internal_bind(NotImplementedError)
 class __NotImplementedError : Exception {
     fun __String() {
         return "NotImplementedError: " ++ this.msg
     }
 }
 
-@internal_bind("ParserError")
+@internal_bind(ParserError)
 class __ParserError : Exception {
     fun __String() {
         return "ParserError: " ++ this.msg
     }
 }
 
-@internal_bind("SyntaxError")
+@internal_bind(SyntaxError)
 class __SyntaxError : ParserError {
     fun __String() {
         return "SyntaxError: " ++ this.msg
     }
 }
 
-@internal_bind("LookupError")
+@internal_bind(LookupError)
 class __LookupError : Exception {
     fun __String() {
         return "LookupError: " ++ this.msg
     }
 }
 
-@internal_bind("IndexError")
+@internal_bind(IndexError)
 class __IndexError : LookupError {
     fun __String() {
         return "IndexError: " ++ this.msg
     }
 }
 
-@internal_bind("KeyError")
+@internal_bind(KeyError)
 class __KeyError : LookupError {
     fun __String() {
         return "KeyError: " ++ this.msg
     }
 }
 
-@internal_bind("ValueError")
+@internal_bind(ValueError)
 class __ValueError : Exception {
     fun __String() {
         return "ValueError: " ++ this.msg
     }
 }
 
-@internal_bind("StopIteration")
+@internal_bind(StopIteration)
 class __StopIteration {
 }
 
-@internal_bind("MathError")
+@internal_bind(MathError)
 class __MathError : Exception {
     fun __String() {
         return "MathError: " ++ this.msg
     }
 }
 
-@internal_bind("DivisionByZeroError")
+@internal_bind(DivisionByZeroError)
 class __DivisionByZeroError : MathError {
     fun __String() {
         return "DivisionByZeroError: " ++ this.msg
     }
 }
 
-@internal_bind("OSError")
+@internal_bind(OSError)
 class __OSError : Exception {
     fun __String() {
         return "OSError: " ++ this.msg
     }
 }
 
-@internal_bind("FileNotFoundError")
+@internal_bind(FileNotFoundError)
 class __FileNotFoundError : OSError {
     fun __String() {
         return "FileNotFoundError: " ++ this.msg
     }
 }
 
-@internal_bind("EOFError")
+@internal_bind(EOFError)
 class __EOFError : Exception {
     fun __String() {
         return "EOFError: " ++ this.msg
     }
 }
 
-@internal_bind("OutputError")
+@internal_bind(OutputError)
 class __OutputError : Exception {
     fun __String() {
         return "OutputError: " ++ this.msg
     }
 }
 
-@internal_bind("SystemExit")
+@internal_bind(SystemExit)
 class __SystemExit : Exception {
     d"""
     Exception representing termination of a program.

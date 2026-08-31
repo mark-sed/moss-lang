@@ -1341,7 +1341,7 @@ public:
 
     opcode::Address get_body_addr() { return this->body_addr; }
 
-    std::vector<FunValueArg *> get_args() { return this->args; }
+    std::vector<FunValueArg *> &get_args() { return this->args; }
     void set_args(std::vector<FunValueArg *> args) { this->args = args; }
 
     Interpreter *get_vm() { return this->vm; }

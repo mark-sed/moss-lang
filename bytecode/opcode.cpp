@@ -384,7 +384,6 @@ void JmpIfFalse::exec(Interpreter *vm) {
         vm->set_bci(this->addr);
 }
 
-// TODO: Return reason why it cannot be called
 // We determine if we can call passed in function with passed in call frame
 // First we copy call arguments so that we can modify them (add default ones and such)
 // Then we check if we have more call arguments than function argument, if that is the case
@@ -1225,12 +1224,16 @@ void CreateFun::exec(Interpreter *vm) {
         if (pown->has_annotation(annots::INTERNAL_BIND)) {
             // This might be a constructor of internal_bind class where the names don't match
             auto annt = pown->get_annotation(annots::INTERNAL_BIND);
-            if (auto ann_v = dyn_cast<StringValue>(annt)) {
-                if (ann_v->get_value() == name) {
+            if (auto ann_v = dyn_cast<ClassValue>(annt)) {
+                if (ann_v->get_name() == name) {
                     LOGMAX("Setting method " << name << " for other class (matched on internal_bind name)");
                     // This value will change in class bind once internal_bind is executed. But this needs to be 
                     // denoted as a constructor
                     funval->set_parent_class(dyn_cast<ClassValue>(pown));
+                    // internal_bind constructor has left-over this argument from when it was not
+                    // a construtor, it needs to be removed.
+                    assert(funval->get_args().back()->name == "this" && "expected this as the last arg");
+                    funval->get_args().pop_back();
                 }
             } else {
                 assert(false && "internal_bind annotation without string value");
@@ -1536,17 +1539,18 @@ void Annotate::exec(Interpreter *vm) {
     // TODO: Change to to use map once it gets too big
     if (name == annots::INTERNAL_BIND) {
         LOGMAX("Internal binding");
-        auto bind_name = dyn_cast<StringValue>(v);
-        op_assert(bind_name, mslib::create_type_error(
-            diags::Diagnostic(*vm->get_src_file(), diags::MISSING_ANNOT_TYPE_ARGUMENT,
-                annots::INTERNAL_BIND, "String")));
-        auto bind_val = vm->load_name(bind_name->get_value());
-        op_assert(bind_val, mslib::create_name_error(
-            diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, bind_name->get_value().c_str())));
-        auto bind_class = dyn_cast<ClassValue>(bind_val);
+        //auto bind_name = StringValue::get(v->get_name()); //dyn_cast<StringValue>(v);
+        //// If we assert before typeError is created in mslib then this fails.
+        //op_assert(bind_name, mslib::create_type_error(
+        //    diags::Diagnostic(*vm->get_src_file(), diags::MISSING_ANNOT_TYPE_ARGUMENT,
+        //        annots::INTERNAL_BIND, "String")));
+        //auto bind_val = vm->load_name(bind_name->get_value());
+        //op_assert(bind_val, mslib::create_name_error(
+        //    diags::Diagnostic(*vm->get_src_file(), diags::NAME_NOT_DEFINED, bind_name->get_value().c_str())));
+        auto bind_class = dyn_cast<ClassValue>(v);
         op_assert(bind_class, mslib::create_type_error(
             diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,
-                "Type", bind_val->get_type()->get_name().c_str())));
+                "Type", v->get_name().c_str())));
         auto ref_class = dyn_cast<ClassValue>(d);
         op_assert(ref_class, mslib::create_type_error(
             diags::Diagnostic(*vm->get_src_file(), diags::UNEXPECTED_TYPE,

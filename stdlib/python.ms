@@ -11,7 +11,7 @@ function `module`, which imports a Python module and then by calling `def` or
 // it can initialize it.
 @!internal_module
 
-@internal_bind("PythonObject")
+@internal_bind(PythonObject)
 class __PythonObject {
     d"Moss version of a Python object."
 

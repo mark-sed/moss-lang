@@ -83,9 +83,8 @@ std::ostream& Function::debug(std::ostream& os) const {
 StringLiteral *Class::get_internal_bind() {
     for (auto a: annotations) {
         if (a->get_name() == annots::INTERNAL_BIND) {
-            auto v = dyn_cast<ir::StringLiteral>(a->get_value());
-            if (v)
-                return v;
+            // FIXME: This will fail for expressions with scope
+            auto v = a->get_value()->get_name();
         }
     }
     return nullptr;
