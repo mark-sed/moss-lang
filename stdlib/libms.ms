@@ -1728,6 +1728,30 @@ class __cdouble {
 }
 
 @sealed
+@internal_bind(cpp.cfloat)
+class __cfloat {
+    d"""
+    Moss representation of C/C++ float type.
+    """
+
+    @internal
+    fun cfloat(v:Float) {
+        d"""
+        Converts moss Float into C float.
+        This conversion is lossy since `v` is equivalent to C double.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cfloat into Float.
+        This conversion is lossless.
+        """
+    }
+}
+
+@sealed
 @internal_bind(cpp.clong)
 class __clong {
     d"""
@@ -1743,6 +1767,30 @@ class __clong {
         Converts clong into Int.
         This conversion is lossless as long as C long is 64b or less on this
         machine.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cint)
+class __cint {
+    d"""
+    Moss representation of C/C++ int type.
+    """
+
+    @internal
+    fun cint(v:Int) {
+        d"""
+        Converts moss Int into C int.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cint into Int.
+        This conversion is lossless.
         """
     }
 }

@@ -139,7 +139,9 @@ namespace t_cpp {
     };
 
     DEFINE_C_VALUE(long, Long, IntValue, LONG)
+    DEFINE_C_VALUE(int, Int, IntValue, INT)
     DEFINE_C_VALUE(double, Double, FloatValue, DOUBLE)
+    DEFINE_C_VALUE(float, Float, FloatValue, FLOAT)
     DEFINE_C_VALUE(bool, Bool, BoolValue, BOOL)
 
     // TODO: Maybe just having a pointer type is enough?

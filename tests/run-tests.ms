@@ -1933,7 +1933,7 @@ fun test_lib_map(name) {
 
 fun test_lib_cpp(name) {
     ~expect_pass("stdlib_tests/cpp.ms", name, """42000000\n-42000000.543210\nHello
-false\n""", "")
+false\n-0.540000\n16777216.000000\n-451\n56666666\n-2147483648\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {

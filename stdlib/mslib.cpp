@@ -1009,6 +1009,14 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 2);
             return new t_cpp::CDoubleValue(mslib::get_float(cf->get_args()[0].value));
         }},
+        {"cfloat", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CFloatValue(mslib::get_float(cf->get_args()[0].value));
+        }},
+        {"cint", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CIntValue(mslib::get_int(cf->get_args()[0].value));
+        }},
         {"clong", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CLongValue(mslib::get_int(cf->get_args()[0].value));
