@@ -1796,6 +1796,102 @@ class __cint {
 }
 
 @sealed
+@internal_bind(cpp.cint8_t)
+class __cint8_t {
+    d"""
+    Moss representation of C/C++ int8_t (8 bit integer) type.
+    """
+
+    @internal
+    fun cint8_t(v:Int) {
+        d"""
+        Converts moss Int into C int8_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cint8_t into Int.
+        This conversion is lossless and value is sign extended.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cint16_t)
+class __cint16_t {
+    d"""
+    Moss representation of C/C++ int16_t (16 bit integer) type.
+    """
+
+    @internal
+    fun cint16_t(v:Int) {
+        d"""
+        Converts moss Int into C int16_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cint16_t into Int.
+        This conversion is lossless and value is sign extended.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cint32_t)
+class __cint32_t {
+    d"""
+    Moss representation of C/C++ int32_t (32 bit integer) type.
+    """
+
+    @internal
+    fun cint32_t(v:Int) {
+        d"""
+        Converts moss Int into C int32_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cint32_t into Int.
+        This conversion is lossless and value is sign extended.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cint64_t)
+class __cint64_t {
+    d"""
+    Moss representation of C/C++ int64_t (64 bit integer) type.
+    """
+
+    @internal
+    fun cint64_t(v:Int) {
+        d"""
+        Converts moss Int into C int64_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cint64_t into Int.
+        This conversion is lossless and value is sign extended.
+        """
+    }
+}
+
+@sealed
 @internal_bind(cpp.cbool)
 class __cbool {
     d"""

@@ -132,6 +132,10 @@ namespace BuiltIns {
         extern Value *CVoidStar;
         extern Value *CLong;
         extern Value *CInt;
+        extern Value *CInt8_t;
+        extern Value *CInt16_t;
+        extern Value *CInt32_t;
+        extern Value *CInt64_t;
         extern Value *CDouble;
         extern Value *CFloat;
         extern Value *CCharStar;

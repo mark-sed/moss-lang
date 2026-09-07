@@ -16,3 +16,39 @@ cpp.cint(56666666).to_moss()
 "\n"
 cpp.cint(2147483648).to_moss() // wont fit into int
 "\n"
+
+cpp.cint8_t(100).to_moss()
+"\n"
+cpp.cint8_t(-101).to_moss()
+"\n"
+cpp.cint8_t(0).to_moss()
+"\n"
+cpp.cint8_t(130).to_moss()
+"\n"
+
+cpp.cint16_t(32767).to_moss()       // 32767
+"\n"
+cpp.cint16_t(32768).to_moss()       // -32768
+"\n"
+cpp.cint16_t(-32769).to_moss()      // 32767
+"\n"
+cpp.cint16_t(65535).to_moss()       // -1
+"\n"
+
+cpp.cint32_t(2147483647).to_moss()      // 2147483647
+"\n"
+cpp.cint32_t(2147483648).to_moss()    // -2147483648
+"\n"
+cpp.cint32_t(-2147483649).to_moss()   // 2147483647
+"\n"
+cpp.cint32_t(4294967295).to_moss()    // -1
+"\n"
+
+cpp.cint64_t(9223372036854775807).to_moss()   // 9223372036854775807
+"\n"
+cpp.cint64_t(-9223372036854775807).to_moss()  // -9223372036854775807
+"\n"
+cpp.cint64_t(0).to_moss()                      // 0
+"\n"
+cpp.cint64_t(-1).to_moss()                     // -1
+"\n"

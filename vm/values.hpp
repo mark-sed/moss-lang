@@ -63,6 +63,10 @@ enum class TypeKind {
     CPP_CVOID_STAR,
     CPP_CLONG,
     CPP_CINT,
+    CPP_CINT8_T,
+    CPP_CINT16_T,
+    CPP_CINT32_T,
+    CPP_CINT64_T,
     CPP_CDOUBLE,
     CPP_CFLOAT,
     CPP_CBOOL,
@@ -102,6 +106,10 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::CPP_CVOID_STAR: return "CPP_CVOID_STAR";
         case TypeKind::CPP_CLONG: return "CPP_CLONG";
         case TypeKind::CPP_CINT: return "CPP_CINT";
+        case TypeKind::CPP_CINT8_T: return "CPP_CINT8_T";
+        case TypeKind::CPP_CINT16_T: return "CPP_CINT16_T";
+        case TypeKind::CPP_CINT32_T: return "CPP_CINT32_T";
+        case TypeKind::CPP_CINT64_T: return "CPP_CINT64_T";
         case TypeKind::CPP_CDOUBLE: return "CPP_CDOUBLE";
         case TypeKind::CPP_CFLOAT: return "CPP_CFLOAT";
         case TypeKind::CPP_CBOOL: return "CPP_CBOOL";
