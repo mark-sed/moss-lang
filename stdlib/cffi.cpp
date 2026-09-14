@@ -15,6 +15,11 @@ using namespace t_cpp;
 
 union FFIResult {
     int cint;
+    int8_t cint8_t;
+    int16_t cint16_t;
+    int32_t cint32_t;
+    int64_t cint64_t;
+    bool cbool;
     unsigned int cunsigned_int;
     short cshort;
     unsigned short cunsigned_short;
@@ -125,6 +130,11 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
     static const std::unordered_map<std::string, ffi_type*> type_map = {
         {"cvoid",   &ffi_type_void},
         {"cint",    &ffi_type_sint},
+        {"cint8_t",    &ffi_type_sint8},
+        {"cint16_t",    &ffi_type_sint16},
+        {"cint32_t",    &ffi_type_sint32},
+        {"cint64_t",    &ffi_type_sint64},
+        {"cbool",    &ffi_type_uint8},
         {"cunsigned_int", &ffi_type_uint},
         {"cshort",  &ffi_type_sshort},
         {"cunsigned_short", &ffi_type_ushort},
@@ -153,10 +163,24 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
 
 static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
     assert(type != BuiltIns::Cpp::CVoid && "invoked with void");
+    if (type == BuiltIns::Cpp::CInt)
+        return new CIntValue(result.cint);
+    if (type == BuiltIns::Cpp::CInt8_t)
+        return new CInt8_tValue(result.cint8_t);
+    if (type == BuiltIns::Cpp::CInt16_t)
+        return new CInt16_tValue(result.cint16_t);
+    if (type == BuiltIns::Cpp::CInt32_t)
+        return new CInt32_tValue(result.cint32_t);
+    if (type == BuiltIns::Cpp::CInt64_t)
+        return new CInt64_tValue(result.cint64_t);
+    if (type == BuiltIns::Cpp::CBool)
+        return new CBoolValue(result.cbool);
     if (type == BuiltIns::Cpp::CLong)
         return new CLongValue(result.clong);
     if (type == BuiltIns::Cpp::CDouble)
         return new CDoubleValue(result.cdouble);
+    if (type == BuiltIns::Cpp::CFloat)
+        return new CFloatValue(result.cfloat);
     if (type == BuiltIns::Cpp::CCharStar)
         return new CCharStarValue((static_cast<char *>(result.cvoid_star)));
     if (type == BuiltIns::Cpp::CVoidStar)
