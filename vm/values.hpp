@@ -479,6 +479,7 @@ public:
 class StringValue : public Value {
 private:
     friend class StringIterator;
+    const char *cstr_value;
 protected:
     opcode::StringConst value;
     
@@ -510,7 +511,6 @@ public:
     virtual Value *iter(Interpreter *vm) override;
 
     virtual void *get_data_pointer() override {
-        static const char * cstr_value = value.c_str();
         return &cstr_value;
     }
 

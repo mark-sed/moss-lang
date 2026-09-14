@@ -538,6 +538,7 @@ BytesIterator::BytesIterator(BytesValue &value) : Value(ClassType, "BytesIterato
 }
 
 StringValue::StringValue(opcode::StringConst value) : Value(ClassType, "String", BuiltIns::String), value(value) {
+    this->cstr_value = this->value.c_str();
     if(BuiltIns::String->get_attrs())
         this->attrs = BuiltIns::String->get_attrs()->clone();
 }
