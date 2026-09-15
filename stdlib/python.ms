@@ -67,6 +67,8 @@ class __PythonObject {
         Arguments can be Moss values and those will be converted or
         PythonObject values.
         """
+        // Arguments of this function will be modified to match the actual
+        // function arguments once object is created.
     }
 
     @internal
@@ -75,6 +77,8 @@ class __PythonObject {
         Function call to this object and then conversion of returned value into
         a Moss value.
         """
+        // Arguments of this function will be modified to match the actual
+        // function arguments once object is created.
     }
 
     @internal
@@ -82,6 +86,8 @@ class __PythonObject {
         d"""
         Equivalent to function `call`.
         """
+        // Arguments of this function will be modified to match the actual
+        // function arguments once object is created.
     }
 }
 

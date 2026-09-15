@@ -1,6 +1,7 @@
 #include "cffi.hpp"
 #include "values_cpp.hpp"
 #include <unordered_map>
+#include <unordered_set>
 #include <ffi.h>
 #ifndef __windows__
 #include <dlfcn.h>
@@ -20,13 +21,9 @@ union FFIResult {
     int32_t cint32_t;
     int64_t cint64_t;
     bool cbool;
-    unsigned int cunsigned_int;
     short cshort;
-    unsigned short cunsigned_short;
     char cchar;
-    unsigned char cunsigned_char;
     long clong;
-    unsigned long cunsigned_long;
     float cfloat;
     double cdouble;
     void *cvoid_star;
@@ -34,11 +31,22 @@ union FFIResult {
 
 const std::unordered_map<std::string, mslib::mslib_dispatcher>& cffi::get_registry() {
     static const std::unordered_map<std::string, mslib::mslib_dispatcher> registry = {
+        {"()", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            return cffi::call(vm, cf, err);
+        }},
         {"call", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
-            (void)err;
-            auto args = cf->get_args();
-            assert(args.size() == 2);
-            return cffi::call(vm, cf->get_arg("this"), cf->get_arg("args"), err);
+            return cffi::call(vm, cf, err);
+        }},
+        {"call_moss", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto ret_v = cffi::call(vm, cf, err);
+            if (err)
+                return nullptr;
+            if (auto c = dyn_cast<t_cpp::CppValue>(ret_v)) {
+                // C++ classes are marked sealed so we can just check with isa
+                return c->to_moss();
+            }
+            assert(false && "Returned call value is not a cpp value");
+            return nullptr;
         }},
         {"cfun", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
@@ -135,13 +143,9 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
         {"cint32_t",    &ffi_type_sint32},
         {"cint64_t",    &ffi_type_sint64},
         {"cbool",    &ffi_type_uint8},
-        {"cunsigned_int", &ffi_type_uint},
         {"cshort",  &ffi_type_sshort},
-        {"cunsigned_short", &ffi_type_ushort},
         {"cchar",   &ffi_type_schar},
-        {"cunsigned_char", &ffi_type_uchar},
         {"clong",   &ffi_type_slong},
-        {"cunsigned_long", &ffi_type_ulong},
         {"cfloat",  &ffi_type_float},
         {"cdouble", &ffi_type_double},
         {"cvoid_star", &ffi_type_pointer},
@@ -153,7 +157,7 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
         return it->second;
     } else {
         if (is_class) {
-            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CPP_MOSS_VALUE, type->get_name().c_str()));
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NOT_CPP_MOSS_VALUE, type->get_name().c_str()));
         } else {
             err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NO_KNOWN_TYPE_CONV_TO_C, type->get_name().c_str()));
         }
@@ -191,6 +195,22 @@ static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
     return nullptr;
 }
 
+static Value *cpp_type_to_moss_type(Value *type) {
+    std::unordered_set<Value *> int_types{BuiltIns::Cpp::CInt, BuiltIns::Cpp::CLong,
+                                          BuiltIns::Cpp::CInt8_t, BuiltIns::Cpp::CInt16_t,
+                                          BuiltIns::Cpp::CInt32_t, BuiltIns::Cpp::CInt64_t};
+    if (int_types.find(type) != int_types.end())
+        return BuiltIns::Int;
+    if (type == BuiltIns::Cpp::CFloat || type == BuiltIns::Cpp::CDouble)
+        return BuiltIns::Float;
+    if (type == BuiltIns::Cpp::CBool)
+        return BuiltIns::Bool;
+    if (type == BuiltIns::Cpp::CCharStar)
+        return BuiltIns::String;
+
+    return nullptr;
+}
+
 Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value *return_type, Value *arg_types, Value *&err) {
     auto name_s = mslib::get_string(name);
     auto argst = mslib::get_list(arg_types);
@@ -209,6 +229,8 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
 
     ffi_cif cif;
     std::vector<ffi_type *> *args = new std::vector<ffi_type *>();
+    std::vector<FunValueArg *> fargs;
+    int counter = 1;
     // We need to store args to then be able to delete them.
     // TODO: Create special value just for this to then not delete void *, but the actual type.
     auto args_ptr = new t_cpp::CVoidStarValue(args, true);
@@ -217,7 +239,14 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
         if (!convv)
             return nullptr;
         args->push_back(convv);
+        std::vector<Value *> call_arg_types{a};
+        if (auto cpp_type = cpp_type_to_moss_type(a))
+            call_arg_types.push_back(cpp_type);
+        fargs.push_back(new FunValueArg("arg"+std::to_string(counter), call_arg_types));
+        ++counter;
     }
+    // Add this since this is a method over an object
+    fargs.push_back(new FunValueArg("this", {}));
     ffi_type *ffi_ret_type = get_ffi_type(return_type, vm, err);
     if (!ffi_ret_type)
         return nullptr;
@@ -230,15 +259,46 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     auto func_v = new t_cpp::CVoidStarValue(func);
     auto cif_v = new t_cpp::Ffi_cifValue(cif);
 
-    auto ffhandle = mslib::call_constructor(vm, cf, "FFHandle", {func_v, cif_v, name, return_type, arg_types, args_ptr}, err);
-    if (!ffhandle)
+    auto cfun_handle = mslib::call_constructor(vm, cf, "ForeignFunction", {func_v, cif_v, name, return_type, arg_types, args_ptr}, err);
+    if (!cfun_handle)
         return nullptr;
     
-    ths->set_attr(name_s, ffhandle);
+    auto old_call = cfun_handle->get_attr("call", vm);
+    FunValue *old_call_fun = dyn_cast<FunValue>(old_call);
+    assert(old_call_fun && "Call function is not a function? Perhaps a FunList");
+
+    auto owner = dyn_cast<ModuleValue>(old_call_fun->get_owner());
+    assert(owner && "owner of python module function not set?");
+    // A new function as to be created otherwise we would override it for all the objects as they
+    // share the one FunValue for call.
+    auto new_call_fun = new FunValue("call", fargs, owner->get_vm(), old_call_fun->get_body_addr(), owner);
+    for (auto [k, v]: old_call_fun->get_annotations())
+        new_call_fun->annotate(k, v);
+    cfun_handle->set_attr("call", new_call_fun);
+
+    auto old_op_call = cfun_handle->get_attr("()", vm);
+    FunValue *old_op_call_fun = dyn_cast<FunValue>(old_op_call);
+    assert(old_op_call_fun && "() function is not a function? Perhaps a FunList");
+    auto new_op_fun = new FunValue("()", fargs, owner->get_vm(), old_op_call_fun->get_body_addr(), owner);
+    for (auto [k, v]: old_op_call_fun->get_annotations())
+        new_op_fun->annotate(k, v);
+    cfun_handle->set_attr("()", new_op_fun);
+
+    auto old_call_moss = cfun_handle->get_attr("call_moss", vm);
+    FunValue *old_call_moss_fun = dyn_cast<FunValue>(old_call_moss);
+    assert(old_call_moss_fun && "call_moss function is not a function? Perhaps a FunList");
+    auto new_call_moss_fun = new FunValue("call_moss", fargs, owner->get_vm(), old_call_moss_fun->get_body_addr(), owner);
+    for (auto [k, v]: old_call_moss_fun->get_annotations())
+        new_call_moss_fun->annotate(k, v);
+    cfun_handle->set_attr("call_moss", new_call_moss_fun);
+
+    ths->set_attr(name_s, cfun_handle);
     return nullptr;
 }
 
-Value *cffi::call(Interpreter *vm, Value *ths, Value *args, Value *&err) {
+Value *cffi::call(Interpreter *vm, CallFrame *cf, Value *&err) {
+    auto args = cf->get_args();
+    auto ths = cf->get_arg("this");
     auto ptr = mslib::get_attr(ths, "ptr", vm, err);
     if (!ptr)
         return nullptr;
@@ -251,11 +311,11 @@ Value *cffi::call(Interpreter *vm, Value *ths, Value *args, Value *&err) {
     auto cifv = dyn_cast<t_cpp::Ffi_cifValue>(cif);
     assert(cifv && "not cif");
 
-    auto argsv = mslib::get_list(args);
-    // TODO: Typecheck arguments
     std::vector<void *> values;
-    for (auto a: argsv) {
-        values.push_back(a->get_data_pointer());
+    for (auto a: args) {
+        if (a.name == "this")
+            continue;
+        values.push_back(a.value->get_data_pointer());
     }
     auto return_type = mslib::get_attr(ths, "return_type", vm, err);
     if (!return_type)

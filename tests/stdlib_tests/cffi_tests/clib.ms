@@ -78,5 +78,20 @@ try {
 v = cpp.cchar_star("Hello\n")
 v.to_moss()
 
+try {
+    c_lib.add.call_moss(0.5, 1.5, 5)
+} catch (e:TypeError)
+    "caught\n"
+
+try {
+    c_lib.add.call_moss()
+} catch (e:TypeError)
+    "caught\n"
+
+try {
+    c_lib.add.call_moss(5, 1.1)
+} catch (e:TypeError)
+    "caught\n"
+
 ~c_lib.close()
 "done\n"

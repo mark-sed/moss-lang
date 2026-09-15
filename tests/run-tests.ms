@@ -1947,7 +1947,7 @@ fun test_lib_subprocess_system_and_run(name) {
 fun test_lib_cffi_clib(name) {
     ~expect_pass(f"stdlib_tests/cffi_tests/clib.ms", name, """<object of class CFFI>
 <C++ value of type void*>
-<object of class FFHandle>
+<object of class ForeignFunction>
 Hello from C!
 
 42
@@ -1965,6 +1965,7 @@ CLIB
 5.000000
 caught
 Hello
+caught\ncaught\ncaught
 done\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.so")
 }
 
