@@ -182,6 +182,7 @@ enum DiagID : unsigned {
     TOO_MANY_VALS_UNPACK,   ///< When multivar is missing a var to fully unpack
     TOO_FEW_VALS_UNPACK,    ///< When multivar has more vars to unpack than values
     NO_KNOWN_TYPE_CONV_TO_C,///< When type cannot be converted to C equivalent in ffi
+    CANNOT_FIND_FFUN,       ///< When function could not be found by its name
     NOT_CPP_MOSS_VALUE,     ///< When t_cpp value was expected, but was other value
     BAD_MULTI_REPLACE_ELEM, ///< When multi_replace does not get list of list of 2 values
     NO_SUPER,               ///< Call to a super without a super
@@ -403,6 +404,7 @@ static const char * DIAG_MSGS[] = {
     "Too many values to unpack (expected %ld values)",
     "Not enough values to unpack (expected at least %ld values, but got %ld)",
     "No known conversion for type '%s' in foreign function interface",
+    "Foreign function '%s' was not found",
     "Expected C++ compatible value (from cpp space), but got value of type '%s'",
     "String.multi_replace expects as an argument a List of Lists of 2 Strings (e.g.: '[[\"a\", \"b\"], [\"c\", \"d\"]])",
     "Class '%s' does not have a super class to call",

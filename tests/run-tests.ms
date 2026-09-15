@@ -1965,7 +1965,7 @@ CLIB
 5.000000
 caught
 Hello
-caught\ncaught\ncaught
+caught\ncaught\ncaught\ncaught
 done\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.so")
 }
 

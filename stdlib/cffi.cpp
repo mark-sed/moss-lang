@@ -70,6 +70,10 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& cffi::get_regist
     return registry;
 }
 
+static Value *create_CFFIError(Interpreter *vm, CallFrame *cf, ustring msg, Value *&err) {
+    return mslib::call_constructor(vm, cf, "CFFIError", {StringValue::get(msg)}, err);
+}
+
 static t_cpp::CVoidStarValue *get_handle(Value *obj, Interpreter *vm, Value *&err) {
     auto handle = mslib::get_attr(obj, "handle", vm, err);
     if (!handle)
@@ -81,20 +85,21 @@ static t_cpp::CVoidStarValue *get_handle(Value *obj, Interpreter *vm, Value *&er
 }
 
 #ifdef __windows__
-static Value *windows_dlopen(ustring path, Value *&err) {
+static Value *windows_dlopen(Interpreter *vm, CallFrame *cf, ustring path, Value *&err) {
     HMODULE handle = LoadLibrary(path.c_str());
     if (!handle) {
-        err = create_not_implemented_error("cffi.dlopen failed, but exception is not implemented.\n");
+        // TODO: Add error from loadlibrary
+        err = create_CFFIError(vm, cf, "Loading library has failed.\n", err);
         return nullptr;
     }
     return new t_cpp::CVoidStarValue(handle);
 }
 #else
-static Value *posix_dlopen(ustring path, Value *&err) {
+static Value *posix_dlopen(Interpreter *vm, CallFrame *cf, ustring path, Value *&err) {
     void* handle = dlopen(path.c_str(), RTLD_LAZY);
     if (!handle) {
         const char *dlsym_error = dlerror();
-        err = create_not_implemented_error("cffi.dlopen failed, but exception is not implemented. "+ustring(dlsym_error)+"\n");
+        err = create_CFFIError(vm, cf, ustring(dlsym_error)+".\n", err);
         return nullptr;
     }
     return new t_cpp::CVoidStarValue(handle);
@@ -106,9 +111,9 @@ Value *cffi::dlopen(Interpreter *vm, CallFrame *cf, Value *path, Value *&err) {
     assert(path_str && "non-string");
     Value *handle = nullptr;
 #ifdef __windows__
-    handle = windows_dlopen(path_str->get_value(), err);
+    handle = windows_dlopen(vm, cf, path_str->get_value(), err);
 #else
-    handle = posix_dlopen(path_str->get_value(), err);
+    handle = posix_dlopen(vm, cf, path_str->get_value(), err);
 #endif
     if (!handle)
         return nullptr;
@@ -190,7 +195,7 @@ static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
     if (type == BuiltIns::Cpp::CVoidStar)
         return new CVoidStarValue(result.cvoid_star);
 
-    // TODO: Change for Type error or some cffi error
+    // This erorr should not really happen and return type should be checked in cfun
     err = mslib::create_not_implemented_error("Conversion for returned type is not yet implemented in cffi\n");
     return nullptr;
 }
@@ -225,6 +230,10 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     return nullptr;
 #else
     void *func = dlsym(handle->get_value(), name_s.c_str());
+    if (!func) {
+        err = mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_FFUN, name_s.c_str()));
+        return nullptr;
+    }
 #endif
 
     ffi_cif cif;
@@ -251,7 +260,8 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
     if (!ffi_ret_type)
         return nullptr;
 
-    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, args->size(), ffi_ret_type, args->data())) {
+    auto prep_stat = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, args->size(), ffi_ret_type, args->data());
+    if (prep_stat != ffi_status::FFI_OK) {
         err = create_not_implemented_error("cffi.define failed, but exception is not implemented.\n");
         return nullptr;
     }

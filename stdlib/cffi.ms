@@ -4,6 +4,20 @@ CFFI -- C Foreign Function Interface
 Module for calling foreign function that use C ABI from Moss.
 """
 
+class CFFIError : Exception {
+    d"""
+    Exception for CFFI specific errors.
+    """
+
+    fun CFFIError(msg:String) {
+        ~super(msg)
+    }
+
+    fun __String() {
+        return "CFFIError: "++this.msg
+    }
+}
+
 class ForeignFunction {
     d"""
     Class for holding foreign function handle.
@@ -70,6 +84,7 @@ class CFFI {
     fun cfun(name:String, return_type, arg_types:List) {
         d"""
         Declares a foreign C ABI function `return_type name(<args of arg_types>);`.
+        If function `name` is not found then NameError is raised.
         Arguments `return_type` and value in `arg_types` list has to be types
         with known conversion to C type (some built-in types or cpp space
         values). If there is no known conversion then TypeError is raised.

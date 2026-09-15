@@ -93,5 +93,10 @@ try {
 } catch (e:TypeError)
     "caught\n"
 
+try {
+    cffi.dlopen("AAANonExistentLibrary.so.so.z")
+} catch (e:cffi.CFFIError)
+    "caught\n"
+
 ~c_lib.close()
 "done\n"
