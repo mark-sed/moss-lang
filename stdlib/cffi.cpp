@@ -16,14 +16,20 @@ using namespace t_cpp;
 
 union FFIResult {
     int cint;
+    int cuint;
     int8_t cint8_t;
+    int8_t cuint8_t;
     int16_t cint16_t;
+    int16_t cuint16_t;
     int32_t cint32_t;
+    int32_t cuint32_t;
     int64_t cint64_t;
+    int64_t cuint64_t;
+    long clong;
+    long culong;
     bool cbool;
     short cshort;
     char cchar;
-    long clong;
     float cfloat;
     double cdouble;
     void *cvoid_star;
@@ -143,14 +149,20 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
     static const std::unordered_map<std::string, ffi_type*> type_map = {
         {"cvoid",   &ffi_type_void},
         {"cint",    &ffi_type_sint},
+        {"cuint",    &ffi_type_uint},
         {"cint8_t",    &ffi_type_sint8},
+        {"cuint8_t",    &ffi_type_uint8},
         {"cint16_t",    &ffi_type_sint16},
+        {"cuint16_t",    &ffi_type_uint16},
         {"cint32_t",    &ffi_type_sint32},
+        {"cuint32_t",    &ffi_type_uint32},
         {"cint64_t",    &ffi_type_sint64},
+        {"cuint64_t",    &ffi_type_uint64},
+        {"clong",   &ffi_type_slong},
+        {"culong",   &ffi_type_ulong},
         {"cbool",    &ffi_type_uint8},
         {"cshort",  &ffi_type_sshort},
         {"cchar",   &ffi_type_schar},
-        {"clong",   &ffi_type_slong},
         {"cfloat",  &ffi_type_float},
         {"cdouble", &ffi_type_double},
         {"cvoid_star", &ffi_type_pointer},

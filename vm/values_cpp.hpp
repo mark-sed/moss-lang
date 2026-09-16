@@ -139,11 +139,17 @@ namespace t_cpp {
     };
 
     DEFINE_C_VALUE(long, Long, IntValue, LONG)
+    DEFINE_C_VALUE(unsigned long, ULong, IntValue, ULONG)
     DEFINE_C_VALUE(int, Int, IntValue, INT)
+    DEFINE_C_VALUE(unsigned int, UInt, IntValue, UINT)
     DEFINE_C_VALUE(int8_t, Int8_t, IntValue, INT8_T)
+    DEFINE_C_VALUE(uint8_t, UInt8_t, IntValue, UINT8_T)
     DEFINE_C_VALUE(int16_t, Int16_t, IntValue, INT16_T)
+    DEFINE_C_VALUE(uint16_t, UInt16_t, IntValue, UINT16_T)
     DEFINE_C_VALUE(int32_t, Int32_t, IntValue, INT32_T)
+    DEFINE_C_VALUE(uint32_t, UInt32_t, IntValue, UINT32_T)
     DEFINE_C_VALUE(int64_t, Int64_t, IntValue, INT64_T)
+    DEFINE_C_VALUE(uint64_t, UInt64_t, IntValue, UINT64_T)
     DEFINE_C_VALUE(double, Double, FloatValue, DOUBLE)
     DEFINE_C_VALUE(float, Float, FloatValue, FLOAT)
     DEFINE_C_VALUE(bool, Bool, BoolValue, BOOL)

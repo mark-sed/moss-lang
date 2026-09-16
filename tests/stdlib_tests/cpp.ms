@@ -52,3 +52,52 @@ cpp.cint64_t(0).to_moss()                      // 0
 "\n"
 cpp.cint64_t(-1).to_moss()                     // -1
 "\n"
+
+cpp.cuint(4294967295).to_moss()               // 4294967295
+"\n"
+cpp.cuint(0).to_moss()                         // 0
+"\n"
+cpp.cuint(1).to_moss()                         // 1
+"\n"
+
+cpp.culong(4294967295).to_moss()               // 4294967295
+"\n"
+cpp.culong(0).to_moss()                        // 0
+"\n"
+cpp.culong(1).to_moss()                        // 1
+"\n"
+
+cpp.cuint8_t(255).to_moss()                    // 255
+"\n"
+cpp.cuint8_t(0).to_moss()                      // 0
+"\n"
+cpp.cuint8_t(1).to_moss()                      // 1
+"\n"
+
+cpp.cuint16_t(65535).to_moss()                 // 65535
+"\n"
+cpp.cuint16_t(0).to_moss()                     // 0
+"\n"
+cpp.cuint16_t(1).to_moss()                     // 1
+"\n"
+
+cpp.cuint32_t(4294967295).to_moss()             // 4294967295
+"\n"
+cpp.cuint32_t(0).to_moss()                     // 0
+"\n"
+cpp.cuint32_t(1).to_moss()                     // 1
+"\n"
+
+cpp.cuint64_t(4294967295).to_moss() // 4294967295
+"\n"
+cpp.cuint64_t(0).to_moss()                     // 0
+"\n"
+cpp.cuint64_t(1).to_moss()                     // 1
+"\n"
+
+cpp.cuint8_t(-1).to_moss()     // 255
+"\n"
+cpp.cuint16_t(-1).to_moss()    // 65535
+"\n"
+cpp.cuint32_t(-1).to_moss()    // 4294967295
+"\n"

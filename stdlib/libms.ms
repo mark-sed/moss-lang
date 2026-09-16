@@ -1772,6 +1772,25 @@ class __clong {
 }
 
 @sealed
+@internal_bind(cpp.culong)
+class __culong {
+    d"""
+    Moss representation of C/C++ unsigned long type.
+    """
+
+    @internal
+    fun culong(v:Int) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts culong into Int.
+        This conversion is lossy if long is 64 bit.
+        """
+    }
+}
+
+@sealed
 @internal_bind(cpp.cint)
 class __cint {
     d"""
@@ -1790,6 +1809,30 @@ class __cint {
     fun to_moss() {
         d"""
         Converts cint into Int.
+        This conversion is lossless.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cuint)
+class __cuint {
+    d"""
+    Moss representation of C/C++ unsigned int type.
+    """
+
+    @internal
+    fun cuint(v:Int) {
+        d"""
+        Converts moss Int into C unsigned int.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cuint into Int.
         This conversion is lossless.
         """
     }
@@ -1820,6 +1863,30 @@ class __cint8_t {
 }
 
 @sealed
+@internal_bind(cpp.cuint8_t)
+class __cuint8_t {
+    d"""
+    Moss representation of C/C++ uint8_t (8 bit unsigned integer) type.
+    """
+
+    @internal
+    fun cuint8_t(v:Int) {
+        d"""
+        Converts moss Int into C uint8_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cuint8_t into Int.
+        This conversion is lossless.
+        """
+    }
+}
+
+@sealed
 @internal_bind(cpp.cint16_t)
 class __cint16_t {
     d"""
@@ -1839,6 +1906,30 @@ class __cint16_t {
         d"""
         Converts cint16_t into Int.
         This conversion is lossless and value is sign extended.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cuint16_t)
+class __cuint16_t {
+    d"""
+    Moss representation of C/C++ uint16_t (16 bit unsigned integer) type.
+    """
+
+    @internal
+    fun cuint16_t(v:Int) {
+        d"""
+        Converts moss Int into C uint16_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cuint16_t into Int.
+        This conversion is lossless.
         """
     }
 }
@@ -1868,6 +1959,30 @@ class __cint32_t {
 }
 
 @sealed
+@internal_bind(cpp.cuint32_t)
+class __cuint32_t {
+    d"""
+    Moss representation of C/C++ uint32_t (32 bit unsigned integer) type.
+    """
+
+    @internal
+    fun cuint32_t(v:Int) {
+        d"""
+        Converts moss Int into C uint32_t.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cuint32_t into Int.
+        This conversion is lossless.
+        """
+    }
+}
+
+@sealed
 @internal_bind(cpp.cint64_t)
 class __cint64_t {
     d"""
@@ -1887,6 +2002,29 @@ class __cint64_t {
         d"""
         Converts cint64_t into Int.
         This conversion is lossless and value is sign extended.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cuint64_t)
+class __cuint64_t {
+    d"""
+    Moss representation of C/C++ uint64_t (64 bit unsigned integer) type.
+    """
+
+    @internal
+    fun cuint64_t(v:Int) {
+        d"""
+        Converts moss Int into C uint64_t.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cuint64_t into Int.
+        This conversion is lossy since Int is int64_t.
         """
     }
 }

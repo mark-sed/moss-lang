@@ -1017,25 +1017,49 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(cf->get_args().size() == 2);
             return new t_cpp::CIntValue(mslib::get_int(cf->get_args()[0].value));
         }},
+        {"cuint", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CUIntValue(mslib::get_int(cf->get_args()[0].value));
+        }},
         {"cint8_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CInt8_tValue(mslib::get_int(cf->get_args()[0].value));
+        }},
+        {"cuint8_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CUInt8_tValue(mslib::get_int(cf->get_args()[0].value));
         }},
         {"cint16_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CInt16_tValue(mslib::get_int(cf->get_args()[0].value));
         }},
+        {"cuint16_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CUInt16_tValue(mslib::get_int(cf->get_args()[0].value));
+        }},
         {"cint32_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CInt32_tValue(mslib::get_int(cf->get_args()[0].value));
+        }},
+        {"cuint32_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CUInt32_tValue(mslib::get_int(cf->get_args()[0].value));
         }},
         {"cint64_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CInt64_tValue(mslib::get_int(cf->get_args()[0].value));
         }},
+        {"cuint64_t", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CUInt64_tValue(mslib::get_int(cf->get_args()[0].value));
+        }},
         {"clong", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CLongValue(mslib::get_int(cf->get_args()[0].value));
+        }},
+        {"culong", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
+            assert(cf->get_args().size() == 2);
+            return new t_cpp::CULongValue(mslib::get_int(cf->get_args()[0].value));
         }},
         {"delattr", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value *{
             (void)err;
