@@ -1839,6 +1839,55 @@ class __cuint {
 }
 
 @sealed
+@internal_bind(cpp.cshort)
+class __cshort {
+    d"""
+    Moss representation of C/C++ short int type.
+    """
+
+    @internal
+    fun cshort(v:Int) {
+        d"""
+        Converts moss Int into C short int.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cshort into Int.
+        This conversion is lossless.
+        """
+    }
+}
+
+@sealed
+@internal_bind(cpp.cushort)
+class __cushort {
+    d"""
+    Moss representation of C/C++ unsigned short int type.
+    """
+
+    @internal
+    fun cushort(v:Int) {
+        d"""
+        Converts moss Int into C unsigned short int.
+        This conversion is lossy since `v` is equivalent to C long long.
+        """
+    }
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts cushort into Int.
+        This conversion is lossless.
+        """
+    }
+}
+
+
+@sealed
 @internal_bind(cpp.cint8_t)
 class __cint8_t {
     d"""

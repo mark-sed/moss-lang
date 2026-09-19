@@ -134,6 +134,8 @@ namespace BuiltIns {
         extern Value *CULong;
         extern Value *CInt;
         extern Value *CUInt;
+        extern Value *CShort;
+        extern Value *CUShort;
         extern Value *CInt8_t;
         extern Value *CUInt8_t;
         extern Value *CInt16_t;

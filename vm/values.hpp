@@ -65,6 +65,8 @@ enum class TypeKind {
     CPP_CULONG,
     CPP_CINT,
     CPP_CUINT,
+    CPP_CSHORT,
+    CPP_CUSHORT,
     CPP_CINT8_T,
     CPP_CUINT8_T,
     CPP_CINT16_T,
@@ -114,6 +116,8 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::CPP_CULONG: return "CPP_CULONG";
         case TypeKind::CPP_CINT: return "CPP_CINT";
         case TypeKind::CPP_CUINT: return "CPP_CUINT";
+        case TypeKind::CPP_CSHORT: return "CPP_CSHORT";
+        case TypeKind::CPP_CUSHORT: return "CPP_CUSHORT";
         case TypeKind::CPP_CINT8_T: return "CPP_CINT8_T";
         case TypeKind::CPP_CUINT8_T: return "CPP_CUINT8_T";
         case TypeKind::CPP_CINT16_T: return "CPP_CINT16_T";

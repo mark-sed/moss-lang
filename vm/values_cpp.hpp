@@ -142,6 +142,8 @@ namespace t_cpp {
     DEFINE_C_VALUE(unsigned long, ULong, IntValue, ULONG)
     DEFINE_C_VALUE(int, Int, IntValue, INT)
     DEFINE_C_VALUE(unsigned int, UInt, IntValue, UINT)
+    DEFINE_C_VALUE(short, Short, IntValue, SHORT)
+    DEFINE_C_VALUE(unsigned short, UShort, IntValue, USHORT)
     DEFINE_C_VALUE(int8_t, Int8_t, IntValue, INT8_T)
     DEFINE_C_VALUE(uint8_t, UInt8_t, IntValue, UINT8_T)
     DEFINE_C_VALUE(int16_t, Int16_t, IntValue, INT16_T)

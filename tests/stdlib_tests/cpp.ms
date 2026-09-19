@@ -101,3 +101,19 @@ cpp.cuint16_t(-1).to_moss()    // 65535
 "\n"
 cpp.cuint32_t(-1).to_moss()    // 4294967295
 "\n"
+
+cpp.cushort(65535).to_moss()                 // 65535
+"\n"
+cpp.cushort(0).to_moss()                     // 0
+"\n"
+cpp.cushort(1).to_moss()                     // 1
+"\n"
+
+cpp.cshort(32767).to_moss()       // 32767
+"\n"
+cpp.cshort(32768).to_moss()       // -32768
+"\n"
+cpp.cshort(-32769).to_moss()      // 32767
+"\n"
+cpp.cshort(65535).to_moss()       // -1
+"\n"

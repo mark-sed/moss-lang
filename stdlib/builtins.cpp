@@ -22,6 +22,8 @@ static void init_cpp_built_ins() {
     CppSpace->set_attr("culong", CULong);
     CppSpace->set_attr("cint", CInt);
     CppSpace->set_attr("cuint", CUInt);
+    CppSpace->set_attr("cshort", CShort);
+    CppSpace->set_attr("cushort", CUShort);
     CppSpace->set_attr("cint8_t", CInt8_t);
     CppSpace->set_attr("cuint8_t", CUInt8_t);
     CppSpace->set_attr("cint16_t", CInt16_t);
@@ -177,6 +179,8 @@ Value *BuiltIns::Cpp::CLong = new ClassValue("clong");
 Value *BuiltIns::Cpp::CULong = new ClassValue("culong");
 Value *BuiltIns::Cpp::CInt = new ClassValue("cint");
 Value *BuiltIns::Cpp::CUInt = new ClassValue("cuint");
+Value *BuiltIns::Cpp::CShort = new ClassValue("cshort");
+Value *BuiltIns::Cpp::CUShort = new ClassValue("cushort");
 Value *BuiltIns::Cpp::CInt8_t = new ClassValue("cint8_t");
 Value *BuiltIns::Cpp::CUInt8_t = new ClassValue("cuint8_t");
 Value *BuiltIns::Cpp::CInt16_t = new ClassValue("cint16_t");
