@@ -78,6 +78,8 @@ enum class TypeKind {
     CPP_CDOUBLE,
     CPP_CFLOAT,
     CPP_CBOOL,
+    CPP_CCHAR,
+    CPP_CUCHAR,
     CPP_CCHAR_STAR,
     CPP_FSTREAM,
     CPP_FFI_CIF
@@ -129,6 +131,8 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::CPP_CDOUBLE: return "CPP_CDOUBLE";
         case TypeKind::CPP_CFLOAT: return "CPP_CFLOAT";
         case TypeKind::CPP_CBOOL: return "CPP_CBOOL";
+        case TypeKind::CPP_CCHAR: return "CPP_CCHAR";
+        case TypeKind::CPP_CUCHAR: return "CPP_CUCHAR";
         case TypeKind::CPP_CCHAR_STAR: return "CPP_CCHAR_STAR";
         case TypeKind::CPP_FSTREAM: return "CPP_FSTREAM";
         case TypeKind::CPP_FFI_CIF: return "CPP_FFI_CIF";

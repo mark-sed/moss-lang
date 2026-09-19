@@ -33,6 +33,8 @@ static void init_cpp_built_ins() {
     CppSpace->set_attr("cint64_t", CInt64_t);
     CppSpace->set_attr("cuint64_t", CUInt64_t);
     CppSpace->set_attr("cfloat", CFloat);
+    CppSpace->set_attr("cchar", CChar);
+    CppSpace->set_attr("cuchar", CUChar);
     CppSpace->set_attr("cchar_star", CCharStar);
     CppSpace->set_attr("fstream", FStream);
     CppSpace->set_attr("ffi_cif", Ffi_cif);
@@ -192,6 +194,8 @@ Value *BuiltIns::Cpp::CUInt64_t = new ClassValue("cuint64_t");
 Value *BuiltIns::Cpp::CDouble = new ClassValue("cdouble");
 Value *BuiltIns::Cpp::CFloat = new ClassValue("cfloat");
 Value *BuiltIns::Cpp::CBool = new ClassValue("cbool");
+Value *BuiltIns::Cpp::CChar = new ClassValue("cchar");
+Value *BuiltIns::Cpp::CUChar = new ClassValue("cuchar");
 Value *BuiltIns::Cpp::CCharStar = new ClassValue("cchar_star");
 Value *BuiltIns::Cpp::FStream = new ClassValue("fstream");
 Value *BuiltIns::Cpp::Ffi_cif = new ClassValue("ffi_cif");

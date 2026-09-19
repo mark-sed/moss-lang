@@ -2098,6 +2098,50 @@ class __cbool {
 }
 
 @sealed
+@internal_bind(cpp.cchar)
+class __cchar {
+    d"""
+    Moss representation of C/C++ char type.
+    """
+
+    @internal
+    fun cchar(v:[String,Int]) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts C char into String.
+        This conversion is lossless.
+        """
+    }
+
+    @internal
+    fun to_moss_int() {}
+}
+
+@sealed
+@internal_bind(cpp.cuchar)
+class __cuchar {
+    d"""
+    Moss representation of C/C++ unsigned char type.
+    """
+
+    @internal
+    fun cuchar(v:[String,Int]) {}
+
+    @internal
+    fun to_moss() {
+        d"""
+        Converts C unsigned char into String.
+        This conversion is lossless.
+        """
+    }
+
+    @internal
+    fun to_moss_int() {}
+}
+
+@sealed
 @internal_bind(cpp.cchar_star)
 class __cchar_star {
     d"""

@@ -159,6 +159,7 @@ enum DiagID : unsigned {
     NON_NIL_RETURN_IN_CONSTR, ///< Constructor with return with a non-nil value
     CHR_NOT_IN_RANGE,       ///< function chr argument outside of specified range
     ORD_INCORRECT_LENGTH,   ///< Ord received string not character
+    CCHAR_INCORRECT_LENGTH, ///< cchar recerived string not character
     EOF_INPUT,              ///< Reached EOF
     ENABLE_CODE_OUT_ARG_SET,///< When someone sets arguments for enable code output annotation
     DISABLE_CODE_OUT_ARG_SET,///< Same as above but disabled
@@ -381,6 +382,7 @@ static const char * DIAG_MSGS[] = {
     "Constructor can contain only 'return' or 'return nil'",
     "Value '%ld' for function 'chr' not in range <0; 0x10ffff>",
     "Value ('%s') for function 'ord' has to be exactly 1 character long String",
+    "Value ('%s') for 'cchar'/'cuchar' constructor has to be exactly 1 character long String or Int",
     "End of input",
     "Annotation 'enable_code_output' does not take any arguments",
     "Annotation 'disable_code_output' does not take any arguments",

@@ -1005,6 +1005,40 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             auto c_str = const_cast<char *>(val.c_str());
             return new t_cpp::CCharStarValue(c_str);
         }},
+        {"cchar", [](Interpreter *vm, CallFrame* cf, Value*& err) -> Value *{
+            assert(cf->get_args().size() == 2);
+            auto val = cf->get_args()[0].value;
+            if (auto vali = dyn_cast<IntValue>(val)) {
+                return new t_cpp::CCharValue(vali->get_value());
+            } else {
+                assert(isa<StringValue>(val) && "v should be String or Int, got something else");
+                auto vals = mslib::get_string(val);
+                if (vals.size() != 1) {
+                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), 
+                        diags::CCHAR_INCORRECT_LENGTH, vals.c_str()));
+                    return nullptr;
+                }
+                return new t_cpp::CCharValue(vals[0]);
+            }
+            return nullptr;
+        }},
+        {"cuchar", [](Interpreter *vm, CallFrame* cf, Value*& err) -> Value *{
+            assert(cf->get_args().size() == 2);
+            auto val = cf->get_args()[0].value;
+            if (auto vali = dyn_cast<IntValue>(val)) {
+                return new t_cpp::CUCharValue(vali->get_value());
+            } else {
+                assert(isa<StringValue>(val) && "v should be String or Int, got something else");
+                auto vals = mslib::get_string(val);
+                if (vals.size() != 1) {
+                    err = create_value_error(diags::Diagnostic(*vm->get_src_file(), 
+                        diags::CCHAR_INCORRECT_LENGTH, vals.c_str()));
+                    return nullptr;
+                }
+                return new t_cpp::CUCharValue(vals[0]);
+            }
+            return nullptr;
+        }},
         {"cdouble", [](Interpreter *, CallFrame* cf, Value*&) -> Value *{
             assert(cf->get_args().size() == 2);
             return new t_cpp::CDoubleValue(mslib::get_float(cf->get_args()[0].value));
@@ -1413,7 +1447,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
             return MSFile::open(vm, args[0].value, err);
         }},
-        {"ord", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+        {"ord", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             (void)err;
             assert(cf->get_args().size() == 1);
             auto s = dyn_cast<StringValue>(cf->get_args()[0].value);
@@ -1423,6 +1457,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 err = create_value_error(
                     diags::Diagnostic(*vm->get_src_file(), 
                         diags::ORD_INCORRECT_LENGTH, sv.c_str()));
+                return nullptr;
             }
             return IntValue::get(static_cast<opcode::IntConst>(sv[0]));
         }},
@@ -1686,6 +1721,19 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             if (auto c = dyn_cast<t_cpp::CppValue>(ths)) {
                 // C++ classes are marked sealed so we can just check with isa
                 return c->to_moss();
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+        }},
+        {"to_moss_int", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            auto ths = cf->get_arg("this");
+            if (auto c = dyn_cast<t_cpp::CCharValue>(ths)) {
+                // C++ classes are marked sealed so we can just check with isa
+                return IntValue::get(c->get_value());
+            } else if (auto cu = dyn_cast<t_cpp::CUCharValue>(ths)) {
+                return IntValue::get(cu->get_value());
             } else {
                 err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, args[1].value->get_type()->get_name().c_str()));
                 return nullptr;

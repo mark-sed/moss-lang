@@ -16,19 +16,20 @@ using namespace t_cpp;
 
 union FFIResult {
     int cint;
-    int cuint;
+    unsigned int cuint;
     int8_t cint8_t;
-    int8_t cuint8_t;
+    uint8_t cuint8_t;
     int16_t cint16_t;
-    int16_t cuint16_t;
+    uint16_t cuint16_t;
     int32_t cint32_t;
-    int32_t cuint32_t;
+    uint32_t cuint32_t;
     int64_t cint64_t;
-    int64_t cuint64_t;
+    uint64_t cuint64_t;
     long clong;
     long culong;
     bool cbool;
     short cshort;
+    unsigned short cushort;
     char cchar;
     float cfloat;
     double cdouble;
@@ -162,6 +163,7 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
         {"culong",   &ffi_type_ulong},
         {"cbool",    &ffi_type_uint8},
         {"cshort",  &ffi_type_sshort},
+        {"cushort",  &ffi_type_ushort},
         {"cchar",   &ffi_type_schar},
         {"cfloat",  &ffi_type_float},
         {"cdouble", &ffi_type_double},
@@ -186,14 +188,28 @@ static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
     assert(type != BuiltIns::Cpp::CVoid && "invoked with void");
     if (type == BuiltIns::Cpp::CInt)
         return new CIntValue(result.cint);
+    if (type == BuiltIns::Cpp::CUInt)
+        return new CUIntValue(result.cuint);
+    if (type == BuiltIns::Cpp::CShort)
+        return new CShortValue(result.cshort);
+    if (type == BuiltIns::Cpp::CUShort)
+        return new CUShortValue(result.cushort);
     if (type == BuiltIns::Cpp::CInt8_t)
         return new CInt8_tValue(result.cint8_t);
+    if (type == BuiltIns::Cpp::CUInt8_t)
+        return new CUInt8_tValue(result.cuint8_t);
     if (type == BuiltIns::Cpp::CInt16_t)
         return new CInt16_tValue(result.cint16_t);
+    if (type == BuiltIns::Cpp::CUInt16_t)
+        return new CUInt16_tValue(result.cuint16_t);
     if (type == BuiltIns::Cpp::CInt32_t)
         return new CInt32_tValue(result.cint32_t);
+    if (type == BuiltIns::Cpp::CUInt32_t)
+        return new CUInt32_tValue(result.cuint32_t);
     if (type == BuiltIns::Cpp::CInt64_t)
         return new CInt64_tValue(result.cint64_t);
+    if (type == BuiltIns::Cpp::CUInt64_t)
+        return new CUInt64_tValue(result.cuint64_t);
     if (type == BuiltIns::Cpp::CBool)
         return new CBoolValue(result.cbool);
     if (type == BuiltIns::Cpp::CLong)
@@ -215,7 +231,12 @@ static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
 static Value *cpp_type_to_moss_type(Value *type) {
     std::unordered_set<Value *> int_types{BuiltIns::Cpp::CInt, BuiltIns::Cpp::CLong,
                                           BuiltIns::Cpp::CInt8_t, BuiltIns::Cpp::CInt16_t,
-                                          BuiltIns::Cpp::CInt32_t, BuiltIns::Cpp::CInt64_t};
+                                          BuiltIns::Cpp::CInt32_t, BuiltIns::Cpp::CInt64_t,
+                                          BuiltIns::Cpp::CShort,
+                                          BuiltIns::Cpp::CUInt, BuiltIns::Cpp::CULong,
+                                          BuiltIns::Cpp::CUInt8_t, BuiltIns::Cpp::CUInt16_t,
+                                          BuiltIns::Cpp::CUInt32_t, BuiltIns::Cpp::CUInt64_t,
+                                          BuiltIns::Cpp::CUShort};
     if (int_types.find(type) != int_types.end())
         return BuiltIns::Int;
     if (type == BuiltIns::Cpp::CFloat || type == BuiltIns::Cpp::CDouble)

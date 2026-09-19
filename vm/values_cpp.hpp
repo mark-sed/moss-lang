@@ -192,6 +192,74 @@ namespace t_cpp {
             return os;
         }
     };
+
+    class CCharValue : public CppValue {
+    private:
+        char value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CCHAR;
+    
+        CCharValue(char v) : CppValue(ClassType, "char", BuiltIns::Cpp::CChar),
+                                        value(v) {
+            if(BuiltIns::Cpp::CChar->get_attrs())
+                this->attrs = BuiltIns::Cpp::CChar->get_attrs()->clone();
+        }
+        ~CCharValue() {
+        }
+
+        char get_value() { return this->value; }
+
+        virtual Value *to_moss() override {
+            return StringValue::get(ustring(1, value));
+        }
+
+        virtual void *get_data_pointer() override {
+            return &value;
+        }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+
+        virtual std::ostream& debug(std::ostream& os) const override {
+            os << type->get_name() << "(" << value << ")";
+            return os;
+        }
+    };
+
+    class CUCharValue : public CppValue {
+    private:
+        unsigned char value;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_CUCHAR;
+    
+        CUCharValue(unsigned char v) : CppValue(ClassType, "unsigned char", BuiltIns::Cpp::CUChar),
+                                        value(v) {
+            if(BuiltIns::Cpp::CUChar->get_attrs())
+                this->attrs = BuiltIns::Cpp::CUChar->get_attrs()->clone();
+        }
+        ~CUCharValue() {
+        }
+
+        unsigned char get_value() { return this->value; }
+
+        virtual Value *to_moss() override {
+            return StringValue::get(ustring(1, value));
+        }
+
+        virtual void *get_data_pointer() override {
+            return &value;
+        }
+    
+        virtual Value *clone() override {
+            return this;
+        }
+
+        virtual std::ostream& debug(std::ostream& os) const override {
+            os << type->get_name() << "(" << value << ")";
+            return os;
+        }
+    };
     
     /// C++'s std::fstream as a moss value
     class FStreamValue : public CppValue {

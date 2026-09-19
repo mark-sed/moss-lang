@@ -117,3 +117,40 @@ cpp.cshort(-32769).to_moss()      // 32767
 "\n"
 cpp.cshort(65535).to_moss()       // -1
 "\n"
+
+cpp.cchar("A").to_moss()
+"\n"
+cpp.cchar(65).to_moss()
+"\n"
+cpp.cchar(42).to_moss()
+"\n"
+cpp.cchar(42).to_moss_int()
+"\n"
+cpp.cchar(127).to_moss_int()
+"\n"
+
+cpp.cuchar("A").to_moss()
+"\n"
+cpp.cuchar(65).to_moss()
+"\n"
+cpp.cuchar(42).to_moss()
+"\n"
+cpp.cuchar(42).to_moss_int()
+"\n"
+cpp.cuchar(250).to_moss_int()
+"\n"
+
+try
+    cpp.cchar("")
+catch (e:ValueError)
+    "caught\n"
+
+try
+    cpp.cchar("hello")
+catch (e:ValueError)
+    "caught\n"
+
+try
+    cpp.cuchar("42")
+catch (e:ValueError)
+    "caught\n"

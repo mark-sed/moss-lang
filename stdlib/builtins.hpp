@@ -146,6 +146,8 @@ namespace BuiltIns {
         extern Value *CUInt64_t;
         extern Value *CDouble;
         extern Value *CFloat;
+        extern Value *CChar;
+        extern Value *CUChar;
         extern Value *CCharStar;
         extern Value *CBool;
 
