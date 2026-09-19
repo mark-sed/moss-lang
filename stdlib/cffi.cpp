@@ -31,6 +31,7 @@ union FFIResult {
     short cshort;
     unsigned short cushort;
     char cchar;
+    unsigned cuchar;
     float cfloat;
     double cdouble;
     void *cvoid_star;
@@ -165,6 +166,7 @@ static ffi_type* get_ffi_type(Value *value, Interpreter *vm, Value *&err) {
         {"cshort",  &ffi_type_sshort},
         {"cushort",  &ffi_type_ushort},
         {"cchar",   &ffi_type_schar},
+        {"cuchar",   &ffi_type_uchar},
         {"cfloat",  &ffi_type_float},
         {"cdouble", &ffi_type_double},
         {"cvoid_star", &ffi_type_pointer},
@@ -222,6 +224,10 @@ static CppValue *new_cpp_value(FFIResult result, Value *type, Value *&err) {
         return new CCharStarValue((static_cast<char *>(result.cvoid_star)));
     if (type == BuiltIns::Cpp::CVoidStar)
         return new CVoidStarValue(result.cvoid_star);
+    if (type == BuiltIns::Cpp::CChar)
+        return new CCharValue(result.cchar);
+    if (type == BuiltIns::Cpp::CUChar)
+        return new CUCharValue(result.cuchar);
 
     // This erorr should not really happen and return type should be checked in cfun
     err = mslib::create_not_implemented_error("Conversion for returned type is not yet implemented in cffi\n");
