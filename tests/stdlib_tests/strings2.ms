@@ -283,3 +283,160 @@ hex(Float("-inf"))  // '-inf'
 "\n"
 hex(Float("nan"))   // 'nan'
 "\n"
+
+a = """
+    ABC
+    DEF
+    GHI
+
+
+"""
+
+a.trim_indent()
+"\n"
+
+" ".trim_indent()
+"|\n"
+
+"""    hello\n    world""".trim_indent()
+"\n"
+
+"""
+    hello
+    world
+""".trim_indent()
+"\n"
+
+"""
+        hello
+          world
+        foo
+""".trim_indent()
+"\n"
+
+"""    hello2
+      world
+    foo""".trim_indent()
+"\n"
+
+"""hello
+  world
+    foo""".trim_indent()
+"\n"
+
+"""
+    hello
+
+    world
+""".trim_indent()
+"\n"
+
+"""
+        hello
+            world
+
+""".trim_indent()
+"\n"
+
+"""hello""".trim_indent()
+"\n"
+
+"""
+""".trim_indent()
+"\n"
+
+"""    """.trim_indent()
+"\n"
+
+"""
+    foo
+    bar
+""".trim_indent()
+"\n"
+
+"""
+        foo
+            bar
+        baz
+""".trim_indent()
+"\n"
+
+"""|hello
+|world""".trim_margin("|")
+"\n"
+
+"""
+    |hello
+    |world
+""".trim_margin("|")
+"\n"
+
+"""
+    |hello2
+      |world
+    |foo
+""".trim_margin("|")
+"\n"
+
+"""
+        |hello
+            |world
+        |foo
+""".trim_margin("|")
+"\n"
+
+"""
+    |hello
+
+    |world
+""".trim_margin("|")
+"\n"
+
+"""
+    |hello
+    |
+    |world
+""".trim_margin("|")
+"\n"
+
+"""
+    |hello
+      |world
+        |foo
+""".trim_margin("|")
+"\n"
+
+"""
+    |hello
+    |  indented
+    |world
+""".trim_margin("|")
+"\n"
+
+"""|hello|world""".trim_margin("|")
+"\n"
+
+"""
+    >hello
+    >world
+""".trim_margin(">")
+"\n"
+
+"""
+    ::hello
+    ::world
+""".trim_margin("::")
+"\n"
+
+"""
+    -> hello
+    -> world
+""".trim_margin("->")
+"\n"
+
+"""
+    |hello
+      |world
+    |foo
+""".trim_margin("|")
+"\n"

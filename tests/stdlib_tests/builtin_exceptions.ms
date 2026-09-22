@@ -155,3 +155,13 @@ try {
 } catch (e:OSError) {
     "Caught: "++e++"\n"
 }
+
+try
+    TODO("Do some stuff here")
+catch (e:NotImplementedError)
+    e.msg
+
+try
+    TODO()
+catch (e:NotImplementedError)
+    e.msg

@@ -1445,7 +1445,9 @@ Caught: SyntaxError:
 Caught: IndexError: 
 Caught: KeyError: 
 Caught: DivisionByZeroError: 
-Caught: FileNotFoundError: \n""", "")
+Caught: FileNotFoundError: 
+An operation is not implemented: Do some stuff here.
+An operation is not implemented.\n""", "")
 }
 
 fun test_lib_ranges(name) {
@@ -1682,7 +1684,13 @@ hello\nhello programmer\nhello\nxyz\nhello\nx\nhello\nhello\nhello\nhello\nxyz\n
 ["mix\\n", "of\\r", "various\\r\\n", "lines"]
 []
 0x0p+0\n0x1p+0\n0x1p+1\n0x1p-1\n0x1.999999999999ap-4\n0x1p-2\n0x1.8p-1\n-0x1p+0
--0x1p-1\n-0x1.921fb53c8d4f1p+1\ninf\n-inf\nnan\n""", "")
+-0x1p-1\n-0x1.921fb53c8d4f1p+1\ninf\n-inf\nnan
+ABC\nDEF\nGHI\n|\nhello\nworld\nhello\nworld\nhello\n  world\nfoo\nhello2\n  world
+foo\nhello\n  world\n    foo\nhello\n\nworld\nhello\n    world\nhello\n\n\nfoo
+bar\nfoo\n    bar\nbaz
+hello\nworld\nhello\nworld\nhello2\nworld\nfoo\nhello\nworld\nfoo\nhello\n\nworld
+hello\n\nworld\nhello\nworld\nfoo\nhello\n  indented\nworld\nhello|world\nhello
+world\nhello\nworld\n hello\n world\nhello\nworld\nfoo\n""", "")
 }
 
 fun test_lib_string_is(name) {

@@ -483,6 +483,22 @@ class __String {
     }
 
     @internal
+    fun trim_indent() {
+        d"""
+        Removes a common minimal indent across all lines and removes the first
+        and last lines if they are blank.
+        """
+    }
+
+    @internal
+    fun trim_margin(prefix:String) {
+        d"""
+        Trims leading whitespace characters followed by `prefix` from every line
+        and removes first and last lines if they are blank.
+        """
+    }
+
+    @internal
     fun split(sep:[String,NilType]=nil, max_split:Int=-1) {
         d"""
         Returns a list of strings, using `sep` as the delimiter string.
@@ -2417,6 +2433,13 @@ fun html_gen(txts) {
 </html>
 """, "html")
 }
+}
+
+fun TODO(what:String="") {
+    d"""
+    Always throws NotImplementedError with "An operation is not implemented".
+    """
+    raise NotImplementedError(f"""An operation is not implemented{what.empty() ? "" : ": " ++ what}.\n""")
 }
 
 /// Exceptions

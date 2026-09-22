@@ -1705,6 +1705,30 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"tan", [](Interpreter*, CallFrame* cf, Value*&) {
             return FloatValue::get(std::tan(cf->get_args()[0].value->as_float()));
         }},
+        {"trim_indent", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 1);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            return String::trim_indent(sv);
+        }},
+        {"trim_margin", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 2);
+            auto arg = cf->get_arg("this");
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            return String::trim_margin(sv, cf->get_arg("prefix"));
+        }},
         {"to_bytes", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             auto ths = cf->get_arg("this");

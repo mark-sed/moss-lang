@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cwctype>
+#include <sstream>
 
 using namespace moss;
 using namespace mslib;
@@ -418,6 +419,93 @@ Value *String::swapcase(StringValue *ths) {
     auto rv = StringValue::get(utils::wstr2str(text));
     reset_locale(saved_locale);
     return rv;
+}
+
+static bool is_blank(const ustring& s) {
+    return std::all_of(s.begin(), s.end(), [](unsigned char c) {
+        return c == ' ' || c == '\t';
+    });
+}
+
+Value *String::trim_indent(StringValue *ths) {
+    auto strv = ths->get_value();
+    auto lines = splitlines(strv);
+
+    while (!lines.empty() && is_blank(lines.front()))
+        lines.erase(lines.begin());
+
+    while (!lines.empty() && is_blank(lines.back()))
+        lines.pop_back();
+
+    if (lines.empty())
+        return StringValue::get("");
+
+    // Find minimum indentation of non-blank lines.
+    size_t min_indent = ustring::npos;
+
+    for (const auto& l : lines) {
+        if (is_blank(l))
+            continue;
+
+        size_t indent = 0;
+        while (indent < l.size() &&
+               (l[indent] == ' ' || l[indent] == '\t'))
+            ++indent;
+
+        min_indent = std::min(min_indent, indent);
+    }
+
+    // Remove the common indentation.
+    ustring result;
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+        const auto& l = lines[i];
+
+        if (is_blank(l)) {
+            result += '\n';
+        } else {
+            result += l.substr(std::min(min_indent, l.size()));
+            if (i + 1 < lines.size())
+                result += '\n';
+        }
+    }
+
+    return StringValue::get(result);
+}
+
+Value *String::trim_margin(StringValue *ths, Value *prefix) {
+    auto margin_prefix = mslib::get_string(prefix);
+    auto strv = ths->get_value();
+    auto lines = splitlines(strv);
+
+    while (!lines.empty() && is_blank(lines.front()))
+        lines.erase(lines.begin());
+
+    while (!lines.empty() && is_blank(lines.back()))
+        lines.pop_back();
+
+    std::string result;
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+        const auto& line = lines[i];
+
+        // Find first non-whitespace character.
+        size_t pos = 0;
+        while (pos < line.size() &&
+               (line[pos] == ' ' || line[pos] == '\t'))
+            ++pos;
+
+        // Remove margin prefix if present.
+        if (line.compare(pos, margin_prefix.size(), margin_prefix) == 0)
+            pos += margin_prefix.size();
+
+        result += line.substr(pos);
+
+        if (i + 1 < lines.size())
+            result += '\n';
+    }
+
+    return StringValue::get(result);
 }
 
 Value *String::index(Value *ths, Value *value) {

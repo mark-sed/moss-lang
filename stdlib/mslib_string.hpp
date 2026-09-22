@@ -36,6 +36,8 @@ Value *index(Value *ths, Value *value);
 Value *rindex(Value *ths, Value *value);
 Value *isfun(Value *ths, std::function<bool(std::wint_t)> fn);
 Value *swapcase(StringValue *ths);
+Value *trim_indent(StringValue *ths);
+Value *trim_margin(StringValue *ths, Value *prefix);
 Value *count(Value *ths, Value *sub);
 //Value *join(Value * ths, Value *iterable);
 
