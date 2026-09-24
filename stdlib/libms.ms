@@ -230,9 +230,18 @@ class __String {
 
     @internal
     fun isalnum() {
-        d"""Returns true if all the characters in the String are alphabetic
+        d"""
+        Returns true if all the characters in the String are alphabetic
         or numeric.
         This function works with UNICODE in current locale.
+        """
+    }
+
+    @internal
+    fun isascii() {
+        d"""
+        Returns true if all characters in the String are ASCII (their value is
+        less than 128). True will be returned for an empty string.
         """
     }
 

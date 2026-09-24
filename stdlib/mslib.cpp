@@ -1296,6 +1296,21 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"isalnum", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswalnum), err);
         }},
+        {"isascii", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 1);
+            auto arg = cf->get_args()[0].value;
+            auto sv = get_subtype_value<StringValue>(arg, BuiltIns::String, vm, err);
+            if (err)
+                return nullptr;
+            if (!sv) {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, arg->get_type()->get_name().c_str()));
+                return nullptr;
+            }
+            auto s = sv->get_value();
+            auto is_ascii = std::all_of(s.begin(), s.end(),
+                       [](unsigned char c) { return c < 128; });
+            return BoolValue::get(is_ascii);
+        }},
         {"isdigit", [](Interpreter *vm, CallFrame *cf, Value*& err) -> Value* {
             return String_isfun(vm, cf, static_cast<int(*)(std::wint_t)>(std::iswdigit), err);
         }},

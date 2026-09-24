@@ -61,6 +61,13 @@ class __PythonObject {
     }
 
     @internal
+    fun get_py_type() {
+        d"""
+        Returns Python type of this object as a String
+        """
+    }
+
+    @internal
     fun call(... args) {
         d"""
         Function call to this object with passed in arguments.

@@ -29,6 +29,11 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& python::get_regi
                 return nullptr;
             return python::to_moss(vm, cf, rval, err);
         }},
+        {"get_py_type", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            return python::get_py_type(vm, cf->get_arg("this"), err);
+        }},
         {"get", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto args = cf->get_args();
             assert(args.size() == 2);
@@ -365,6 +370,14 @@ Value *python::PythonObject(Interpreter *vm, CallFrame *cf, Value *, Value *ptr,
         python::populate(vm, cf, nobj, err);
     }
     return nobj;
+}
+
+Value *python::get_py_type(Interpreter *vm, Value *ths, Value *&err) {
+    auto pyobj = get_PyObject(vm, ths, err);
+    if (err)
+        return nullptr;
+    std::string type_name = Py_TYPE(pyobj)->tp_name;
+    return StringValue::get(type_name);
 }
 
 static ustring get_py_exception(PyObject **exc_out) {

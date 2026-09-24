@@ -39,6 +39,8 @@ Value *PyObj_call(Interpreter *vm, CallFrame *cf, Value *&err);
 
 Value *to_moss(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err);
 
+Value *get_py_type(Interpreter *vm, Value *ths, Value *&err);
+
 Value *populate(Interpreter *vm, CallFrame *cf, Value *ths, Value *&err);
 
 }

@@ -32,3 +32,10 @@ builtins.str(builtins.set([1,2,3,4,5])).to_moss()
 "\n"
 builtins.set([11,22,33,22,11]).to_moss()
 "\n"
+
+PythonObject(24).get_py_type()
+"\n"
+PythonObject(true).get_py_type()
+"\n"
+to_py(2.0).get_py_type()
+"\n"

@@ -95,3 +95,14 @@
 "\n"
 
 "-----\n"
+
+"abcsd2234AA+*".isascii()
+"\n"
+"".isascii()
+"\n"
+"cacti🌵".isascii()
+"\n"
+"býžžýa".isascii()
+"\n"
+
+"-----\n"
