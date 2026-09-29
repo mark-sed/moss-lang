@@ -2822,7 +2822,7 @@ void FinallyReturn::exec(Interpreter *vm) {
     auto addr = dyn_cast<IntValue>(addrv);
     if (addr && addr->get_value() > 0) {
         // Set bci only when addr was set (not nil)
-        vm->set_bci(addr->get_value());
+        vm->set_bci_immediate(addr->get_value());
     }
     if (vm->runtime_finally_cntr) {
         vm->set_stop(true);

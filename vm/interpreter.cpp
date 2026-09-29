@@ -505,7 +505,7 @@ void Interpreter::pop_frame() {
 void Interpreter::cross_module_call(FunValue *fun, CallFrame *cf) {
     // No frame push as it will be done in specialized run
     call_frames.push_back(cf);
-    set_bci(fun->get_body_addr());
+    set_bci_immediate(fun->get_body_addr());
     auto frm = new MemoryPool(this);
     frm->set_pool_owner(fun);
     try {
@@ -525,7 +525,7 @@ void Interpreter::runtime_call(FunValue *fun) {
 
     // No frame push as it will be done in specialized run
     get_call_frame()->set_function(fun);
-    set_bci(fun->get_body_addr());
+    set_bci_immediate(fun->get_body_addr());
     auto frm = new MemoryPool(this);
     frm->set_pool_owner(fun);
     try {
@@ -776,7 +776,7 @@ void Interpreter::run() {
 
     while(bci < code->size()) {
         opcode::OpCode *opc = (*code)[bci];
-        //outs << bci << " " << *opc << "\n";
+        //outs << bci << " " << *opc << ": " << get_src_file()->get_module_name() << "\n";
         try {
             opc->exec(this);
             // If we get to execute opcode and unwound stack is not empty, then

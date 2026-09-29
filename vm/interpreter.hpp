@@ -451,6 +451,9 @@ public:
         this->bci = v;
         this->bci_modified = true; 
     }
+    void set_bci_immediate(opcode::Address v) {
+        this->bci = v;
+    }
 
     void set_vms_module(ModuleValue *mod) {
         this->vms_module = mod;

@@ -107,7 +107,7 @@ int Repl::run() {
                         }
                     }
                     interpreter->restore_to_global_frame();
-                    interpreter->set_bci(interpreter->get_code()->get_code().size());
+                    interpreter->set_bci_immediate(interpreter->get_code()->get_code().size());
                 }
             }
         }
