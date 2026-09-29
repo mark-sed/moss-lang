@@ -230,7 +230,17 @@ int main(int argc, const char *argv[]) {
             } else {
                 // Print call stack
                 interpreter->report_call_stack(errs);
-                errs << opcode::to_string(interpreter, v);
+                try {
+                    errs << opcode::to_string(interpreter, v);
+                } catch (Value *exc) {
+                    errs << "\nException conversion to String failed:\n\n";
+                    interpreter->report_call_stack(errs);
+                    try {
+                        errs << opcode::to_string(interpreter, exc);
+                    } catch (Value *exc2) {
+                        errs << exc2->get_type()->get_name() << ": <String() for exception raised in String() failed>\n";
+                    }
+                }
                 interpreter->set_exit_code(1);
             }
         }

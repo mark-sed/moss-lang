@@ -1272,6 +1272,11 @@ fun test_exception_external_raise_crash(name) {
 finally 1\ncaught 2\nfinally 2\nend\n""", rx_err="Stacktrace:\n  top-level scope at.*\nSomeVal 22\n")
 }
 
+fun test_exception_raise_in_string(name) {
+    ~expect_fail("exception_tests/exc_in_str.ms", name, "", rx_err=r"Stacktrace:\n(?:  .*\n)+\nException conversion to String failed:\n\nStacktrace:\n(?:  .*\n)+NameError: error: .*: Name 'a' is not defined\.")
+    ~expect_fail("exception_tests/double_exc_in_str.ms", name, "", rx_err=r"Stacktrace:\n(?:  .*\n)+\nException conversion to String failed:\n\nStacktrace:\n(?:  .*\n)+NameError: <String\(\) for exception raised in String\(\) failed>")
+}
+
 fun test_fibonacci(name) {
     ~expect_pass("fibonacci.ms", name, """1\n55\n233\n2584\n""", "")
 }
@@ -2618,6 +2623,7 @@ fun run_all_tests() {
     ~run_test("exception_nested_finally")
     ~run_test("exception_general_catch_finally")
     ~run_test("exception_external_raise_crash")
+    ~run_test("exception_raise_in_string")
 
     ~run_test("fibonacci")
     ~run_test("factorial")
