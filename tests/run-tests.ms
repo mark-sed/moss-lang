@@ -2042,6 +2042,11 @@ Hi, Dana!
     ~rm("./py_calls_python.py", false)
 }
 
+fun test_lib_python_exceptions(name) {
+    ~expect_pass("stdlib_tests/python_tests/py_exceptions.ms", name, """Ran!
+'AttributeError' object has no attribute 'msg'\n""", "")
+}
+
 fun test_lib_math_generals(name) {
     ~expect_pass("stdlib_tests/math_tests/generals.ms", name, """-1.000000\n5.000000
 inf\nnan
@@ -2689,6 +2694,7 @@ fun run_all_tests() {
     ~run_test("lib_python_attrs_calls")
     ~run_test("lib_python_type_conversions")
     ~run_test("lib_python_calls")
+    ~run_test("lib_python_exceptions")
 
     // math
     ~run_test("lib_math_generals")

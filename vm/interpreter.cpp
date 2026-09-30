@@ -548,6 +548,7 @@ void Interpreter::runtime_finally_jump(opcode::Address jmp_bci, opcode::Address 
     auto pre_stop = this->stop;
     
     this->bci = jmp_bci + offset;
+    this->bci_modified = false; // Reset modified because we changed BCI
     LOGMAX("Runtime finally jump to " << this->bci);
     this->runtime_finally_cntr += 1;
     run();
