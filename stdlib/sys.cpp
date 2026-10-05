@@ -1,6 +1,7 @@
 #include "sys.hpp"
 #include "moss.hpp"
 #include "source.hpp"
+#include "values_cpp.hpp"
 #include <cstdlib>
 #include <utility>
 
@@ -228,4 +229,20 @@ void sys::init_constants(Interpreter *vm) {
     version_info_space->set_attr("build_type", StringValue::get("release"));
 #endif
     // sys.version_info
+
+    // sys.stdout
+    auto stdout_reg = mslib::get_global_register_of(vm, "stdout");
+    auto stdout_file = new ObjectValue(dyn_cast<ClassValue>(BuiltIns::File));
+    stdout_file->set_attr("path", StringValue::get(""));
+    stdout_file->set_attr("mode", StringValue::get("w"));
+    stdout_file->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::OStreamValue(&outs, nullptr));
+    vm->store(stdout_reg, stdout_file);
+
+    // sys.stdout
+    auto stderr_reg = mslib::get_global_register_of(vm, "stderr");
+    auto stderr_file = new ObjectValue(dyn_cast<ClassValue>(BuiltIns::File));
+    stderr_file->set_attr("path", StringValue::get(""));
+    stderr_file->set_attr("mode", StringValue::get("w"));
+    stderr_file->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::OStreamValue(&errs, nullptr));
+    vm->store(stderr_reg, stderr_file);
 }

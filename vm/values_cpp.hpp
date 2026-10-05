@@ -282,6 +282,34 @@ namespace t_cpp {
         }
     };
 
+    /// C++'s std::ostream as a moss value
+    class OStreamValue : public CppValue {
+    private:
+        std::ostream *os;
+        std::fstream *fs;
+    public:
+        static const TypeKind ClassType = TypeKind::CPP_OSTREAM;
+    
+        OStreamValue(std::ostream *os, std::fstream *fs) 
+            : CppValue(ClassType, "std::ostream", BuiltIns::Cpp::OStream), os(os), fs(fs) {}
+        ~OStreamValue() {
+            // Dont delete stdout stder
+            if (os != &errs && os != &outs) {
+                delete os;
+                assert(fs);
+                delete fs;
+            }
+        }
+
+        std::ostream *get_os() { return this->os; }
+        std::fstream *get_fs() { return this->fs; }
+    
+        virtual Value *clone() override {
+            // TODO: Maybe copy the value
+            return new OStreamValue(os, fs);
+        }
+    };
+
     /// C++'s std::regex as a moss value
     class RegexValue : public CppValue {
     private:

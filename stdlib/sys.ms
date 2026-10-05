@@ -4,6 +4,8 @@ the system this interpreter is running on.
 """
 
 version="" //< Moss version (this value will be set dynamically).
+stdout = nil
+stderr = nil
 
 space version_info {
     major=0

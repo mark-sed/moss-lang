@@ -152,6 +152,7 @@ namespace BuiltIns {
         extern Value *CBool;
 
         extern Value *FStream;
+        extern Value *OStream;
         extern Value *Ffi_cif;
         extern Value *Regex;
     }

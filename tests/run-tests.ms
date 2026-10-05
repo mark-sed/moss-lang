@@ -1765,7 +1765,7 @@ fun test_lib_file(name) {
     DATA_FILE=".data_file_read.txt"
     ~with_open(DATA_FILE, fun(f) = f.write("Czechia\nSlovakia\n\nFrance\nEngland\nGermany\nItaly"), "w")
 
-    ~expect_pass("stdlib_tests/file.ms", name, """caught\ncaught\n<C++ value of type std::fstream>
+    ~expect_pass("stdlib_tests/file.ms", name, """caught\ncaught\ncaught\n<C++ value of type std::fstream>
 [\"Czechia\", \"Slovakia\", \"\", \"France\", \"England\", \"Germany\", \"Italy\"]
 written line
 Lorem Ipsum

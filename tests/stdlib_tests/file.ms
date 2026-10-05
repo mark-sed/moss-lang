@@ -13,6 +13,11 @@ try {
 }
 
 f = open(".data_file_read.txt", "r")
+try {
+    f.write("dsds")
+} catch (e:ValueError) {
+    "caught\n"
+}
 f.__fstream
 "\n"
 f.readlines()

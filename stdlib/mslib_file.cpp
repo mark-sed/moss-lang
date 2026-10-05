@@ -53,16 +53,24 @@ Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
         err = create_file_not_found_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_OPEN_FILE, path->as_string().c_str()));
         return BuiltIns::Nil;
     }
-    ths->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::FStreamValue(fs));
+
+    if (ios_mode & std::ios::in) {
+        ths->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::FStreamValue(fs));
+    } else if (ios_mode & std::ios::out) {
+        ths->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::OStreamValue(new std::ostream(fs->rdbuf()), fs));
+    }
     return BuiltIns::Nil;
 }
 
 Value *MSFile::close(Interpreter *vm, Value *ths, Value *&err) {
     auto fstrm_v = mslib::get_attr(ths, known_names::FILE_FSTREAM_ATT, vm, err);
-    auto fstrm = dyn_cast<t_cpp::FStreamValue>(fstrm_v);
     // When file is not open don't close it, just exit
-    if (fstrm) {
+    if (auto fstrm = dyn_cast<t_cpp::FStreamValue>(fstrm_v)) {
         fstrm->get_fs()->close();
+        ths->set_attr(known_names::FILE_FSTREAM_ATT, BuiltIns::Nil);
+    } else if (auto ostrm = dyn_cast<t_cpp::OStreamValue>(fstrm_v)) {
+        if (ostrm->get_fs())
+            ostrm->get_fs()->close();
         ths->set_attr(known_names::FILE_FSTREAM_ATT, BuiltIns::Nil);
     }
     return BuiltIns::Nil;
@@ -70,34 +78,27 @@ Value *MSFile::close(Interpreter *vm, Value *ths, Value *&err) {
 
 Value *MSFile::seek(Interpreter *vm, Value *ths, Value *pos, Value *&err) {
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
+    auto posv = mslib::get_int(pos);
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
-    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
-    if (!fsfs) {
+    if (err)
+        return nullptr;
+    if (auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv)) {
+        std::fstream *fstrm = fsfs->get_fs();
+        assert(fstrm && "ptr in fs is nullptr");
+        fstrm->seekg(posv);
+        if (fstrm->fail()) {
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
+        }
+    } else if (auto osfs = dyn_cast<t_cpp::OStreamValue>(fsv)) {
+        std::ostream *os = osfs->get_os();
+        assert(os);
+        os->seekp(posv);
+        if (os->fail()) {
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
+        }
+    } else {
         err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
-    }
-    std::fstream *fstrm = fsfs->get_fs();
-    assert(fstrm && "ptr in fs is nullptr");
-    auto posv = mslib::get_int(pos);
-    
-    auto modev = ths->get_attr("mode", vm);
-    std::ios_base::openmode ios_mode;
-    auto succ = str_to_ios_mode(modev->as_string(), ios_mode);
-    (void) succ;
-    assert(succ && "Mode changed?");
-
-    if (ios_mode & std::ios::in) {
-        // readable
-        fstrm->seekg(posv);
-    } else if (ios_mode & std::ios::out) {
-        // writable
-        fstrm->seekp(posv);
-    } else {
-        assert(false && "Not in nor out??");
-    }
-
-    if (fstrm->fail()) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
     }
     return nullptr;
 }
@@ -105,31 +106,26 @@ Value *MSFile::seek(Interpreter *vm, Value *ths, Value *pos, Value *&err) {
 Value *MSFile::seek_offset(Interpreter *vm, Value *ths, Value *offset, Value *&err) {
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
-    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
-    if (!fsfs) {
+    if (err)
+        return nullptr;
+    auto offv = mslib::get_int(offset);
+    if (auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv)) {
+        std::fstream *fs = fsfs->get_fs();
+        assert(fs);
+        fs->seekg(offv, std::ios::cur);
+        if (fs->fail()) {
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
+        }
+    } else if (auto osfs = dyn_cast<t_cpp::OStreamValue>(fsv)) {
+        std::ostream *os = osfs->get_os();
+        assert(os);
+        os->seekp(offv, std::ios::cur);
+        if (os->fail()) {
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
+        }
+    } else {
         err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
-    }
-    std::fstream *fstrm = fsfs->get_fs();
-    assert(fstrm && "ptr in fs is nullptr");
-    auto offv = mslib::get_int(offset);
-    
-    auto modev = ths->get_attr("mode", vm);
-    std::ios_base::openmode ios_mode;
-    auto succ = str_to_ios_mode(modev->as_string(), ios_mode);
-    (void) succ;
-    assert(succ && "Mode changed?");
-
-    if (ios_mode & std::ios::in) {
-        // readable
-        fstrm->seekg(offv, std::ios::cur);
-    } else if (ios_mode & std::ios::out) {
-        // writable
-        fstrm->seekp(offv, std::ios::cur);
-    }
-    
-    if (fstrm->fail()) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::SEEK_FAILED));
     }
     return nullptr;
 }
@@ -137,9 +133,14 @@ Value *MSFile::seek_offset(Interpreter *vm, Value *ths, Value *offset, Value *&e
 Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    if (err)
+        return nullptr;
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     if (!fsfs) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        if (isa<t_cpp::OStreamValue>(fsv))
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::READ_ON_WRITE_FILE));
+        else
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
     }
     auto lines = new ListValue();
@@ -155,16 +156,21 @@ Value *MSFile::readlines(Interpreter *vm, Value *ths, Value *&err) {
 Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
-    auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+    if (err)
+        return nullptr;
+    auto fsfs = dyn_cast<t_cpp::OStreamValue>(fsv);
     if (!fsfs) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        if (isa<t_cpp::FStreamValue>(fsv))
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::WRITE_ON_READ_FILE));
+        else
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
     }
     bool is_binary = is_mode_binary(vm, ths, err);
     if (err)
         return nullptr;
     if (!is_binary)
-        *(fsfs->get_fs()) << opcode::to_string(vm, content);
+        *(fsfs->get_os()) << opcode::to_string(vm, content);
     else {
         if (!opcode::is_type_eq_or_subtype(content->get_type(), BuiltIns::Bytes)) {
             err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::EXPECTED_BYTES_IN_WRITE, content->get_type()->get_name().c_str()));
@@ -181,7 +187,7 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
             assert(bytes && "Not bytes in extended bytes .value");
         }
 
-        fsfs->get_fs()->write(reinterpret_cast<const char*>(bytes->get_value().data()),
+        fsfs->get_os()->write(reinterpret_cast<const char*>(bytes->get_value().data()),
            static_cast<std::streamsize>(bytes->get_value().size()));
     }
     return BuiltIns::Nil;
@@ -194,7 +200,10 @@ Value *MSFile::read(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
         return nullptr;
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     if (!fsfs) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        if (isa<t_cpp::OStreamValue>(fsv))
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::READ_ON_WRITE_FILE));
+        else
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
     }
     auto file = fsfs->get_fs();
@@ -236,9 +245,14 @@ Value *MSFile::read(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
 Value *MSFile::readln(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
     auto size = get_int(sizev);
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    if (err)
+        return nullptr;
     auto fsfs = dyn_cast<t_cpp::FStreamValue>(fsv);
     if (!fsfs) {
-        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        if (isa<t_cpp::OStreamValue>(fsv))
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::READ_ON_WRITE_FILE));
+        else
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
     }
     auto file = fsfs->get_fs();

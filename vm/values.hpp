@@ -82,6 +82,7 @@ enum class TypeKind {
     CPP_CUCHAR,
     CPP_CCHAR_STAR,
     CPP_FSTREAM,
+    CPP_OSTREAM,
     CPP_FFI_CIF
 };
 
@@ -135,6 +136,7 @@ inline ustring TypeKind2String(TypeKind kind) {
         case TypeKind::CPP_CUCHAR: return "CPP_CUCHAR";
         case TypeKind::CPP_CCHAR_STAR: return "CPP_CCHAR_STAR";
         case TypeKind::CPP_FSTREAM: return "CPP_FSTREAM";
+        case TypeKind::CPP_OSTREAM: return "CPP_OSTREAM";
         case TypeKind::CPP_FFI_CIF: return "CPP_FFI_CIF";
     }
     assert(false && "Type kind in to string conversion");
