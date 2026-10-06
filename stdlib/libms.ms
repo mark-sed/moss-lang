@@ -1134,7 +1134,7 @@ fun vardump(value) {
 }
 
 @internal
-fun print(... msgs, end="\n", separator=" ") {
+fun print(... msgs, end="\n", separator=" ", file:[File,NilType]=nil, flush:Bool=false) {
     d"""
     Outputs `msgs` values separated by `separator` and ended with `end`.
     Print is not outputting, it is not affected by formatters, generators nor

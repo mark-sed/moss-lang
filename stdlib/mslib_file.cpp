@@ -38,6 +38,16 @@ static bool is_mode_binary(Interpreter *vm, Value *ths, Value *&err) {
     return mode_s.length() > 0 && mode_s.back() == 'b';
 }
 
+bool MSFile::is_mode_read_write(Interpreter *vm, Value *ths, Value *&err) {
+    auto mode = mslib::get_attr(ths, "mode", vm, err);
+    std::ios_base::openmode ios_mode;
+    if (!str_to_ios_mode(mode->as_string(), ios_mode)) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INVALID_FOPEN_MODE, mode->as_string().c_str()));
+        return false;
+    }
+    return (ios_mode & std::ios::in) && (ios_mode & std::ios::out);
+}
+
 Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
     auto path = mslib::get_attr(ths, "path", vm, err);
     auto mode = mslib::get_attr(ths, "mode", vm, err);
@@ -158,19 +168,25 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
     if (err)
         return nullptr;
-    auto fsfs = dyn_cast<t_cpp::OStreamValue>(fsv);
-    if (!fsfs) {
+    std::ostream *fstr = nullptr;
+    if (auto fsfs = dyn_cast<t_cpp::OStreamValue>(fsv)) {
+        fstr = fsfs->get_os();
+    } else if (is_mode_read_write(vm, ths, err)) {
+        auto osfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+        fstr = osfs->get_fs();
+    } else {
         if (isa<t_cpp::FStreamValue>(fsv))
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::WRITE_ON_READ_FILE));
         else
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
         return BuiltIns::Nil;
     }
+    assert(fstr && "fstream is nullptr");
     bool is_binary = is_mode_binary(vm, ths, err);
     if (err)
         return nullptr;
     if (!is_binary)
-        *(fsfs->get_os()) << opcode::to_string(vm, content);
+        *(fstr) << opcode::to_string(vm, content);
     else {
         if (!opcode::is_type_eq_or_subtype(content->get_type(), BuiltIns::Bytes)) {
             err = create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::EXPECTED_BYTES_IN_WRITE, content->get_type()->get_name().c_str()));
@@ -187,7 +203,7 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
             assert(bytes && "Not bytes in extended bytes .value");
         }
 
-        fsfs->get_os()->write(reinterpret_cast<const char*>(bytes->get_value().data()),
+        fstr->write(reinterpret_cast<const char*>(bytes->get_value().data()),
            static_cast<std::streamsize>(bytes->get_value().size()));
     }
     return BuiltIns::Nil;

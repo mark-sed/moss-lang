@@ -25,6 +25,8 @@ namespace mslib {
 /// because of C++'s File class.
 namespace MSFile {
 
+bool is_mode_read_write(Interpreter *vm, Value *ths, Value *&err);
+
 Value *open(Interpreter *vm, Value *ths, Value *&err);
 
 Value *close(Interpreter *vm, Value *ths, Value *&err);

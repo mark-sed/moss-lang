@@ -185,21 +185,41 @@ Value *vardump(Interpreter *vm, Value *v) {
     return StringValue::get(ss.str());
 }
 
-Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator) {
-    (void)vm;
+Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator, Value *file, Value *flush, Value *&err) {
     auto msgs_list = dyn_cast<ListValue>(msgs);
+    std::ostream *outstr = &outs;
+    if (!isa<NilValue>(file)) {
+        auto osv = mslib::get_attr(file, known_names::FILE_FSTREAM_ATT, vm, err);
+        if (err)
+            return nullptr;
+        if (auto fsfs = dyn_cast<t_cpp::OStreamValue>(osv)) {
+            outstr = fsfs->get_os();
+        } else if (mslib::MSFile::is_mode_read_write(vm, file, err)) {
+            auto osfs = dyn_cast<t_cpp::FStreamValue>(osv);
+            outstr = osfs->get_fs();
+        } else {
+            if (isa<t_cpp::FStreamValue>(osv))
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::WRITE_ON_READ_FILE));
+            else
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+            return nullptr;
+        }
+    }
     assert(msgs_list && "msgs is not a vararg?");
     bool first = true;
     for (auto v : msgs_list->get_vals()) {
         if (first) {
-            outs << opcode::to_string(vm, v);
+            (*outstr) << opcode::to_string(vm, v);
             first = false;
         }
         else {
-            outs << opcode::to_string(vm, separator) << opcode::to_string(vm, v);
+            (*outstr) << opcode::to_string(vm, separator) << opcode::to_string(vm, v);
         }
     }
-    outs << opcode::to_string(vm, end);
+    (*outstr) << opcode::to_string(vm, end);
+    auto flush_v = mslib::get_bool(flush);
+    if (flush_v)
+        outstr->flush();
     return BuiltIns::Nil;
 }
 
@@ -1489,9 +1509,8 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             }
         }},
         {"print", [](Interpreter* vm, CallFrame* cf, Value*& err) {
-            (void)err;
-            assert(cf->get_args().size() == 3);
-            return print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"));
+            assert(cf->get_args().size() == 5);
+            return print(vm, cf->get_arg("msgs"), cf->get_arg("end"), cf->get_arg("separator"), cf->get_arg("file"), cf->get_arg("flush"), err);
         }},
         {"rand_float", [](Interpreter* vm, CallFrame* cf, Value *&err) {
             assert(cf->get_args().size() == 2);
