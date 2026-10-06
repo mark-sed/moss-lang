@@ -21,7 +21,14 @@ fun fib(n) {
     until you are born. And then you spend your last 9 months floating in
     luxurious spa-like conditions with central heating and room service on tap,
     larger quarters every day and then Voila! You finish off as an or-asm!
-    """]
+    """,
+    """
+    There's an old joke - um… two elderly women are at a Catskill mountain resort,
+    and one of 'em says, 'Boy, the food at this place is really terrible.' The other
+    one says, 'Yeah, I know; and such small portions.' Well, that's essentially how
+    I feel about life.
+    """,
+    "You can live to be a hundred if you give up all the things that make you want to live to be a hundred."]
     if(n < 2) return n
     else return fib(n-1) + fib(n-2)
 }
