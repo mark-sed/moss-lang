@@ -1406,7 +1406,11 @@ fun foo [\n""", "")
 }
 
 fun test_lib_print(name) {
-    ~expect_pass("stdlib_tests/print.ms", name, """1 2 3 4\nhi-there.\n\ntrue\n1,2,3!\n""", "")
+    out_file = f"{::TEST_DIR}/__print_test.txt"
+    ~expect_pass("stdlib_tests/print.ms", name, """1 2 3 4\nhi-there.\n\ntrue\n1,2,3!
+Hello moss out!\nPrint to a file\nPrint to a file\nAnother print\n""",
+                 "Hello moss err!\n", prog_args=out_file)
+    ~rm(out_file, false)
 }
 
 fun test_lib_type_constructors(name) {

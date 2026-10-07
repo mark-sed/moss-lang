@@ -45,6 +45,7 @@ bool MSFile::is_mode_read_write(Interpreter *vm, Value *ths, Value *&err) {
         err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INVALID_FOPEN_MODE, mode->as_string().c_str()));
         return false;
     }
+    // No need for ::app, as a+ is in and out
     return (ios_mode & std::ios::in) && (ios_mode & std::ios::out);
 }
 
@@ -66,7 +67,7 @@ Value *MSFile::open(Interpreter *vm, Value *ths, Value *&err) {
 
     if (ios_mode & std::ios::in) {
         ths->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::FStreamValue(fs));
-    } else if (ios_mode & std::ios::out) {
+    } else if ((ios_mode & std::ios::out) || (ios_mode & std::ios::app)) {
         ths->set_attr(known_names::FILE_FSTREAM_ATT, new t_cpp::OStreamValue(new std::ostream(fs->rdbuf()), fs));
     }
     return BuiltIns::Nil;
