@@ -795,6 +795,30 @@ Value *issubclass(Interpreter *vm, Value *cls, Value *types, Value *&err) {
     return BuiltIns::False;
 }
 
+Value *float_format(Interpreter *vm, Value *ths, Value *pattern, Value *&err) {
+    static std::regex float_format(R"([-+ #0]*([0-9]+|\*)?(\.([0-9]+|\*))?[fFeEgGaA])");
+    
+    auto f = mslib::get_float(ths);
+    auto ptrn = mslib::get_string(pattern);
+
+    if (!std::regex_match(ptrn, float_format)) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::FLOAT_FORMAT_BAD_PATTERN, ptrn.c_str()));
+        return nullptr;
+    }
+
+    ptrn.insert(0, 1, '%');
+    int size = std::snprintf(nullptr, 0, ptrn.c_str(), f);
+    if (size < 0) {
+        err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::FLOAT_FORMAT_BAD_PATTERN, ptrn.c_str()));
+        return nullptr;
+    }
+
+    std::string result(size, '\0');
+    std::snprintf(result.data(), result.size() + 1, ptrn.c_str(), f);
+
+    return StringValue::get(result);
+}
+
 Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(std::wint_t)> fn, Value *&err) {
     assert(cf->get_args().size() == 1);
     auto arg = cf->get_arg("this");
@@ -1189,6 +1213,17 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                 return ths;
             }
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            return nullptr;
+        }},
+        {"format", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
+            assert(cf->get_args().size() == 2);
+            auto ths = cf->get_arg("this");
+            auto ptrn = cf->get_arg("pattern");
+            if (auto lv = get_subtype_value<FloatValue>(ths, BuiltIns::Float, vm, err)) {
+                return float_format(vm, lv, ptrn, err);
+            } else {
+                err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
+            }
             return nullptr;
         }},
         {"from_bytes", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {

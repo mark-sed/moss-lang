@@ -88,6 +88,16 @@ class __Float {
             this = numerator / denominator
         """
     }
+
+    @internal
+    fun format(pattern:String) {
+        d"""
+        Returns this float as a string formatted based on `pattern`.
+        This pattern uses C printf format (without %) and has to be only the
+        format and nothing else.
+        If the format is incorrect, then ValueError is raised.
+        """
+    }
 }
 
 @internal_bind(Bool)

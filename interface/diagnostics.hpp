@@ -246,6 +246,7 @@ enum DiagID : unsigned {
     SET_PATH_NOT_STR,       ///< When value in list in set_path is not a string
     FACTORIAL_NEGATIVE,     ///< When factorial is called on negative Int
     FACTORIAL_OVERFLOW,     ///< When factorial cannot fit into Int
+    FLOAT_FORMAT_BAD_PATTERN,///< When float formatting is not correct
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -471,6 +472,7 @@ static const char * DIAG_MSGS[] = {
     "Path value is expected to be a String (got '%s')",
     "Factorial is not defined for negative values",
     "Factorial of %ld cannot fit into Int",
+    "Float formatting pattern '%s' is incorrect",
 };
 
 /// \brief ID of diagnostic error

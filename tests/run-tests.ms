@@ -1960,6 +1960,21 @@ false\n-0.540000\n16777216.000000\n-451\n56666666\n-2147483648
 A\nA\n*\n42\n127\nA\nA\n*\n42\n250\ncaught\ncaught\ncaught\n""", "")
 }
 
+fun test_lib_float_formatting(name) {
+    ~expect_pass("stdlib_tests/float_formatting.ms", name, """424.400000
+424\n424.4\n424.40\n424.400000\n    424.40\n0000424.40\n424.40    \n   +424.40\n    424.40
+    424.40\n4.244000e+02\n4e+02\n4.24e+02\n4.244000e+02\n  4.24e+02\n +4.24e+02\n4.244000E+02
+4.24E+02\n +4.24E+02\n424.4\n4.2e+02\n424.4\n424.4\n     424.4\n424.4\n424.4\n4.2E+02\n424.4
+0x1.a866666666666p+8\n0x1.a8p+8\n0x1.a86666p+8\n0X1.A866666666666P+8\n0X1.A8P+8\n-424.400000
+-424.40\n   -424.40\n-000424.40\n-424.40\n0.000000\n0.00\n-0.00\n0.00\n123456789.00\n0.300000
+0.3\n0.30\n0.3000000000\n3.000000e-01\n3.000e-01\n0.3\n0.3\n123.5\n1.235e+05\n1.235e+08
+0.001235\n1.235e-05\n1.235e-07\n  +42.50\n42.50   \n00042.50\n   42.50\n   42.50\n  +42.50
++0042.50\n-0042.50\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught
+caught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught
+caught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught
+caught\ncaught\ncaught\n""", "")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -2685,7 +2700,8 @@ fun run_all_tests() {
     ~run_test("lib_isinstance")
     ~run_test("lib_zip")
     ~run_test("lib_map")
-    ~run_test("lib_cpp")    
+    ~run_test("lib_cpp")
+    ~run_test("lib_float_formatting")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")
