@@ -2116,6 +2116,10 @@ fun test_lib_sys_environment(name) {
 true\n42\ntrue\n42\ntrue\n0\ntrue\nunset\ntrue\n""", "", prog_args=f"{::TEST_DIR}")
 }
 
+fun test_lib_sys_stdouterr(name) {
+    ~expect_pass("stdlib_tests/sys_tests/stdouterr.ms", name, "caught\nOut!\ncaught\nw\n", "Erroutput\n")
+}
+
 fun test_lib_time_clock_time(name) {
     ~expect_pass("stdlib_tests/time_tests/clock_time.ms", name, """time.StructTime(tm_year=2025, tm_mon=8, tm_mday=5, tm_hour=16, tm_min=55, tm_sec=36, tm_wday=1, tm_yday=217, tm_isdst=1, tm_zone="", tm_gmtoff=nil)
 2025-8-5_17:26:15\ntrue\ntrue
@@ -2714,6 +2718,7 @@ fun run_all_tests() {
     ~run_test("lib_sys_platform")
     ~run_test("lib_sys_interpreter_info")
     ~run_test("lib_sys_environment")
+    ~run_test("lib_sys_stdouterr")
 
     // time
     ~run_test("lib_time_clock_time")
