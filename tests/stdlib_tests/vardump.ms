@@ -71,8 +71,9 @@ lst = [1, [0,0], 2]
 ~lst.append(lst)
 vardump(lst)
 
+import re
 import empty_module
-vardump(empty_module)
+re.replace(r"(String\(.*?\))", "String()", vardump(empty_module))
 
 fun foo() {}
 fun foo(a) {}

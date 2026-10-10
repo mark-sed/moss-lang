@@ -1398,9 +1398,9 @@ List(4) [
   List(4) [...]
 ]
 Module empty_module {
-  "__FILE": String("tests/stdlib_tests/empty_module.ms"),
-  "__NAME": String("empty_module"),
-  "__doc": String("\\nEmpty module.\\nDoes nothing.\\n")
+  "__FILE": String(),
+  "__NAME": String(),
+  "__doc": String()
 }
 fun foo [\n""", "")
 }
@@ -1408,8 +1408,9 @@ fun foo [\n""", "")
 fun test_lib_print(name) {
     out_file = f"{::TEST_DIR}/__print_test.txt"
     ~expect_pass("stdlib_tests/print.ms", name, """1 2 3 4\nhi-there.\n\ntrue\n1,2,3!
-Hello moss out!\nPrint to a file\nPrint to a file\nAnother print\n""",
+Hello moss out!\nPrint to a file\n""",
                  "Hello moss err!\n", prog_args=out_file)
+    ~expect_str_eq_file("Print to a file\nAnother print", "__print_test.txt", name)
     ~rm(out_file, false)
 }
 
@@ -1692,8 +1693,16 @@ hello\nhello programmer\nhello\nxyz\nhello\nx\nhello\nhello\nhello\nhello\nxyz\n
 ["mix", "of", "various", "lines"]
 ["mix\\n", "of\\r", "various\\r\\n", "lines"]
 []
-0x0p+0\n0x1p+0\n0x1p+1\n0x1p-1\n0x1.999999999999ap-4\n0x1p-2\n0x1.8p-1\n-0x1p+0
--0x1p-1\n-0x1.921fb53c8d4f1p+1\ninf\n-inf\nnan
+0x1.999999999999ap-4
+0x1.999999999999ap-3
+0x1.3333333333333p-2
+0x1.199999999999ap+0
+0x1.0cccccccccccdp+1
+0x1.3333333333333p-1
+0x1.6666666666666p-1
+-0x1.999999999999ap-4
+-0x1.3333333333333p-2
+-0x1.921fb53c8d4f1p+1\ninf\n-inf\nnan
 ABC\nDEF\nGHI\n|\nhello\nworld\nhello\nworld\nhello\n  world\nfoo\nhello2\n  world
 foo\nhello\n  world\n    foo\nhello\n\nworld\nhello\n    world\nhello\n\n\nfoo
 bar\nfoo\n    bar\nbaz

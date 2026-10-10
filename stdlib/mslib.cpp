@@ -535,7 +535,6 @@ Value *Int_to_bytes(Interpreter *vm, Value *ths, Value *lengthv,
 }
 
 Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
-    (void)vm;
     IntValue *base_int = nullptr;
     if (base)
         base_int = dyn_cast<IntValue>(base);
@@ -543,20 +542,21 @@ Value *Int(Interpreter *vm, Value *v, Value *base, Value *&err) {
     if (isa<IntValue>(v))
         return v;
     if (auto sv = dyn_cast<StringValue>(v)) {
+        auto str = sv->get_value();
         if (!base_int) {
             err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::INT_BASE_NOT_INT, base->get_type()->get_name().c_str()));
             return nullptr;
         }
         char *pend;
         errno = 0;
-        auto vi = std::strtoll(sv->get_value().c_str(), &pend, base_int->get_value());
+        auto vi = std::strtoll(str.c_str(), &pend, base_int->get_value());
         if (*pend != '\0') {
-            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::COULD_NOT_PARSE_INT, v->as_string().c_str(), base_int->get_value()));
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::COULD_NOT_PARSE_INT, str.c_str(), base_int->get_value()));
             return nullptr;
         }
         if (errno != 0) {
             LOGMAX("Errno error: " << strerror(errno));
-            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INT_PARSE_CONVERSION_ERR, v->as_string().c_str(), base_int->get_value(), strerror(errno)));
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::INT_PARSE_CONVERSION_ERR, str.c_str(), base_int->get_value(), strerror(errno)));
             errno = 0;
             return nullptr;
         }

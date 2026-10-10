@@ -15,9 +15,5 @@ f.read()
 ~f.close()
 
 f2 = open(args[0], "a")
-~print("Another print", file=f2)
+~print("Another print", file=f2, flush=true)
 ~f2.close()
-
-f3 = open(args[0], "a+")
-f3.read()
-~f3.close()
