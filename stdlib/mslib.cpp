@@ -1215,6 +1215,12 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
             err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_OBJ_PASSED, ths->get_type()->get_name().c_str()));
             return nullptr;
         }},
+        {"flush", [](Interpreter* vm, CallFrame* cf, Value*& err) {
+            auto args = cf->get_args();
+            assert(args.size() == 1);
+            assert(opcode::is_type_eq_or_subtype(args[0].value->get_type(), BuiltIns::File));
+            return MSFile::flush(vm, args[0].value, err);
+        }},
         {"format", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             assert(cf->get_args().size() == 2);
             auto ths = cf->get_arg("this");

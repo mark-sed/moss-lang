@@ -30,6 +30,12 @@ f2 = open(path2, "w")
 
 f3 = open(path2, "r")
 f3.readlines()[0]
+try
+    f3.flush()
+catch (e:ValueError) {
+    // flush on r file
+}
+
 ~f3.close()
 "\n"
 
@@ -50,6 +56,7 @@ class LoremIpsum {
 
 f4 = open(".created_file_2.txt", "w")
 ~f4.write(LoremIpsum(2))
+~f4.flush();
 ~f4.close()
 
 f5 = with_open(".created_file_2.txt", fun(f)=f.readlines(),"r")

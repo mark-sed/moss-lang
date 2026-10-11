@@ -235,6 +235,7 @@ enum DiagID : unsigned {
     SEEK_FAILED,            ///< When file.seek fails
     READ_ON_WRITE_FILE,     ///< When there is read operation on OStream
     WRITE_ON_READ_FILE,     ///< When there is write operation on FStream
+    FLUSH_ON_READ_FILE,     ///< Calling flush on a file that was open for reading
     GCD_OR_LCM_EXPECTS_INTS, ///< When gcd or lcm received List with non-int value
     NON_INT_IN_RANGE,       ///< When non-int value is used in range
     TO_BYTES_BAD_BYTEORDER, ///< When byte_order is not "big" nor "little"
@@ -461,6 +462,7 @@ static const char * DIAG_MSGS[] = {
     "Seek has failed",
     "Read operation on file open for writing",
     "Write operation on file open for reading",
+    "Flush operation of file open for reading",
     "Function %s as an argument expects a List of Ints, but value at index %zu is of type '%s'",
     "Range ('start,next...end') expects Int values, but %s is of type '%s'",
     "Incorrect byte order '%s' — expected 'big' or 'little'",

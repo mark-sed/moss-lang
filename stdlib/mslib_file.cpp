@@ -298,3 +298,25 @@ Value *MSFile::readln(Interpreter *vm, Value *ths, Value *sizev, Value *&err) {
 
     return StringValue::get(line);
 }
+
+Value *MSFile::flush(Interpreter *vm, Value *ths, Value *&err) {
+    assert(ths->has_attr(known_names::FILE_FSTREAM_ATT, vm) && "no __fstream generated");
+    auto fsv = ths->get_attr(known_names::FILE_FSTREAM_ATT, vm);
+    if (err)
+        return nullptr;
+    std::ostream *fstr = nullptr;
+    if (auto fsfs = dyn_cast<t_cpp::OStreamValue>(fsv)) {
+        fstr = fsfs->get_os();
+    } else if (is_mode_read_write(vm, ths, err)) {
+        auto osfs = dyn_cast<t_cpp::FStreamValue>(fsv);
+        fstr = osfs->get_fs();
+    } else {
+        if (isa<t_cpp::FStreamValue>(fsv))
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::FLUSH_ON_READ_FILE));
+        else
+            err = create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::OPERATION_ON_CLOSED_FILE));
+        return BuiltIns::Nil;
+    }
+    fstr->flush();
+    return BuiltIns::Nil;
+}

@@ -1710,6 +1710,13 @@ class __File {
     }
 
     @internal
+    fun flush() {
+        d"""
+        Synchronizes stream buffer with its controlled output sequence.
+        """
+    }
+
+    @internal
     fun close() {
         d"""
         Closes file for all operations.

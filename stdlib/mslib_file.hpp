@@ -43,6 +43,8 @@ Value *readln(Interpreter *vm, Value *ths, Value *size, Value *&err);
 
 Value *write(Interpreter *vm, Value *ths, Value *content, Value *&err);
 
+Value *flush(Interpreter *vm, Value *ths, Value *&err);
+
 }
 }
 }
