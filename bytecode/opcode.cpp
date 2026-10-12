@@ -693,7 +693,7 @@ void call(Interpreter *vm, Register dst, Value *funV) {
         }
     }
     else if ((!cf->get_args().empty() && cf->get_args().back().name == "this" && !has_methods(cf->get_args().back().value)) 
-              || funV->has_annotation(annots::STATIC_METHOD)) {
+              || (!cf->get_args().empty() && cf->get_args().back().name == "this" && funV->has_annotation(annots::STATIC_METHOD))) {
         // this argument is set for all attribute calls (as we don't know the
         // type in bytecodegen), so remove it if the value should not know it
         LOGMAX("Removing this from non-object call");

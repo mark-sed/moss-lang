@@ -194,7 +194,7 @@ Value *print(Interpreter *vm, Value *msgs, Value *end, Value *separator, Value *
             return nullptr;
         if (auto fsfs = dyn_cast<t_cpp::OStreamValue>(osv)) {
             outstr = fsfs->get_os();
-        } else if (mslib::MSFile::is_mode_read_write(vm, file, err)) {
+        } else if (!isa<NilValue>(osv) && mslib::MSFile::is_mode_read_write(vm, file, err)) {
             auto osfs = dyn_cast<t_cpp::FStreamValue>(osv);
             outstr = osfs->get_fs();
         } else {

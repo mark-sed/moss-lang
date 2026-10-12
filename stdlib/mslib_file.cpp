@@ -172,7 +172,7 @@ Value *MSFile::write(Interpreter *vm, Value *ths, Value *content, Value *&err) {
     std::ostream *fstr = nullptr;
     if (auto fsfs = dyn_cast<t_cpp::OStreamValue>(fsv)) {
         fstr = fsfs->get_os();
-    } else if (is_mode_read_write(vm, ths, err)) {
+    } else if (!isa<NilValue>(fsv) && is_mode_read_write(vm, ths, err)) {
         auto osfs = dyn_cast<t_cpp::FStreamValue>(fsv);
         fstr = osfs->get_fs();
     } else {
@@ -307,7 +307,7 @@ Value *MSFile::flush(Interpreter *vm, Value *ths, Value *&err) {
     std::ostream *fstr = nullptr;
     if (auto fsfs = dyn_cast<t_cpp::OStreamValue>(fsv)) {
         fstr = fsfs->get_os();
-    } else if (is_mode_read_write(vm, ths, err)) {
+    } else if (!isa<NilValue>(fsv) && is_mode_read_write(vm, ths, err)) {
         auto osfs = dyn_cast<t_cpp::FStreamValue>(fsv);
         fstr = osfs->get_fs();
     } else {
