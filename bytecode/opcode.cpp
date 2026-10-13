@@ -1441,6 +1441,10 @@ void Import::exec(Interpreter *vm) {
     vm->store(dst, mod);
 }
 
+void ImportPath::exec(Interpreter *vm) {
+    assert(false && "TODO: import path");
+}
+
 void ImportAll::exec(Interpreter *vm) {
     auto mod = vm->load(src);
     assert(mod && "Non existent module for import all");

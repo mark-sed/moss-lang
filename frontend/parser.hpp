@@ -99,6 +99,7 @@ private:
     ir::Expression *exponentiation();
     ir::Expression *unary_plus_minus();
     ir::Expression *call_access_subs(bool allow_star=false);
+    ir::Expression *import_path();
     ir::Expression *note();
     ir::Expression *scope();
 

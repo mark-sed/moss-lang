@@ -90,6 +90,7 @@ enum OpCodes : opcode_t {
     SET_VARARG, //        %fun, int
 
     IMPORT, //        %dst, "name"
+    IMPORT_PATH, //   %dst, "path", "name"
     IMPORT_ALL, //    %src
 
     PUSH_PARENT, //   %class
@@ -1424,6 +1425,33 @@ public:
         auto casted = dyn_cast<Import>(other);
         if (!casted) return false;
         return casted->dst == dst && casted->name == name;
+    }
+};
+
+class ImportPath : public OpCode {
+public:
+    Register dst;
+    StringConst path;
+    StringConst name;
+
+    static const OpCodes ClassType = OpCodes::IMPORT_PATH;
+
+    ImportPath(Register dst, StringConst path, StringConst name) 
+            : OpCode(ClassType, "IMPORT_PATH"), dst(dst), path(path), name(name) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << dst << ", \"" << path << "\", \"" << name << "\"";
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<ImportPath>(other);
+        if (!casted) return false;
+        return casted->dst == dst && casted->name == name && casted->path == path;
     }
 };
 

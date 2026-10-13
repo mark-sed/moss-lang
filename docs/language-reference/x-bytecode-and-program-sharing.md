@@ -106,6 +106,7 @@ xxh - SET_TYPE          %fun, int, %type
 xxh - SET_VARARG        %fun, int
 
 xxh - IMPORT        %dst, "name"
+xxh - IMPORT_PATH   %dst, "path", "name"
 xxh - IMPORT_ALL    %src
 
 xxh - PUSH_PARENT   %class

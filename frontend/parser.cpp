@@ -364,10 +364,15 @@ ustring Parser::get_last_id(Expression *e) {
     if (isa<Variable>(e) || isa<AllSymbols>(e)) {
         return e->get_name();
     }
+    if (auto sl = dyn_cast<StringLiteral>(e)) {
+        return sl->get_value();
+    }
     if (auto be = dyn_cast<BinaryExpr>(e)) {
-        if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()) && !isa<UnaryExpr>(be->get_left())) 
+        if (!isa<BinaryExpr>(be->get_left()) && !isa<Variable>(be->get_left()) &&
+                !isa<UnaryExpr>(be->get_left()) && !isa<StringLiteral>(be->get_left())) 
             parser_error(create_diag(diags::MEMBER_OR_ID_EXPECTED));
-        if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+        if (be->get_op().get_kind() == OperatorKind::OP_ACCESS ||
+                be->get_op().get_kind() == OperatorKind::OP_DIV) {
             return get_last_id(be->get_right());
         }
         else {
@@ -406,6 +411,25 @@ bool Parser::is_id_or_member(Expression *e) {
         }
     }
     return false;
+}
+
+ir::Expression *Parser::import_path() {
+    SourceInfo im_srci = curr_src_info();
+
+    if (check({TokenType::STRING})) {
+        auto base_tok = advance();
+        auto base = new StringLiteral(unescapeString(base_tok->get_value()), base_tok->get_src_info());
+        if (match(TokenType::DIV)) {
+            auto expr = call_access_subs(true);
+            parser_assert(expr, create_diag(diags::MEMBER_OR_ID_EXPECTED));
+            im_srci.update_ends(curr_src_info());
+            return new BinaryExpr(base, expr, ir::Operator(ir::OperatorKind::OP_DIV), im_srci);
+        } else {
+            return base;
+        }
+    }
+    
+    return call_access_subs(true);
 }
 
 ir::Annotation *Parser::annotation() {
@@ -568,7 +592,7 @@ IR *Parser::declaration() {
         do {
             if (name)
                 skip_nls();
-            name = call_access_subs(true);
+            name = import_path();
             parser_assert(name, create_diag(diags::MEMBER_OR_ID_EXPECTED));
             names.push_back(name);
             // We always call get_last_id as it checks that the name is ID or Scope
