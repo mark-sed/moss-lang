@@ -99,6 +99,7 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::SetVararg(50, 2));
 
     bc->push_back(new opcode::Import(18, "module1"));
+    bc->push_back(new opcode::ImportPath(18, "path", "module1"));
     bc->push_back(new opcode::ImportAll(18));
 
     bc->push_back(new opcode::PushParent(11));

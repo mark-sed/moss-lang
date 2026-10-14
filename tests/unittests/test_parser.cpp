@@ -1064,12 +1064,23 @@ import A,
 import A.c.*
 import SomeValue.*
 
+import "f"
+import "f1"/f.l
+import "F" as F11
+import "sp"/s
+import "tt"/s2.*
+
 import ::A.C as c
 import ::SomeSpace.*
 import ::SomeSpace.Space2.baz
 )";
 
     IRType expected[] = {
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
+        IRType::IMPORT,
         IRType::IMPORT,
         IRType::IMPORT,
         IRType::IMPORT,
@@ -1093,6 +1104,7 @@ import ::SomeSpace.Space2.baz
         "Goo", "f1",
         "A", "b", "C1", "D",
         "*", "*",
+        "f", "l", "F11", "s", "*",
         "c", "*", "baz",
     };
 
@@ -1122,7 +1134,6 @@ ustring incorrect = R"(
 import Soo::Boo.c as D
 import
 import 32
-import "Foo"
 import Foo as F as G
 import Goo as Goo::Goo
 import Goo as Goo.Goo
@@ -1138,7 +1149,6 @@ import *
 // import ::*
 
     IRType expected_incorr[] = {
-        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

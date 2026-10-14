@@ -1589,6 +1589,11 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     append(new opcode::LoopEnd());
 }
 
+static std::pair<ustring, ustring> get_module_from_path(ustring path) {
+    return {std::filesystem::path(path).parent_path().string(), 
+            std::filesystem::path(path).filename().stem().string()};
+}
+
 void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
     if (auto vr = dyn_cast<ir::Variable>(e)) {
         if (!space_import)
@@ -1599,14 +1604,40 @@ void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
             else
                 append(new opcode::Load(next_reg(), e->get_name()));
         }
+    } else if (auto sl = dyn_cast<StringLiteral>(e)) {
+        assert(!space_import && "Space import using string path");
+        auto str = sl->get_value();
+        auto [base, mod_name] = get_module_from_path(str);
+        append(new opcode::ImportPath(next_reg(), base, mod_name));
     } else if (auto be = dyn_cast<BinaryExpr>(e)) {
-        assert(be->get_op().get_kind() == OperatorKind::OP_ACCESS && "Incorrect expression in import");
-        emit_import_expr(be->get_left(), space_import);
-        auto res_reg = val_last_reg();
-        if (isa<AllSymbols>(be->get_right())) {
-            append(new opcode::ImportAll(res_reg));
+        assert((be->get_op().get_kind() == OperatorKind::OP_ACCESS || be->get_op().get_kind() == OperatorKind::OP_DIV) && "Incorrect expression in import");
+        if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+            emit_import_expr(be->get_left(), space_import);
+            auto res_reg = val_last_reg();
+            if (isa<AllSymbols>(be->get_right())) {
+                append(new opcode::ImportAll(res_reg));
+            } else {
+                StringConst att_name;
+                if (auto att_sl = dyn_cast<StringLiteral>(be->get_right()))
+                    att_name = att_sl->get_value();
+                else
+                    att_name = be->get_right()->get_name();
+                append(new opcode::LoadAttr(next_reg(), res_reg, att_name));
+            }
         } else {
-            append(new opcode::LoadAttr(next_reg(), res_reg, be->get_right()->get_name()));
+            assert(be->get_op().get_kind() == OperatorKind::OP_DIV && "Expected div or dot");
+            auto base = dyn_cast<StringLiteral>(be->get_left());
+            auto path_im_reg = next_reg();
+            StringConst mod_name;
+            if (isa<Variable>(be->get_right())) {
+                mod_name = be->get_right()->get_name();
+                append(new opcode::ImportPath(path_im_reg, base->get_value(), mod_name));
+            } else if (auto be2 = dyn_cast<BinaryExpr>(be->get_right())) {
+                assert(isa<Variable>(be2->get_left()) && "expected variable in module");
+                mod_name = be2->get_left()->get_name();
+                append(new opcode::ImportPath(path_im_reg, base->get_value(), mod_name));
+                emit_import_expr(be2, true);
+            }
         }
     } else if (auto ue = dyn_cast<UnaryExpr>(e)) {
         // Possible space import (import ::S.*)

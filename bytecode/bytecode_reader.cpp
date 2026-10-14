@@ -348,6 +348,12 @@ Bytecode *BytecodeReader::read() {
                 auto str = read_string();
                 bc->push_back(new Import(reg, str));
             } break;
+            case opcode::OpCodes::IMPORT_PATH: {
+                auto reg = read_register();
+                auto str1 = read_string();
+                auto str2 = read_string();
+                bc->push_back(new ImportPath(reg, str1, str2));
+            } break;
             case opcode::OpCodes::IMPORT_ALL: {
                 bc->push_back(new ImportAll(read_register()));
             } break;
