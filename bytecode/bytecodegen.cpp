@@ -1662,6 +1662,7 @@ void BytecodeGen::emit(ir::Import *im) {
     assert(im->get_names().size() == im->get_aliases().size() && "we should always set alias");
     for (size_t i = 0; i < im->get_names().size(); ++i) {
         emit_import_expr(im->get_names()[i]);
+        // FIXME: Import path does not set alias correctly
         if (!isa<ImportAll>(code->get_code().back()))
             append(new StoreName(val_last_reg(), im->get_aliases()[i]));
     }

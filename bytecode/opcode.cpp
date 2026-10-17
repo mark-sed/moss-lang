@@ -1359,21 +1359,36 @@ void raise_ir_error(ir::IR *err) {
     }
 }
 
-ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
-    LOGMAX("Loading module: " << name);
+static std::optional<ustring> get_load_path(ustring name, std::optional<ustring> impath, bool &is_msb) {
+    if (impath) {
+        std::filesystem::path path(*impath);
+        if (path.is_absolute()) {
+            if (path.extension() != ".msb")
+                is_msb = false;
+            return *impath;
+        } else {
+            assert(false && "TODO");
+        }
+    }
     // First see if we have .msb and then .ms
     std::optional<ustring> path_opt = get_file_path(name+".msb");
-    bool is_msb = true;
     if (path_opt == std::nullopt) {
         LOGMAX(".msb module not found");
         path_opt = get_file_path(name+".ms");
         is_msb = false;
-        if (path_opt == std::nullopt) {
-            LOGMAX(".ms module not found");
-            return nullptr;
-        }
     }
-    ustring path = *path_opt;
+    return path_opt;
+}
+
+ModuleValue *opcode::load_module(Interpreter *vm, ustring name, std::optional<ustring> impath) {
+    LOGMAX("Loading module: " << name);
+    bool is_msb = true;
+    auto extracted = get_load_path(name, impath, is_msb);
+    if (extracted == std::nullopt) {
+        LOGMAX(".ms module not found");
+        return nullptr;
+    }
+    ustring path = *extracted;
     if (auto ldd_mod = Interpreter::has_loaded_module(path)) {
         LOGMAX("Module " << path << " is already loaded, returning it");
         return ldd_mod;

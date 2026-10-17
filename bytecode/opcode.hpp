@@ -209,7 +209,7 @@ void raise(Value *exc);
 /// \param vm VM doing the loading
 /// \param name Name of the module (file extention will be added)
 /// \return Loaded module or raises an exception
-ModuleValue *load_module(Interpreter *vm, ustring name);
+ModuleValue *load_module(Interpreter *vm, ustring name, std::optional<ustring> path=std::nullopt);
 
 /// \brief Converts value to its string representation
 /// This conversion might use primitive value convertors or runtime call to __String
