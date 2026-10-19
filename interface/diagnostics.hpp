@@ -96,6 +96,7 @@ enum DiagID : unsigned {
     EMPTY_DICT_WITHOUT_COLON, ///< {} is not an empty dict
     STAR_IMPORT_GLOBAL,     ///< ::*
     STAR_MEMBER_OUTSIDE_IMPORT, ///< x.* not in import
+    STAR_IMPORT_NON_MODULE_SPACE,///< Star importing non-module and non-space
     COLON_EXPECTED,         ///< Expecting :
     LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
     ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
@@ -115,6 +116,7 @@ enum DiagID : unsigned {
     OPERATOR_NOT_DEFINED,   ///< Operator was not created for this class
     NOT_A_TYPE,             ///< Name is not a type or does not exist
     CANNOT_FIND_MODULE,     ///< Module cannot be found on known paths
+    CANNOT_FIND_MODULE_PATH,///< Module cannot be found on full path
     MISSING_ANNOT_TYPE_ARGUMENT, ///< Annotation has Nil or incorrect type argument
     UNEXPECTED_TYPE,        ///< Got unexpected type
     UNSUPPORTED_OPERAND_TYPE, ///< Operator used on incorrect type
@@ -323,6 +325,7 @@ static const char * DIAG_MSGS[] = {
     "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
     "Cannot star import from global scope",
     "Star member can appear only in import",
+    "Star import can be done only on space or module, but got '%s'",
     "Expecting ':'",
     "Only assignments are allowed in assignment section of list comprehension",
     "Annotation must have an ID name",
@@ -342,6 +345,7 @@ static const char * DIAG_MSGS[] = {
     "'%s' has no operator '%s'",
     "'%s' does not name a type",
     "Cannot find module '%s'",
+    "Cannot find module '%s' (on path '%s')",
     "Annotation '%s' expects '%s' argument",
     "Expecting type '%s', but got '%s'",
     "Unsupported operand type for operator '%s' — '%s' and '%s'",

@@ -1589,33 +1589,42 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     append(new opcode::LoopEnd());
 }
 
-static std::pair<ustring, ustring> get_module_from_path(ustring path) {
-    return {std::filesystem::path(path).parent_path().string(), 
-            std::filesystem::path(path).filename().stem().string()};
+static ustring get_module_from_path(ustring path) {
+    return std::filesystem::path(path).filename().stem().string();
 }
 
-void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
+static ustring get_leftmost_name(ir::BinaryExpr *be) {
+    if (auto be2 = dyn_cast<BinaryExpr>(be->get_left()))
+        return get_leftmost_name(be2);
+    return be->get_left()->get_name();
+}
+
+void BytecodeGen::emit_import_expr(ir::Expression *e, BytecodeGen::ImportType &it, bool space_import) {
     if (auto vr = dyn_cast<ir::Variable>(e)) {
-        if (!space_import)
+        if (!space_import) {
             append(new opcode::Import(next_reg(), e->get_name()));
-        else {
+            it = BytecodeGen::ImportType::IMPORT;
+        } else if (it == BytecodeGen::ImportType::SPACE_IMPORT) {
             if (vr->is_non_local())
                 append(new opcode::LoadNonLoc(next_reg(), e->get_name()));
-            else
+            else {
                 append(new opcode::Load(next_reg(), e->get_name()));
+            }
         }
     } else if (auto sl = dyn_cast<StringLiteral>(e)) {
         assert(!space_import && "Space import using string path");
         auto str = sl->get_value();
-        auto [base, mod_name] = get_module_from_path(str);
-        append(new opcode::ImportPath(next_reg(), base, mod_name));
+        auto mod_name = get_module_from_path(str);
+        append(new opcode::ImportPath(next_reg(), str, mod_name));
+        it = BytecodeGen::ImportType::IMPORT_PATH;
     } else if (auto be = dyn_cast<BinaryExpr>(e)) {
         assert((be->get_op().get_kind() == OperatorKind::OP_ACCESS || be->get_op().get_kind() == OperatorKind::OP_DIV) && "Incorrect expression in import");
         if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
-            emit_import_expr(be->get_left(), space_import);
+            emit_import_expr(be->get_left(), it, space_import);
             auto res_reg = val_last_reg();
             if (isa<AllSymbols>(be->get_right())) {
                 append(new opcode::ImportAll(res_reg));
+                it = BytecodeGen::ImportType::IMPORT_ALL;
             } else {
                 StringConst att_name;
                 if (auto att_sl = dyn_cast<StringLiteral>(be->get_right()))
@@ -1632,11 +1641,20 @@ void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
             if (isa<Variable>(be->get_right())) {
                 mod_name = be->get_right()->get_name();
                 append(new opcode::ImportPath(path_im_reg, base->get_value(), mod_name));
+                it = BytecodeGen::ImportType::IMPORT_PATH;
             } else if (auto be2 = dyn_cast<BinaryExpr>(be->get_right())) {
-                assert(isa<Variable>(be2->get_left()) && "expected variable in module");
-                mod_name = be2->get_left()->get_name();
-                append(new opcode::ImportPath(path_im_reg, base->get_value(), mod_name));
-                emit_import_expr(be2, true);
+                if (isa<Variable>(be2->get_left())) {
+                    mod_name = be2->get_left()->get_name();
+                    append(new opcode::ImportPath(path_im_reg, base->get_value(), mod_name));
+                    it = BytecodeGen::ImportType::IMPORT_PATH;
+                    emit_import_expr(be2, it, true);
+                } else if (auto be_left = dyn_cast<BinaryExpr>(be2->get_left())) {
+                    append(new opcode::ImportPath(path_im_reg, base->get_value(), get_leftmost_name(be_left)));
+                    it = BytecodeGen::ImportType::IMPORT_PATH;
+                    emit_import_expr(be2, it, true);
+                }
+            } else {
+                assert(false && "Unexpected type in IR");
             }
         }
     } else if (auto ue = dyn_cast<UnaryExpr>(e)) {
@@ -1651,7 +1669,7 @@ void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
             append(new opcode::LoadGlobal(next_reg(), vr->get_name()));
             return;
         } else {
-            emit_import_expr(ue->get_expr(), true);
+            emit_import_expr(ue->get_expr(), it, true);
         }
     } else {
         assert(false && "Incorrect import expression value");
@@ -1661,9 +1679,12 @@ void BytecodeGen::emit_import_expr(ir::Expression *e, bool space_import) {
 void BytecodeGen::emit(ir::Import *im) {
     assert(im->get_names().size() == im->get_aliases().size() && "we should always set alias");
     for (size_t i = 0; i < im->get_names().size(); ++i) {
-        emit_import_expr(im->get_names()[i]);
-        // FIXME: Import path does not set alias correctly
-        if (!isa<ImportAll>(code->get_code().back()))
+        BytecodeGen::ImportType it = BytecodeGen::ImportType::SPACE_IMPORT;
+        emit_import_expr(im->get_names()[i], it);
+        if (it == BytecodeGen::ImportType::IMPORT_PATH) {
+            auto mod_name = get_module_from_path(im->get_aliases()[i]);
+            append(new StoreName(val_last_reg(), mod_name));
+        } else if (it != BytecodeGen::ImportType::IMPORT_ALL)
             append(new StoreName(val_last_reg(), im->get_aliases()[i]));
     }
 }

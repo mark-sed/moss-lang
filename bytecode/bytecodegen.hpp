@@ -75,10 +75,16 @@ private:
     RegValue *emit(ir::UnaryExpr *expr);
     RegValue *emit(ir::Expression *expr, bool get_as_ncreg=false);
 
+    enum class ImportType {
+        IMPORT,
+        IMPORT_PATH,
+        IMPORT_ALL,
+        SPACE_IMPORT
+    };
     /// \brief Emits import expression for either module or space
     /// \param e Expression to emit
     /// \param space_import This value is set within this function and used in recursive call
-    void emit_import_expr(ir::Expression *e, bool space_import=false);
+    void emit_import_expr(ir::Expression *e, ImportType &it, bool space_import=false);
 
     /// Updates all break and continue jumps to proper addresses
     /// \param start Address where loop starts (start search)

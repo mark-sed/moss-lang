@@ -1142,6 +1142,8 @@ import F::A[1]
 import F.A[1]
 import G::A.a::C::d
 import *
+import "foo"/A/B
+import A/B
 )";
 
 // TODO: Add once globals are handled
@@ -1149,6 +1151,8 @@ import *
 // import ::*
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

@@ -1361,14 +1361,27 @@ void raise_ir_error(ir::IR *err) {
 
 static std::optional<ustring> get_load_path(ustring name, std::optional<ustring> impath, bool &is_msb) {
     if (impath) {
-        std::filesystem::path path(*impath);
-        if (path.is_absolute()) {
-            if (path.extension() != ".msb")
+        auto path = std::filesystem::path(*impath);
+        if (std::filesystem::is_directory(path)) {
+            path /= std::filesystem::path(name);
+            path.replace_extension(".msb");
+            std::optional<ustring> path_opt = get_file_path(path);
+            is_msb = true;
+            if (path_opt == std::nullopt) {
+                path.replace_extension(".ms");
                 is_msb = false;
-            return *impath;
-        } else {
-            assert(false && "TODO");
+                path_opt = get_file_path(path);
+            }
+            return path_opt;
         }
+        if (path.extension() != ".msb")
+            is_msb = false;
+        if (path.is_absolute()) {
+            if (!std::filesystem::exists(*impath))
+                return std::nullopt;
+            return *impath;
+        }
+        return get_file_path(path);
     }
     // First see if we have .msb and then .ms
     std::optional<ustring> path_opt = get_file_path(name+".msb");
@@ -1457,13 +1470,17 @@ void Import::exec(Interpreter *vm) {
 }
 
 void ImportPath::exec(Interpreter *vm) {
-    assert(false && "TODO: import path");
+    auto mod = load_module(vm, name, path);
+    op_assert(mod, mslib::create_module_not_found_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_MODULE_PATH, name.c_str(), path.c_str())));
+    vm->store(dst, mod);
 }
 
 void ImportAll::exec(Interpreter *vm) {
     auto mod = vm->load(src);
     assert(mod && "Non existent module for import all");
-    assert((isa<ModuleValue>(mod) || isa<SpaceValue>(mod)) && "TODO: raise spilling something else than module or space");
+    op_assert((isa<ModuleValue>(mod) || isa<SpaceValue>(mod)), mslib::create_type_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::STAR_IMPORT_NON_MODULE_SPACE, mod->get_type()->get_name().c_str())));
     vm->push_spilled_value(mod);
 }
 
