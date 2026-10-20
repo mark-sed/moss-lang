@@ -1362,7 +1362,30 @@ void raise_ir_error(ir::IR *err) {
 static std::optional<ustring> get_load_path(ustring name, std::optional<ustring> impath, bool &is_msb) {
     if (impath) {
         auto path = std::filesystem::path(*impath);
-        if (std::filesystem::is_directory(path)) {
+        if (path.is_absolute()) {
+            if (!std::filesystem::is_directory(path)) {
+                if (!std::filesystem::exists(path))
+                    return std::nullopt;
+                if (path.extension() == ".msb")
+                    is_msb = true;
+                else
+                    is_msb = false;
+                return *impath;
+            }
+            path /= name;
+            is_msb = true;
+            path.replace_extension(".msb");
+            if (std::filesystem::exists(path))
+                return path.string();
+            is_msb = false;
+            path.replace_extension(".ms");
+            if (std::filesystem::exists(path))
+                return path.string();
+            return std::nullopt;
+        }
+        // Not absolute, prepend correct pwd
+        auto full_path = global_controls::pwd / path;
+        if (std::filesystem::is_directory(full_path)) {
             path /= std::filesystem::path(name);
             path.replace_extension(".msb");
             std::optional<ustring> path_opt = get_file_path(path);
@@ -1376,11 +1399,6 @@ static std::optional<ustring> get_load_path(ustring name, std::optional<ustring>
         }
         if (path.extension() != ".msb")
             is_msb = false;
-        if (path.is_absolute()) {
-            if (!std::filesystem::exists(*impath))
-                return std::nullopt;
-            return *impath;
-        }
         return get_file_path(path);
     }
     // First see if we have .msb and then .ms

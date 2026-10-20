@@ -218,7 +218,7 @@ private:
     static T_Converters converters; ///< Mapping of formats and their converters
     static T_Generators generators; ///< Mapping of formats and their generators
     static std::vector<Value *> generator_notes; ///< List of notes to be passed to a generator
-    static std::unordered_map<ustring, ModuleValue *> imported_modules;
+    static std::unordered_map<std::filesystem::path, ModuleValue *> imported_modules;
     static bool enable_code_output; ///< When enabled then output will be enclosed as the output of code notes
     
     opcode::Address bci; ///< Current bytecode index
