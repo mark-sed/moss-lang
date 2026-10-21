@@ -1388,18 +1388,18 @@ static std::optional<ustring> get_load_path(ustring name, std::optional<ustring>
         if (std::filesystem::is_directory(full_path)) {
             path /= std::filesystem::path(name);
             path.replace_extension(".msb");
-            std::optional<ustring> path_opt = get_file_path(path);
+            std::optional<ustring> path_opt = get_file_path(path.string());
             is_msb = true;
             if (path_opt == std::nullopt) {
                 path.replace_extension(".ms");
                 is_msb = false;
-                path_opt = get_file_path(path);
+                path_opt = get_file_path(path.string());
             }
             return path_opt;
         }
         if (path.extension() != ".msb")
             is_msb = false;
-        return get_file_path(path);
+        return get_file_path(path.string());
     }
     // First see if we have .msb and then .ms
     std::optional<ustring> path_opt = get_file_path(name+".msb");
