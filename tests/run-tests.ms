@@ -1989,6 +1989,26 @@ caught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\n
 caught\ncaught\ncaught\n""", "")
 }
 
+fun test_lib_multidim_lists(name) {
+    ~expect_pass("stdlib_tests/multidim_lists.ms", name, """caught\ncaught
+5\n[5]\n[]\n[5, 5, 5, 5]
+[[5, 5], [5, 5], [5, 5], [5, 5]]
+[[0, 0, 0], [0, 0, 0]]
+[[-1, -1], [-1, -1], [-1, -1]]
+[[[5, 5], [5, 5]], [[5, 5], [5, 5]]]
+[[[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]]
+[[[[7]]]]
+[]
+[[], [], []]
+[[], []]
+[["hello", "hello", "hello", "hello"]]
+[[true, true], [true, true]]
+[[nil, nil, nil], [nil, nil, nil]]
+[[1, 2, 3], [1, 2, 3]]
+[[[1, 2], [1, 2]], [[1, 2], [1, 2]]]
+[[], []]\ntest\n""", "")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -2717,6 +2737,7 @@ fun run_all_tests() {
     ~run_test("lib_map")
     ~run_test("lib_cpp")
     ~run_test("lib_float_formatting")
+    ~run_test("lib_multidim_lists")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")

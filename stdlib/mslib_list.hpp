@@ -37,6 +37,8 @@ Value *insert(Interpreter *vm, Value *ths, Value *index, Value *value, Value *&e
 
 Value *List(Interpreter *vm, Value *iterable, Value *&err);
 
+Value *List_dim(Interpreter *vm, Value *sizes, Value *elem, Value *&err);
+
 }
 }
 }

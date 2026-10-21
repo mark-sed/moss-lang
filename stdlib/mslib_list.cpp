@@ -157,3 +157,33 @@ Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
     }
     return new ListValue(lv);
 }
+
+Value *make_nested_list(std::vector<opcode::IntConst> &sizes,
+                        Value *elem,
+                        opcode::IntConst depth) {
+    if (depth == sizes.size())
+        return elem;
+    
+    std::vector<Value *> result;
+    result.reserve(sizes[depth]);
+
+    for (std::size_t i = 0; i < sizes[depth]; ++i) {
+        result.push_back(make_nested_list(sizes, elem, depth+1));
+    }
+
+    return new ListValue(result);
+}
+
+Value *List::List_dim(Interpreter *vm, Value *sizes, Value *elem, Value *&err) {
+    auto sizes_list = mslib::get_list(sizes);
+    std::vector<opcode::IntConst> int_sizes;
+    for (auto v: sizes_list) {
+        auto intv = dyn_cast<IntValue>(v);
+        if (!intv) {
+            err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_TYPE_IN_LIST_CONSTR, v->get_type()->get_name().c_str()));
+            return nullptr;
+        }
+        int_sizes.push_back(intv->get_value());
+    }
+    return make_nested_list(int_sizes, elem, 0);
+}

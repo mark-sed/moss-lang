@@ -251,6 +251,7 @@ enum DiagID : unsigned {
     FACTORIAL_NEGATIVE,     ///< When factorial is called on negative Int
     FACTORIAL_OVERFLOW,     ///< When factorial cannot fit into Int
     FLOAT_FORMAT_BAD_PATTERN,///< When float formatting is not correct
+    BAD_TYPE_IN_LIST_CONSTR,///< When List(sizes, elem) constructor has non-int in sizes
 
     NUMBER_OF_IDS           ///< This value should not be reported it can be used to get the amount of IDs
 };
@@ -481,6 +482,7 @@ static const char * DIAG_MSGS[] = {
     "Factorial is not defined for negative values",
     "Factorial of %ld cannot fit into Int",
     "Float formatting pattern '%s' is incorrect",
+    "List of sizes for multi dimensional List creation has to contain only Int values, got '%s'",
 };
 
 /// \brief ID of diagnostic error

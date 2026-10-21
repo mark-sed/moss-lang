@@ -629,6 +629,13 @@ class __List {
     fun List(iterable) {
         d"Returns list with values in iterable."
     }
+    @internal
+    fun List(sizes:List, elem) {
+        d"""
+        Returns list of lists where size of each list is based on it's index in
+        sizes and each element in inner most list are elem.
+        """
+    }
 
     @internal
     fun append(... v) {

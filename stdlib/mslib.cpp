@@ -1404,9 +1404,15 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
         {"List", [](Interpreter *vm, CallFrame* cf, Value *&err) -> Value *{
             if (cf->get_args().size() == 1)
                 return new ListValue();
-            assert(cf->get_args().size() == 2);
+            assert(cf->get_args().size() == 2 || cf->get_args().size() == 3);
             auto ths = cf->get_arg("this");
-            auto lv = List::List(vm, cf->get_arg("iterable"), err);
+            Value *lv = nullptr;
+
+            if (cf->get_args().size() == 2) {
+                lv = List::List(vm, cf->get_arg("iterable"), err);
+            } else {
+                lv = List::List_dim(vm, cf->get_arg("sizes"), cf->get_arg("elem"), err);
+            }
             if (ths->get_type() == BuiltIns::List) {
                 return lv;
             }
