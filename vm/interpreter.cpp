@@ -23,20 +23,22 @@ T_Generators Interpreter::generators{};
 std::vector<Value *> Interpreter::generator_notes{};
 std::list<FrameInfo> Interpreter::stack_frames{};
 std::vector<Value *> Interpreter::unwound_funs{};
-std::unordered_map<ustring, ModuleValue *> Interpreter::imported_modules{};
+std::unordered_map<std::filesystem::path, ModuleValue *> Interpreter::imported_modules{};
 bool Interpreter::running_generator = false;
 bool Interpreter::enable_code_output = false;
 
 ModuleValue *Interpreter::has_loaded_module(ustring path) {
-    auto it = imported_modules.find(path);
+    auto lexical_path = std::filesystem::absolute(path).lexically_normal();
+    auto it = imported_modules.find(lexical_path);
     if (it != imported_modules.end())
         return it->second;
     return nullptr;
 }
 
 void Interpreter::register_loaded_module(ustring path, ModuleValue *mod) {
-    assert(imported_modules.find(path) == imported_modules.end() && "Registering already registered module");
-    imported_modules[path] = mod;
+    auto lexical_path = std::filesystem::absolute(path).lexically_normal();
+    assert(imported_modules.find(lexical_path) == imported_modules.end() && "Registering already registered module");
+    imported_modules[lexical_path] = mod;
 }
 
 void Interpreter::remove_loaded_module(ModuleValue *mod) {

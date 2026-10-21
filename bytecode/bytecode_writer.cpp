@@ -235,6 +235,11 @@ void BytecodeWriter::write(Bytecode *code) {
             write_register(o->dst);
             write_string(o->name);
         }
+        else if (auto o = dyn_cast<opcode::ImportPath>(op_gen)){
+            write_register(o->dst);
+            write_string(o->path);
+            write_string(o->name);
+        }
         else if (auto o = dyn_cast<opcode::ImportAll>(op_gen)){
             write_register(o->src);
         }

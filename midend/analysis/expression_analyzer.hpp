@@ -22,6 +22,7 @@ namespace ir {
 class ExpressionAnalyzer : public IRVisitor {
 private:
     void check_call_arg(Expression *arg, std::unordered_set<ustring> &named_args);
+    void check_import_expr(Expression *e);
 public:
     ExpressionAnalyzer(Parser &parser) : IRVisitor(parser) {}
     
@@ -30,6 +31,7 @@ public:
     virtual IR *visit(class Call &c) override;
     virtual IR *visit(class Break &b) override;
     virtual IR *visit(class Continue &b) override;
+    virtual IR *visit(class Import &im) override;
 };
 
 }

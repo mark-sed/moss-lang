@@ -930,6 +930,11 @@ fun test_import_calls(name) {
 square_all\nmod2fun\ngot result\n16\n6\nfalse\ninner_fun 1\n6\n9\ncaught\ncaught\n""", "")
 }
 
+fun test_import_path(name) {
+    ~expect_pass("module_tests/import_path.ms", name, """mod1 ran!
+anon_space_value\nmod2fun\n16\n42\n7\n""", "")
+}
+
 fun test_main_in_import(name) {
     ~expect_pass("module_tests/module_with_main.ms", name, """imported_module_with_main
 module_with_main
@@ -2631,6 +2636,7 @@ fun run_all_tests() {
 
     ~run_test("basic_import")
     ~run_test("import_calls")
+    ~run_test("import_path")
     ~run_test("main_in_import")
     ~run_test("modules_and_spaces")
     ~run_test("space_imports")

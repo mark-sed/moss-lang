@@ -66,4 +66,30 @@ TEST(ExpressionAnalysis, BreakAndContinueOutsideOfLoop){
     testing::check_all_lines_ok(lines2, "BreakAndContinueOutsideOfLoop");
 }
 
+/// This tests path imports and space imports
+TEST(ExpressionAnalysis, ScopePathImports){
+    std::vector<ustring> lines = {
+"import ::\"Module.ms\"",
+"import ::\"Module.ms\".Mod",
+"import a, ::\"hello\"",
+"import a, ::\"hello\".h",
+"import ::\"A\".A",
+"import ::\"C1\" as c1",
+"import ::\"C1\".c1 as c1",
+"import c, b as b1, ::\"cc2\".c2 as ccc2, h",
+};
+
+    testing::check_all_lines_err(lines, "ScopePathImports");
+
+    std::vector<ustring> lines2 = {
+"import ::A.h",
+"import a, ::B.c",
+"import ::C.f as f",
+"import ::C.c.d as d1",
+"import a2 as a22, ::b.b as bb, ::c.c",
+};
+
+    testing::check_all_lines_ok(lines2, "ScopePathImports");
+}
+
 }

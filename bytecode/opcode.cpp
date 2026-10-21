@@ -1359,21 +1359,67 @@ void raise_ir_error(ir::IR *err) {
     }
 }
 
-ModuleValue *opcode::load_module(Interpreter *vm, ustring name) {
-    LOGMAX("Loading module: " << name);
+static std::optional<ustring> get_load_path(ustring name, std::optional<ustring> impath, bool &is_msb) {
+    if (impath) {
+        auto path = std::filesystem::path(*impath);
+        if (path.is_absolute()) {
+            if (!std::filesystem::is_directory(path)) {
+                if (!std::filesystem::exists(path))
+                    return std::nullopt;
+                if (path.extension() == ".msb")
+                    is_msb = true;
+                else
+                    is_msb = false;
+                return *impath;
+            }
+            path /= name;
+            is_msb = true;
+            path.replace_extension(".msb");
+            if (std::filesystem::exists(path))
+                return path.string();
+            is_msb = false;
+            path.replace_extension(".ms");
+            if (std::filesystem::exists(path))
+                return path.string();
+            return std::nullopt;
+        }
+        // Not absolute, prepend correct pwd
+        auto full_path = global_controls::pwd / path;
+        if (std::filesystem::is_directory(full_path)) {
+            path /= std::filesystem::path(name);
+            path.replace_extension(".msb");
+            std::optional<ustring> path_opt = get_file_path(path);
+            is_msb = true;
+            if (path_opt == std::nullopt) {
+                path.replace_extension(".ms");
+                is_msb = false;
+                path_opt = get_file_path(path);
+            }
+            return path_opt;
+        }
+        if (path.extension() != ".msb")
+            is_msb = false;
+        return get_file_path(path);
+    }
     // First see if we have .msb and then .ms
     std::optional<ustring> path_opt = get_file_path(name+".msb");
-    bool is_msb = true;
     if (path_opt == std::nullopt) {
         LOGMAX(".msb module not found");
         path_opt = get_file_path(name+".ms");
         is_msb = false;
-        if (path_opt == std::nullopt) {
-            LOGMAX(".ms module not found");
-            return nullptr;
-        }
     }
-    ustring path = *path_opt;
+    return path_opt;
+}
+
+ModuleValue *opcode::load_module(Interpreter *vm, ustring name, std::optional<ustring> impath) {
+    LOGMAX("Loading module: " << name);
+    bool is_msb = true;
+    auto extracted = get_load_path(name, impath, is_msb);
+    if (extracted == std::nullopt) {
+        LOGMAX(".ms module not found");
+        return nullptr;
+    }
+    ustring path = *extracted;
     if (auto ldd_mod = Interpreter::has_loaded_module(path)) {
         LOGMAX("Module " << path << " is already loaded, returning it");
         return ldd_mod;
@@ -1441,10 +1487,18 @@ void Import::exec(Interpreter *vm) {
     vm->store(dst, mod);
 }
 
+void ImportPath::exec(Interpreter *vm) {
+    auto mod = load_module(vm, name, path);
+    op_assert(mod, mslib::create_module_not_found_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_MODULE_PATH, name.c_str(), path.c_str())));
+    vm->store(dst, mod);
+}
+
 void ImportAll::exec(Interpreter *vm) {
     auto mod = vm->load(src);
     assert(mod && "Non existent module for import all");
-    assert((isa<ModuleValue>(mod) || isa<SpaceValue>(mod)) && "TODO: raise spilling something else than module or space");
+    op_assert((isa<ModuleValue>(mod) || isa<SpaceValue>(mod)), mslib::create_type_error(
+        diags::Diagnostic(*vm->get_src_file(), diags::STAR_IMPORT_NON_MODULE_SPACE, mod->get_type()->get_name().c_str())));
     vm->push_spilled_value(mod);
 }
 
