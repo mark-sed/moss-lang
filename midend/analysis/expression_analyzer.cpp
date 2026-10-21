@@ -21,15 +21,11 @@ IR *ExpressionAnalyzer::visit(BinaryExpr &be) {
 
 IR *ExpressionAnalyzer::visit(UnaryExpr &ue) {
     //auto opk = ue.get_op().get_kind();
-    
-    // This was uncommented because space import might be non-local.
-    // This is the case only when then expression is not from import, since you can import non-local space
+    //
+    //// Check that scope is not used for path import - it cannot be space
     //if (opk == OperatorKind::OP_SCOPE) {
-    //    // TODO: Isn't expr guaranteeed to be a variable?
-    //    if (auto v = dyn_cast<Variable>(ue.get_expr())) {
-    //        if (!currently_visiting || !isa<Import>(currently_visiting))
-    //            parser_assert(!v->is_non_local(), parser.create_diag(ue.get_src_info(), diags::NON_LOCAL_AFTER_GLOBAL));
-    //    }
+    //    parser_assert(!(currently_visiting && isa<Import>(currently_visiting) && isa<StringLiteral>(ue.get_expr())), 
+    //                    parser.create_diag(ue.get_src_info(), diags::SPACE_IMPORT_PATH));
     //}
     return &ue;
 }
@@ -64,4 +60,23 @@ IR *ExpressionAnalyzer::visit(Continue &c) {
     auto loop = c.get_outter_ir({IRType::FOR_LOOP, IRType::WHILE, IRType::DO_WHILE});
     parser_assert(loop, parser.create_diag(c.get_src_info(), diags::CONTINUE_OUTSIDE_OF_LOOP));
     return &c;
+}
+
+void ExpressionAnalyzer::check_import_expr(Expression *e) {
+    if (auto ue = dyn_cast<UnaryExpr>(e)) {
+        if (ue->get_op().get_kind() == OperatorKind::OP_SCOPE) {
+            parser_assert(!isa<StringLiteral>(ue->get_expr()), parser.create_diag(ue->get_src_info(), diags::SPACE_IMPORT_PATH));
+        }
+        check_import_expr(ue->get_expr());
+    } else if (auto be = dyn_cast<BinaryExpr>(e)) {
+        check_import_expr(be->get_left());
+        check_import_expr(be->get_right());
+    }
+}
+
+IR *ExpressionAnalyzer::visit(Import &im) {
+    for (auto n: im.get_names()) {
+        check_import_expr(n);
+    }
+    return &im;
 }

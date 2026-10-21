@@ -97,6 +97,7 @@ enum DiagID : unsigned {
     STAR_IMPORT_GLOBAL,     ///< ::*
     STAR_MEMBER_OUTSIDE_IMPORT, ///< x.* not in import
     STAR_IMPORT_NON_MODULE_SPACE,///< Star importing non-module and non-space
+    SPACE_IMPORT_PATH,      ///< When :: importing string path
     COLON_EXPECTED,         ///< Expecting :
     LIST_COMP_NOT_ASSIGN,   ///< Value in assignment section of list comprehension is not an assignment
     ANNOT_EXPECTS_ID_NAME,  ///< Annotation has to have an ID name
@@ -326,6 +327,7 @@ static const char * DIAG_MSGS[] = {
     "Cannot star import from global scope",
     "Star member can appear only in import",
     "Star import can be done only on space or module, but got '%s'",
+    "Path import cannot use global scope ('::')",
     "Expecting ':'",
     "Only assignments are allowed in assignment section of list comprehension",
     "Annotation must have an ID name",
