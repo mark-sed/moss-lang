@@ -47,7 +47,7 @@ Value *mslib::get_attr(Value *obj, ustring name, Interpreter *vm, Value *&err) {
 }
 
 template<class T>
-T *get_subtype_value(Value *v, Value *type, Interpreter *vm, Value *&err) {
+T *mslib::get_subtype_value(Value *v, Value *type, Interpreter *vm, Value *&err) {
     if (auto cv = dyn_cast<T>(v)) {
         return cv;
     }

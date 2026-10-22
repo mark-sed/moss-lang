@@ -160,14 +160,14 @@ Value *List::List(Interpreter *vm, Value *iterable, Value *&err) {
 
 Value *make_nested_list(std::vector<opcode::IntConst> &sizes,
                         Value *elem,
-                        opcode::IntConst depth) {
+                        size_t depth) {
     if (depth == sizes.size())
         return elem;
     
     std::vector<Value *> result;
     result.reserve(sizes[depth]);
 
-    for (std::size_t i = 0; i < sizes[depth]; ++i) {
+    for (opcode::IntConst i = 0; i < sizes[depth]; ++i) {
         result.push_back(make_nested_list(sizes, elem, depth+1));
     }
 
@@ -178,12 +178,19 @@ Value *List::List_dim(Interpreter *vm, Value *sizes, Value *elem, Value *&err) {
     auto sizes_list = mslib::get_list(sizes);
     std::vector<opcode::IntConst> int_sizes;
     for (auto v: sizes_list) {
+        // TODO: Consider enabling, but then it has to be everywhere
+        //auto intv = get_subtype_value<IntValue>(v, BuiltIns::Int, vm, err);
         auto intv = dyn_cast<IntValue>(v);
         if (!intv) {
             err = mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::BAD_TYPE_IN_LIST_CONSTR, v->get_type()->get_name().c_str()));
             return nullptr;
         }
-        int_sizes.push_back(intv->get_value());
+        auto i = intv->get_value();
+        if (i < 0) {
+            err = mslib::create_value_error(diags::Diagnostic(*vm->get_src_file(), diags::NEG_VAL_IN_LIST_CONSTR, i));
+            return nullptr;
+        }
+        int_sizes.push_back(i);
     }
     return make_nested_list(int_sizes, elem, 0);
 }

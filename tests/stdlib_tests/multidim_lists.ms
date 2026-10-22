@@ -48,3 +48,8 @@ List([2], [])               // [[], []]
 "\n"
 List([], "test")            // "test"
 "\n"
+
+try
+    List([1, 3, -4], 5)
+catch (e:ValueError)
+    "caught\n"

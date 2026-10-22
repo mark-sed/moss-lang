@@ -35,6 +35,9 @@ public:
     static const std::unordered_map<std::string, mslib_dispatcher>& get_registry(ustring module_name);
 };
 
+template<class T>
+T *get_subtype_value(Value *v, Value *type, Interpreter *vm, Value *&err);
+
 /// Some modules need to intialize their constants internally this method will call such initializers.
 /// \note This is not called for all modules imported only those marked "internal_module"
 void call_const_initializer(ustring module_name, Interpreter *vm);

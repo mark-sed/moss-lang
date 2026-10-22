@@ -2006,7 +2006,7 @@ fun test_lib_multidim_lists(name) {
 [[nil, nil, nil], [nil, nil, nil]]
 [[1, 2, 3], [1, 2, 3]]
 [[[1, 2], [1, 2]], [[1, 2], [1, 2]]]
-[[], []]\ntest\n""", "")
+[[], []]\ntest\ncaught\n""", "")
 }
 
 fun test_lib_subprocess_system_and_run(name) {
