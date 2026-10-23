@@ -1344,7 +1344,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
             auto annot_val = emit(annt->get_value(), true);
             append(new Annotate(fun_reg, annt->get_name(), free_reg(annot_val)));
         }
-        // Set argument default values and types
+        // Set argument default values or vararg
         opcode::IntConst arg_i = 0;
         for (auto a: lmb->get_args()) {
             if (a->is_vararg()) {
@@ -1360,10 +1360,17 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
                         append(new SetDefault(fun_reg, arg_i, free_reg(def_val)));
                     }
                 }
-                for (auto t: a->get_types()) {
-                    auto t_reg = emit(t, true);
-                    append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
-                }
+            }
+            ++arg_i;
+        }
+        // Set argument type after default - this is to enable load
+        // optimizations and ensure that there will be no side effects
+        // between setting type.
+        arg_i = 0;
+        for (auto a: lmb->get_args()) {
+            for (auto t: a->get_types()) {
+                auto t_reg = emit(t, true);
+                append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
             }
             ++arg_i;
         }
@@ -1714,7 +1721,7 @@ void BytecodeGen::emit(ir::Function *fun) {
     if (!fun->get_documentation().empty()) {
         append(new Document(fun_reg, fun->get_documentation()));
     }
-    // Set argument default values and types
+    // Set argument default values or vararg
     opcode::IntConst arg_i = 0;
     for (auto a: fun->get_args()) {
         if (a->is_vararg()) {
@@ -1730,10 +1737,17 @@ void BytecodeGen::emit(ir::Function *fun) {
                     append(new SetDefault(fun_reg, arg_i, free_reg(def_val)));
                 }
             }
-            for (auto t: a->get_types()) {
-                auto t_reg = emit(t, true);
-                append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
-            }
+        }
+        ++arg_i;
+    }
+    // Set argument type after default - this is to enable load
+    // optimizations and ensure that there will be no side effects
+    // between setting type.
+    arg_i = 0;
+    for (auto a: fun->get_args()) {
+        for (auto t: a->get_types()) {
+            auto t_reg = emit(t, true);
+            append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
         }
         ++arg_i;
     }

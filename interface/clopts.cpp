@@ -1,3 +1,4 @@
+
 #include "clopts.hpp"
 #include "commons.hpp"
 #include "errors.hpp"
@@ -79,7 +80,7 @@ void moss::clopts::parse_clopts(int argc, const char *argv[]) {
     if (opt_level) {
         opt_level_parsed = args::get(opt_level);
         if (opt_level_parsed < 0 || opt_level_parsed > 2) {
-            ustring msg = "Incorrect optimization level ('" + std::to_string(opt_level_parsed) + "'). Currently moss supports optimization levels 0 and 1";
+            ustring msg = "Incorrect optimization level ('" + std::to_string(opt_level_parsed) + "'). Currently moss supports optimization levels 0, 1 and 2";
             error::error(error::ErrorCode::ARGUMENT, msg.c_str());
         }
     } else {
