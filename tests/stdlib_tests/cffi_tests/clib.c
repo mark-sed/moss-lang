@@ -1,32 +1,39 @@
 // Compile with `gcc -fPIC -shared -o clib.so clib.c`
+// On Windows with `cl /LD clib.c /Fe:clib.dll`
 #include <stdio.h>
 
-void greet() {
-    puts("Hello from C!\n");
+#ifdef _WIN32
+    #define EXPORT __declspec(dllexport)
+#else
+    #define EXPORT
+#endif
+
+EXPORT void greet() {
+    fprintf(stderr, "Hello from C!\n");
 }
 
-long get_num() {
+EXPORT long get_num() {
     return 42L;
 }
 
-double add(double a, double b) {
+EXPORT double add(double a, double b) {
     return a + b;
 }
 
-double add_dl(double a, long b, long c, long d) {
+EXPORT double add_dl(double a, long b, long c, long d) {
     return a + b + c + d;// + e + f + g + h + i + j;
 }
 
-double add_dl10(double a, long b, long c, long d, long e, long f, long g, long h, long i, long j) {
+EXPORT double add_dl10(double a, long b, long c, long d, long e, long f, long g, long h, long i, long j) {
     return a + b + c + d + e + f + g + h + i + j;
 }
 
-void print_msg(const char *msg) {
-    puts(msg);
+EXPORT void print_msg(const char *msg) {
+    fprintf(stderr, msg);
 }
 
 const char *LIB_NAME = "CLIB";
 
-const char *get_lib_name() {
+EXPORT const char *get_lib_name() {
     return LIB_NAME;
 }

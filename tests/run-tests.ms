@@ -2016,11 +2016,13 @@ fun test_lib_subprocess_system_and_run(name) {
 }
 
 fun test_lib_cffi_clib(name) {
+    extension = "so"
+    if (PLATFORM == sys.Platform.Windows)
+        extension = "dll"
+
     ~expect_pass(f"stdlib_tests/cffi_tests/clib.ms", name, """<object of class CFFI>
 <C++ value of type void*>
 <object of class ForeignFunction>
-Hello from C!
-
 42
 6.700000
 300.000000
@@ -2028,7 +2030,6 @@ Hello from C!
 2.000000
 6.000000
 45.000000
-Hello from moss to C!
 CLIB
 <C++ value of type double>
 2.000000
@@ -2037,7 +2038,7 @@ CLIB
 caught
 Hello
 caught\ncaught\ncaught\ncaught
-done\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.so")
+done\n""", "Hello from C!\nHello from moss to C!", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.{extension}")
 }
 
 fun test_lib_cffi_rust(name) {
@@ -2747,11 +2748,11 @@ fun run_all_tests() {
     ~run_test("lib_subprocess_system_and_run")
 
     // cffi
+    ~run_test("lib_cffi_clib")
     if (PLATFORM != sys.Platform.Windows) {
-        ~run_test("lib_cffi_clib")
         ~run_test("lib_cffi_rust")
     } else {
-        ~print("[NOTE] Skipping cffi tests (not yet implemented on Windows).")
+        ~print("[NOTE] Skipping some cffi tests (not yet implemented on Windows).")
     }
 
     // python

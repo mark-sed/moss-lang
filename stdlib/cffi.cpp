@@ -96,8 +96,27 @@ static t_cpp::CVoidStarValue *get_handle(Value *obj, Interpreter *vm, Value *&er
 static Value *windows_dlopen(Interpreter *vm, CallFrame *cf, ustring path, Value *&err) {
     HMODULE handle = LoadLibrary(path.c_str());
     if (!handle) {
-        // TODO: Add error from loadlibrary
-        err = create_CFFIError(vm, cf, "Loading library has failed.\n", err);
+        DWORD error = GetLastError();
+
+        LPSTR message = nullptr;
+        FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            error,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            reinterpret_cast<LPSTR>(&message),
+            0,
+            nullptr
+        );
+
+        std::string error_message = message ? message : "Loading library has failed.\n";
+
+        if (message)
+            LocalFree(message);
+
+        err = create_CFFIError(vm, cf, error_message, err);
         return nullptr;
     }
     return new t_cpp::CVoidStarValue(handle);
@@ -129,13 +148,12 @@ Value *cffi::dlopen(Interpreter *vm, CallFrame *cf, Value *path, Value *&err) {
 }
 
 Value *cffi::dlclose(Interpreter *vm, Value *ths, Value *&err) {
-#ifdef __windows__
-    err = create_not_implemented_error("cffi.dlclose is not yet implemented for Windows systems.\n");
-    return nullptr;
-#else
     auto handle = get_handle(ths, vm, err);
     if (!handle)
         return nullptr;
+#ifdef __windows__
+    FreeLibrary(static_cast<HMODULE>(handle->get_value()));
+#else
     ::dlclose(handle->get_value());
 #endif
     return nullptr;
@@ -264,16 +282,16 @@ Value *cffi::cfun(Interpreter *vm, CallFrame *cf, Value *ths, Value *name, Value
         return nullptr;
 
 #ifdef __windows__
-    void *func = nullptr;
-    err = create_not_implemented_error("cffi.define is not yet implemented on Windows.\n");
-    return nullptr;
+    void *func = reinterpret_cast<void *>(GetProcAddress(
+            static_cast<HMODULE>(handle->get_value()),
+            name_s.c_str()));
 #else
     void *func = dlsym(handle->get_value(), name_s.c_str());
+#endif
     if (!func) {
         err = mslib::create_name_error(diags::Diagnostic(*vm->get_src_file(), diags::CANNOT_FIND_FFUN, name_s.c_str()));
         return nullptr;
     }
-#endif
 
     ffi_cif cif;
     std::vector<ffi_type *> *args = new std::vector<ffi_type *>();
