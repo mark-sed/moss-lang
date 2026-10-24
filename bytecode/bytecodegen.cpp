@@ -1366,10 +1366,23 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         // Set argument type after default - this is to enable load
         // optimizations and ensure that there will be no side effects
         // between setting type.
-        arg_i = 0;
+            arg_i = 0;
+        std::unordered_map<ustring, opcode::Register> loaded_types;
         for (auto a: lmb->get_args()) {
             for (auto t: a->get_types()) {
-                auto t_reg = emit(t, true);
+                RegValue *t_reg = nullptr;
+                if (auto tname = dyn_cast<ir::Variable>(t)) {
+                    auto var_name = tname->get_name();
+                    if (loaded_types.count(var_name) > 0) {
+                        auto r = loaded_types[var_name];
+                        t_reg = new RegValue(r, false);
+                    } else {
+                        t_reg = emit(t, true);
+                        loaded_types[var_name] = t_reg->reg();
+                    }
+                } else {
+                    t_reg = emit(t, true);
+                }
                 append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
             }
             ++arg_i;
@@ -1744,9 +1757,22 @@ void BytecodeGen::emit(ir::Function *fun) {
     // optimizations and ensure that there will be no side effects
     // between setting type.
     arg_i = 0;
+    std::unordered_map<ustring, opcode::Register> loaded_types;
     for (auto a: fun->get_args()) {
         for (auto t: a->get_types()) {
-            auto t_reg = emit(t, true);
+            RegValue *t_reg = nullptr;
+            if (auto tname = dyn_cast<ir::Variable>(t)) {
+                auto var_name = tname->get_name();
+                if (loaded_types.count(var_name) > 0) {
+                    auto r = loaded_types[var_name];
+                    t_reg = new RegValue(r, false);
+                } else {
+                    t_reg = emit(t, true);
+                    loaded_types[var_name] = t_reg->reg();
+                }
+            } else {
+                t_reg = emit(t, true);
+            }
             append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
         }
         ++arg_i;
