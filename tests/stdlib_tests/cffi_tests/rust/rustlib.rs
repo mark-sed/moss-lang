@@ -1,3 +1,5 @@
+// Build with: cargo build --release
+
 use std::ffi::{c_char, CStr};
 use std::os::raw::c_ulonglong;
 
