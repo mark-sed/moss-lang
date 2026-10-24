@@ -2040,6 +2040,10 @@ caught\ncaught\ncaught\ncaught
 done\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/clib.so")
 }
 
+fun test_lib_cffi_rust(name) {
+    ~expect_pass(f"stdlib_tests/cffi_tests/rust/rustlib.ms", name, """42\n16\n""", "Hello from rust!\n", prog_args=f"{::TEST_DIR}/stdlib_tests/cffi_tests/rust/librustlib.so")
+}
+
 fun test_lib_python_module_imports(name) {
     ~expect_pass("stdlib_tests/python_tests/py_module_imports.ms", name, """caught
 <object of class PythonObject>\n42\ntrue\n""", "")
@@ -2745,6 +2749,7 @@ fun run_all_tests() {
     // cffi
     if (PLATFORM != sys.Platform.Windows) {
         ~run_test("lib_cffi_clib")
+        ~run_test("lib_cffi_rust")
     } else {
         ~print("[NOTE] Skipping cffi tests (not yet implemented on Windows).")
     }
