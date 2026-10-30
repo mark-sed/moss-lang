@@ -11,7 +11,7 @@ switch(args[0].lower()) {
     default: exit("Unknown platform (use [Linux/Windows/Darwin]).")
 }
 
-md(f"# 🌿 Moss {sys.version} Release")
+Note(f"# 🌿 Moss {sys.version} Release", "md")
 
 md"""
 More information can be found on the official [Github page](https://github.com/mark-sed/moss-lang/).
