@@ -23,7 +23,7 @@ T_Generators Interpreter::generators{};
 std::vector<Value *> Interpreter::generator_notes{};
 std::list<FrameInfo> Interpreter::stack_frames{};
 std::vector<Value *> Interpreter::unwound_funs{};
-std::unordered_map<std::filesystem::path, ModuleValue *> Interpreter::imported_modules{};
+std::unordered_map<std::filesystem::path, ModuleValue *, PathHash> Interpreter::imported_modules{};
 bool Interpreter::running_generator = false;
 bool Interpreter::enable_code_output = false;
 

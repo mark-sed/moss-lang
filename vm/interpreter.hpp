@@ -197,6 +197,13 @@ struct FrameInfo {
     CallFrame *call_frame;
 };
 
+/// Custom hash for filesystem::path to avoid issues with AppleClang on MacOS
+struct PathHash {
+    std::size_t operator()(const std::filesystem::path& path) const noexcept {
+        return std::filesystem::hash_value(path);
+    }
+};
+
 /// \brief Interpreter for moss bytecode
 /// Interpreter holds memory pools (stack frames) and runs bytecode provided
 class Interpreter {
@@ -218,7 +225,7 @@ private:
     static T_Converters converters; ///< Mapping of formats and their converters
     static T_Generators generators; ///< Mapping of formats and their generators
     static std::vector<Value *> generator_notes; ///< List of notes to be passed to a generator
-    static std::unordered_map<std::filesystem::path, ModuleValue *> imported_modules;
+    static std::unordered_map<std::filesystem::path, ModuleValue *, PathHash> imported_modules;
     static bool enable_code_output; ///< When enabled then output will be enclosed as the output of code notes
     
     opcode::Address bci; ///< Current bytecode index
