@@ -2468,6 +2468,24 @@ fun html_gen(txts) {
 }
 }
 
+@formatter
+fun md(txt) {
+    d"Markdown formatter - returns `txt` as Note of format md."
+    return Note(txt, format="md")
+}
+
+@formatter
+fun html(txt) {
+    d"HTML formatter - returns `txt` as Note of format html."
+    return Note(txt, format="html")
+}
+
+@formatter
+fun csv(txt) {
+    d"CSV formatter - returns `txt` as Note of format csv."
+    return Note(txt, format="csv")
+}
+
 fun TODO(what:String="") {
     d"""
     Always throws NotImplementedError with "An operation is not implemented".

@@ -2009,6 +2009,12 @@ fun test_lib_multidim_lists(name) {
 [[], []]\ntest\ncaught\n""", "")
 }
 
+fun test_lib_formatters(name) {
+    ~expect_pass("""t="Title"; md(f"# {t}");""", name, "# Title", "", exec=true, args="-f md")
+    ~expect_pass("""csv("title,text,comment\\nTitle,value,")""", name, "title,text,comment\nTitle,value,", "", exec=true, args="-f csv")
+    ~expect_pass("""t="Title"; html(f"<h1>{t}</h1>");""", name, rx_out="<h1>Title</h1>", exec=true, args="-f html")
+}
+
 fun test_lib_subprocess_system_and_run(name) {
     // Note: Since the output might shuffle we need to test the outputs
     // inside of the test
@@ -2743,6 +2749,7 @@ fun run_all_tests() {
     ~run_test("lib_cpp")
     ~run_test("lib_float_formatting")
     ~run_test("lib_multidim_lists")
+    ~run_test("lib_formatters")
 
     // subprocess
     ~run_test("lib_subprocess_system_and_run")
