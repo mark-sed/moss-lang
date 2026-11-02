@@ -2476,7 +2476,11 @@ caught\ncaught\ncaught
 
 fun test_lib_json_parser_complex(name) {
     ~expect_pass("stdlib_tests/json_parser_tests/complex.ms", name, """3
-editor\n60200\n15.500000\nnil\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/json_parser_tests/complex_json.js")
+editor\n60200\n15.500000\nnil\n""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/json_parser_tests/complex_json.json")
+}
+
+fun test_lib_json_parser_esc_seq(name) {
+    ~expect_pass("stdlib_tests/json_parser_tests/esc_seq.ms", name, """{"name": "Sedláček", "city": "Česko", "letter": "α"}""", "", prog_args=f"{::TEST_DIR}/stdlib_tests/json_parser_tests/esc_seq.json")
 }
 
 fun test_gc_local_vars(name) {
@@ -2814,6 +2818,7 @@ fun run_all_tests() {
     // json_parser
     ~run_test("lib_json_parser_basics")
     ~run_test("lib_json_parser_complex")
+    ~run_test("lib_json_parser_esc_seq")
 
     // gc tests
     ~run_test("gc_local_vars")

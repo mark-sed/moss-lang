@@ -832,6 +832,31 @@ Value *String_isfun(Interpreter *vm, CallFrame *cf, std::function<bool(std::wint
     return String::isfun(arg, fn);
 }
 
+static ustring unicode2utf8(int codepoint) {
+    ustring result;
+
+    if (codepoint <= 0x7F) {
+        result += static_cast<char>(codepoint);
+    }
+    else if (codepoint <= 0x7FF) {
+        result += static_cast<char>(0xC0 | (codepoint >> 6));
+        result += static_cast<char>(0x80 | (codepoint & 0x3F));
+    }
+    else if (codepoint <= 0xFFFF) {
+        result += static_cast<char>(0xE0 | (codepoint >> 12));
+        result += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
+        result += static_cast<char>(0x80 | (codepoint & 0x3F));
+    }
+    else if (codepoint <= 0x10FFFF) {
+        result += static_cast<char>(0xF0 | (codepoint >> 18));
+        result += static_cast<char>(0x80 | ((codepoint >> 12) & 0x3F));
+        result += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
+        result += static_cast<char>(0x80 | (codepoint & 0x3F));
+    }
+
+    return result;
+}
+
 template<class IT, class VT>
 Value *create_iterator(Interpreter* vm, CallFrame* cf, Value *type, Value*& err) {
     assert(cf->get_args().size() == 2);
@@ -998,7 +1023,7 @@ const std::unordered_map<std::string, mslib::mslib_dispatcher>& FunctionRegistry
                     diags::Diagnostic(*vm->get_src_file(), 
                         diags::CHR_NOT_IN_RANGE, ii->get_value()));
             }
-            return StringValue::get(ustring(1, ii->get_value()));
+            return StringValue::get(unicode2utf8(ii->get_value()));
         }},
         {"clear", [](Interpreter* vm, CallFrame* cf, Value*& err) -> Value* {
             auto arg = cf->get_arg("this");

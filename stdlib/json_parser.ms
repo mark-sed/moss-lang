@@ -98,7 +98,18 @@ class JSONParser : parsing_utils.TextualParser {
                     case "n": ~value.append("\n")
                     case "r": ~value.append("\r")
                     case "t": ~value.append("\t")
-                    case "u": assert(false, "TODO: IMPLEMENT hex escape sequence") // TODO
+                    case "u": {
+                        // We expect 4 hexadecimal chars
+                        if (this.i + 4 >= this.text.length())
+                            raise JSONParsingError(this.line, this.column, "Incorrect hexadecimal escape sequence, 4 hexadecimal values are expected")
+                        hexval = this.text[this.i..this.i+4]
+                        try
+                            hexint = Int(hexval, base=16)
+                        catch(e:ValueError)
+                            raise JSONParsingError(this.line, this.column, f"Incorrect hexadecimal escape sequence '\\u{hexval}'")
+                        this.i += 4
+                        ~value.append(chr(hexint))
+                    }
                     default: raise JSONParsingError(this.line, this.column, f"Unknown escape sequence '\\{c}'")
                 }
                 continue
@@ -231,7 +242,6 @@ class JSONParser : parsing_utils.TextualParser {
         return result
     }
 
-    // TODO: Support \uXXXX escape sequence to comply with rfc
     fun parse() {
         this.line = 1
         this.column = 1
