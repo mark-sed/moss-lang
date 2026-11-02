@@ -39,11 +39,7 @@ namespace moss {
     inline bool is_stderr_atty() {
         return _isatty(_fileno(stderr));
     }
-#else
-    #ifndef __linux__
-        #warning "Platform is not Linux nor Windows, treating this as Linux"
-    #endif
-    
+#elif defined(__linux__) || defined(__APPLE__)
     #include <unistd.h>
 
     // Linux handles char strings as unicode and nothing extra needs to be
@@ -68,6 +64,8 @@ namespace moss {
         }
         return is_atty;
     }
+#else
+    #warning "Platform is not Linux nor Windows nor Mac, tty not set"
 #endif
 
 namespace opcode {
