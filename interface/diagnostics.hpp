@@ -62,6 +62,7 @@ enum DiagID : unsigned {
     IF_REQUIRES_PARENTH,    ///< If has to be followed by parenthesis
     WHILE_REQUIRES_PARENTH, ///< While has to be followed by parenthesis
     FOR_REQUIRES_PARENTH,   ///< For loop has to be followed by parenthesis
+    USING_REQUIRES_PARENTH, ///< Using requires parenthesis
     CATCH_REQUIRES_PARENTH, ///< Catch has to be followed by parenthesis
     SWITCH_REQUIRES_PARENTH,///< Switch has to be followed by parenthesis
     FUN_REQUIRES_PARENTH,   ///< Fun has to have arg list
@@ -294,6 +295,7 @@ static const char * DIAG_MSGS[] = {
     "If statement must have its condition in parenthesis",
     "While statement must have its condition in parenthesis",
     "For loop must have its iterator and collection in parenthesis",
+    "Using must have its variable or assignment in parenthesis",
     "Catch must have its argument in parenthesis",
     "Switch must have its argument in parenthesis",
     "Function declaration requires arguments in parenthesis or empty parenthesis ('()')",

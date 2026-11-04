@@ -1609,6 +1609,55 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     append(new opcode::LoopEnd());
 }
 
+void BytecodeGen::emit(ir::Using *usi) {
+    static opcode::IntConst catch_var_i = 0;
+    auto var_reg = emit(usi->get_var());
+
+    // Catch
+    auto catch_var_name = std::to_string(catch_var_i)+"_cv";
+    auto ctch = new opcode::Catch(catch_var_name, 0, 0);
+    append(ctch);
+    append(new StoreNilConst(next_creg()));
+    auto fnl_reg = next_reg();
+    append(new StoreConst(fnl_reg, val_last_creg()));
+    auto fnl = new opcode::Finally(0, fnl_reg);
+    append(fnl);
+    // Call to __enter()
+    // TODO
+
+    // Body
+    emit(usi->get_body());
+
+    // Finally run
+    append(new opcode::RunFinally());
+    auto jmp_end1 = new opcode::Jmp(0);
+    append(jmp_end1);
+
+    // Catch
+    append(new PopCatch(1));
+    ctch->addr = get_curr_address();
+    append(new StoreIntConst(next_creg(), -1));
+    append(new StoreConst(fnl_reg, val_last_creg()));
+    append(new Load(next_reg(), catch_var_name));
+    append(new opcode::Raise(val_last_reg()));
+    append(new RunFinally());
+    auto jmp_end2 = new opcode::Jmp(0);
+    append(jmp_end2);
+
+    // Finfally
+    append(new PopFinally());
+    fnl->addr = get_curr_address();
+
+    // Call to __exit()
+    // TODO
+
+    // Finally return
+    append(new FinallyReturn(fnl_reg));
+    jmp_end1->addr = jmp_end2->addr = get_curr_address() + 1;
+
+    free_reg(var_reg);
+}
+
 static ustring get_module_from_path(ustring path) {
     return std::filesystem::path(path).filename().stem().string();
 }
@@ -2031,6 +2080,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto w = dyn_cast<ir::DoWhile>(decl)) {
         emit(w);
+    }
+    else if (auto u = dyn_cast<ir::Using>(decl)) {
+        emit(u);
     }
     else if (auto i = dyn_cast<ir::Import>(decl)) {
         emit(i);

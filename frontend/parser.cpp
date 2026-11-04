@@ -708,6 +708,19 @@ IR *Parser::declaration() {
         no_end_needed = true;
     }
 
+    // Using
+    else if (match(TokenType::USING)) {
+        auto usingsrci = curr_src_info();
+        expect(TokenType::LEFT_PAREN, create_diag(diags::USING_REQUIRES_PARENTH));
+        auto var = expression(true);
+        parser_assert(var, create_diag(diags::EXPR_EXPECTED));
+        expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        auto usingbody = body();
+        usingsrci.update_ends(curr_src_info());
+        decl = new Using(var, usingbody, usingsrci);
+        no_end_needed = true;
+    }
+
     // switch
     else if (match(TokenType::SWITCH)) {
         auto swtsrci = curr_src_info();
