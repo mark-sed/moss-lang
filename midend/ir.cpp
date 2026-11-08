@@ -185,6 +185,10 @@ IR *ForLoop::accept(IRVisitor& visitor) {
     return visitor.visit(*this);
 }
 
+IR *Using::accept(IRVisitor& visitor) {
+    return visitor.visit(*this);
+}
+
 //IR *Enum::accept(IRVisitor& visitor) {
 //    return visitor.visit(*this);
 //}

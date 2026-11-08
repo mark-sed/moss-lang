@@ -410,6 +410,12 @@ void BytecodeWriter::write(Bytecode *code) {
         else if (isa<opcode::LoopEnd>(op_gen)){
             // Nothing to do.
         }
+        else if (auto o = dyn_cast<opcode::UsingEnter>(op_gen)){
+            write_register(o->dst);
+        }
+        else if (auto o = dyn_cast<opcode::UsingExit>(op_gen)){
+            write_register(o->dst);
+        }
         else {
             std::string msg = "unknown opcode in bytecode writer: "+std::to_string(opc);
             error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);

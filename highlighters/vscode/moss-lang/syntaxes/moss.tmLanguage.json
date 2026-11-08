@@ -49,7 +49,7 @@
       "patterns": [
         {
           "name": "keyword.control.moss",
-          "match": "\\b(import|as|if|else|while|do|for|switch|case|default|try|catch|finally|assert|break|continue|raise|return|enum|class|space|fun)\\b"
+          "match": "\\b(import|as|if|else|while|do|for|switch|case|default|try|catch|finally|assert|break|continue|raise|return|enum|class|space|fun|using)\\b"
         }
       ]
     },

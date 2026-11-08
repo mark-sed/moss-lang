@@ -491,6 +491,22 @@ AssertionError: at line 9: assert
 AssertionError: at line 15: x is false\n""", "")
 }
 
+fun test_using(name) {
+    ~expect_fail("using.ms", name, """Entered: 42
+In the middle of using: 42
+Exited: 42
+2
+ABCDEFGHIJKL1234567890
+ABCDEFGHIJKL1234567890
+Entered: 9
+In the middle of using: 9
+In the middle of using: 7
+Exited: 7
+Entered: -7
+In the middle of using: -7
+Exited: -7\n""", rx_err="Exception: Negative c", prog_args=f"{::TEST_DIR}/randdata.txt")
+}
+
 fun test_ifs(name) {
     ~expect_pass("ifs.ms", name, """0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
 very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n""", "")
@@ -2668,6 +2684,7 @@ fun run_all_tests() {
     ~run_test("annotations")
     ~run_test("iterators")
     ~run_test("asserts")
+    ~run_test("using")
 
     ~run_test("basic_import")
     ~run_test("import_calls")

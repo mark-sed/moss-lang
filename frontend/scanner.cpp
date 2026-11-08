@@ -709,6 +709,7 @@ const std::unordered_map<ustring, TokenType> Scanner::KEYWORDS = {
     {"catch", TokenType::CATCH},
     {"finally", TokenType::FINALLY},
     {"assert", TokenType::ASSERT},
+    {"using", TokenType::USING},
 
     {"break", TokenType::BREAK},
     {"continue", TokenType::CONTINUE},
