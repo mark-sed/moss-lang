@@ -977,6 +977,51 @@ for(1 : [1,2,3]) {}
     run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
 }
 
+TEST(Parsing, Usings){
+    ustring code = R"(
+using(x) {}
+
+using(f = ff) {}
+
+using (4) 5
+
+using (x = foo()) {
+}
+)";
+
+    IRType expected[] = {
+        IRType::USING,
+        IRType::USING,
+        IRType::USING,
+        IRType::USING,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser(code, expected, sizeof(expected)/sizeof(expected[0]));
+
+    // Errors
+ustring incorrect = R"(
+using true { "hi" }
+using {}
+using() {}
+using(if (x) c) {}
+using(x:Int) {}
+)";
+
+    IRType expected_incorr[] = {
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+        IRType::RAISE,
+
+        IRType::END_OF_FILE
+    };
+
+    run_parser_by_line(incorrect, expected_incorr, sizeof(expected_incorr)/sizeof(expected_incorr[0]));
+}
+
 TEST(Parsing, TryCatchFinally){
     ustring code = R"(
 try {

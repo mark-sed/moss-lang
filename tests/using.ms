@@ -64,3 +64,5 @@ using (v = MyClass(-7)) {
     if (v.c < 0)
         raise Exception("Negative c")
 }
+
+using(4) {}
