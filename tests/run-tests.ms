@@ -497,6 +497,7 @@ In the middle of using: 42
 Exited: 42
 2
 ABCDEFGHIJKL1234567890
+ABCDEFGHIJKL1234567890
 Entered: 9
 In the middle of using: 9
 In the middle of using: 7

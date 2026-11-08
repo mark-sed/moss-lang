@@ -26,6 +26,7 @@ using(x){
 using (f = open(args[0])) {
     f.read()
 }
+using (f = open(args[0])) f.read()
 assert(f.__fstream == nil, "using File exit did not close file or fstream is set") // should be nil
 
 class MyClassEnter {
