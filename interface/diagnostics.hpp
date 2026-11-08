@@ -146,6 +146,8 @@ enum DiagID : unsigned {
     NON_BOOL_FROM_EQ,       ///< When (==) returns non-bool type but was used by operator
     NON_BOOL_FROM_NEQ,      ///< When (!=) returns non-bool type but was used by operator
     NON_BOOL_FROM_GT,       ///< When (>) return non-bool type but was used by operator
+    NON_NIL_FROM_ENTER,     ///< When __enter returns non-nil value
+    NON_NIL_FROM_EXIT,      ///< When __exit returns non-nil value
     NOT_HASHABLE,           ///< Cannot create hash of it
     NON_INT_FROM_HASH,      ///< __hash did not return an Int value
     NO_HASH_DEFINED,        ///< When __hash is missing
@@ -379,6 +381,8 @@ static const char * DIAG_MSGS[] = {
     "(==) operator function for type '%s' returned value of type '%s', but Bool is expected",
     "(!=) operator function for type '%s' returned value of type '%s', but Bool is expected",
     "(>) operator function for type '%s' returned value of type '%s', but Bool is expected",
+    "__enter function for type '%s' return value of type '%s', but nil is expected",
+    "__exit function for type '%s' return value of type '%s', but nil is expected",
     "Type '%s' is not hashable",
     "Function __hash for type '%s' returned value of type '%s', but Int is expected",
     "Object of class '%s' cannot be hashed — __hash method has to be defined",

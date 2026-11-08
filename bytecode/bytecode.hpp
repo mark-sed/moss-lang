@@ -12,7 +12,6 @@
 
 #include "opcode.hpp"
 #include "bytecode_header.hpp"
-#include <cstdint>
 #include <vector>
 #include <map>
 #include <optional>

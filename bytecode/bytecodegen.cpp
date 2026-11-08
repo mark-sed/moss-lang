@@ -1623,7 +1623,7 @@ void BytecodeGen::emit(ir::Using *usi) {
     auto fnl = new opcode::Finally(0, fnl_reg);
     append(fnl);
     // Call to __enter()
-    // TODO
+    append(new UsingEnter(var_reg->reg()));
 
     // Body
     emit(usi->get_body());
@@ -1643,13 +1643,14 @@ void BytecodeGen::emit(ir::Using *usi) {
     append(new RunFinally());
     auto jmp_end2 = new opcode::Jmp(0);
     append(jmp_end2);
+    append(new PopCatch(1));
 
     // Finfally
     append(new PopFinally());
     fnl->addr = get_curr_address();
 
     // Call to __exit()
-    // TODO
+    append(new UsingExit(var_reg->reg()));
 
     // Finally return
     append(new FinallyReturn(fnl_reg));
