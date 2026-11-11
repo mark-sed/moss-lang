@@ -1612,6 +1612,13 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
 void BytecodeGen::emit(ir::Using *usi) {
     static opcode::IntConst catch_var_i = 0;
     auto var_reg = emit(usi->get_var());
+    if (auto be = dyn_cast<BinaryExpr>(usi->get_var())) {
+        if (be->get_op().get_kind() == OperatorKind::OP_SET) {
+            if (auto mv = dyn_cast<Multivar>(be->get_left())) {
+                assert(false && "Missing generation for multivar");
+            }
+        }
+    }
 
     // Catch
     auto catch_var_name = std::to_string(catch_var_i)+"_cv";
