@@ -14,6 +14,101 @@ using namespace opcode;
     #define comment(c)
 #endif
 
+void BytecodeGen::multivar_set(ir::Multivar *mva, RegValue *right, std::vector<Register> &assigned_regs) {
+    if (right->is_const()) {
+        append(new opcode::StoreConst(next_reg(), free_reg(right)));
+        right = last_reg();
+    }
+    // Cast the value into a List to have __iter be called over objects
+    //     PUSH_CALL_FRAME
+    //     LOAD  %102, "List"
+    //     LOAD  %103, "a"
+    //     PUSH_ARG  %103
+    //     CALL  %104, %102
+    append(new PushCallFrame());
+    auto list_reg = next_reg();
+    append(new Load(list_reg, "List"));
+    append(new PushArg(free_reg(right)));
+    append(new opcode::Call(next_reg(), list_reg));
+    right = last_reg();
+
+    auto vars = mva->get_vars();
+    if (mva->get_rest_index() > -1) {
+        // Create list of vars
+        auto vars_list = next_reg();
+        append(new BuildList(vars_list));
+        std::vector<Register> used_regs{};
+        used_regs.reserve(vars.size());
+        for (size_t i = 0; i < vars.size(); ++i) {
+            auto name_reg = next_reg();
+            assigned_regs.push_back(name_reg);
+            used_regs.push_back(name_reg);
+            if (isa<Variable>(vars[i])) {
+                append(new StoreName(name_reg, vars[i]->get_name()));
+            }
+            append(new opcode::StoreIntConst(next_creg(), name_reg));
+            append(new ListPushConst(vars_list, val_last_creg()));
+        }
+        append(new StoreIntConst(next_creg(), mva->get_rest_index()));
+        append(new SubscRest(vars_list, right->reg(), val_last_creg()));
+        for (size_t i = 0; i < vars.size(); ++i) {
+            if (auto be = dyn_cast<BinaryExpr>(vars[i])) {
+                auto subsc_reg = used_regs[i];
+                // When assigning to a non-var we have to generate the access and store subsc result.
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (!index->is_const()) {
+                        append(new StoreSubsc(subsc_reg, free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreSubscConst(subsc_reg, free_reg(leftE), free_reg(index)));
+                    }
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    append(new StoreAttr(subsc_reg, free_reg(leftE), rightE->get_name()));
+                } else {
+                    assert("Non-assignable expression");
+                }
+            }
+        }
+    } else {
+        for (size_t i = 0; i < vars.size(); ++i) {
+            append(new opcode::StoreIntConst(next_creg(), i));
+            auto stor_reg = val_last_creg();
+            if (i == vars.size()-1)
+                append(new opcode::SubscLast(next_reg(), right->reg(), stor_reg));
+            else
+                append(new opcode::Subsc3(next_reg(), right->reg(), stor_reg));
+            assigned_regs.push_back(val_last_reg());
+            if (isa<Variable>(vars[i])) {
+                append(new StoreName(val_last_reg(), vars[i]->get_name()));
+            } else if (auto be = dyn_cast<BinaryExpr>(vars[i])) {
+                auto subsc_reg = val_last_reg();
+                // When assigning to a non-var we have to generate the access and store subsc result.
+                if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
+                    auto index = emit(be->get_right());
+                    auto leftE = emit(be->get_left(), true);
+                    if (!index->is_const()) {
+                        append(new StoreSubsc(subsc_reg, free_reg(leftE), free_reg(index)));
+                    } else {
+                        append(new StoreSubscConst(subsc_reg, free_reg(leftE), free_reg(index)));
+                    }
+                } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
+                    auto rightE = dyn_cast<Variable>(be->get_right());
+                    assert(rightE && "Non assignable access");
+                    auto leftE = emit(be->get_left(), true);
+                    append(new StoreAttr(subsc_reg, free_reg(leftE), rightE->get_name()));
+                } else {
+                    assert("Non-assignable expression");
+                }
+            }
+        }
+    }
+    right->set_silent(true);
+}
+
 // TODO: Consider rewriting this without using RegValue *, but using just RegValue
 RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
     LOGMAX("Generating " << *expr);
@@ -209,96 +304,8 @@ RegValue *BytecodeGen::emit(ir::BinaryExpr *expr) {
                 assert("Non-assignable expression");
                 return nullptr;
             } else if (auto mva = dyn_cast<Multivar>(expr->get_left())) {
-                if (right->is_const()) {
-                    append(new opcode::StoreConst(next_reg(), free_reg(right)));
-                    right = last_reg();
-                }
-                // Cast the value into a List to have __iter be called over objects
-                //     PUSH_CALL_FRAME
-                //     LOAD  %102, "List"
-                //     LOAD  %103, "a"
-                //     PUSH_ARG  %103
-                //     CALL  %104, %102
-                append(new PushCallFrame());
-                auto list_reg = next_reg();
-                append(new Load(list_reg, "List"));
-                append(new PushArg(free_reg(right)));
-                append(new opcode::Call(next_reg(), list_reg));
-                right = last_reg();
-
-                auto vars = mva->get_vars();
-                if (mva->get_rest_index() > -1) {
-                    // Create list of vars
-                    auto vars_list = next_reg();
-                    append(new BuildList(vars_list));
-                    std::vector<Register> used_regs{};
-                    used_regs.reserve(vars.size());
-                    for (size_t i = 0; i < vars.size(); ++i) {
-                        auto name_reg = next_reg();
-                        used_regs.push_back(name_reg);
-                        if (isa<Variable>(vars[i])) {
-                            append(new StoreName(name_reg, vars[i]->get_name()));
-                        }
-                        append(new opcode::StoreIntConst(next_creg(), name_reg));
-                        append(new ListPushConst(vars_list, val_last_creg()));
-                    }
-                    append(new StoreIntConst(next_creg(), mva->get_rest_index()));
-                    append(new SubscRest(vars_list, right->reg(), val_last_creg()));
-                    for (size_t i = 0; i < vars.size(); ++i) {
-                        if (auto be = dyn_cast<BinaryExpr>(vars[i])) {
-                            auto subsc_reg = used_regs[i];
-                            // When assigning to a non-var we have to generate the access and store subsc result.
-                            if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
-                                auto index = emit(be->get_right());
-                                auto leftE = emit(be->get_left(), true);
-                                if (!index->is_const()) {
-                                    append(new StoreSubsc(subsc_reg, free_reg(leftE), free_reg(index)));
-                                } else {
-                                    append(new StoreSubscConst(subsc_reg, free_reg(leftE), free_reg(index)));
-                                }
-                            } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
-                                auto rightE = dyn_cast<Variable>(be->get_right());
-                                assert(rightE && "Non assignable access");
-                                auto leftE = emit(be->get_left(), true);
-                                append(new StoreAttr(subsc_reg, free_reg(leftE), rightE->get_name()));
-                            } else {
-                                assert("Non-assignable expression");
-                            }
-                        }
-                    }
-                } else {
-                    for (size_t i = 0; i < vars.size(); ++i) {
-                        append(new opcode::StoreIntConst(next_creg(), i));
-                        auto stor_reg = val_last_creg();
-                        if (i == vars.size()-1)
-                            append(new opcode::SubscLast(next_reg(), right->reg(), stor_reg));
-                        else
-                            append(new opcode::Subsc3(next_reg(), right->reg(), stor_reg));
-                        if (isa<Variable>(vars[i])) {
-                            append(new StoreName(val_last_reg(), vars[i]->get_name()));
-                        } else if (auto be = dyn_cast<BinaryExpr>(vars[i])) {
-                            auto subsc_reg = val_last_reg();
-                            // When assigning to a non-var we have to generate the access and store subsc result.
-                            if (be->get_op().get_kind() == OperatorKind::OP_SUBSC) {
-                                auto index = emit(be->get_right());
-                                auto leftE = emit(be->get_left(), true);
-                                if (!index->is_const()) {
-                                    append(new StoreSubsc(subsc_reg, free_reg(leftE), free_reg(index)));
-                                } else {
-                                    append(new StoreSubscConst(subsc_reg, free_reg(leftE), free_reg(index)));
-                                }
-                            } else if (be->get_op().get_kind() == OperatorKind::OP_ACCESS) {
-                                auto rightE = dyn_cast<Variable>(be->get_right());
-                                assert(rightE && "Non assignable access");
-                                auto leftE = emit(be->get_left(), true);
-                                append(new StoreAttr(subsc_reg, free_reg(leftE), rightE->get_name()));
-                            } else {
-                                assert("Non-assignable expression");
-                            }
-                        }
-                    }
-                }
-                right->set_silent(true);
+                std::vector<Register> used_regs;
+                multivar_set(mva, right, used_regs);
                 return right;
             } else if (auto ue = dyn_cast<UnaryExpr>(expr->get_left())) {
                 assert(ue->get_op().get_kind() == OperatorKind::OP_SCOPE && "non-scope unary assignment");
@@ -1609,6 +1616,86 @@ void BytecodeGen::emit(ir::ForLoop *forlp) {
     append(new opcode::LoopEnd());
 }
 
+void BytecodeGen::emit(ir::Using *usi) {
+    static opcode::IntConst catch_var_i = 0;
+    bool is_multivar = false;
+    RegValue *var_reg = nullptr;
+    std::vector<Register> multivar_regs;
+
+    if (auto be = dyn_cast<BinaryExpr>(usi->get_var())) {
+        if (be->get_op().get_kind() == OperatorKind::OP_SET) {
+            if (auto mv = dyn_cast<Multivar>(be->get_left())) {
+                is_multivar = true;
+                auto right = emit(be->get_right());
+                multivar_set(mv, right, multivar_regs);
+            }
+        }
+    }
+    if (!is_multivar) {
+        var_reg = emit(usi->get_var(), true);
+    }
+
+    // Catch
+    auto catch_var_name = std::to_string(catch_var_i)+"_cv";
+    auto ctch = new opcode::Catch(catch_var_name, 0, 0);
+    append(ctch);
+    append(new StoreNilConst(next_creg()));
+    auto fnl_reg = next_reg();
+    append(new StoreConst(fnl_reg, val_last_creg()));
+    auto fnl = new opcode::Finally(0, fnl_reg);
+    append(fnl);
+    // Call to __enter()
+    if (!is_multivar) {
+        append(new UsingEnter(var_reg->reg()));
+    } else {
+        assert(!multivar_regs.empty());
+        for (auto r: multivar_regs) {
+            append(new UsingEnter(r));
+        }
+    }
+
+    // Body
+    emit(usi->get_body());
+
+    // Finally run
+    append(new opcode::RunFinally());
+    auto jmp_end1 = new opcode::Jmp(0);
+    append(jmp_end1);
+
+    // Catch
+    append(new PopCatch(1));
+    ctch->addr = get_curr_address();
+    append(new StoreIntConst(next_creg(), -1));
+    append(new StoreConst(fnl_reg, val_last_creg()));
+    append(new Load(next_reg(), catch_var_name));
+    append(new opcode::Raise(val_last_reg()));
+    append(new RunFinally());
+    auto jmp_end2 = new opcode::Jmp(0);
+    append(jmp_end2);
+    append(new PopCatch(1));
+
+    // Finfally
+    append(new PopFinally());
+    fnl->addr = get_curr_address();
+
+    // Call to __exit()
+    if (!is_multivar) {
+        append(new UsingExit(var_reg->reg()));
+    } else {
+        for (auto it = multivar_regs.rbegin(); it != multivar_regs.rend(); ++it) {
+            auto& r = *it;
+            append(new UsingExit(r));
+        }
+    }
+
+    // Finally return
+    append(new FinallyReturn(fnl_reg));
+    jmp_end1->addr = jmp_end2->addr = get_curr_address() + 1;
+
+    if (var_reg)
+        free_reg(var_reg);
+}
+
 static ustring get_module_from_path(ustring path) {
     return std::filesystem::path(path).filename().stem().string();
 }
@@ -2031,6 +2118,9 @@ void BytecodeGen::emit(ir::IR *decl) {
     }
     else if (auto w = dyn_cast<ir::DoWhile>(decl)) {
         emit(w);
+    }
+    else if (auto u = dyn_cast<ir::Using>(decl)) {
+        emit(u);
     }
     else if (auto i = dyn_cast<ir::Import>(decl)) {
         emit(i);

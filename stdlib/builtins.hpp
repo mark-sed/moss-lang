@@ -44,6 +44,8 @@ namespace known_names {
     inline constexpr char TO_INT_METHOD[] = "__Int";
     inline constexpr char TO_FLOAT_METHOD[] = "__Float";
     inline constexpr char TO_BOOL_METHOD[] = "__Bool";
+    inline constexpr char ENTER_METHOD[] = "__enter";
+    inline constexpr char EXIT_METHOD[] = "__exit";
 
     inline constexpr char BUILT_IN_EXT_VALUE[] = "__value";
     inline constexpr char OBJECT_ITERATOR[] = "__iter";

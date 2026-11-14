@@ -3126,4 +3126,36 @@ void LoopEnd::exec(Interpreter *vm) {
     vm->pop_finally_stack();
 }
 
+void UsingEnter::exec(Interpreter *vm) {
+    auto val = vm->load(this->dst);
+    assert(val && "sanity check");
+    if (isa<ObjectValue>(val)) {
+        // Call __enter only if it exists
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        FunValue *enterf = lookup_method(vm, val, known_names::ENTER_METHOD, {val}, did);
+        if (enterf) {
+            LOGMAX("Calling object enter function");
+            auto rval = runtime_method_call(vm, enterf, {val});
+            op_assert(rval, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_NIL_FROM_ENTER,
+                val->get_type()->get_name().c_str(), rval->get_type()->get_name().c_str())));
+        }
+    }
+}
+
+void UsingExit::exec(Interpreter *vm) {
+    auto val = vm->load(this->dst);
+    assert(val && "sanity check");
+    if (isa<ObjectValue>(val)) {
+        // Call __enter only if it exists
+        diags::DiagID did = diags::DiagID::UNKNOWN;
+        FunValue *enterf = lookup_method(vm, val, known_names::EXIT_METHOD, {val}, did);
+        if (enterf) {
+            LOGMAX("Calling object exit function");
+            auto rval = runtime_method_call(vm, enterf, {val});
+            op_assert(rval, mslib::create_type_error(diags::Diagnostic(*vm->get_src_file(), diags::NON_NIL_FROM_EXIT,
+                val->get_type()->get_name().c_str(), rval->get_type()->get_name().c_str())));
+        }
+    }
+}
+
 #undef op_assert

@@ -1729,6 +1729,10 @@ class __File {
         Closes file for all operations.
         """
     }
+
+    fun __exit() {
+        ~this.close()
+    }
 }
 
 fun open(path:String, mode:String="r") {

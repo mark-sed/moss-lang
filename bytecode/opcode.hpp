@@ -197,6 +197,8 @@ enum OpCodes : opcode_t {
     ITER, // %iterator, %collection
     LOOP_BEGIN, //
     LOOP_END, //
+    USING_ENTER, // %val
+    USING_EXIT, //  %val
 
     OPCODES_AMOUNT
 };
@@ -2940,6 +2942,54 @@ public:
     }
     bool equals(OpCode *other) override {
         return isa<LoopEnd>(other);
+    }
+};
+
+class UsingEnter : public OpCode {
+public:
+    Register dst;
+
+    static const OpCodes ClassType = OpCodes::USING_ENTER;
+
+    UsingEnter(Register dst) : OpCode(ClassType, "USING_ENTER"), dst(dst) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << dst;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<UsingEnter>(other);
+        if (!casted) return false;
+        return casted->dst == dst;
+    }
+};
+
+class UsingExit : public OpCode {
+public:
+    Register dst;
+
+    static const OpCodes ClassType = OpCodes::USING_EXIT;
+
+    UsingExit(Register dst) : OpCode(ClassType, "USING_EXIT"), dst(dst) {
+        this->set_operands({&this->dst});
+        this->set_defined_registers({&this->dst});
+    }
+    
+    void exec(Interpreter *vm) override;
+    
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << mnem << "  %" << dst;
+        return os;
+    }
+    bool equals(OpCode *other) override {
+        auto casted = dyn_cast<UsingExit>(other);
+        if (!casted) return false;
+        return casted->dst == dst;
     }
 };
 

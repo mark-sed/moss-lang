@@ -51,6 +51,7 @@ enum IRType {
     WHILE,
     DO_WHILE,
     FOR_LOOP,
+    USING,
     ENUM,
 
     IMPORT,
@@ -841,6 +842,40 @@ public:
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "for (" << *iterator << ": " << *collection << ") {\n";
+        for (auto d: body) {
+            os << *d << "\n";
+        }
+        os << "}";
+        return os;
+    }
+};
+
+class Using : public Construct {
+private:
+    Expression *var;
+
+public:
+    static const IRType ClassType = IRType::USING;
+
+    Using(Expression *var, std::list<IR *> usingbody, SourceInfo src_info) 
+           : Construct(ClassType, "using", src_info), var(var) {
+        this->body = usingbody;
+        for (auto i: body) {
+            i->set_parent(this);
+        }
+        var->set_parent(this);
+    }
+    ~Using() {
+        delete var;
+    }
+
+    Expression *get_var() { return this->var; }
+    void set_var(Expression *v) { this->var = v; }
+
+    IR *accept(IRVisitor& visitor) override;
+
+    virtual inline std::ostream& debug(std::ostream& os) const override {
+        os << "using (" << *var << ") {\n";
         for (auto d: body) {
             os << *d << "\n";
         }

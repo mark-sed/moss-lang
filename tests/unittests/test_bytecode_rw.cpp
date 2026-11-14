@@ -209,6 +209,8 @@ TEST(BytecodeWriterAndReader, AllOpCodes){
     bc->push_back(new opcode::Iter(11, 14));
     bc->push_back(new opcode::LoopBegin());
     bc->push_back(new opcode::LoopEnd());
+    bc->push_back(new opcode::UsingEnter(11));
+    bc->push_back(new opcode::UsingExit(11));
 
     auto file_path = "mosstest_all.msb";
 

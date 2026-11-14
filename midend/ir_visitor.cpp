@@ -249,6 +249,18 @@ IR *PassManager::visit(ForLoop &frl) {
     return &frl;
 }
 
+IR *PassManager::visit(Using &u) {
+    for (auto p : passes) {
+        IR* replaced = u.accept(*p);
+        assert (replaced == &u && "Pass attempted to replace using node");
+        (void)replaced;
+    }
+
+    visit_child(u.get_var(), [&u](Expression *new_i) { u.set_var(new_i); }, "Using var cannot be removed");
+    visit_body<IR>(u.get_body());
+    return &u;
+}
+
 IR *PassManager::visit(Import &imp) {
     for (auto p : passes) {
         IR* replaced = imp.accept(*p);
@@ -447,6 +459,7 @@ IR *IRVisitor::visit(class Try &i) { return &i; }
 IR *IRVisitor::visit(class While &i) { return &i; }
 IR *IRVisitor::visit(class DoWhile &i) { return &i; }
 IR *IRVisitor::visit(class ForLoop &i) { return &i; }
+IR *IRVisitor::visit(class Using &i) { return &i; }
 IR *IRVisitor::visit(class Import &i) { return &i; }
 IR *IRVisitor::visit(class Assert &i) { return &i; }
 IR *IRVisitor::visit(class Raise &i) { return &i; }

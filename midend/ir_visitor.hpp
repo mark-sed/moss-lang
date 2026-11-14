@@ -43,6 +43,7 @@ public:
     virtual IR *visit(class While &i);
     virtual IR *visit(class DoWhile &i);
     virtual IR *visit(class ForLoop &i);
+    virtual IR *visit(class Using &i);
     //virtual IR *visit(class Enum &i);
     virtual IR *visit(class Import &i);
     virtual IR *visit(class Assert &i);
@@ -94,6 +95,7 @@ public:
     virtual IR *visit(class While &whl) override;
     virtual IR *visit(class DoWhile &dwhl) override;
     virtual IR *visit(class ForLoop &frl) override;
+    virtual IR *visit(class Using &u) override;
     virtual IR *visit(class Import &imp) override;
     virtual IR *visit(class Assert &a) override;
     virtual IR *visit(class Raise &r) override;

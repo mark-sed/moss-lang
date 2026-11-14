@@ -883,6 +883,14 @@ Bytecode *BytecodeReader::read() {
             case opcode::OpCodes::LOOP_END: {
                 bc->push_back(new LoopEnd());
             } break;
+            case opcode::OpCodes::USING_ENTER: {
+                auto reg = read_register();
+                bc->push_back(new UsingEnter(reg));
+            } break;
+            case opcode::OpCodes::USING_EXIT: {
+                auto reg = read_register();
+                bc->push_back(new UsingExit(reg));
+            } break;
             default: {
                 std::string msg = "unknown opcode in bytecode reader: "+std::to_string(opcode);
                 error::error(error::ErrorCode::BYTECODE, msg.c_str(), &this->file, true);

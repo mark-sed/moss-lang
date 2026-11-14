@@ -92,6 +92,7 @@ private:
     /// \param brk Address where to jump on break
     /// \param cont Address where to jump on continue
     void update_jmps(opcode::Address start, opcode::Address end, opcode::Address brk, opcode::Address cont);
+    void multivar_set(ir::Multivar *mva, RegValue *right, std::vector<opcode::Register> &assigned_regs);
 
     void emit(ir::Raise *r);
     void emit(ir::Return *r);
@@ -102,6 +103,7 @@ private:
     void emit(ir::While *whstmt);
     void emit(ir::Import *im);
     void emit(ir::DoWhile *whstmt);
+    void emit(ir::Using *usi);
     void emit(ir::Try *tcf);
     void emit(ir::Function *fun);
     void emit(ir::Class *cls);
