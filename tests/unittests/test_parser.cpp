@@ -985,11 +985,19 @@ using(f = ff) {}
 
 using (4) 5
 
-using (x = foo()) {
-}
+using (x = foo()) {}
+
+using(a, b = call()) {}
+
+using(i, j, k, ...l = [1, 2, 3, 4, 5, 6, 7, 8]) {}
+
+using (c, ...b, d, e.a = foo()) {}
 )";
 
     IRType expected[] = {
+        IRType::USING,
+        IRType::USING,
+        IRType::USING,
         IRType::USING,
         IRType::USING,
         IRType::USING,
@@ -1007,9 +1015,11 @@ using {}
 using() {}
 using(if (x) c) {}
 using(x:Int) {}
+using(a, 1, c = foo()) {}
 )";
 
     IRType expected_incorr[] = {
+        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,

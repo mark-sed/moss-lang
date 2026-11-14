@@ -11,6 +11,8 @@ class MyClass {
     fun __exit() {
         ~print("Exited:", this.c)
     }
+
+    fun __String() = "MyClass:"++this.c++"\n"
 }
 
 using (x = MyClass(42)) {
@@ -59,10 +61,32 @@ using (v = MyClassExit(7)) {
     ~print("In the middle of using:", v.c)
 }
 
+using(4) {}
+using(u, i, o = [1, nil, true]) {}
+
+using(a, b = [MyClass(100), MyClass(101)]) {
+    a
+    b
+}
+
+f = [nil, 1]
+using(f[0] = MyClass(800)) {
+    "Middle of using subsc 800\n"
+}
+f ++ "\n"
+
+using(i1, ...i2, i3 = [MyClass(-1), MyClass(-2), MyClass(-3), MyClass(-4), MyClass(-5)]) {
+}
+
+using(a1, a2, a3, a4 = [MyClass(nil), 0, "hi", MyClass(true)]) {
+    a1
+    a2
+    a3
+    a4
+}
+
 using (v = MyClass(-7)) {
     ~print("In the middle of using:", v.c)
     if (v.c < 0)
         raise Exception("Negative c")
 }
-
-using(4) {}
