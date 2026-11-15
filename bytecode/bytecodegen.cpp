@@ -14,7 +14,7 @@ using namespace opcode;
     #define comment(c)
 #endif
 
-void BytecodeGen::multivar_set(ir::Multivar *mva, RegValue *right, std::vector<Register> &assigned_regs) {
+void BytecodeGen::multivar_set(ir::Multivar *mva, RegValue *&right, std::vector<Register> &assigned_regs) {
     if (right->is_const()) {
         append(new opcode::StoreConst(next_reg(), free_reg(right)));
         right = last_reg();
