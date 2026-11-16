@@ -421,13 +421,19 @@ struct FunctionInfo {
 
 class Function : public Construct {
 private:
+    static uint64_t anonymous_id;
+    bool anonymous;
     FunctionInfo info;
 public:
     static const IRType ClassType = IRType::FUNCTION;
 
     Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, SourceInfo src_info) 
-            : Construct(ClassType, name, src_info), info{args, false, false} {
+            : Construct(ClassType, name, src_info), anonymous(false), info{args, false, false} {
         this->body = fnbody;
+        if (name.empty()) {
+            anonymous = true;
+            this->name = std::to_string(anonymous_id++) + "l";
+        }
         for (auto i: body) {
             i->set_parent(this);
         }
@@ -436,7 +442,11 @@ public:
         }
     }
     Function(ustring name, std::vector<Argument *> args, SourceInfo src_info) 
-            : Construct(ClassType, name, src_info), info{args, false, false} {
+            : Construct(ClassType, name, src_info), anonymous(false), info{args, false, false} {
+        if (name.empty()) {
+            anonymous = true;
+            this->name = std::to_string(anonymous_id++) + "l";
+        }
         for (auto a: args) {
             a->set_parent(this);
         }
@@ -1429,12 +1439,15 @@ private:
     static uint64_t anonymous_id;
     bool anonymous;
     FunctionInfo info;
-    Expression *body;
+    std::list<IR *> body;
 public:
     static const IRType ClassType = IRType::LAMBDA;
 
     Lambda(ustring name, std::vector<Argument *> args, Expression *body, SourceInfo src_info) 
-        : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false}, body(body) {
+            : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false} {
+        IR *ret_ir = new ir::Return(body, body->get_src_info());
+        ret_ir->set_parent(this);
+        this->body.push_back(ret_ir);
         if (name.empty()) {
             anonymous = true;
             this->name = std::to_string(anonymous_id++) + "l";
@@ -1444,10 +1457,21 @@ public:
         }
         body->set_parent(this);
     }
+    Lambda(ustring name, std::vector<Argument *> args, SourceInfo src_info) 
+            : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false} {
+        if (name.empty()) {
+            anonymous = true;
+            this->name = std::to_string(anonymous_id++) + "l";
+        }
+        for (auto a: args) {
+            a->set_parent(this);
+        }
+    }
     ~Lambda() {
         for (auto a : this->info.args)
             delete a;
-        delete body;
+        for (auto i: body)
+            delete i;
     }
 
     IR *accept(IRVisitor& visitor) override;
@@ -1464,8 +1488,13 @@ public:
     bool is_anonymous() { return this->anonymous; }
 
     std::vector<Argument *> &get_args() { return this->info.args; }
-    Expression *get_body() { return this->body; }
-    void set_body(Expression *b) { this->body = b; }
+    std::list<IR *> &get_body() { return this->body; }
+    void set_body(std::list<IR *> b) { 
+        this->body = b;
+        for (auto i: body) {
+            i->set_parent(this);
+        }
+    }
 
     virtual inline std::ostream& debug(std::ostream& os) const override {
         os << "(fun " << name << "(";
@@ -1479,7 +1508,15 @@ public:
                 os << ", " << *a;
             }
         }
-        os << ") = " << *body << ")";
+        os << ") { ";
+        bool first_bod = true;
+        for (auto i: body) {
+            if (!first_bod)
+                os << "\n";
+            first_bod = false;
+            os << *i << "\n";
+        }
+        os << "})";
         return os;
     }
 };

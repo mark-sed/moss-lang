@@ -43,6 +43,11 @@ IR *MethodAnalyzer::visit(Function &fun) {
     return &fun;
 }
 
+IR *MethodAnalyzer::visit(Lambda &lmbd) {
+    this->in_constructor = false;
+    return &lmbd;
+}
+
 IR *MethodAnalyzer::visit(Return &ret) {
     if (in_constructor) {
         auto rval = ret.get_expr();

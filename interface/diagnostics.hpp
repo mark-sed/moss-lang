@@ -89,7 +89,6 @@ enum DiagID : unsigned {
     MISSING_FUN_BODY,       ///< No = or {} after function declaration
     MULTIPLE_VARARGS,       ///< Multiple variable arguments in single function
     NOT_PURE_VARARG,        ///< Setting type or value to vararg
-    ANONYMOUS_FUN,          ///< Function without a name
     SET_EXPECTED,           ///< Expecting '='
     LAMBDA_WITH_BODY,       ///< {} after a lambda
     SET_NOT_ALLOWED,        ///< Assignment is not allowed here
@@ -324,7 +323,6 @@ static const char * DIAG_MSGS[] = {
     "Function must have a body ('{}') or lambda must return a value ('=')",
     "Function can have only 1 variable argument ('...')",
     "Variable argument cannot be typed nor have a default value",
-    "Function must have a name, only lambdas can be anonymous",
     "Expecting '='",
     "Lambda cannot have a body",
     "Assignment is not allowed here — perhaps you meant to use '=='?",

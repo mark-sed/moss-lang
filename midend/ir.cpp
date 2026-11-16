@@ -6,6 +6,7 @@ using namespace ir;
 
 uint64_t ir::Space::anonymous_id = 0;
 uint64_t ir::Lambda::anonymous_id = 0;
+uint64_t ir::Function::anonymous_id = 0;
 uint64_t ir::List::anonymous_id = 0;
 
 std::list<IR *> List::as_for() {

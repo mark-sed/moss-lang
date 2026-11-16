@@ -1404,11 +1404,7 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         // We add one for possible "this" argument
         push_reg_scope(lmb->get_args().size()+1);
         // Generate function body
-        auto rval = emit(lmb->get_body());
-        if (rval->is_const())
-            append(new opcode::ReturnConst(free_reg(rval)));
-        else
-            append(new opcode::Return(free_reg(rval)));
+        emit(lmb->get_body());
         fn_end_jmp->addr = get_curr_address() + 1;
 
         pop_reg_scope();

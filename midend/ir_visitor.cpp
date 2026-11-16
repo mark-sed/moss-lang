@@ -377,7 +377,7 @@ IR *PassManager::visit(Lambda &fun) {
         return self;
 
     visit_body<Argument>(fun.get_args());
-    visit_child(fun.get_body(), [&fun](Expression *new_i) { fun.set_body(new_i); }, "Lambda body cannot be removed");
+    visit_body<IR>(fun.get_body());
 
     return try_replace(fun);
 }

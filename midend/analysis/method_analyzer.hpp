@@ -30,6 +30,7 @@ public:
     
     virtual IR *visit(class Class &cls) override;
     virtual IR *visit(class Function &fun) override;
+    virtual IR *visit(class Lambda &lmbd) override;
     virtual IR *visit(class Return &ret) override;
 };
 
