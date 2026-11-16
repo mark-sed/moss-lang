@@ -463,8 +463,8 @@ ir::Annotation *Parser::annotation() {
     return decl;
 }
 
-ir::IR *Parser::function(bool &no_end_needed, SourceInfo &start_parse_src) {
-    ir::IR *decl = nullptr;
+ir::Expression *Parser::function(bool &no_end_needed, SourceInfo &start_parse_src) {
+    ir::Expression *decl = nullptr;
     if (match(TokenType::FUN)) {
         ustring name = "";
         if (check(TokenType::ID)) {
@@ -1793,26 +1793,9 @@ Expression *Parser::constant() {
     }
     // lambda
     else if (check(TokenType::FUN)) {
-        //bool no_end_needed = true;
-        //auto csrc = curr_src_info();
-        //return function(no_end_needed, csrc);
-        ustring name = "";
-        if (check(TokenType::ID)) {
-            auto id = advance();
-            name = id->get_value();
-        }
-        expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
-        std::vector<Argument *> args;
-        if (!match(TokenType::RIGHT_PAREN)) {
-            args = arg_list();
-            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        }
-        skip_nls();
-        parser_assert(!check(TokenType::LEFT_CURLY), create_diag(diags::LAMBDA_WITH_BODY));
-        expect(TokenType::SET, create_diag(diags::SET_EXPECTED));
-        auto lmbody = expression();
-        parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
-        return new Lambda(name, args, lmbody, curr_src_info());
+        bool no_end_needed = true;
+        auto csrc = curr_src_info();
+        return function(no_end_needed, csrc);
     }
     // list
     else if (match(TokenType::LEFT_SQUARE)) {

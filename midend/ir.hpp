@@ -419,16 +419,17 @@ struct FunctionInfo {
     bool method; ///< Denotes is function is non-static class method
 };
 
-class Function : public Construct {
+class Function : public Expression {
 private:
     static uint64_t anonymous_id;
     bool anonymous;
     FunctionInfo info;
+    std::list<IR *> body;
 public:
     static const IRType ClassType = IRType::FUNCTION;
 
     Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, SourceInfo src_info) 
-            : Construct(ClassType, name, src_info), anonymous(false), info{args, false, false} {
+            : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false} {
         this->body = fnbody;
         if (name.empty()) {
             anonymous = true;
@@ -442,7 +443,7 @@ public:
         }
     }
     Function(ustring name, std::vector<Argument *> args, SourceInfo src_info) 
-            : Construct(ClassType, name, src_info), anonymous(false), info{args, false, false} {
+            : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false} {
         if (name.empty()) {
             anonymous = true;
             this->name = std::to_string(anonymous_id++) + "l";
@@ -463,6 +464,18 @@ public:
     bool is_constructor() { return this->info.constructor; }
     void set_method(bool c) { this->info.method = c; }
     bool is_method() { return this->info.method; }
+    std::list<IR *>& get_body() { return this->body; }
+
+    void set_body(std::list<IR *> b) { 
+        this->body = b;
+        for (auto i: body) {
+            i->set_parent(this);
+        }
+    }
+
+    void move_body(std::list<IR*>&& b) {
+        body = std::move(b);
+    }
 
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }

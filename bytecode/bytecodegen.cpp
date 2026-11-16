@@ -1340,76 +1340,8 @@ RegValue *BytecodeGen::emit(ir::Expression *expr, bool get_as_ncreg) {
         jmp_end->addr = get_curr_address() + 1;
         bcv = new RegValue(res_reg, false);
     }
-    else if (auto lmb = dyn_cast<ir::Lambda>(expr)) {
-        auto fun_reg = next_reg();
-        auto arg_names = ir::encode_fun_args(lmb->get_args(), (lmb->is_method() && !lmb->is_staticmethod()));
-        // Store the name without arguments
-        append(new CreateFun(fun_reg, lmb->get_name(), arg_names));
-        comment("lambda fun "+lmb->get_name()+"(" + arg_names + ") declaration");
-        // Add annotations
-        for (auto annt : lmb->get_annotations()) {
-            auto annot_val = emit(annt->get_value(), true);
-            append(new Annotate(fun_reg, annt->get_name(), free_reg(annot_val)));
-        }
-        // Set argument default values or vararg
-        opcode::IntConst arg_i = 0;
-        for (auto a: lmb->get_args()) {
-            if (a->is_vararg()) {
-                append(new SetVararg(fun_reg, arg_i));
-            }
-            else {
-                if (a->has_default_value()) {
-                    auto def_val = emit(a->get_default_value());
-                    if (def_val->is_const()) {
-                        append(new SetDefaultConst(fun_reg, arg_i, free_reg(def_val)));
-                    }
-                    else {
-                        append(new SetDefault(fun_reg, arg_i, free_reg(def_val)));
-                    }
-                }
-            }
-            ++arg_i;
-        }
-        // Set argument type after default - this is to enable load
-        // optimizations and ensure that there will be no side effects
-        // between setting type.
-            arg_i = 0;
-        std::unordered_map<ustring, opcode::Register> loaded_types;
-        for (auto a: lmb->get_args()) {
-            for (auto t: a->get_types()) {
-                RegValue *t_reg = nullptr;
-                if (auto tname = dyn_cast<ir::Variable>(t)) {
-                    auto var_name = tname->get_name();
-                    if (loaded_types.count(var_name) > 0) {
-                        auto r = loaded_types[var_name];
-                        t_reg = new RegValue(r, false);
-                    } else {
-                        t_reg = emit(t, true);
-                        loaded_types[var_name] = t_reg->reg();
-                    }
-                } else {
-                    t_reg = emit(t, true);
-                }
-                append(new SetType(fun_reg, arg_i, free_reg(t_reg)));    
-            }
-            ++arg_i;
-        }
-        append(new FunBegin(fun_reg));
-        // Place jump which will be later on modified to contain the actual
-        // function end - this skips beyond the function body
-        auto fn_end_jmp = new Jmp(0);
-        append(fn_end_jmp);
-        comment("lambda fun "+lmb->get_name()+"(" + arg_names + ") body start");
-        append(new PopCallFrame());
-        // We add one for possible "this" argument
-        push_reg_scope(lmb->get_args().size()+1);
-        // Generate function body
-        emit(lmb->get_body());
-        fn_end_jmp->addr = get_curr_address() + 1;
-
-        pop_reg_scope();
-        bcv = new RegValue(fun_reg, false);
-        bcv->set_silent(true);
+    else if (auto fn = dyn_cast<ir::Function>(expr)) {
+        return emit(fn);
     }
     else if (isa<Multivar>(expr)) {
         assert(false && "Standalone multivar?");
@@ -1803,7 +1735,7 @@ void BytecodeGen::emit(ir::Module *mod) {
     emit(mod->get_body());
 }
 
-void BytecodeGen::emit(ir::Function *fun) {
+RegValue *BytecodeGen::emit(ir::Function *fun) {
     auto fun_reg = next_reg();
     auto arg_names = ir::encode_fun_args(fun->get_args(), (fun->is_method() && !fun->is_constructor() && !fun->is_staticmethod()));
     // Store the name without arguments
@@ -1877,6 +1809,9 @@ void BytecodeGen::emit(ir::Function *fun) {
     fn_end_jmp->addr = get_curr_address() + 1;
 
     pop_reg_scope();
+    auto bcv = new RegValue(fun_reg, false);
+    bcv->set_silent(true);
+    return bcv;
 }
 
 void BytecodeGen::emit(ir::Class *cls) {

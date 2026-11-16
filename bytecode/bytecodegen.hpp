@@ -94,6 +94,7 @@ private:
     void update_jmps(opcode::Address start, opcode::Address end, opcode::Address brk, opcode::Address cont);
     void multivar_set(ir::Multivar *mva, RegValue *&right, std::vector<opcode::Register> &assigned_regs);
 
+    RegValue *emit(ir::Function *fun);
     void emit(ir::Raise *r);
     void emit(ir::Return *r);
     void emit(ir::Module *mod);
@@ -105,7 +106,6 @@ private:
     void emit(ir::DoWhile *whstmt);
     void emit(ir::Using *usi);
     void emit(ir::Try *tcf);
-    void emit(ir::Function *fun);
     void emit(ir::Class *cls);
     void emit(ir::Space *spc);
     void emit(ir::Enum *enm);
