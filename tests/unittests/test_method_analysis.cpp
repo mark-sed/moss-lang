@@ -65,7 +65,7 @@ fun foo3() {}
     EXPECT_FALSE(foo1->is_method());
     EXPECT_FALSE(foo1->is_constructor());
 
-    ir::Lambda *foo2 = dyn_cast<ir::Lambda>(body[1]);
+    ir::Function *foo2 = dyn_cast<ir::Function>(body[1]);
     ASSERT_TRUE(foo2);
     EXPECT_FALSE(foo2->is_method());
 
@@ -83,7 +83,7 @@ fun foo3() {}
     EXPECT_TRUE(cl1_cons2->is_constructor());
     EXPECT_TRUE(cl1_cons2->is_method());
 
-    auto get_f = dyn_cast<ir::Lambda>(cl1_body[2]);
+    auto get_f = dyn_cast<ir::Function>(cl1_body[2]);
     ASSERT_TRUE(get_f);
     EXPECT_TRUE(get_f->is_method());
 
@@ -149,17 +149,6 @@ fun foo3() {}
     EXPECT_FALSE(foo3->is_constructor());
 
     delete mod;
-}
-
-/// This tests that MethodAnalysis raises error when lambda is used as a constructor
-TEST(MethodAnalysis, LambdaConstructors){
-    ustring code = R"(
-class SomeClass {
-    fun SomeClass() = nil
-}
-)";
-
-    testing::check_line_err(code, "LambdaConstructors");
 }
 
 /// This tests that MethodAnalysis raises error there is non-nil return in a constructor

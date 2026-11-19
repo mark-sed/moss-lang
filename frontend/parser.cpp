@@ -1524,7 +1524,7 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto args = expr_list(false, true, true);
             skip_nls();
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-            skip_nls_in_parenth();
+            //skip_nls_in_parenth();
             acc_srci.update_ends(curr_src_info());
             expr = new Call(expr, args, acc_srci);
         }

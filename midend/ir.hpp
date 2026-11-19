@@ -251,10 +251,10 @@ public:
         return ir_type >= IRType::INT_LITERAL && ir_type <= IRType::NIL_LITERAL;
     }
 
-    virtual void add_annotation(Annotation *ann) override {
-        (void)ann;
-        assert(false && "Adding annotation to an expression");
-    }
+    //virtual void add_annotation(Annotation *ann) override {
+    //    (void)ann;
+    //    assert(false && "Adding annotation to an expression");
+    //}
 };
 
 class Module : public Construct {
