@@ -37,11 +37,6 @@ public:
         return &i;
     }
 
-    virtual IR *visit(Lambda &i) override {
-        out << "Lambda " << i.get_name() << "\n";
-        return &i;
-    }
-
     virtual IR *visit(Return &i) override {
         out << "Return " << i.get_expr()->get_name() << "\n";
         return &i;

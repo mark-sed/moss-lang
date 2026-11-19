@@ -27,7 +27,6 @@ public:
     FunctionAnalyzer(Parser &parser) : IRVisitor(parser), has_main(false) {}
     
     virtual IR *visit(class Function &fun) override;
-    virtual IR *visit(class Lambda &lf) override;
     virtual IR *visit(class Return &ret) override;
 };
 

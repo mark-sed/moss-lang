@@ -5,7 +5,6 @@ using namespace moss;
 using namespace ir;
 
 uint64_t ir::Space::anonymous_id = 0;
-uint64_t ir::Lambda::anonymous_id = 0;
 uint64_t ir::Function::anonymous_id = 0;
 uint64_t ir::List::anonymous_id = 0;
 
@@ -109,24 +108,11 @@ bool Function::is_staticmethod() {
     return false;
 }
 
-bool Lambda::is_staticmethod() {
-    for (auto a: annotations) {
-        if (a->get_name() == annots::STATIC_METHOD && isa<NilLiteral>(a->get_value())) {
-            return true;
-        }
-    }
-    return false;
-}
-
 IR *Argument::accept(IRVisitor& visitor) {
     return visitor.visit(*this);
 }
 
 IR *Function::accept(IRVisitor& visitor) {
-    return visitor.visit(*this);
-}
-
-IR *Lambda::accept(IRVisitor& visitor) {
     return visitor.visit(*this);
 }
 

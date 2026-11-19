@@ -90,7 +90,6 @@ enum DiagID : unsigned {
     MULTIPLE_VARARGS,       ///< Multiple variable arguments in single function
     NOT_PURE_VARARG,        ///< Setting type or value to vararg
     SET_EXPECTED,           ///< Expecting '='
-    LAMBDA_WITH_BODY,       ///< {} after a lambda
     SET_NOT_ALLOWED,        ///< Assignment is not allowed here
     DICT_NO_COLON,          ///< No : after a key
     EMPTY_DICT_WITHOUT_COLON, ///< {} is not an empty dict
@@ -160,7 +159,6 @@ enum DiagID : unsigned {
     CANNOT_BE_DOCUMENTED,   ///< Using docstring on some value it cannot store it
     DOC_STRING_NOT_AT_START,///< Doc-string in the middle of the body
     DOC_STRING_IN_REPL,     ///< When trying to document repl
-    LAMBDA_CONSTRUCTOR,     ///< Trying to make constructor a lambda
     NON_NIL_RETURN_IN_CONSTR, ///< Constructor with return with a non-nil value
     CHR_NOT_IN_RANGE,       ///< function chr argument outside of specified range
     ORD_INCORRECT_LENGTH,   ///< Ord received string not character
@@ -227,7 +225,6 @@ enum DiagID : unsigned {
     RETURN_IN_MAIN,         ///< When main function returns non-nil value
     NON_GLOBAL_MAIN,        ///< When function annotated as main is non-global
     MULTIPLE_MAINS,         ///< When a module has more then 1 main annotated function
-    LAMBDA_MAIN,            ///< When lambda is marked as main
     DUPLICATE_CLASS_BASE,   ///< When extending twice with the same class
     CANNOT_EXTEND_SEALED_CLASS, ///< When extending @sealed class
     INT_BASE_NOT_INT,       ///< When base in call to Int is not an Int
@@ -324,7 +321,6 @@ static const char * DIAG_MSGS[] = {
     "Function can have only 1 variable argument ('...')",
     "Variable argument cannot be typed nor have a default value",
     "Expecting '='",
-    "Lambda cannot have a body",
     "Assignment is not allowed here — perhaps you meant to use '=='?",
     "Dictionary key must be followed by a colon (':')",
     "Incorrect '{}' found — perhaps you meant an empty dictionary '{:}' or 'space' for block of code?",
@@ -394,7 +390,6 @@ static const char * DIAG_MSGS[] = {
     "Construct '%s' cannot have internal documentation — perhaps use just a comment ('//')",
     "Doc-string ('d\"\"') can appear only at the beginning of the construct",
     "REPL cannot be documented",
-    "Constructor cannot be a lambda",
     "Constructor can contain only 'return' or 'return nil'",
     "Value '%ld' for function 'chr' not in range <0; 0x10ffff>",
     "Value ('%s') for function 'ord' has to be exactly 1 character long String",
@@ -461,7 +456,6 @@ static const char * DIAG_MSGS[] = {
     "Function annotated as '@main' has to return nil",
     "Function annotated as '@main' has to be global and only in module scope",
     "Redefinition of '@main' within a module — only 1 function can be annotated as '@main'",
-    "Lambda function ('%s') cannot be marked as '@main'",
     "Duplicate base class '%s'",
     "Class '%s' is marked as '@sealed' and cannot be extended",
     "Base in call to `Int` has to be an Int value, but `%s` was passed in",
