@@ -1795,7 +1795,10 @@ Expression *Parser::constant() {
     else if (check(TokenType::FUN)) {
         bool no_end_needed = true;
         auto csrc = curr_src_info();
-        return function(no_end_needed, csrc);
+        ++lower_range_prec;
+        auto f = function(no_end_needed, csrc);
+        --lower_range_prec;
+        return f;
     }
     // list
     else if (match(TokenType::LEFT_SQUARE)) {

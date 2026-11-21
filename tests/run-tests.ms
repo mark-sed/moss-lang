@@ -527,6 +527,10 @@ In the middle of using: -7
 Exited: -7\n""", rx_err="Exception: Negative c", prog_args=f"{::TEST_DIR}/randdata.txt")
 }
 
+fun test_function_bodies_args(name) {
+    ~expect_pass("function_bodies_args.ms", name, """170\n10\n4953\n42\n12\n2\n""", "")
+}
+
 fun test_ifs(name) {
     ~expect_pass("ifs.ms", name, """0\nyes\nno\nno\nno\nno\nyes\nyes\nnil
 very small\nsmall\nmedium\nbig\nvery big\nvery big\nb\n""", "")
@@ -2705,6 +2709,7 @@ fun run_all_tests() {
     ~run_test("iterators")
     ~run_test("asserts")
     ~run_test("using")
+    ~run_test("function_bodies_args")
 
     ~run_test("basic_import")
     ~run_test("import_calls")
