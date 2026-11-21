@@ -1325,9 +1325,16 @@ fun baz(a, b, ... others, more=true) {}
 fun bar(...o) {
     baz(4, 5, <<o)
 }
+
+fun bar(f=fun(a, f=fun(a)=a+1) {
+            return f(a)
+        }) {
+    return f(1)
+}
 )";
 
     IRType expected[] = {
+        IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
@@ -1387,16 +1394,25 @@ fun() = 3
 
 filter = fun() = 3
 filter = (fun() = 3)() + 3
+
+fun(a) {}
+
+fun foo(f=fun(a=true, b=4) {}) = f()
+
+fun foo(f=fun foo1(f=fun foo2()=3) { return f(); }) = f()
 )";
 
     IRType expected[] = {
-        IRType::LAMBDA,
-        IRType::LAMBDA,
-        IRType::LAMBDA,
-        IRType::LAMBDA,
-        IRType::LAMBDA,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
         IRType::BINARY_EXPR,
         IRType::BINARY_EXPR,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
 
         IRType::END_OF_FILE
     };
@@ -1406,12 +1422,10 @@ filter = (fun() = 3)() + 3
     // Errors
 ustring incorrect = R"(
 fun foo1() = return 1
-fun(a) {}
 fun() = a = 3
 )";
 
     IRType expected_incorr[] = {
-        IRType::RAISE,
         IRType::RAISE,
         IRType::RAISE,
 
@@ -1522,7 +1536,7 @@ fun foo() {
         IRType::ANNOTATION,
         IRType::FUNCTION,
         IRType::FUNCTION,
-        IRType::LAMBDA,
+        IRType::FUNCTION,
         IRType::CLASS,
         IRType::FUNCTION,
 
@@ -1707,9 +1721,9 @@ fun (in)(a) { return a in b; }
 
     IRType expected[] = {
         IRType::FUNCTION,
-        IRType::LAMBDA,
         IRType::FUNCTION,
-        IRType::LAMBDA,
+        IRType::FUNCTION,
+        IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
         IRType::FUNCTION,
@@ -1857,8 +1871,7 @@ if (a <= 4 &&
 }
 
 (a
- .foo()
- .
+ .foo().
  hoo().
  goo
  .
@@ -1875,8 +1888,7 @@ import (mod.
  .foo(1,
     2,
     3
-  )
- .
+  ).
  hoo().
  goo
  .x

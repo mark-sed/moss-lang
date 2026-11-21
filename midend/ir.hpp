@@ -69,7 +69,6 @@ enum IRType {
     MULTI_VAR,
     ALL_SYMBOLS,
     ARGUMENT,
-    LAMBDA,
     NOTE,
     LIST,
     DICT,
@@ -251,10 +250,10 @@ public:
         return ir_type >= IRType::INT_LITERAL && ir_type <= IRType::NIL_LITERAL;
     }
 
-    virtual void add_annotation(Annotation *ann) override {
-        (void)ann;
-        assert(false && "Adding annotation to an expression");
-    }
+    //virtual void add_annotation(Annotation *ann) override {
+    //    (void)ann;
+    //    assert(false && "Adding annotation to an expression");
+    //}
 };
 
 class Module : public Construct {
@@ -419,15 +418,22 @@ struct FunctionInfo {
     bool method; ///< Denotes is function is non-static class method
 };
 
-class Function : public Construct {
+class Function : public Expression {
 private:
+    static uint64_t anonymous_id;
+    bool anonymous;
     FunctionInfo info;
+    std::list<IR *> body;
 public:
     static const IRType ClassType = IRType::FUNCTION;
 
     Function(ustring name, std::vector<Argument *> args, std::list<IR *> fnbody, SourceInfo src_info) 
-            : Construct(ClassType, name, src_info), info{args, false, false} {
+            : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false} {
         this->body = fnbody;
+        if (name.empty()) {
+            anonymous = true;
+            this->name = std::to_string(anonymous_id++) + "l";
+        }
         for (auto i: body) {
             i->set_parent(this);
         }
@@ -436,7 +442,11 @@ public:
         }
     }
     Function(ustring name, std::vector<Argument *> args, SourceInfo src_info) 
-            : Construct(ClassType, name, src_info), info{args, false, false} {
+            : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false} {
+        if (name.empty()) {
+            anonymous = true;
+            this->name = std::to_string(anonymous_id++) + "l";
+        }
         for (auto a: args) {
             a->set_parent(this);
         }
@@ -453,6 +463,18 @@ public:
     bool is_constructor() { return this->info.constructor; }
     void set_method(bool c) { this->info.method = c; }
     bool is_method() { return this->info.method; }
+    std::list<IR *>& get_body() { return this->body; }
+
+    void set_body(std::list<IR *> b) { 
+        this->body = b;
+        for (auto i: body) {
+            i->set_parent(this);
+        }
+    }
+
+    void move_body(std::list<IR*>&& b) {
+        body = std::move(b);
+    }
 
     virtual bool can_be_annotated() override { return true; }
     virtual bool can_be_documented() override { return true; }
@@ -1424,66 +1446,6 @@ public:
     }
 };
 
-class Lambda : public Expression {
-private:
-    static uint64_t anonymous_id;
-    bool anonymous;
-    FunctionInfo info;
-    Expression *body;
-public:
-    static const IRType ClassType = IRType::LAMBDA;
-
-    Lambda(ustring name, std::vector<Argument *> args, Expression *body, SourceInfo src_info) 
-        : Expression(ClassType, name, src_info), anonymous(false), info{args, false, false}, body(body) {
-        if (name.empty()) {
-            anonymous = true;
-            this->name = std::to_string(anonymous_id++) + "l";
-        }
-        for (auto a: args) {
-            a->set_parent(this);
-        }
-        body->set_parent(this);
-    }
-    ~Lambda() {
-        for (auto a : this->info.args)
-            delete a;
-        delete body;
-    }
-
-    IR *accept(IRVisitor& visitor) override;
-
-    virtual void add_annotation(Annotation *ann) override {
-        annotations.push_back(ann);
-    }
-    virtual bool can_be_annotated() override { return true; }
-    virtual bool can_be_documented() override { return false; }
-
-    void set_method(bool c) { this->info.method = c; }
-    bool is_method() { return this->info.method; }
-    bool is_staticmethod();
-    bool is_anonymous() { return this->anonymous; }
-
-    std::vector<Argument *> &get_args() { return this->info.args; }
-    Expression *get_body() { return this->body; }
-    void set_body(Expression *b) { this->body = b; }
-
-    virtual inline std::ostream& debug(std::ostream& os) const override {
-        os << "(fun " << name << "(";
-        bool first = true;
-        for (auto a: info.args) {
-            if (first) {
-                os << *a;
-                first = false;
-            }
-            else {
-                os << ", " << *a;
-            }
-        }
-        os << ") = " << *body << ")";
-        return os;
-    }
-};
-
 class Range : public Expression {
 private:
     Expression *start;
@@ -1925,7 +1887,6 @@ template<> inline ir::Expression *dyn_cast<>(ir::IR* i) {
         else if (auto e = dyn_cast<ir::Variable>(i)) return e;
         else if (auto e = dyn_cast<ir::AllSymbols>(i)) return e;
         else if (auto e = dyn_cast<ir::Argument>(i)) return e;
-        else if (auto e = dyn_cast<ir::Lambda>(i)) return e;
         else if (auto e = dyn_cast<ir::Note>(i)) return e;
         else if (auto e = dyn_cast<ir::List>(i)) return e;
         else if (auto e = dyn_cast<ir::Dict>(i)) return e;

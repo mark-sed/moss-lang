@@ -113,17 +113,17 @@ goo(4)
 )";
 
     ustring expected = R"(
-; ├─ Space blob [3; 32)
+; ├─ Space blob [3; 34)
 ;   ├─ Function blob [5; 24)
 ;     └─ Function blob [9; 20)
 ;       └─ Class blob [13; 15)
-;   └─ Function blob [24; 32)
-; ├─ Function blob [33; 56)
-;   └─ Function blob [40; 48)
-; └─ Space blob [56; 89)
-;   └─ Class blob [58; 88)
-;     ├─ Function blob [60; 72)
-;     └─ Function blob [72; 88)
+;   └─ Function blob [24; 34)
+; ├─ Function blob [35; 60)
+;   └─ Function blob [42; 52)
+; └─ Space blob [60; 93)
+;   └─ Class blob [62; 92)
+;     ├─ Function blob [64; 76)
+;     └─ Function blob [76; 92)
 )";
 
     SourceFile sf(code, SourceFile::SourceType::STRING);

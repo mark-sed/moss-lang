@@ -31,7 +31,6 @@ public:
     virtual IR *visit(class Class &i);
     virtual IR *visit(class Argument &i);
     virtual IR *visit(class Function &i);
-    virtual IR *visit(class Lambda &i);
     virtual IR *visit(class Return &i);
     virtual IR *visit(class Else &i);
     virtual IR *visit(class If &i);
@@ -83,7 +82,6 @@ public:
     virtual IR *visit(class Class &cls) override;
     virtual IR *visit(class Argument &a) override;
     virtual IR *visit(class Function &fun) override;
-    virtual IR *visit(class Lambda &fun) override;
     virtual IR *visit(class Return &ret) override;
     virtual IR *visit(class Else &els) override;
     virtual IR *visit(class If &i) override;

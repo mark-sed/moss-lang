@@ -463,6 +463,62 @@ ir::Annotation *Parser::annotation() {
     return decl;
 }
 
+ir::Expression *Parser::function(bool &no_end_needed, SourceInfo &start_parse_src) {
+    ir::Expression *decl = nullptr;
+    if (match(TokenType::FUN)) {
+        ustring name = "";
+        if (check(TokenType::ID)) {
+            auto id = advance();
+            name = id->get_value();
+        }
+        expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+        // Check operator function
+        auto op_name = operator_name();
+        if (op_name) {
+            name = op_name->get_op().as_string();
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+            expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
+            delete op_name;
+        }
+        std::vector<Argument *> args;
+        if (!match(TokenType::RIGHT_PAREN)) {
+            args = arg_list();
+            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
+        }
+        skip_nls();
+        if (check(TokenType::LEFT_CURLY)) {
+            decl = new Function(name, args, curr_src_info());
+            // Assign outter annotations
+            for (auto ann : outter_annots) {
+                decl->add_annotation(ann);
+            }
+            outter_annots.clear();
+            parents.push_back(decl);
+            auto fnbody = block();
+            parents.pop_back();
+            auto fn = dyn_cast<Function>(decl);
+            fn->set_body(fnbody);
+            fn->get_src_info().update_ends(curr_src_info());
+            no_end_needed = true;
+        }
+        else if (match(TokenType::SET)) {
+            auto lmbody = expression();
+            parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
+            decl = new Function(name, args, {new ir::Return(lmbody, lmbody->get_src_info())}, curr_src_info());
+            // Assign outter annotations
+            for (auto ann : outter_annots) {
+                decl->add_annotation(ann);
+            }
+            decl->get_src_info().update_starts(start_parse_src);
+            outter_annots.clear();
+        }
+        else {
+            parser_error(create_diag(diags::MISSING_FUN_BODY));
+        }
+    }
+    return decl;
+}
+
 /**
  * ```
  * EndOfFile -> EOF
@@ -922,59 +978,8 @@ IR *Parser::declaration() {
     }
 
     // fun / constructor / lambdas
-    else if (match(TokenType::FUN)) {
-        ustring name = "";
-        if (check(TokenType::ID)) {
-            auto id = advance();
-            name = id->get_value();
-        }
-        expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
-        // Check operator function
-        auto op_name = operator_name();
-        if (op_name) {
-            name = op_name->get_op().as_string();
-            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-            expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
-            delete op_name;
-        }
-        std::vector<Argument *> args;
-        if (!match(TokenType::RIGHT_PAREN)) {
-            args = arg_list();
-            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        }
-        skip_nls();
-        if (check(TokenType::LEFT_CURLY)) {
-            decl = new Function(name, args, curr_src_info());
-            // Assign outter annotations
-            for (auto ann : outter_annots) {
-                decl->add_annotation(ann);
-            }
-            outter_annots.clear();
-            parents.push_back(decl);
-            auto fnbody = block();
-            parents.pop_back();
-            if (name.empty()) {
-                parser_error(create_diag(diags::ANONYMOUS_FUN));
-            }
-            auto fn = dyn_cast<Function>(decl);
-            fn->set_body(fnbody);
-            fn->get_src_info().update_ends(curr_src_info());
-            no_end_needed = true;
-        }
-        else if (match(TokenType::SET)) {
-            auto lmbody = expression();
-            parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
-            decl = new Lambda(name, args, lmbody, curr_src_info());
-            // Assign outter annotations
-            for (auto ann : outter_annots) {
-                decl->add_annotation(ann);
-            }
-            decl->get_src_info().update_starts(start_parse_src);
-            outter_annots.clear();
-        }
-        else {
-            parser_error(create_diag(diags::MISSING_FUN_BODY));
-        }
+    else if (check(TokenType::FUN)) {
+        decl = function(no_end_needed, start_parse_src);
     }
 
     // expression
@@ -1519,7 +1524,7 @@ Expression *Parser::call_access_subs(bool allow_star) {
             auto args = expr_list(false, true, true);
             skip_nls();
             expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-            skip_nls_in_parenth();
+            //skip_nls_in_parenth();
             acc_srci.update_ends(curr_src_info());
             expr = new Call(expr, args, acc_srci);
         }
@@ -1787,24 +1792,13 @@ Expression *Parser::constant() {
         return new SuperLiteral(curr_src_info());
     }
     // lambda
-    else if (match(TokenType::FUN)) {
-        ustring name = "";
-        if (check(TokenType::ID)) {
-            auto id = advance();
-            name = id->get_value();
-        }
-        expect(TokenType::LEFT_PAREN, create_diag(diags::FUN_REQUIRES_PARENTH));
-        std::vector<Argument *> args;
-        if (!match(TokenType::RIGHT_PAREN)) {
-            args = arg_list();
-            expect(TokenType::RIGHT_PAREN, create_diag(diags::MISSING_RIGHT_PAREN));
-        }
-        skip_nls();
-        parser_assert(!check(TokenType::LEFT_CURLY), create_diag(diags::LAMBDA_WITH_BODY));
-        expect(TokenType::SET, create_diag(diags::SET_EXPECTED));
-        auto lmbody = expression();
-        parser_assert(lmbody, create_diag(diags::EXPR_EXPECTED));
-        return new Lambda(name, args, lmbody, curr_src_info());
+    else if (check(TokenType::FUN)) {
+        bool no_end_needed = true;
+        auto csrc = curr_src_info();
+        ++lower_range_prec;
+        auto f = function(no_end_needed, csrc);
+        --lower_range_prec;
+        return f;
     }
     // list
     else if (match(TokenType::LEFT_SQUARE)) {

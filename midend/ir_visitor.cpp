@@ -371,17 +371,6 @@ IR *PassManager::visit(TernaryIf &ti) {
     return try_replace(ti);
 }
 
-IR *PassManager::visit(Lambda &fun) {
-    IR* self = try_replace(fun);
-    if (self != &fun)
-        return self;
-
-    visit_body<Argument>(fun.get_args());
-    visit_child(fun.get_body(), [&fun](Expression *new_i) { fun.set_body(new_i); }, "Lambda body cannot be removed");
-
-    return try_replace(fun);
-}
-
 IR *PassManager::visit(Range &r) {
     IR* self = try_replace(r);
     if (self != &r)
@@ -447,7 +436,6 @@ IR *IRVisitor::visit(class Space &i) { return &i; }
 IR *IRVisitor::visit(class Class &i) { return &i; }
 IR *IRVisitor::visit(class Argument &i) { return &i; }
 IR *IRVisitor::visit(class Function &i) { return &i; }
-IR *IRVisitor::visit(class Lambda &i) { return &i; }
 IR *IRVisitor::visit(class Return &i) { return &i; }
 IR *IRVisitor::visit(class Else &i) { return &i; }
 IR *IRVisitor::visit(class If &i) { return &i; }

@@ -114,13 +114,13 @@ fun(g) = true
     std::list<ir::IR *> body_list = mod->get_body();
     std::vector<ir::IR *> body{ std::begin(body_list), std::end(body_list) };
 
-    ir::Lambda *l1 = dyn_cast<ir::Lambda>(body[0]);
+    ir::Function *l1 = dyn_cast<ir::Function>(body[0]);
     ASSERT_TRUE(l1);
-    ir::Lambda *l2 = dyn_cast<ir::Lambda>(body[1]);
+    ir::Function *l2 = dyn_cast<ir::Function>(body[1]);
     ASSERT_TRUE(l2);
-    ir::Lambda *l3 = dyn_cast<ir::Lambda>(body[2]);
+    ir::Function *l3 = dyn_cast<ir::Function>(body[2]);
     ASSERT_TRUE(l3);
-    ir::Lambda *l4 = dyn_cast<ir::Lambda>(body[3]);
+    ir::Function *l4 = dyn_cast<ir::Function>(body[3]);
     ASSERT_TRUE(l4);
     
     EXPECT_TRUE(l1 != l3);

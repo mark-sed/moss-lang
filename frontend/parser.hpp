@@ -82,6 +82,7 @@ private:
     std::list<ir::IR *> cases();
     ir::Expression *list_of_vars(ir::Expression *first, ir::Expression *second, int rest_index);
     ir::Expression *fstring(FStringToken *fstr);
+    ir::Expression *function(bool &no_end_needed, SourceInfo &start_parse_src);
 
     ir::Expression *silent();
     ir::Expression *assignment();

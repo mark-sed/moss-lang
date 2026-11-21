@@ -37,11 +37,6 @@ public:
         return &i;
     }
 
-    virtual IR *visit(Lambda &i) override {
-        out << "Lambda " << i.get_name() << "\n";
-        return &i;
-    }
-
     virtual IR *visit(Return &i) override {
         out << "Return " << i.get_expr()->get_name() << "\n";
         return &i;
@@ -227,10 +222,11 @@ for (i: a..10) {
 "Class Cls1\n"
 "Class Cls2\n"
 "Function Cls2\n"
-"Lambda get_a\n"
+"Function get_a\n"
+"Return <binary-expression>\n"
 "BinExp <this-literal>.a\n"
 "BinExp <this-literal>.a\n"
-"Lambda get_a\n"
+"Return <binary-expression>\n"
 "Function foo\n"
 "Space M\n"
 "If a\n"
@@ -243,8 +239,9 @@ for (i: a..10) {
 "If a\n"
 "Return M\n"
 "Return M\n"
-"Lambda lmb\n"
-"Lambda lmb\n"
+"Function lmb\n"
+"Return <nil-literal>\n"
+"Return <nil-literal>\n"
 "If <bool-literal>\n"
 "Else\n"
 "Else\n"
@@ -305,6 +302,7 @@ for (i: a..10) {
     auto aip = new AllIRsVisitor(parser);
     irp.add_pass(aip);
     auto err = irp.run(mod);
+    //ASSERT_FALSE(true) << aip->out.str();
     ASSERT_FALSE(err);
     ASSERT_EQ(aip->out.str(), expected_out);
 

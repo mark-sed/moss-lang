@@ -29,10 +29,6 @@ IR *MethodAnalyzer::visit(Class &cls) {
             check_constructor(*f, cls);
             LOGMAX("Setting " << f->get_name() << " as method");
             f->set_method(true);
-        } else if (auto l = dyn_cast<Lambda>(i)) {
-            parser_assert(l->get_name() != cls.get_name(), parser.create_diag(l->get_src_info(), diags::LAMBDA_CONSTRUCTOR)); 
-            LOGMAX("Setting " << l->get_name() << " as method");
-            l->set_method(true);
         }
     }
     return &cls;
